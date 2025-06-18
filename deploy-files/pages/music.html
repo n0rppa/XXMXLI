@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Security Headers -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self'; script-src 'self'; style-src 'self'; frame-ancestors 'none';">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+  <title>Musiikki - Luova Studio</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Musiikki</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Etusivu</a></li>
+        <li><a href="photography.html">Valokuvaus</a></li>
+        <li><a href="music.html">Musiikki</a></li>
+        <li><a href="security.html">Tietoturva</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="music-player">
+      <h2>Kuuntele näytteitä</h2>
+      <div class="audio-tracks">
+        <div class="track">
+          <h3>Ambient Maisema</h3>
+          <audio controls>
+            <source src="pluginit/sample.mp3" type="audio/mpeg">
+            Selaimesi ei tue audiotoistoa.
+          </audio>
+        </div>
+        <div class="track">
+          <h3>Elektroninen Tunnelma</h3>
+          <audio controls>
+            <source src="pluginit/sample2.mp3" type="audio/mpeg">
+            Selaimesi ei tue audiotoistoa.
+          </audio>
+        </div>
+      </div>
+    </section>
+
+    <section class="music-services">
+      <h2>Musiikkipalvelut</h2>
+      <ul>
+        <li>Taustamusiikki tapahtumiin</li>
+        <li>Äänisuunnittelu</li>
+        <li>Musiikkituotanto</li>
+        <li>Äänimaisemien luonti</li>
+      </ul>
+      <p>Kysy lisää musiikkipalveluistamme!</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Luova Studio</p>
+  </footer>
+
+  <script src="script.js"></script>
+  <script src="form-validator.js"></script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musiikki - Luova Studio</title>
+    <script src="https://cdn.jsdelivr.net/npm/howler@2.2.3/dist/howler.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .track { background: white; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        button { padding: 5px 10px; margin-right: 5px; }
+        #visualizer { width: 100%; height: 150px; background: #000; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div x-data="musicPlayer()">
+        <h1>Musiikki</h1>
+        
+        <!-- Visualizer -->
+        <canvas id="visualizer"></canvas>
+        
+        <!-- Track List -->
+        <div class="track" x-for="track in tracks" :key="track.id">
+            <h3 x-text="track.title"></h3>
+            <button @click="playTrack(track)" x-text="currentTrack?.id === track.id && isPlaying ? 'Tauko' : 'Toista'"></button>
+            <span x-show="currentTrack?.id === track.id" x-text="isPlaying ? 'Soittaa...' : 'Tauolla'"></span>
+        </div>
+    </div>
+
+    <script>
+        function musicPlayer() {
+            return {
+                tracks: [
+                    { id: 'track1', path: '../assets/audio/01. Hip-Hop Intro.flac', title: 'Hip-hop Intro', tags: ['hip-hop', 'instrumental'] },
+                    { id: 'track2', path: '../assets/audio/Jazz instrumental.flac', title: 'Jazz Instrumental', tags: ['jazz', 'instrumental'] },
+                    { id: 'track3', path: '../assets/audio/03.Mellow(1).flac', title: 'Mellow', tags: ['chill'] },
+                    { id: 'track4', path: '../assets/audio/07.Strange.flac', title: 'Strange', tags: ['experimental'] },
+                    { id: 'track5', path: '../assets/audio/09.Swishaz.flac', title: 'Swishaz', tags: ['electronic'] },
+                    { id: 'track6', path: '../assets/audio/10.Frosty.flac', title: 'Frosty', tags: ['ambient'] },
+                    { id: 'track7', path: '../assets/audio/c7.Mist.flac', title: 'Mist', tags: ['ambient'] }
+                ],
+                currentTrack: null,
+                isPlaying: false,
+                sound: null,
+                audioContext: null,
+                analyser: null,
+                animationId: null,
+
+                async init() {
+                    // Initialize audio context on user interaction
+                    document.addEventListener('click', () => {
+                        if (!this.audioContext) {
+                            this.setupAudioContext();
+                        }
+                    }, { once: true });
+                },
+
+                setupAudioContext() {
+                    try {
+                        const AudioContext = window.AudioContext || window.webkitAudioContext;
+                        this.audioContext = new AudioContext();
+                        this.analyser = this.audioContext.createAnalyser();
+                        this.analyser.fftSize = 256;
+                    } catch (error) {
+                        console.error('Error setting up audio context:', error);
+                    }
+                },
+
+                async playTrack(track) {
+                    try {
+                        // If same track, toggle play/pause
+                        if (this.currentTrack?.id === track.id) {
+                            if (this.sound.playing()) {
+                                this.sound.pause();
+                                this.isPlaying = false;
+                                cancelAnimationFrame(this.animationId);
+                            } else {
+                                this.sound.play();
+                                this.isPlaying = true;
+                                this.animate();
+                            }
+                            return;
+                        }
+
+
+                        // Stop current track if playing
+                        if (this.sound) {
+                            this.sound.stop();
+                            cancelAnimationFrame(this.animationId);
+                        }
+
+                        // Set new track
+                        this.currentTrack = track;
+                        this.isPlaying = true;
+
+                        // Create new Howl instance
+                        this.sound = new Howl({
+                            src: [track.path],
+                            html5: true,
+                            onplay: () => {
+                                this.connectAudioNodes();
+                                this.animate();
+                            },
+                            onend: () => {
+                                this.isPlaying = false;
+                                cancelAnimationFrame(this.animationId);
+                            },
+                            onpause: () => {
+                                this.isPlaying = false;
+                                cancelAnimationFrame(this.animationId);
+                            },
+                            onstop: () => {
+                                this.isPlaying = false;
+                                cancelAnimationFrame(this.animationId);
+                            }
+                        });
+
+                        // Start playback
+                        this.sound.play();
+
+                    } catch (error) {
+                        console.error('Error playing track:', error);
+                        if (error.name === 'NotAllowedError') {
+                            alert('Salli äänentoisto jatkaaksesi.');
+                        }
+                    }
+                },
+
+                connectAudioNodes() {
+                    if (!this.audioContext || !this.analyser || !this.sound) return;
+
+                    try {
+                        const source = this.audioContext.createMediaElementSource(this.sound._sounds[0]._node);
+                        source.connect(this.analyser);
+                        this.analyser.connect(this.audioContext.destination);
+                    } catch (error) {
+                        console.error('Error connecting audio nodes:', error);
+                    }
+                },
+
+                animate() {
+                    if (!this.analyser) {
+                        this.animationId = requestAnimationFrame(this.animate.bind(this));
+                        return;
+                    }
+
+                    const canvas = document.getElementById('visualizer');
+                    const ctx = canvas.getContext('2d');
+                    const WIDTH = canvas.width;
+                    const HEIGHT = canvas.height;
+                    const bufferLength = this.analyser.frequencyBinCount;
+                    const dataArray = new Uint8Array(bufferLength);
+
+                    const draw = () => {
+                        this.animationId = requestAnimationFrame(draw);
+                        this.analyser.getByteFrequencyData(dataArray);
+
+                        ctx.fillStyle = 'rgb(0, 0, 0)';
+                        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+                        const barWidth = (WIDTH / bufferLength) * 2.5;
+                        let barHeight;
+                        let x = 0;
+
+                        for (let i = 0; i < bufferLength; i++) {
+                            barHeight = dataArray[i] / 2;
+                            ctx.fillStyle = 'rgb(74, 143, 201)';
+                            ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
+                            x += barWidth + 1;
+                        }
+                    };
+
+                    draw();
+                }
+            };
+        }
+    </script>
+</body>
+</html>

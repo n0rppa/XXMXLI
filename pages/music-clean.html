@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Musiikki - Luova Studio</title>
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body x-data="audioPlayer()">
+  <header>
+    <h1>Musiikki</h1>
+    <nav>
+      <a href="../index.html">Etusivu</a>
+      <a href="music.html" class="active">Musiikki</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="track-list">
+      <!-- Track content will be added here -->
+    </div>
+  </main>
+
+  <script>
+    function audioPlayer() {
+      return {
+        tracks: [],
+        currentTrack: null,
+        
+        init() {
+          // Initialization code
+        },
+        
+        playTrack(track) {
+          // Play track implementation
+        }
+      }
+    }
+  </script>
+</body>
+</html>

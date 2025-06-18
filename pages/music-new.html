@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Musiikki - Luova Studio</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+    .track { background: white; padding: 15px; margin: 10px 0; border-radius: 5px; }
+    .player-controls { margin-top: 10px; }
+    button { padding: 5px 10px; margin-right: 5px; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+</head>
+<body>
+  <h1>Musiikki</h1>
+  
+  <div id="tracks">
+    <!-- Tracks will be loaded here -->
+  </div>
+
+  <script>
+    const tracks = [
+      { id: 1, title: 'Kappale 1', url: 'path/to/track1.mp3' },
+      { id: 2, title: 'Kappale 2', url: 'path/to/track2.mp3' }
+    ];
+
+    let currentTrack = null;
+
+    function loadTracks() {
+      const container = document.getElementById('tracks');
+      container.innerHTML = '';
+      
+      tracks.forEach(track => {
+        const trackEl = document.createElement('div');
+        trackEl.className = 'track';
+        trackEl.innerHTML = `
+          <h3>${track.title}</h3>
+          <div class="player-controls">
+            <button onclick="playTrack(${track.id})">Toista</button>
+            <button onclick="pauseTrack()">Tauko</button>
+            <button onclick="stopTrack()">Lopeta</button>
+          </div>
+        `;
+        container.appendChild(trackEl);
+      });
+    }
+
+    function playTrack(trackId) {
+      const track = tracks.find(t => t.id === trackId);
+      if (!track) return;
+      
+      if (currentTrack) {
+        currentTrack.stop();
+      }
+      
+      currentTrack = new Howl({
+        src: [track.url],
+        html5: true,
+        onend: function() {
+          console.log('Finished playing:', track.title);
+        }
+      });
+      
+      currentTrack.play();
+    }
+
+    function pauseTrack() {
+      if (currentTrack) currentTrack.pause();
+    }
+
+    function stopTrack() {
+      if (currentTrack) {
+        currentTrack.stop();
+        currentTrack = null;
+      }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', loadTracks);
+  </script>
+</body>
+</html>

@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="fi" x-data="adminPanel" x-init="init()">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Luova Studio</title>
+  <link rel="stylesheet" href="../styles.css?t=202505152110">
+  
+  <!-- Alpine.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --primary-color: #3B719F;
+      --primary-dark: #2c5a80;
+      --secondary-color: #4ECDC4;
+      --light-gray: #f8f9fa;
+      --dark-gray: #343a40;
+      --danger: #dc3545;
+      --success: #28a745;
+      --warning: #ffc107;
+      --border-radius: 8px;
+      --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    .admin-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .admin-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--dark-gray);
+      margin: 0;
+    }
+    
+    .admin-button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .admin-button:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+    
+    .admin-button:active {
+      transform: translateY(0);
+    }
+    
+    .admin-button.secondary {
+      background-color: #6c757d;
+    }
+    
+    .admin-button.danger {
+      background-color: var(--danger);
+    }
+    
+    .admin-button.success {
+      background-color: var(--success);
+    }
+    
+    .dashboard-container {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 30px;
+    }
+    
+    .sidebar {
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      padding: 20px;
+      height: fit-content;
+    }
+    
+    .sidebar-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 20px 0;
+      color: var(--dark-gray);
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    
+    .nav-link {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      color: #555;
+      text-decoration: none;
+      border-radius: 6px;
+      transition: var(--transition);
+    }
+    
+    .nav-link:hover, .nav-link.active {
+      background-color: var(--light-gray);
+      color: var(--primary-color);
+    }
+    
+    .nav-link i {
+      margin-right: 10px;
+      width: 20px;
+      text-align: center;
+    }
+    
+    .content-area {
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      padding: 30px;
+      min-height: 70vh;
+    }
+    
+    .content-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .content-title {
+      font-size: 22px;
+      font-weight: 600;
+      margin: 0;
+      color: var(--dark-gray);
+    }
+    
+    /* Table styles */
+    .table-container {
+      overflow-x: auto;
+      border-radius: var(--border-radius);
+      border: 1px solid #eee;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    
+    th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+      color: #555;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+    }
+    
+    tr:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 50px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .badge.success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .badge.warning {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    
+    .badge.danger {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    
+    /* Form styles */
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #555;
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+    
+    .form-control:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(59, 113, 159, 0.1);
+    }
+    
+    textarea.form-control {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+    
+    /* Modal styles */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: var(--transition);
+    }
+    
+    .modal.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .modal-content {
+      background-color: white;
+      border-radius: var(--border-radius);
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      transform: translateY(20px);
+      transition: var(--transition);
+    }
+    
+    .modal.show .modal-content {
+      transform: translateY(0);
+    }
+    
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #999;
+      padding: 5px;
+      line-height: 1;
+    }
+    
+    .modal-body {
+      padding: 20px;
+    }
+    
+    .modal-footer {
+      padding: 15px 20px;
+      border-top: 1px solid #eee;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    
+    /* File upload */
+    .file-upload {
+      border: 2px dashed #ddd;
+      border-radius: var(--border-radius);
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-bottom: 20px;
+    }
+    
+    .file-upload:hover {
+      border-color: var(--primary-color);
+      background-color: #f8f9fa;
+    }
+    
+    .file-upload i {
+      font-size: 36px;
+      color: #999;
+      margin-bottom: 10px;
+      display: block;
+    }
+    
+    .file-upload p {
+      margin: 0;
+      color: #666;
+    }
+    
+    .file-upload input[type="file"] {
+      display: none;
+    }
+    
+    .preview-image {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 4px;
+      margin-top: 15px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    /* Loading state */
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Messages */
+    .alert {
+      padding: 12px 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    
+    .alert-success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .alert-error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .alert-warning {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+    }
+    
+    /* Responsive */
+    @media (max-width: 992px) {
+      .dashboard-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .sidebar {
+        margin-bottom: 30px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+      
+      .content-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+      
+      .form-actions {
+        flex-direction: column;
+      }
+      
+      .form-actions .btn {
+        width: 100%;
+      }
+    }
+  </style>
+  
+  <style>
+    .admin-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .admin-nav {
+      display: flex;
+      gap: 15px;
+      padding: 10px 0;
+    }
+    
+    .admin-button {
+      background-color: #3B719F;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 15px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .admin-button:hover {
+      background-color: #2c5a80;
+    }
+    
+    .dashboard-container {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 30px;
+    }
+    
+    .sidebar {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      height: fit-content;
+    }
+    
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .sidebar-nav a {
+      display: block;
+      padding: 10px 15px;
+      text-decoration: none;
+      color: #333;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+    
+    .sidebar-nav a:hover, .sidebar-nav a.active {
+      background-color: #eee;
+    }
+    
+    .content-area {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    .table-container {
+      overflow-x: auto;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    
+    table th, table td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    
+    table th {
+      background-color: #f8f9fa;
+      font-weight: bold;
+    }
+    
+    table tr:hover {
+      background-color: #f5f5f5;
+    }
+    
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 200px;
+      width: 100%;
+    }
+    
+    .loading-spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3B719F;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .error-message {
+      color: #d9534f;
+      padding: 10px;
+      background-color: #f8d7da;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+    
+    .success-message {
+      color: #5cb85c;
+      padding: 10px;
+      background-color: #d4edda;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    
+    .tab-container {
+      margin-top: 20px;
+    }
+    
+    .tab-buttons {
+      display: flex;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 20px;
+    }
+    
+    .tab-button {
+      padding: 10px 20px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    .tab-button.active {
+      border-bottom-color: #3B719F;
+      color: #3B719F;
+    }
+    
+    .tab-content > div {
+      display: none;
+    }
+    
+    .tab-content > div.active {
+      display: block;
+    }
+  </style>
+</head>
+<body x-data="{ 
+  currentTab: 'users',
+  isLoading: false,
+  errorMessage: '',
+  successMessage: '',
+  supabase: null,
+  users: [],
+  photos: [],
+  tracks: [],
+  showAddPhoto: false,
+  showAddTrack: false,
+  newPhoto: { title: '', image_url: '', tags: '' },
+  newTrack: { title: '', audio_url: '', tags: '' },
+  
+  initSupabase() {
+    try {
+      // Initialize Supabase client
+      const supabaseUrl = 'https://ucctolvpslfbpvknqrtv.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjY3RvbHZwc2xmYnB2a25xcnR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDczNDA1MjcsImV4cCI6MjA2MjkxNjUyN30.H07wIvngW2VYJvjJTK3WeeESJVmwNfuyNQCMyIkZFLM';
+      
+      this.supabase = supabase.createClient(supabaseUrl, supabaseKey, {
+        auth: {
+          autoRefreshToken: true,
+          persistSession: true,
+          detectSessionInUrl: true
+        }
+      });
+      
+      console.log('Supabase client initialized');
+      this.loadData();
+      
+      // Set up real-time subscription for photos
+      this.setupRealtime();
+      
+    } catch (error) {
+      console.error('Error initializing Supabase:', error);
+      this.errorMessage = 'Failed to connect to Supabase. Please check your configuration.';
+    }
+  },
+  
+  async loadData() {
+    if (!this.supabase) return;
+    
+    this.isLoading = true;
+    this.errorMessage = '';
+    
+    try {
+      // Load users
+      if (this.currentTab === 'users') {
+        const { data: users, error } = await this.supabase
+          .from('users')
+          .select('*')
+          .order('created_at', { ascending: false });
+          
+        if (error) throw error;
+        this.users = users || [];
+      }
+      
+      // Load photos
+      else if (this.currentTab === 'photos') {
+        const { data: photos, error } = await this.supabase
+          .from('photos')
+          .select('*')
+          .order('created_at', { ascending: false });
+          
+        if (error) throw error;
+        this.photos = photos || [];
+      }
+      
+      // Load music tracks
+      else if (this.currentTab === 'tracks') {
+        const { data: tracks, error } = await this.supabase
+          .from('tracks')
+          .select('*')
+          .order('created_at', { ascending: false });
+          
+        if (error) throw error;
+        this.tracks = tracks || [];
+      }
+    } catch (error) {
+      console.error('Error loading data:', error);
+      this.errorMessage = `Failed to load data: ${error.message}`;
+    } finally {
+      this.isLoading = false;
+    }
+  },
+  
+  changeTab(tab) {
+    this.currentTab = tab;
+    this.loadData();
+  },
+  
+  signOut() {
+    window.location.href = 'index.html';
+  },
+  
+  // Set up real-time subscriptions
+  setupRealtime() {
+    if (!this.supabase) return;
+    
+    // Subscribe to photo changes
+    this.supabase
+      .channel('photos')
+      .on('postgres_changes', 
+        { 
+          event: '*',
+          schema: 'public',
+          table: 'photos'
+        }, 
+        (payload) => {
+          console.log('Photo change detected:', payload);
+          this.loadData();
+        }
+      )
+      .subscribe();
+  },
+  
+  // Upload file to Supabase Storage
+  async uploadFile(bucket, file, filePath) {
+    try {
+      const { data, error } = await this.supabase.storage
+        .from(bucket)
+        .upload(filePath, file);
+        
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      throw error;
+    }
+  },
+  
+  // Get public URL for a file
+  getPublicUrl(bucket, filePath) {
+    const { data } = this.supabase.storage
+      .from(bucket)
+      .getPublicUrl(filePath);
+    return data.publicUrl;
+  },
+  
+  // Handle photo upload
+  async handlePhotoUpload(event) {
+    const file = event.target.files ? event.target.files[0] : null;
+    if (!file && !this.newPhoto.image_url) return;
+    
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.uploadProgress = 0;
+    
+    try {
+      let imageUrl = this.newPhoto.image_url;
+      
+      // If there's a new file to upload
+      if (file) {
+        // Validate file type
+        const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+          throw new Error('Invalid file type. Please upload a JPG, PNG, GIF, or WebP image.');
+        }
+        
+        // Check file size (5MB max)
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (file.size > maxSize) {
+          throw new Error('File is too large. Maximum size is 5MB.');
+        }
+        
+        // Generate unique filename
+        const fileExt = file.name.split('.').pop().toLowerCase();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}.${fileExt}`;
+        const filePath = `photos/${fileName}`;
+        
+        // Upload file to storage with progress tracking
+        const { data: uploadData, error: uploadError } = await this.supabase.storage
+          .from('photos')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: file.type
+          });
+          
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          throw new Error(`Failed to upload file: ${uploadError.message}`);
+        }
+        
+        // Get public URL
+        const { data: { publicUrl } } = this.supabase.storage
+          .from('photos')
+          .getPublicUrl(filePath);
+          
+        if (!publicUrl) {
+          throw new Error('Failed to get public URL for the uploaded file');
+        }
+        
+        imageUrl = publicUrl;
+      }
+      
+      // Add or update photo in the database
+      let response;
+      if (this.editingPhotoId) {
+        // Update existing photo
+        response = await this.supabase
+          .from('photos')
+          .update({
+            title: this.newPhoto.title || 'Untitled',
+            image_url: imageUrl,
+            tags: this.newPhoto.tags ? this.newPhoto.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', this.editingPhotoId)
+          .select();
+      } else {
+        // Add new photo
+        response = await this.supabase
+          .from('photos')
+          .insert([
+            { 
+              title: this.newPhoto.title || file.name.split('.')[0],
+              image_url: imageUrl,
+              tags: this.newPhoto.tags ? this.newPhoto.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : []
+            }
+          ])
+          .select();
+      }
+      
+      const { data, error } = response;
+      if (error) throw error;
+      
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from server');
+      }
+      
+      this.successMessage = this.editingPhotoId ? 'Photo updated successfully!' : 'Photo uploaded successfully!';
+      
+      if (this.editingPhotoId) {
+        // Update the photo in the list
+        this.photos = this.photos.map(photo => 
+          photo.id === this.editingPhotoId ? { ...data[0] } : photo
+        );
+      } else {
+        // Add the new photo to the beginning of the list
+        this.photos = [data[0], ...this.photos];
+      }
+      
+      // Reset form
+      this.showAddPhoto = false;
+      this.newPhoto = { title: '', image_url: '', tags: '' };
+      this.editingPhotoId = null;
+      
+      // Reset file input
+      if (this.$refs.fileInput) {
+        this.$refs.fileInput.value = '';
+      }
+      
+    } catch (error) {
+      console.error('Error processing photo:', error);
+      this.errorMessage = `Failed to ${this.editingPhotoId ? 'update' : 'upload'} photo: ${error.message}`;
+    } finally {
+      this.isLoading = false;
+      this.uploadProgress = 0;
+    }
+  },
+  
+  // Edit photo
+  editPhoto(photo) {
+    this.editingPhotoId = photo.id;
+    this.newPhoto = {
+      title: photo.title,
+      image_url: photo.image_url,
+      tags: Array.isArray(photo.tags) ? photo.tags.join(', ') : ''
+    };
+    this.showAddPhoto = true;
+    // Scroll to top of modal
+    this.$nextTick(() => {
+      const modal = this.$el.querySelector('.modal-content');
+      if (modal) modal.scrollTop = 0;
+    });
+  },
+  
+  // Delete photo
+  async deletePhoto(photo) {
+    if (!confirm('Are you sure you want to delete this photo? This action cannot be undone.')) return;
+    
+    this.isLoading = true;
+    this.errorMessage = '';
+    
+    try {
+      // Extract file path from URL
+      const url = new URL(photo.image_url);
+      const pathParts = url.pathname.split('/');
+      const filePath = pathParts[pathParts.length - 1];
+      
+      // Delete from storage
+      const { error: storageError } = await this.supabase.storage
+        .from('photos')
+        .remove([filePath]);
+        
+      // Even if storage deletion fails, continue with database deletion
+      // as the file might not exist in storage anymore
+      
+      // Delete from database
+      const { error } = await this.supabase
+        .from('photos')
+        .delete()
+        .eq('id', photo.id);
+        
+      if (error) throw error;
+      
+      // Update local state
+      this.photos = this.photos.filter(p => p.id !== photo.id);
+      this.successMessage = 'Photo deleted successfully!';
+      
+      // Hide success message after 3 seconds
+      setTimeout(() => {
+        this.successMessage = '';
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Error deleting photo:', error);
+      this.errorMessage = `Failed to delete photo: ${error.message}`;
+    } finally {
+      this.isLoading = false;
+    }
+  },
+  
+  init() {
+    // Initialize Supabase on page load
+    this.initSupabase();
+    
+    // Set up keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Close modal on Escape key
+      if (e.key === 'Escape' && this.showAddPhoto) {
+        this.showAddPhoto = false;
+        this.editingPhotoId = null;
+        this.newPhoto = { title: '', image_url: '', tags: '' };
+      }
+    });
+  },
+  
+  // Reset form when modal is closed
+  resetForm() {
+    this.newPhoto = { title: '', image_url: '', tags: '' };
+    this.editingPhotoId = null;
+    if (this.$refs.fileInput) {
+      this.$refs.fileInput.value = '';
+    }
+  }
+}>
+  <div class="admin-container">
+    <div class="admin-header">
+      <h1>Supabase Admin</h1>
+      <div>
+        <button @click="signOut" class="admin-button">Back to Admin</button>
+      </div>
+    </div>
+    
+    <div class="dashboard-container">
+      <div class="sidebar">
+        <div class="sidebar-nav">
+          <a 
+            href="#" 
+            @click.prevent="changeTab('users')" 
+            :class="{ 'active': currentTab === 'users' }"
+          >Users</a>
+          <a 
+            href="#" 
+            @click.prevent="changeTab('photos')" 
+            :class="{ 'active': currentTab === 'photos' }"
+          >Photos</a>
+          <a 
+            href="#" 
+            @click.prevent="changeTab('tracks')" 
+            :class="{ 'active': currentTab === 'tracks' }"
+          >Music Tracks</a>
+          <a 
+            href="#" 
+            @click.prevent="changeTab('settings')" 
+            :class="{ 'active': currentTab === 'settings' }"
+          >Settings</a>
+          <a 
+            href="../index.html" 
+            target="_blank"
+          >View Site</a>
+        </div>
+      </div>
+      
+      <div class="content-area">
+        <div x-show="errorMessage" class="error-message" x-text="errorMessage"></div>
+        <div x-show="successMessage" class="success-message" x-text="successMessage"></div>
+        
+        <!-- Users Tab -->
+        <div x-show="currentTab === 'users'">
+          <h2>User Management</h2>
+          <p>View and manage user accounts.</p>
+          
+          <button class="admin-button" style="margin-bottom: 20px;">Add New User</button>
+          
+          <div class="table-container">
+            <div x-show="isLoading" class="loading">
+              <div class="loading-spinner"></div>
+            </div>
+            
+            <table x-show="!isLoading && users.length > 0">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Email</th>
+                  <th>Name</th>
+                  <th>Role</th>
+                  <th>Created At</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="user in users" :key="user.id">
+                  <tr>
+                    <td x-text="user.id"></td>
+                    <td x-text="user.email"></td>
+                    <td x-text="user.name"></td>
+                    <td x-text="user.role"></td>
+                    <td x-text="new Date(user.created_at).toLocaleString()"></td>
+                    <td>
+                      <button class="admin-button" style="padding: 5px 8px; font-size: 12px;">Edit</button>
+                      <button class="admin-button" style="padding: 5px 8px; font-size: 12px; background-color: #d9534f;">Delete</button>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+            
+            <div x-show="!isLoading && users.length === 0">
+              <p>No users found. Add a new user to get started.</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Photos Tab -->
+                  <p class="small" style="font-size: 12px; color: #666;">JPG, PNG, GIF, WebP (Max 5MB)</p>
+                  
+                  <div x-show="newPhoto.image_url" style="margin-top: 20px;">
+                    <img :src="newPhoto.image_url" style="max-width: 100%; max-height: 200px; margin: 0 auto; display: block; border-radius: 4px;">
+                  </div>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px; font-weight: 500;">Title</label>
+                  <input type="text" x-model="newPhoto.title" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px; font-weight: 500;">Tags (comma-separated)</label>
+                  <input type="text" x-model="newPhoto.tags" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                  <p class="small" style="font-size: 12px; color: #666; margin-top: 5px;">Example: nature, landscape, summer</p>
+                </div>
+                
+                <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                  <button type="button" @click="showAddPhoto = false" class="admin-button" style="background: #f0f0f0; color: #333;">
+                    Cancel
+                  </button>
+                  <button type="button" 
+                          @click="handlePhotoUpload($event)" 
+                          class="admin-button primary" 
+                          :disabled="!newPhoto.image_url"
+                          style="background: #3B719F; color: white;">
+                    Upload Photo
+                  </button>
+                </div>
+              </div>
+              
+              <div x-show="isLoading" style="text-align: center; padding: 30px 0;">
+                <div style="margin-bottom: 15px;">Uploading...</div>
+                <div style="height: 4px; background: #f0f0f0; border-radius: 2px; overflow: hidden;">
+                  <div x-show="uploadProgress > 0" 
+                       style="height: 100%; background: #3B719F; transition: width 0.3s;" 
+                       :style="`width: ${uploadProgress}%`"></div>
+                </div>
+                <div x-text="`${uploadProgress}%`" style="margin-top: 10px; font-size: 14px; color: #666;"></div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="table-container">
+            <div x-show="photos.length === 0" class="empty-state" style="text-align: center; padding: 40px 20px; background: #f9f9f9; border-radius: 8px;">
+              <p style="font-size: 16px; color: #666; margin-bottom: 20px;">No photos found. Upload your first photo to get started!</p>
+              <button @click="showAddPhoto = true" class="admin-button" style="background: #3B719F; color: white;">
+                Upload First Photo
+              </button>
+            </div>
+            
+            <div x-show="photos.length > 0" class="photo-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+              <template x-for="photo in photos" :key="photo.id">
+                <div class="photo-card" style="border: 1px solid #eee; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                  <div style="height: 180px; overflow: hidden; background: #f5f5f5;">
+                    <img :src="photo.image_url" :alt="photo.title" style="width: 100%; height: 100%; object-fit: cover;">
+                  </div>
+                  <div style="padding: 15px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 16px;" x-text="photo.title || 'Untitled'"></h4>
+                    <div style="display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
+                      <template x-for="tag in (photo.tags || []).slice(0, 3)" :key="tag">
+                        <span style="background: #f0f0f0; padding: 2px 8px; border-radius: 12px; font-size: 12px; color: #555;" x-text="tag.trim()"></span>
+                      </template>
+                      <span x-show="(photo.tags || []).length > 3" style="color: #999; font-size: 12px; line-height: 20px;">+<span x-text="(photo.tags || []).length - 3"></span> more</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                      <span style="font-size: 12px; color: #999;" x-text="new Date(photo.created_at).toLocaleDateString()"></span>
+                      <div style="display: flex; gap: 5px;">
+                        <button @click="editPhoto(photo)" class="admin-button" style="padding: 4px 10px; font-size: 12px;">Edit</button>
+                        <button @click="deletePhoto(photo)" class="admin-button danger" style="padding: 4px 10px; font-size: 12px; background: #f44336; color: white;">
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            
+            </div>
+            
+            <!-- Loading State -->
+            <div x-show="isLoading && photos.length > 0" style="text-align: center; padding: 20px;">
+              <div style="display: inline-block; width: 40px; height: 40px; border: 3px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: #3B719F; animation: spin 1s ease-in-out infinite;"></div>
+              <p style="margin-top: 10px; color: #666;">Loading photos...</p>
+            </div>
+            
+            <style>
+              @keyframes spin {
+                to { transform: rotate(360deg); }
+              }
+              
+              .admin-button.danger:hover {
+                background: #d32f2f !important;
+              }
+              
+              .photo-card {
+                transition: transform 0.2s, box-shadow 0.2s;
+              }
+              
+              .photo-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+              }
+            </style>
+          </div>
+        </div>
+        
+        <!-- Tracks Tab -->
+        <div x-show="currentTab === 'tracks'">
+          <h2>Music Track Management</h2>
+          <p>View and manage music tracks.</p>
+          
+          <button class="admin-button" style="margin-bottom: 20px;" @click="showAddTrack = true">Add New Track</button>
+          <!-- Add Track Modal -->
+          <div x-show="showAddTrack" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;z-index:1000;">
+            <div style="background:white;padding:30px;border-radius:10px;min-width:300px;max-width:90vw;">
+              <h3>Add New Track</h3>
+              <form @submit.prevent="addTrack">
+                <div class="form-group">
+                  <label>Title</label>
+                  <input type="text" x-model="newTrack.title" required>
+                </div>
+                <div class="form-group">
+                  <label>Audio URL</label>
+                  <input type="text" x-model="newTrack.audio_url" required>
+                </div>
+                <div class="form-group">
+                  <label>Tags (comma separated)</label>
+                  <input type="text" x-model="newTrack.tags">
+                </div>
+                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                  <button type="button" class="admin-button" style="background:#ccc;color:#222;" @click="showAddTrack = false">Cancel</button>
+                  <button type="submit" class="admin-button">Add</button>
+                </div>
+              </form>
+            </div>
+          </div>
+          
+          <div class="table-container">
+            <div x-show="isLoading" class="loading">
+              <div class="loading-spinner"></div>
+            </div>
+            
+            <table x-show="!isLoading && tracks.length > 0">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Title</th>
+                  <th>Audio</th>
+                  <th>Tags</th>
+                  <th>Created At</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="track in tracks" :key="track.id">
+                  <tr>
+                    <td x-text="track.id"></td>
+                    <td x-text="track.title"></td>
+                    <td>
+                      <audio controls style="width: 200px;">
+                        <source :src="track.audio_url" type="audio/mpeg">
+                      </audio>
+                    </td>
+                    <td x-text="track.tags ? track.tags.join(', ') : ''"></td>
+                    <td x-text="new Date(track.created_at).toLocaleString()"></td>
+                    <td>
+                      <button class="admin-button" style="padding: 5px 8px; font-size: 12px;">Edit</button>
+                      <button class="admin-button" style="padding: 5px 8px; font-size: 12px; background-color: #d9534f;">Delete</button>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+            
+            <div x-show="!isLoading && tracks.length === 0">
+              <p>No tracks found. Add a new track to get started.</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div x-show="currentTab === 'settings'">
+          <h2>Supabase Settings</h2>
+          <p>Configure your Supabase connection.</p>
+          
+          <div class="tab-container">
+            <div class="tab-buttons">
+              <button class="tab-button active">Connection</button>
+              <button class="tab-button">API Keys</button>
+              <button class="tab-button">Backups</button>
+            </div>
+            
+            <div class="tab-content">
+              <div class="active">
+                <form @submit.prevent>
+                  <div class="form-group">
+                    <label for="supabase-url">Supabase URL</label>
+                    <input type="text" id="supabase-url" value="https://your-project-id.supabase.co">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="anon-key">Anon Key</label>
+                    <input type="password" id="anon-key" value="••••••••••••••••••••••••••••••••">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="service-key">Service Role Key (Optional)</label>
+                    <input type="password" id="service-key">
+                  </div>
+                  
+                  <button type="submit" class="admin-button">Save Configuration</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <footer style="margin-top: 50px; text-align: center; padding: 20px; background-color: #f5f5f5;">
+    <p>&copy; 2025 Luova Studio. Admin Panel.</p>
+  </footer>
+</body>
+</html>

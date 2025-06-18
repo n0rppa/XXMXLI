@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Security Headers -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline';">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+  <title>Tietoturva - Luova Studio</title>
+  <link rel="stylesheet" href="../styles.css?t=202505152110">
+  
+  <!-- Alpine.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  
+  <!-- Splitting.js -->
+  <script src="https://unpkg.com/splitting@1.0.6/dist/splitting.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/splitting@1.0.6/dist/splitting.css">
+</head>
+<body>
+  <header>
+    <h1>Tietoturva</h1>
+    <nav aria-label="Päävalikko">
+      <a href="../index.html">Etusivu</a>
+      <a href="photography.html">Valokuvaus</a>
+      <a href="music.html">Musiikki</a>
+      <a href="videos.html">Videot</a>
+      <a href="security.html" class="active" aria-current="page">Tietoturva</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="security-tips">
+      <h2>Tietoturvavinkit</h2>
+      <div class="tip-grid">
+        <article class="tip">
+          <h3>🔒 Salasanat</h3>
+          <ul>
+            <li>Käytä vahvoja salasanoja</li>
+            <li>Vähintään 12 merkkiä</li>
+            <li>Yhdistä kirjaimia, numeroita ja erikoismerkkejä</li>
+            <li>Käytä eri salasanaa joka palvelussa</li>
+          </ul>
+        </article>
+
+        <article class="tip">
+          <h3>🔄 Päivitykset</h3>
+          <ul>
+            <li>Pidä käyttöjärjestelmä ajan tasalla</li>
+            <li>Päivitä selain säännöllisesti</li>
+            <li>Asenna tietoturvapäivitykset heti</li>
+          </ul>
+        </article>
+
+        <article class="tip">
+          <h3>🛡️ Yksityisyys</h3>
+          <ul>
+            <li>Käytä VPN-yhteyttä</li>
+            <li>Tarkista sovellusten käyttöoikeudet</li>
+            <li>Ole varovainen julkisissa Wi-Fi-verkoissa</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="security-consultation">
+      <h2>Tietoturvakonsultointi</h2>
+      <p>Tarjoamme asiantuntevaa tietoturvakonsultointia yrityksille ja yksityishenkilöille.</p>
+      <form id="consultation-form" onsubmit="return validateForm(this)">
+        <div class="form-group">
+          <label for="name">Nimi:</label>
+          <input type="text" id="name" name="name" required minlength="2">
+        </div>
+        <div class="form-group">
+          <label for="email">Sähköposti:</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label for="message">Viesti:</label>
+          <textarea id="message" name="message" required minlength="10"></textarea>
+        </div>
+        <button type="submit">Lähetä</button>
+      </form>
+      <div id="form-error" class="error-message" style="display: none;"></div>
+      <div id="form-success" class="success-message" style="display: none;"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Luova Studio</p>
+  </footer>
+
+  <script src="script.js"></script>
+  <script src="form-validator.js"></script>
+  <script>
+    document.getElementById('consultation-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      try {
+        // Form submission logic here
+        document.getElementById('form-success').textContent = 'Kiitos yhteydenotosta!';
+        document.getElementById('form-success').style.display = 'block';
+        form.reset();
+      } catch (error) {
+        document.getElementById('form-error').textContent = 'Lähetys epäonnistui. Yritä myöhemmin uudelleen.';
+        document.getElementById('form-error').style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

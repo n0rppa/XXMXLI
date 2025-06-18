@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Security Headers -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self'; script-src 'self'; style-src 'self'; frame-ancestors 'none';">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+  <title>Valokuvaus - Luova Studio</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Valokuvaus</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Etusivu</a></li>
+        <li><a href="photography.html" class="active">Valokuvaus</a></li>
+        <li><a href="music.html">Musiikki</a></li>
+        <li><a href="projects.html">Projektit</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section>
+      <h2>📸 Valokuvagalleria</h2>
+      <div id="photo-gallery" class="gallery">
+        <!-- Photos will be dynamically loaded here -->
+      </div>
+    </section>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const gallery = document.getElementById('photo-gallery');
+      const photos = [
+        { src: '../assets/images/photo1.jpg', alt: 'Metsämaisema' },
+        { src: '../assets/images/photo2.jpg', alt: 'Järvimaisema' },
+        { src: '../assets/images/photo3.jpg', alt: 'Helsinki' }
+      ];
+
+      gallery.innerHTML = photos.map(photo => `
+        <div class="photo-card">
+          <img src="${photo.src}" alt="${photo.alt}">
+          <p>${photo.alt}</p>
+        </div>
+      `).join('');
+    });
+  </script>
+</body>
+</html>

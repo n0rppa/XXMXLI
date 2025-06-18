@@ -1,0 +1,9 @@
+tunnel: your-tunnel-id
+credentials-file: C:\KOTISIVU\.cloudflared\your-tunnel-id.json
+
+ingress:
+  - hostname: vpn.xxmxli.com
+    service: http://localhost:8080
+    originRequest:
+      http2Origin: true
+  - service: http_status:404

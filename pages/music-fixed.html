@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Musiikki - Luova Studio</title>
+  <link rel="stylesheet" href="../styles.css?t=202505152110">
+  
+  <!-- Alpine.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  
+  <style>
+    .track-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+    
+    .track-card {
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 15px;
+      background: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .track-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .track-cover {
+      width: 80px;
+      height: 80px;
+      border-radius: 4px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    
+    .track-info {
+      flex-grow: 1;
+    }
+    
+    .track-title {
+      margin: 0 0 5px 0;
+      font-size: 16px;
+      color: #333;
+    }
+    
+    .track-artist {
+      margin: 0 0 5px 0;
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .track-duration {
+      font-size: 12px;
+      color: #888;
+    }
+    
+    .track-tags {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      margin-top: 5px;
+    }
+    
+    .tag {
+      font-size: 11px;
+      background: #f0f0f0;
+      padding: 2px 8px;
+      border-radius: 10px;
+      color: #555;
+    }
+    
+    .play-button {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #3B719F;
+      border: none;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background-color 0.2s;
+    }
+    
+    .play-button:hover {
+      background: #2a5a8a;
+    }
+    
+    .play-button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+    }
+    
+    .visualizer-container {
+      width: 100%;
+      height: 100px;
+      background: #f5f5f5;
+      border-radius: 4px;
+      margin-top: 15px;
+      overflow: hidden;
+    }
+    
+    .visualizer-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+  </style>
+</head>
+<body x-data="audioPlayer()" x-init="init()">
+  <header>
+    <h1>Musiikki</h1>
+    <nav aria-label="Päävalikko">
+      <a href="../index.html">Etusivu</a>
+      <a href="photography.html">Valokuvaus</a>
+      <a href="music.html" class="active" aria-current="page">Musiikki</a>
+      <a href="projects.html">Projektit</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="track-list">
+      <template x-for="track in tracks" :key="track.id">
+        <div class="track-card">
+          <div class="track-header">
+            <img :src="track.cover" :alt="track.title" class="track-cover">
+            <div class="track-info">
+              <h3 class="track-title" x-text="track.title"></h3>
+              <p class="track-artist" x-text="track.artist"></p>
+              <div class="track-duration" x-text="track.duration"></div>
+              <div class="track-tags">
+                <template x-for="tag in track.tags" :key="tag">
+                  <span class="tag" x-text="tag"></span>
+                </template>
+              </div>
+            </div>
+            <button 
+              @click="playTrack(track)" 
+              class="play-button"
+              :disabled="currentTrack && currentTrack.id === track.id && isPlaying"
+            >
+              <svg x-show="!(currentTrack && currentTrack.id === track.id && isPlaying)" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              <svg x-show="currentTrack && currentTrack.id === track.id && isPlaying" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="6" y="4" width="4" height="16"></rect>
+                <rect x="14" y="4" width="4" height="16"></rect>
+              </svg>
+            </button>
+          </div>
+          <div x-show="currentTrack && currentTrack.id === track.id" class="visualizer-container">
+            <canvas class="visualizer-canvas" x-ref="visualizer"></canvas>
+          </div>
+        </div>
+      </template>
+    </div>
+  </main>
+
+  <script>
+    function audioPlayer() {
+      return {
+        tracks: [
+          { 
+            id: 'track1', 
+            title: 'Hip-hop Intro', 
+            artist: 'Artist 1',
+            duration: '2:45',
+            cover: 'https://picsum.photos/200/200?random=1',
+            path: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+            tags: ['hip-hop', 'instrumental'] 
+          },
+          { 
+            id: 'track2', 
+            title: 'Jazz Instrumental', 
+            artist: 'Artist 2',
+            duration: '3:20',
+            cover: 'https://picsum.photos/200/200?random=2',
+            path: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+            tags: ['jazz', 'instrumental'] 
+          },
+          { 
+            id: 'track3', 
+            title: 'Mellow', 
+            artist: 'Artist 3',
+            duration: '2:15',
+            cover: 'https://picsum.photos/200/200?random=3',
+            path: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+            tags: ['chill'] 
+          },
+          { 
+            id: 'track4', 
+            title: 'Upbeat', 
+            artist: 'Artist 4',
+            duration: '2:50',
+            cover: 'https://picsum.photos/200/200?random=4',
+            path: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
+            tags: ['upbeat', 'happy'] 
+          },
+          { 
+            id: 'track5', 
+            title: 'Relaxing', 
+            artist: 'Artist 5',
+            duration: '3:10',
+            cover: 'https://picsum.photos/200/200?random=5',
+            path: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
+            tags: ['chill', 'relaxing'] 
+          },
+          { 
+            id: 'track6', 
+            title: 'Energetic', 
+            artist: 'Artist 6',
+            duration: '2:30',
+            cover: 'https://picsum.photos/200/200?random=6',
+            path: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3',
+            tags: ['energetic', 'upbeat'] 
+          }
+        ],
+        audioContext: null,
+        analyser: null,
+        audioElement: null,
+        source: null,
+        animationId: null,
+        isPlaying: false,
+        currentTrack: null,
+        
+        init() {
+          console.log('Initializing audio player');
+          this.setupAudioContext();
+        },
+        
+        setupAudioContext() {
+          try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            this.audioContext = new AudioContext();
+            this.analyser = this.audioContext.createAnalyser();
+            this.analyser.fftSize = 256;
+            console.log('Audio context and analyzer initialized');
+          } catch (error) {
+            console.error('Error initializing audio context:', error);
+          }
+        },
+        
+        async playTrack(track) {
+          try {
+            console.log('Playing track:', track.title);
+            
+            // If clicking the same track, toggle play/pause
+            if (this.currentTrack && this.currentTrack.id === track.id) {
+              if (this.isPlaying) {
+                return this.pauseTrack();
+              } else {
+                return this.resumeTrack();
+              }
+            }
+            
+            // Stop current track if any
+            if (this.audioElement) {
+              this.audioElement.pause();
+              this.audioElement = null;
+            }
+            
+            // Set up new audio element
+            this.currentTrack = track;
+            this.audioElement = new Audio(track.path);
+            
+            // Set up audio nodes
+            if (!this.audioContext) {
+              this.setupAudioContext();
+            }
+            
+            // Create source and connect to analyzer
+            this.source = this.audioContext.createMediaElementSource(this.audioElement);
+            this.source.connect(this.analyser);
+            this.analyser.connect(this.audioContext.destination);
+            
+            // Set up event listeners
+            this.audioElement.onplay = () => {
+              this.isPlaying = true;
+              this.visualize();
+            };
+            
+            this.audioElement.onpause = () => {
+              this.isPlaying = false;
+              if (this.animationId) {
+                cancelAnimationFrame(this.animationId);
+                this.animationId = null;
+              }
+            };
+            
+            this.audioElement.onended = () => {
+              this.isPlaying = false;
+              if (this.animationId) {
+                cancelAnimationFrame(this.animationId);
+                this.animationId = null;
+              }
+            };
+            
+            // Start playback
+            await this.audioContext.resume();
+            await this.audioElement.play();
+            
+          } catch (error) {
+            console.error('Error playing track:', error);
+            alert('Error playing track: ' + error.message);
+          }
+        },
+        
+        pauseTrack() {
+          if (this.audioElement) {
+            this.audioElement.pause();
+          }
+        },
+        
+        resumeTrack() {
+          if (this.audioElement) {
+            this.audioContext.resume().then(() => {
+              this.audioElement.play();
+            });
+          }
+        },
+        
+        visualize() {
+          if (!this.analyser) return;
+          
+          const canvas = this.$refs.visualizer;
+          if (!canvas) return;
+          
+          const canvasCtx = canvas.getContext('2d');
+          const bufferLength = this.analyser.frequencyBinCount;
+          const dataArray = new Uint8Array(bufferLength);
+          
+          const WIDTH = canvas.width = canvas.offsetWidth;
+          const HEIGHT = canvas.height = canvas.offsetHeight;
+          
+          const draw = () => {
+            this.analyser.getByteFrequencyData(dataArray);
+            
+            canvasCtx.fillStyle = 'rgb(255, 255, 255)';
+            canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+            
+            const barWidth = (WIDTH / bufferLength) * 2.5;
+            let barHeight;
+            let x = 0;
+            
+            for (let i = 0; i < bufferLength; i++) {
+              barHeight = dataArray[i] / 2;
+              
+              canvasCtx.fillStyle = `rgb(${barHeight + 100}, 113, 159)`;
+              canvasCtx.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight);
+              
+              x += barWidth + 1;
+            }
+            
+            this.animationId = requestAnimationFrame(draw);
+          };
+          
+          draw();
+        }
+      };
+    }
+  </script>
+</body>
+</html>

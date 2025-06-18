@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Videot - Luova Studio</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+    .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+    .video-item { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .video-item video { width: 100%; border-radius: 4px; }
+    nav { margin: 20px 0; text-align: center; }
+    nav a { margin: 0 10px; text-decoration: none; color: #3B719F; }
+    nav a.active { font-weight: bold; text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Videot</h1>
+    <nav>
+      <a href="../index.html">Etusivu</a>
+      <a href="photography.html">Valokuvaus</a>
+      <a href="music.html">Musiikki</a>
+      <a href="videos.html" class="active">Videot</a>
+    </nav>
+  </header>
+  <main>
+    <div class="video-grid">
+      <div class="video-item">
+        <h3>Luontodokumentti</h3>
+        <video controls>
+          <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+          Selaimesi ei tue videotoistoa.
+        </video>
+      </div>
+      <div class="video-item">
+        <h3>Kaupunkielämää</h3>
+        <video controls>
+          <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" type="video/mp4">
+          Selaimesi ei tue videotoistoa.
+        </video>
+      </div>
+      <div class="video-item">
+        <h3>Tapahtumataltiointi</h3>
+        <video controls>
+          <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
+          Selaimesi ei tue videotoistoa.
+        </video>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

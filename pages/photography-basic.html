@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Valokuvaus - Luova Studio</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    header {
+      margin-bottom: 30px;
+    }
+    h1 {
+      color: #333;
+    }
+    nav {
+      margin: 20px 0;
+    }
+    nav a {
+      margin-right: 15px;
+      text-decoration: none;
+      color: #3B719F;
+    }
+    nav a.active {
+      font-weight: bold;
+      text-decoration: underline;
+    }
+    .timestamp {
+      font-family: monospace;
+      font-weight: bold;
+      background: #f0f0f0;
+      padding: 10px;
+      margin: 20px 0;
+      display: inline-block;
+      font-size: 18px;
+    }
+    .photos {
+      margin: 30px 0;
+    }
+    .photo {
+      margin-bottom: 30px;
+      border: 1px solid #ddd;
+      padding: 10px;
+    }
+    .photo img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin-bottom: 10px;
+    }
+    .photo-title {
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    .photo-tags span {
+      display: inline-block;
+      background: #eee;
+      padding: 3px 8px;
+      margin-right: 5px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+    .refresh-btn {
+      background: #3B719F;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 20px 0;
+    }
+    footer {
+      margin-top: 50px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Valokuvaus</h1>
+    <nav>
+      <a href="../index.html">Etusivu</a>
+      <a href="photography.html" class="active">Valokuvaus</a>
+      <a href="music.html">Musiikki</a>
+      <a href="projects.html">Projektit</a>
+    </nav>
+  </header>
+
+  <main>
+    <section>
+      <h2>📸 Valokuvagalleria</h2>
+      <p>Kuvia luonnosta, kaupungeista ja tapahtumista.</p>
+      
+      <div class="timestamp">20250516_201712</div>
+      
+      <a href="photography-basic.html" class="refresh-btn" style="display: inline-block; text-decoration: none;">Päivitä kuvat</a>
+      
+      <div class="photos">
+        <!-- Photo 1 -->
+        <div class="photo">
+          <img src="https://picsum.photos/400/600?random=1" alt="Metsämaisema">
+          <div class="photo-title">Metsämaisema</div>
+          <div class="photo-tags">
+            <span>Luonto</span>
+            <span>Metsä</span>
+          </div>
+        </div>
+        
+        <!-- Photo 2 -->
+        <div class="photo">
+          <img src="https://picsum.photos/400/600?random=2" alt="Järvimaisema">
+          <div class="photo-title">Järvimaisema</div>
+          <div class="photo-tags">
+            <span>Luonto</span>
+            <span>Järvi</span>
+          </div>
+        </div>
+        
+        <!-- Photo 3 -->
+        <div class="photo">
+          <img src="https://picsum.photos/400/600?random=3" alt="Helsinki">
+          <div class="photo-title">Helsinki</div>
+          <div class="photo-tags">
+            <span>Kaupunki</span>
+            <span>Helsinki</span>
+          </div>
+        </div>
+        
+        <!-- Photo 4 -->
+        <div class="photo">
+          <img src="https://picsum.photos/400/600?random=4" alt="Syksy metsässä">
+          <div class="photo-title">Syksy metsässä</div>
+          <div class="photo-tags">
+            <span>Luonto</span>
+            <span>Syksy</span>
+          </div>
+        </div>
+        
+        <!-- Photo 5 -->
+        <div class="photo">
+          <img src="https://picsum.photos/400/600?random=5" alt="Talvimaisema">
+          <div class="photo-title">Talvimaisema</div>
+          <div class="photo-tags">
+            <span>Luonto</span>
+            <span>Talvi</span>
+          </div>
+        </div>
+        
+        <!-- Photo 6 -->
+        <div class="photo">
+          <img src="https://picsum.photos/400/600?random=6" alt="Konsertti">
+          <div class="photo-title">Konsertti</div>
+          <div class="photo-tags">
+            <span>Tapahtumat</span>
+            <span>Musiikki</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Luova Studio. Kaikki oikeudet pidätetään.</p>
+  </footer>
+</body>
+</html>

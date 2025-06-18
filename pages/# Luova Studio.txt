@@ -1,0 +1,19 @@
+# Luova Studio
+
+## 📸 Valokuvaus
+- [Valokuvaus](photography.html)
+- [Musiikki](music.html)
+- [Videot](videos.html)
+- [Tietoturva](security.html)
+
+## 📸 Valokuvaus
+Kuvia luonnosta, kaupungeista ja tapahtumista.
+
+## 🎵 Musiikki
+Tuotantoa ja äänimaisemia eri projekteihin.
+
+## 🔐 Tietoturva
+Vinkkejä turvalliseen verkonkäyttöön ja yksityisyydensuojaan.
+- Käytä vahvoja salasanoja
+- Pidä ohjelmistot ajan tasalla
+- Älä jaa henkilökohtaisia tietoja turhaan

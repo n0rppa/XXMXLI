@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projektit - Luova Studio</title>
+    
+    <!-- Alpine.js -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    
+    <!-- Alpine.js -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: #f0f0f0; 
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        .project-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+            gap: 20px; 
+            margin-top: 20px;
+        }
+        .project-card { 
+            background: white; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .project-image-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .project-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.3s ease;
+        }
+        .project-content {
+            padding: 15px;
+        }
+        .project-title {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 1.2em;
+        }
+        .project-description {
+            color: #666;
+            margin: 0 0 10px 0;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .tag {
+            background: #e0e0e0;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            color: #555;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .error-message {
+            text-align: center;
+            padding: 20px;
+            background: #ffebee;
+            color: #d32f2f;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .retry-button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #3B719F;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s ease;
+        }
+        .retry-button:hover {
+            background: #2c5a80;
+        }
+        .spinner {
+            width: 30px;
+            height: 30px;
+            margin: 0 auto 10px;
+            border: 3px solid #e0e0e0;
+            border-top-color: #3B719F;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .project-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+        @media (max-width: 480px) {
+            .project-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div x-data="projectApp()" x-init="init()">
+            <h1>Projektit</h1>
+            
+            <!-- Loading State -->
+            <div x-show="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Ladataan projekteja...</p>
+            </div>
+            
+            <!-- Error State -->
+            <div x-show="error" class="error-message">
+                <p>Virhe projektien latauksessa</p>
+                <button @click="loadProjects()" class="retry-button">Yritä uudelleen</button>
+            </div>
+            
+            <!-- Projects Grid -->
+            <div x-show="!loading && !error" class="project-grid">
+                <template x-for="project in projects" :key="project.id">
+                    <div class="project-card">
+                        <div class="project-image-container">
+                            <!-- Image with loading state -->
+                            <template x-if="project.image_url">
+                                <img 
+                                    :src="project.image_url" 
+                                    @error="handleImageError($event, project)"
+                                    @load="handleImageLoad(project)"
+                                    x-show="!project.imageError"
+                                    class="project-image"
+                                    :style="{ display: project.imageLoaded ? 'block' : 'none' }"
+                                    :alt="project.title">
+                            </template>
+                            
+                            <!-- Loading Spinner -->
+                            <div x-show="!project.imageLoaded && !project.imageError" class="loading" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(245, 245, 245, 0.8);">
+                                <div class="spinner"></div>
+                                <p>Ladataan kuvaa...</p>
+                            </div>
+                            
+                            <!-- Error State -->
+                            <div x-show="project.imageError" class="error-message" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; background: rgba(255, 235, 238, 0.9);">
+                                <div style="text-align: center;">
+                                    <p>⚠️ Kuvaa ei voitu ladata</p>
+                                    <button @click="retryLoadImage(project)" class="retry-button">Yritä uudelleen</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="project-content">
+                            <h3 class="project-title" x-text="project.title"></h3>
+                            <p class="project-description" x-text="project.description || 'Ei kuvausta'"></p>
+                            
+                            <div class="project-tags">
+                                <template x-for="tag in (project.tags || [])" :key="tag">
+                                    <span class="tag" x-text="tag"></span>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+            
+            <!-- No Projects Message -->
+            <div x-show="!loading && !error && projects.length === 0" class="error-message">
+                <p>Ei projekteja näytettäväksi</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('projectApp', () => ({
+                loading: false,
+                error: false,
+                projects: [
+                    {
+                        id: 1,
+                        title: 'Projekti 1',
+                        description: 'Ensimmäinen esimerkkiprojekti',
+                        image_url: 'https://picsum.photos/600/400?random=1',
+                        tags: ['Suunnittelu', 'Kuvitus']
+                    },
+                    {
+                        id: 2,
+                        title: 'Projekti 2',
+                        description: 'Toinen esimerkkiprojekti',
+                        image_url: 'https://picsum.photos/600/400?random=2',
+                        tags: ['Verkkosivut', 'UI/UX']
+                    },
+                    {
+                        id: 3,
+                        title: 'Projekti 3',
+                        description: 'Kolmas esimerkkiprojekti',
+                        image_url: 'https://picsum.photos/600/400?random=3',
+                        tags: ['Sisältö', 'Markkinointi']
+                    }
+                ],
+                
+                init() {
+                    // Initialize projects with loading state
+                    this.projects = this.projects.map(project => ({
+                        ...project,
+                        imageLoaded: false,
+                        imageError: false
+                    }));
+                },
+                
+                loadProjects() {
+                    // Not needed with static data
+                },
+                
+                handleImageLoad(project) {
+                    project.imageLoaded = true;
+                    project.imageError = false;
+                },
+                
+                handleImageError(event, project) {
+                    console.error('Error loading image:', project.image_url);
+                    project.imageError = true;
+                    project.imageLoaded = true; // Hide loading spinner
+                },
+                
+                retryLoadImage(project) {
+                    if (!project.image_url) return;
+                    
+                    // Reset states
+                    project.imageError = false;
+                    project.imageLoaded = false;
+                    
+                    // Force re-render of the image by creating a new URL with a timestamp
+                    const timestamp = new Date().getTime();
+                    const separator = project.image_url.includes('?') ? '&' : '?';
+                    project.image_url = `${project.image_url}${separator}t=${timestamp}`;
+                }
+            }));
+        });
+    </script>
+</body>
+</html>

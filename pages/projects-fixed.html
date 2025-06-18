@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projektit - Luova Studio</title>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .project-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .project-image { width: 100%; height: 200px; object-fit: cover; }
+        .project-content { padding: 15px; }
+        .loading { text-align: center; padding: 40px; }
+        .error-message { color: #d32f2f; text-align: center; padding: 20px; }
+        .retry-button { margin-top: 10px; padding: 5px 15px; background: #3B719F; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div x-data="projectApp()" x-init="init()">
+        <h1>Projektit</h1>
+        
+        <!-- Loading State -->
+        <div x-show="loading" class="loading">
+            <div style="width: 40px; height: 40px; margin: 0 auto 10px; border: 3px solid #e0e0e0; border-top-color: #3B719F; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <p>Ladataan projekteja...</p>
+        </div>
+        
+        <!-- Error State -->
+        <div x-show="error" class="error-message">
+            <p>Virhe projektien latauksessa</p>
+            <button @click="loadProjects()" class="retry-button">Yritä uudelleen</button>
+        </div>
+        
+        <!-- Projects Grid -->
+        <div x-show="!loading && !error" class="project-grid">
+            <template x-for="project in projects" :key="project.id">
+                <div class="project-card">
+                    <div style="position: relative; height: 200px; background: #f5f5f5;">
+                        <img 
+                            :src="project.image_url" 
+                            @error="handleImageError($event, project)"
+                            @load="project.imageLoaded = true"
+                            x-show="project.imageLoaded && !project.imageError"
+                            class="project-image"
+                            alt="">
+                        
+                        <!-- Loading State -->
+                        <div x-show="!project.imageLoaded && !project.imageError" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center;">
+                            <div style="text-align: center;">
+                                <div style="width: 30px; height: 30px; margin: 0 auto 10px; border: 3px solid #e0e0e0; border-top-color: #3B719F; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                                <p>Ladataan kuvaa...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Error State -->
+                        <div x-show="project.imageError" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; background: #f9f9f9;">
+                            <div style="text-align: center; padding: 20px;">
+                                <p>⚠️ Kuvaa ei voitu ladata</p>
+                                <button @click="retryLoadImage(project)" class="retry-button">Yritä uudelleen</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="project-content">
+                        <h3 x-text="project.title"></h3>
+                        <p x-text="project.description"></p>
+                        <div style="margin-top: 10px;">
+                            <span x-for="tag in project.tags" 
+                                  :key="tag" 
+                                  style="display: inline-block; background: #e0e0e0; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 5px; margin-bottom: 5px;">
+                                <span x-text="tag"></span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <script>
+        function projectApp() {
+            return {
+                loading: true,
+                error: false,
+                projects: [],
+                
+                async init() {
+                    await this.loadProjects();
+                },
+                
+                async loadProjects() {
+                    this.loading = true;
+                    this.error = false;
+                    
+                    try {
+                        // Initialize Supabase
+                        const supabaseUrl = 'https://ucctolvpslfbpvknqrtv.supabase.co';
+                        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjY3RvbHZwc2xmYnB2a25xcnR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTU4OTQyNTksImV4cCI6MjAzMTQ3MDI1OX0.2g4d8cS8v1u6D4y4q8z4Qk8vq8X9x8X9X9X9X9X9X9X9';
+                        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+                        
+                        // Fetch projects
+                        const { data, error } = await supabase
+                            .from('projects')
+                            .select('*')
+                            .order('created_at', { ascending: false });
+                            
+                        if (error) throw error;
+                        
+                        // Add loading state to each project
+                        this.projects = data.map(project => ({
+                            ...project,
+                            imageLoaded: false,
+                            imageError: false
+                        }));
+                        
+                    } catch (err) {
+                        console.error('Error loading projects:', err);
+                        this.error = true;
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                
+                handleImageError(event, project) {
+                    project.imageError = true;
+                    project.imageLoaded = true; // Hide loading spinner
+                },
+                
+                retryLoadImage(project) {
+                    if (!project.image_url) return;
+                    
+                    // Reset states
+                    project.imageError = false;
+                    project.imageLoaded = false;
+                    
+                    // Force re-render of the image
+                    const imgUrl = project.image_url;
+                    project.image_url = null;
+                    
+                    // Use nextTick to ensure the change is detected
+                    this.$nextTick(() => {
+                        project.image_url = imgUrl;
+                    });
+                }
+            };
+        }
+        
+        // Add CSS animation for spinner
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

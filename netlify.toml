@@ -1,0 +1,31 @@
+[build]
+publish = "."
+command = ""
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/musiikki"
+  to = "/pages/music.html"
+  status = 200
+
+[[redirects]]
+  from = "/valokuvaus"
+  to = "/pages/photography.html"
+  status = 200
+
+[[redirects]]
+  from = "/projektit"
+  to = "/pages/projects-final.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self'; img-src 'self' data: https://*.supabase.co https://ucctolvpslfbpvknqrtv.supabase.co; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; media-src 'self' blob: data: https://*.supabase.co; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' blob: https://*.supabase.co wss://*.supabase.co https://ucctolvpslfbpvknqrtv.supabase.co; worker-src 'self' blob:; frame-ancestors 'none';"
