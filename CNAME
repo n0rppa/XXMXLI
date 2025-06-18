@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 www.xxmxli.com
+=======
+echo "www.xxmxli.com" > CNAME
+>>>>>>> Adding CNAME file for custom domain
