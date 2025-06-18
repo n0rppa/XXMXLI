@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projektit - Luova Studio</title>
+  
+  <!-- Alpine.js -->
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f8f9fa;
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 2rem 0;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    header h1 {
+      text-align: center;
+      margin: 0 0 1rem 0;
+      font-size: 2.5rem;
+    }
+    
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      padding: 0 1rem;
+    }
+    
+    nav a {
+      color: white;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+    
+    nav a:hover, nav a.active {
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .projects-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem 3rem;
+    }
+    
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    
+    .project-card {
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    
+    .project-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .project-image {
+      width: 100%;
+      height: 200px;
+      background-color: #e9ecef;
+      background-size: cover;
+      background-position: center;
+    }
+    
+    .project-content {
+      padding: 1.5rem;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .project-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin: 0 0 0.75rem 0;
+      color: #2c3e50;
+    }
+    
+    .project-description {
+      color: #6c757d;
+      margin: 0 0 1.25rem 0;
+      line-height: 1.6;
+      flex-grow: 1;
+    }
+    
+    .project-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    
+    .project-tag {
+      background: #e9ecef;
+      color: #495057;
+      padding: 0.25rem 0.75rem;
+      border-radius: 15px;
+      font-size: 0.85em;
+      font-weight: 500;
+    }
+    
+    .loading, .error, .fallback-message {
+      text-align: center;
+      padding: 3rem 1rem;
+      background: white;
+      border-radius: 8px;
+      margin: 2rem 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .error {
+      background: #fff5f5;
+      color: #e53e3e;
+      border-left: 4px solid #e53e3e;
+    }
+
+    .fallback-message {
+      text-align: center;
+      padding: 20px;
+      background: #f5f5f5;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    
+    @media (max-width: 768px) {
+      .projects-container {
+        padding: 15px;
+      }
+      
+      .projects-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body x-data="projectsPage">
+  <header>
+    <h1>Projektit</h1>
+    <nav aria-label="Päävalikko">
+      <a href="index.html">Etusivu</a>
+      <a href="music.html">Musiikki</a>
+      <a href="photography.html">Valokuvaus</a>
+      <a href="projects.html" class="active" aria-current="page">Projektit</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="projects-container">
+      <!-- Loading state -->
+      <div x-show="loading" class="loading">
+        Ladataan projekteja...
+      </div>
+
+      <!-- Error state -->
+      <div x-show="error" class="error" x-text="error"></div>
+
+      <!-- Projects grid -->
+      <div x-show="!loading && !error && projects.length > 0" class="projects-grid">
+        <template x-for="project in projects" :key="project.id">
+          <div class="project-card">
+            <div class="project-image" :style="project.image_url ? 'background-image: url(' + project.image_url + ')' : ''"></div>
+            <div class="project-content">
+              <h2 class="project-title" x-text="project.title"></h2>
+              <p class="project-description" x-text="project.description"></p>
+              <div class="project-tags">
+                <template x-for="tag in (project.tags || [])" :key="tag">
+                  <span class="project-tag" x-text="tag"></span>
+                </template>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- No projects state -->
+      <div x-show="!loading && !error && projects.length === 0" class="fallback-message">
+        <h2>Esimerkki projekteja</h2>
+        <div class="projects-grid">
+          <div class="project-card">
+            <div class="project-image" style="background-image: url('../assets/images/deow (12).jpg')"></div>
+            <div class="project-content">
+              <h2 class="project-title">Valokuvaus portfolio</h2>
+              <p class="project-description">Kokoelma parhaita otoksiani luonnosta ja kaupunkiympäristöstä.</p>
+              <div class="project-tags">
+                <span class="project-tag">Valokuvaus</span>
+                <span class="project-tag">Portfolio</span>
+              </div>
+            </div>
+          </div>
+          <div class="project-card">
+            <div class="project-image" style="background-image: url('../assets/images/deow (22).jpg')"></div>
+            <div class="project-content">
+              <h2 class="project-title">Musiikkituotanto</h2>
+              <p class="project-description">Elektronista musiikkia ja ambient-äänimaisemia.</p>
+              <div class="project-tags">
+                <span class="project-tag">Musiikki</span>
+                <span class="project-tag">Tuotanto</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('alpine:init', () => {
+      Alpine.data('projectsPage', () => ({
+        projects: [
+          {
+            id: 1,
+            title: 'Valokuvaus portfolio',
+            description: 'Kokoelma parhaita otoksiani luonnosta ja kaupunkiympäristöstä.',
+            image_url: 'https://picsum.photos/800/600?random=1',
+            tags: ['Valokuvaus', 'Portfolio']
+          },
+          {
+            id: 2,
+            title: 'Musiikkituotanto',
+            description: 'Elektronista musiikkia ja ambient-äänimaisemia.',
+            image_url: 'https://picsum.photos/800/600?random=2',
+            tags: ['Musiikki', 'Tuotanto']
+          },
+          {
+            id: 3,
+            title: 'Web-kehitys',
+            description: 'Modernit ja käyttäjäystävälliset verkkosivut yrityksille.',
+            image_url: 'https://picsum.photos/800/600?random=3',
+            tags: ['Web-kehitys', 'UI/UX']
+          }
+        ],
+        loading: false,
+        error: null,
+        
+        init() {
+          // Simulate loading
+          this.loading = true;
+          setTimeout(() => {
+            this.loading = false;
+          }, 500);
+        }
+      }));
+    });
+  </script>
+</body>
+</html>

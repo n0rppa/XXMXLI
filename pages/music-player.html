@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://vpn.xxmxli.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.jsdelivr.net cdnjs.cloudflare.com https://vpn.xxmxli.com; style-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com; img-src 'self' data: https://vpn.xxmxli.com; media-src 'self' https://vpn.xxmxli.com; connect-src 'self' https://vpn.xxmxli.com https://ucctolvpslfbpvknqrtv.supabase.co">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musiikki - Luova Studio</title>
+    
+    <!-- Howler.js for audio -->
+    <script src="https://cdn.jsdelivr.net/npm/howler@2.2.3/dist/howler.min.js"></script>
+    
+    <!-- Alpine.js -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: #f0f0f0;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        .player-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .now-playing {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .track-title {
+            font-size: 1.5em;
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .visualizer-container {
+            width: 100%;
+            height: 150px;
+            background: #000;
+            border-radius: 8px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        #visualizer {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .control-button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: #3B719F;
+            color: white;
+            font-size: 1.2em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .control-button:hover {
+            background: #2c5a80;
+            transform: scale(1.05);
+        }
+        .control-button:active {
+            transform: scale(0.95);
+        }
+        .play-button {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5em;
+        }
+        .track-list {
+            margin-top: 30px;
+        }
+        .track-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .track-item:hover {
+            background: #f5f5f5;
+            transform: translateX(5px);
+        }
+        .track-item.playing {
+            background: #e3f2fd;
+            border-left: 4px solid #3B719F;
+        }
+        .track-number {
+            width: 30px;
+            text-align: center;
+            color: #666;
+        }
+        .track-info {
+            flex: 1;
+        }
+        .track-name {
+            font-weight: bold;
+            margin: 0;
+        }
+        .track-tags {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        .track-tag {
+            background: #e0e0e0;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7em;
+            color: #555;
+        }
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .volume-slider {
+            flex: 1;
+            max-width: 200px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div x-data="musicPlayer()" x-init="init()">
+            <h1>Musiikki</h1>
+            
+            <div class="player-container">
+                <!-- Now Playing -->
+                <div class="now-playing">
+                    <h2 x-text="currentTrack ? currentTrack.title : 'Ei biisiä valittuna'"></h2>
+                    <p x-show="currentTrack" x-text="currentTrack.tags.join(', ')"></p>
+                </div>
+                
+                <!-- Visualizer -->
+                <div class="visualizer-container">
+                    <canvas id="visualizer"></canvas>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="progress-container" style="margin: 15px 0;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #666; margin-bottom: 5px;">
+                        <span x-text="formatTime(currentTime)"></span>
+                        <span x-text="formatTime(duration)"></span>
+                    </div>
+                    <div style="height: 4px; background: #e0e0e0; border-radius: 2px; overflow: hidden;">
+                        <div x-bind:style="{ width: progress + '%' }" style="height: 100%; background: #3B719F; transition: width 0.1s linear;"></div>
+                    </div>
+                </div>
+                
+                <!-- Controls -->
+                <div class="controls">
+                    <button class="control-button" @click="previousTrack" :disabled="!currentTrack">
+                        ⏮
+                    </button>
+                    <button class="control-button play-button" @click="togglePlay" :disabled="!currentTrack">
+                        <span x-text="isPlaying ? '⏸' : '▶'"></span>
+                    </button>
+                    <button class="control-button" @click="nextTrack" :disabled="!currentTrack">
+                        ⏭
+                    </button>
+                </div>
+                
+                <!-- Volume Control -->
+                <div class="volume-control">
+                    <span>🔊</span>
+                    <input 
+                        type="range" 
+                        min="0" 
+                        max="1" 
+                        step="0.01" 
+                        x-model="volume" 
+                        @input="updateVolume"
+                        class="volume-slider"
+                    >
+                    <span x-text="Math.round(volume * 100) + '%'"></span>
+                </div>
+            </div>
+            
+            <!-- Track List -->
+            <div class="track-list">
+                <h3>Kappaleet</h3>
+                <template x-for="(track, index) in tracks" :key="track.id">
+                    <div 
+                        class="track-item" 
+                        :class="{ 'playing': currentTrack && currentTrack.id === track.id }"
+                        @click="playTrack(track)"
+                    >
+                        <div class="track-number" x-text="index + 1"></div>
+                        <div class="track-info">
+                            <p class="track-name" x-text="track.title"></p>
+                            <div class="track-tags">
+                                <template x-for="tag in track.tags" :key="tag">
+                                    <span class="track-tag" x-text="tag"></span>
+                                </template>
+                            </div>
+                        </div>
+                        <div x-show="currentTrack && currentTrack.id === track.id && isPlaying" class="track-status">
+                            <div style="display: flex; gap: 3px; height: 20px; align-items: center;">
+                                <span style="display: inline-block; width: 3px; height: 10px; background: #3B719F; animation: equalize 1s infinite ease-in-out;"></span>
+                                <span style="display: inline-block; width: 3px; height: 15px; background: #3B719F; animation: equalize 1.2s infinite ease-in-out;"></span>
+                                <span style="display: inline-block; width: 3px; height: 20px; background: #3B719F; animation: equalize 0.8s infinite ease-in-out;"></span>
+                                <span style="display: inline-block; width: 3px; height: 15px; background: #3B719F; animation: equalize 1.1s infinite ease-in-out;"></span>
+                                <span style="display: inline-block; width: 3px; height: 10px; background: #3B719F; animation: equalize 0.9s infinite ease-in-out;"></span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const supabase = window.supabase = supabase.createClient(
+          'https://ucctolvpslfbpvknqrtv.supabase.co',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjY3RvbHZwc2xmYnB2a25xcnR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTU4OTQyNTksImV4cCI6MjAzMTQ3MDI1OX0.2g4d8cS8v1u6D4y4q8z4Qk8vq8X9x8X9X9X9X9X9X9'
+        );
+        
+        const tracks = [
+            { 
+                id: 'track1', 
+                title: 'Hip-hop Intro', 
+                path: '../assets/audio/01. Hip-Hop Intro.flac',
+                tags: ['hip-hop', 'instrumental'] 
+            },
+            { 
+                id: 'track2', 
+                title: 'Jazz Instrumental', 
+                path: '../assets/audio/Jazz instrumental.flac',
+                tags: ['jazz', 'instrumental'] 
+            },
+            { 
+                id: 'track3', 
+                title: 'Mellow', 
+                path: '../assets/audio/03.Mellow(1).flac',
+                tags: ['chill'] 
+            },
+            { 
+                id: 'track4', 
+                title: 'Strange', 
+                path: '../assets/audio/07.Strange.flac',
+                tags: ['experimental'] 
+            },
+            { 
+                id: 'track5', 
+                title: 'Swishaz', 
+                path: '../assets/audio/09.Swishaz.flac',
+                tags: ['electronic'] 
+            },
+            { 
+                id: 'track6', 
+                title: 'Frosty', 
+                path: '../assets/audio/10.Frosty.flac',
+                tags: ['ambient'] 
+            },
+            { 
+                id: 'track7', 
+                title: 'Mist', 
+                path: '../assets/audio/c7.Mist.flac',
+                tags: ['ambient'] 
+            }
+        ];
+        
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('musicPlayer', () => ({
+                tracks: tracks,
+                visualizerType: 'wave',
+                allTags: function() {
+                    return [...new Set(this.tracks.flatMap(track => track.tags))];
+                },
+                currentTrack: null,
+                // Audio context and nodes
+                audioContext: null,
+                analyser: null,
+                dataArray: null,
+                animationId: null,
+                mediaSource: null,
+                
+                // Player state
+                isPlaying: false,
+                currentTime: 0,
+                duration: 0,
+                progress: 0,
+                volume: 0.7,
+                
+                // Current sound instance
+                sound: null,
+                
+                // Initialize the player
+                init() {
+                    // Initialize audio context on first interaction
+                    document.addEventListener('click', () => {
+                        if (!this.audioContext) {
+                            this.setupAudioContext();
+                        }
+                    }, { once: true });
+                    
+                    // Set up visualizer canvas
+                    this.setupVisualizer();
+                    
+                    // Set initial volume
+                    if (this.sound) {
+                        this.sound.volume(this.volume);
+                    }
+                    
+                    // Start with first track
+                    if (this.tracks.length > 0) {
+                        this.currentTrack = this.tracks[0];
+                    }
+                    
+                    // Set up animation frame for visualizer
+                    this.animate();
+                },
+                
+                // Set up audio context and analyzer
+                setupAudioContext() {
+                    try {
+                        const AudioContext = window.AudioContext || window.webkitAudioContext;
+                        this.audioContext = new AudioContext();
+                        this.analyser = this.audioContext.createAnalyser();
+                        this.analyser.fftSize = 256;
+                        
+                        // Create data array for visualization
+                        const bufferLength = this.analyser.frequencyBinCount;
+                        this.dataArray = new Uint8Array(bufferLength);
+                        
+                        console.log('Audio context initialized');
+                    } catch (error) {
+                        console.error('Error initializing audio context:', error);
+                        alert('Äänentoiston alustus epäonnistui. Tarkista, että selaimesi tukee Web Audio API:a.');
+                    }
+                },
+                
+                // Set up visualizer canvas
+                setupVisualizer() {
+                    const canvas = document.getElementById('visualizer');
+                    if (!canvas) return;
+                    
+                    // Set canvas size
+                    const updateCanvasSize = () => {
+                        const dpr = window.devicePixelRatio || 1;
+                        const rect = canvas.getBoundingClientRect();
+                        
+                        // Set display size (CSS pixels)
+                        canvas.width = rect.width * dpr;
+                        canvas.height = rect.height * dpr;
+                        
+                        // Set actual size in memory (scaled for high DPI displays)
+                        canvas.style.width = rect.width + 'px';
+                        canvas.style.height = rect.height + 'px';
+                        
+                        // Scale the drawing context
+                        const ctx = canvas.getContext('2d');
+                        ctx.scale(dpr, dpr);
+                    };
+                    
+                    // Initial size
+                    updateCanvasSize();
+                    
+                    // Update on resize
+                    window.addEventListener('resize', updateCanvasSize);
+                },
+                
+                // Animation loop for visualizer
+                animate() {
+                    this.animationId = requestAnimationFrame(this.animate.bind(this));
+                    
+                    const canvas = document.getElementById('visualizer');
+                    if (!canvas || !this.analyser) return;
+                    
+                    const ctx = canvas.getContext('2d');
+                    const width = canvas.width;
+                    const height = canvas.height;
+                    
+                    // Clear canvas
+                    ctx.clearRect(0, 0, width, height);
+                    
+                    // Get frequency data
+                    if (this.analyser && this.dataArray) {
+                        this.analyser.getByteFrequencyData(this.dataArray);
+                        
+                        // Draw waveform
+                        this.drawWaveform(ctx, width, height);
+                    }
+                },
+                
+                // Draw waveform visualization
+                drawWaveform(ctx, width, height) {
+                    if (!this.dataArray || this.dataArray.length === 0) return;
+                    
+                    const barWidth = (width / this.dataArray.length) * 2.5;
+                    let x = 0;
+                    
+                    // Set gradient for the bars
+                    const gradient = ctx.createLinearGradient(0, 0, 0, height);
+                    gradient.addColorStop(0, '#3B719F');
+                    gradient.addColorStop(1, '#4a8fc9');
+                    
+                    ctx.fillStyle = gradient;
+                    
+                    for (let i = 0; i < this.dataArray.length; i++) {
+                        const barHeight = (this.dataArray[i] / 255) * height;
+                        
+                        // Draw bar (centered vertically)
+                        ctx.fillRect(
+                            x,
+                            (height - barHeight) / 2,
+                            barWidth - 1,
+                            barHeight
+                        );
+                        
+                        x += barWidth + 1;
+                    }
+                },
+                
+                // Clean up visualizer
+                cleanupVisualizer() {
+                    try {
+                        // Cancel any running animation
+                        if (this.animationId) {
+                            cancelAnimationFrame(this.animationId);
+                            this.animationId = null;
+                        }
+                    } catch (error) {
+                        console.error('Error in cleanupVisualizer:', error);
+                    }
+                },
+                
+                // Play a track
+                async playTrack(track) {
+                    try {
+                        // Pause current track if playing
+                        if (this.sound && this.sound.playing()) {
+                            this.sound.pause();
+                        }
+                        
+                        // Set new track
+                        this.currentTrack = track;
+                        this.isPlaying = false;
+                        
+                        // Create new Howl instance
+                        this.sound = new Howl({
+                            src: [track.path],
+                            html5: true, // Force HTML5 to allow streaming
+                            format: ['mp3', 'flac'],
+                            volume: this.volume,
+                            onload: () => {
+                                console.log('Track loaded:', track.title);
+                                this.duration = this.sound.duration();
+                                this.updateProgress();
+                                
+                                // Connect to audio context for visualization
+                                this.connectAudioNodes();
+                            },
+                            onloaderror: (id, error) => {
+                                console.error('Error loading track:', track.title, error);
+                                alert(`Kappaleen "${track.title}" lataus epäonnistui.`);
+                                this.isPlaying = false;
+                            },
+                            onplay: () => {
+                                console.log('Playing:', track.title);
+                                this.isPlaying = true;
+                                this.updateProgress();
+                                this.connectAudioNodes();
+                            },
+                            onpause: () => {
+                                console.log('Paused:', track.title);
+                                this.isPlaying = false;
+                                cancelAnimationFrame(this.progressAnimation);
+                            },
+                            onstop: () => {
+                                console.log('Stopped:', track.title);
+                                this.isPlaying = false;
+                                this.currentTime = 0;
+                                this.progress = 0;
+                                cancelAnimationFrame(this.progressAnimation);
+                            },
+                            onend: () => {
+                                console.log('Finished:', track.title);
+                                this.isPlaying = false;
+                                this.currentTime = 0;
+                                this.progress = 0;
+                                cancelAnimationFrame(this.progressAnimation);
+                                this.nextTrack();
+                            },
+                            onseek: () => {
+                                this.updateProgress();
+                            }
+                        });
+                        
+                        // Start playback
+                        this.sound.play();
+                        
+                    } catch (error) {
+                        console.error('Error playing track:', error);
+                        this.isPlaying = false;
+                        
+                        if (error.name === 'NotAllowedError') {
+                            alert('Äänentoisto estetty. Salli äänentoisto jatkaaksesi.');
+                        } else {
+                            alert('Virhe äänen toistossa. Yritä myöhemmin uudelleen.');
+                        }
+                    }
+                },
+                
+                // Connect audio nodes for visualization
+                connectAudioNodes() {
+                    if (!this.audioContext || !this.analyser || !this.sound || !this.sound._sounds[0]) {
+                        console.log('Cannot connect audio nodes - not ready');
+                        return;
+                    }
+                    
+                    try {
+                        // Disconnect any existing connections
+                        if (this.mediaSource) {
+                            this.mediaSource.disconnect();
+                        }
+                        
+                        // Create new media element source
+                        const soundNode = this.sound._sounds[0]._node;
+                        this.mediaSource = this.audioContext.createMediaElementSource(soundNode);
+                        
+                        // Connect to analyzer and destination
+                        this.mediaSource.connect(this.analyser);
+                        this.analyser.connect(this.audioContext.destination);
+                        
+                        console.log('Audio nodes connected');
+                    } catch (error) {
+                        console.error('Error connecting audio nodes:', error);
+                    }
+                },
+                
+                // Toggle play/pause
+                togglePlay() {
+                    if (!this.currentTrack) return;
+                    
+                    if (this.isPlaying) {
+                        this.pause();
+                    } else {
+                        this.play();
+                    }
+                },
+                
+                // Play current track
+                play() {
+                    if (!this.sound) {
+                        if (this.currentTrack) {
+                            this.playTrack(this.currentTrack);
+                        }
+                        return;
+                    }
+                    
+                    // Resume audio context if suspended (required by some browsers)
+                    if (this.audioContext && this.audioContext.state === 'suspended') {
+                        this.audioContext.resume().then(() => {
+                            this.sound.play();
+                        });
+                    } else {
+                        this.sound.play();
+                    }
+                    
+                    this.isPlaying = true;
+                    this.updateProgress();
+                },
+                
+                // Pause current track
+                pause() {
+                    if (!this.sound) return;
+                    
+                    this.sound.pause();
+                    this.isPlaying = false;
+                    cancelAnimationFrame(this.progressAnimation);
+                },
+                
+                // Play next track
+                nextTrack() {
+                    if (!this.currentTrack || this.tracks.length <= 1) return;
+                    
+                    const currentIndex = this.tracks.findIndex(t => t.id === this.currentTrack.id);
+                    const nextIndex = (currentIndex + 1) % this.tracks.length;
+                    
+                    this.playTrack(this.tracks[nextIndex]);
+                },
+                
+                // Play previous track
+                previousTrack() {
+                    if (!this.currentTrack || this.tracks.length <= 1) return;
+                    
+                    const currentIndex = this.tracks.findIndex(t => t.id === this.currentTrack.id);
+                    const prevIndex = (currentIndex - 1 + this.tracks.length) % this.tracks.length;
+                    
+                    this.playTrack(this.tracks[prevIndex]);
+                },
+                
+                // Update progress bar and time
+                updateProgress() {
+                    if (!this.sound) return;
+                    
+                    this.currentTime = this.sound.seek() || 0;
+                    this.duration = this.sound.duration() || 0;
+                    this.progress = this.duration > 0 ? (this.currentTime / this.duration) * 100 : 0;
+                    
+                    if (this.isPlaying) {
+                        this.progressAnimation = requestAnimationFrame(this.updateProgress.bind(this));
+                    }
+                },
+                
+                // Format time in MM:SS format
+                formatTime(seconds) {
+                    if (isNaN(seconds)) return '0:00';
+                    
+                    const minutes = Math.floor(seconds / 60);
+                    const remainingSeconds = Math.floor(seconds % 60);
+                    
+                    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+                },
+                
+                // Update volume
+                updateVolume() {
+                    if (this.sound) {
+                        this.sound.volume(this.volume);
+                    }
+                },
+                
+                // Clean up when component is destroyed
+                cleanup() {
+                    if (this.sound) {
+                        this.sound.stop();
+                    }
+                    
+                    cancelAnimationFrame(this.animationId);
+                    cancelAnimationFrame(this.progressAnimation);
+                    
+                    if (this.audioContext) {
+                        this.audioContext.close();
+                    }
+                    
+                    this.cleanupVisualizer();
+                }
+            }));
+        });
+        
+        // Add equalizer animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes equalize {
+                0%, 100% { height: 10px; }
+                50% { height: 20px; }
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+    <script></script>
+</body>
+</html>

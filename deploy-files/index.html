@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Security Headers -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self'; script-src 'self'; style-src 'self'; frame-ancestors 'none';">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+  <title>Luova Studio</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Luova Studio</h1>
+    <nav>
+      <ul>
+        <li><a href="https://vpn.xxmxli.com">Etusivu</a></li>
+        <li><a href="pages/photography.html">Valokuvaus</a></li>
+        <li><a href="pages/music.html">Musiikki</a></li>
+        <li><a href="pages/videos.html">Videot</a></li>
+        <li><a href="pages/security.html">Tietoturva</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section id="photography">
+    <h2>📸 Valokuvaus</h2>
+    <p>Kuvia luonnosta, kaupungeista ja tapahtumista.</p>
+    <img src="assets/images/kuva1.jpg" alt="Esimerkkikuva">
+  </section>
+
+  <section id="music">
+    <h2>🎵 Musiikki</h2>
+    <p>Tuotantoa ja äänimaisemia eri projekteihin.</p>
+    <audio controls>
+      <source src="assets/audio/sample.mp3" type="audio/mpeg">
+      Selaimesi ei tue audiotoistoa.
+    </audio>
+  </section>
+
+  <section id="security">
+    <h2>🔐 Tietoturva</h2>
+    <p>Vinkkejä turvalliseen verkonkäyttöön ja yksityisyydensuojaan.</p>
+    <ul>
+      <li>Käytä vahvoja salasanoja</li>
+      <li>Pidä ohjelmistot ajan tasalla</li>
+      <li>Älä jaa henkilökohtaisia tietoja turhaan</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 Luova Studio</p>
+  </footer>
+
+  <script src="script.js"></script>
+  <script src="form-validator.js"></script>
+</body>
+</html>

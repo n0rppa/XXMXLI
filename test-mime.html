@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FLAC MIME Type Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1 {
+      color: #2c5282;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 10px;
+    }
+    .container {
+      background-color: #f8fafc;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .test-section {
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .test-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #4a5568;
+    }
+    .result {
+      padding: 15px;
+      margin: 10px 0;
+      background-color: #f7fafc;
+      border-left: 4px solid #4299e1;
+      font-family: monospace;
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
+    .success {
+      background-color: #f0fff4;
+      border-left-color: #48bb78;
+    }
+    .error {
+      background-color: #fff5f5;
+      border-left-color: #f56565;
+    }
+    .warning {
+      background-color: #fffaf0;
+      border-left-color: #ed8936;
+    }
+    audio {
+      width: 100%;
+      margin: 10px 0;
+    }
+    button {
+      background-color: #4a5568;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 8px;
+    }
+    button:hover {
+      background-color: #2d3748;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+    th, td {
+      text-align: left;
+      padding: 8px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    th {
+      background-color: #f7fafc;
+      font-weight: bold;
+    }
+    .audio-test {
+      margin: 20px 0;
+      padding: 15px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+    }
+    #log {
+      max-height: 200px;
+      overflow-y: auto;
+      background-color: #2d3748;
+      color: #e2e8f0;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>FLAC MIME Type Test</h1>
+  
+  <div class="container">
+    <div class="test-section">
+      <div class="test-title">Current Server Configuration</div>
+      <p>This test checks if the web server is correctly configured to serve FLAC files with the proper MIME type.</p>
+      
+      <button id="check-config">Check Server Configuration</button>
+      <div id="config-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+      <div class="test-title">FLAC MIME Type Check</div>
+      <p>Testing if the server returns the correct MIME type (audio/flac) for FLAC files:</p>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>Test File</th>
+            <th>MIME Type</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="mime-results">
+          <!-- Results will be populated here -->
+        </tbody>
+      </table>
+      
+      <button id="check-mime">Check MIME Types</button>
+    </div>
+    
+    <div class="test-section">
+      <div class="test-title">Audio Playback Test</div>
+      
+      <div class="audio-test">
+        <h3>Standard Audio Element</h3>
+        <audio id="audio-player" controls>
+          <source id="flac-source" src="assets/audio/01. Hip-Hop Intro.flac" type="audio/flac">
+          Your browser does not support the audio element.
+        </audio>
+        <div id="audio-status"></div>
+      </div>
+      
+      <div class="audio-test">
+        <h3>XMLHttpRequest Test</h3>
+        <button id="xhr-test">Test XHR FLAC Loading</button>
+        <div id="xhr-result" class="result"></div>
+      </div>
+      
+      <div class="audio-test">
+        <h3>Fetch API Test</h3>
+        <button id="fetch-test">Test Fetch FLAC Loading</button>
+        <div id="fetch-result" class="result"></div>
+      </div>
+    </div>
+    
+    <div class="test-section">
+      <div class="test-title">Debug Log</div>
+      <div id="log"></div>
+    </div>
+  </div>
+
+  <script>
+    // Debug logger
+    const log = document.getElementById('log');
+    
+    function addLog(message, data = null) {
+      const timestamp = new Date().toLocaleTimeString();
+      let formattedMessage = `[${timestamp}] ${message}`;
+      
+      if (data) {
+        try {
+          if (typeof data === 'object') {
+            formattedMessage += '\n' + JSON.stringify(data, null, 2);
+          } else {
+            formattedMessage += '\n' + data;
+          }
+        } catch (e) {
+          formattedMessage += '\n[Unstringifiable data]';
+        }
+      }
+      
+      log.innerHTML += formattedMessage + '\n\n';
+      log.scrollTop = log.scrollHeight;
+      console.log(message, data);
+    }
+    
+    // Display result
+    function showResult(element, message, type = 'info') {
+      element.className = `result ${type}`;
+      element.textContent = message;
+    }
+    
+    // Check server configuration
+    document.getElementById('check-config').addEventListener('click', function() {
+      const configResult = document.getElementById('config-result');
+      
+      // Check if running locally
+      const isLocalhost = window.location.hostname === 'localhost' || 
+                          window.location.hostname === '127.0.0.1' ||
+                          window.location.hostname === '';
+      
+      // Get server software if available
+      fetch(window.location.origin, { method: 'HEAD' })
+        .then(response => {
+          const server = response.headers.get('server');
+          const protocol = window.location.protocol;
+          
+          let configInfo = `Protocol: ${protocol}\n`;
+          configInfo += `Hostname: ${window.location.hostname}\n`;
+          configInfo += `Port: ${window.location.port || '(default)'}\n`;
+          configInfo += `Server: ${server || 'Unknown (not disclosed in headers)'}\n`;
+          configInfo += `Running locally: ${isLocalhost ? 'Yes' : 'No'}\n`;
+          
+          // Check for web.config
+          fetch('web.config', { method: 'HEAD' })
+            .then(webConfigResponse => {
+              configInfo += `web.config accessible: ${webConfigResponse.ok ? 'Yes (WARNING: Should not be accessible!)' : 'No (Good)'}\n`;
+              
+              if (isLocalhost) {
+                configInfo += '\nRecommendations for local testing:\n';
+                configInfo += '- Ensure IIS or another web server is properly configured\n';
+                configInfo += '- Verify MIME types are set in the web server configuration\n';
+                configInfo += '- For IIS, check that web.config is properly loaded\n';
+              }
+              
+              showResult(configResult, configInfo);
+            })
+            .catch(error => {
+              configInfo += `web.config check error: ${error.message}\n`;
+              showResult(configResult, configInfo);
+            });
+        })
+        .catch(error => {
+          showResult(configResult, `Error checking server configuration: ${error.message}`, 'error');
+        });
+    });
+    
+    // Check MIME types for various audio files
+    document.getElementById('check-mime').addEventListener('click', function() {
+      const mimeResults = document.getElementById('mime-results');
+      mimeResults.innerHTML = ''; // Clear previous results
+      
+      // List of files to check
+      const files = [
+        'assets/audio/01. Hip-Hop Intro.flac',
+        'assets/audio/Jazz instrumental.flac',
+        'assets/audio/03.Mellow(1).flac'
+      ];
+      
+      files.forEach(file => {
+        fetch(file, { method: 'HEAD' })
+          .then(response => {
+            const mimeType = response.headers.get('content-type') || 'Not specified';
+            const isCorrect = mimeType.includes('audio/flac') || mimeType.includes('audio/x-flac');
+            
+            addLog(`MIME type check for ${file}`, {
+              mimeType,
+              status: response.status,
+              ok: response.ok
+            });
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${file}</td>
+              <td>${mimeType}</td>
+              <td style="color: ${isCorrect ? 'green' : 'red'}">
+                ${isCorrect ? '✓ Correct' : '✗ Incorrect (should be audio/flac)'}
+              </td>
+            `;
+            mimeResults.appendChild(row);
+          })
+          .catch(error => {
+            addLog(`Error checking MIME type for ${file}`, error.message);
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${file}</td>
+              <td colspan="2" style="color: red">Error: ${error.message}</td>
+            `;
+            mimeResults.appendChild(row);
+          });
+      });
+    });
+    
+    // Audio element tests
+    const audioPlayer = document.getElementById('audio-player');
+    const audioStatus = document.getElementById('audio-status');
+    
+    // Track audio events
+    audioPlayer.addEventListener('loadstart', () => {
+      audioStatus.innerHTML = '<p style="color: blue">Loading started...</p>';
+      addLog('Audio: Loading started');
+    });
+    
+    audioPlayer.addEventListener('canplay', () => {
+      audioStatus.innerHTML = '<p style="color: green">Audio can be played!</p>';
+      addLog('Audio: Can play');
+    });
+    
+    audioPlayer.addEventListener('error', () => {
+      const error = audioPlayer.error;
+      let errorMessage = 'Unknown error';
+      
+      if (error) {
+        switch(error.code) {
+          case MediaError.MEDIA_ERR_ABORTED:
+            errorMessage = 'Playback aborted by the user';
+            break;
+          case MediaError.MEDIA_ERR_NETWORK:
+            errorMessage = 'Network error while loading the audio file';
+            break;
+          case MediaError.MEDIA_ERR_DECODE:
+            errorMessage = 'Audio decoding error - the browser cannot decode this file format';
+            break;
+          case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+            errorMessage = 'The audio file format or MIME type is not supported by the browser';
+            break;
+        }
+      }
+      
+      audioStatus.innerHTML = `<p style="color: red">Error: ${errorMessage}</p>`;
+      addLog('Audio error', { code: error ? error.code : 'unknown', message: errorMessage });
+    });
+    
+    // XHR test
+    document.getElementById('xhr-test').addEventListener('click', function() {
+      const xhrResult = document.getElementById('xhr-result');
+      const audioFile = 'assets/audio/01. Hip-Hop Intro.flac';
+      
+      addLog('Starting XHR test for', audioFile);
+      showResult(xhrResult, 'Testing FLAC loading using XMLHttpRequest...');
+      
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', audioFile);
+      
+      // We want the raw binary data
+      xhr.responseType = 'arraybuffer';
+      
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          const arrayBuffer = xhr.response;
+          const byteArray = new Uint8Array(arrayBuffer);
+          
+          // Check for FLAC signature (first 4 bytes should be "fLaC")
+          const signature = String.fromCharCode(byteArray[0], byteArray[1], byteArray[2], byteArray[3]);
+          const isFlac = signature === 'fLaC';
+          
+          const fileInfo = {
+            size: byteArray.length,
+            mimeType: xhr.getResponseHeader('content-type'),
+            signature: signature,
+            isValidFlac: isFlac
+          };
+          
+          addLog('XHR loaded successfully', fileInfo);
+          
+          if (isFlac) {
+            showResult(xhrResult, `Successfully loaded FLAC file (${(byteArray.length/1024/1024).toFixed(2)} MB)\nMIME Type: ${fileInfo.mimeType}\nSignature: "${signature}" (Valid FLAC)`, 'success');
+          } else {
+            showResult(xhrResult, `Loaded file but it does not appear to be a valid FLAC file\nMIME Type: ${fileInfo.mimeType}\nSignature: "${signature}" (Expected "fLaC")`, 'warning');
+          }
+        }
+      };
+      
+      xhr.onerror = function() {
+        addLog('XHR error', xhr.statusText);
+        showResult(xhrResult, `Error loading file: ${xhr.statusText}`, 'error');
+      };
+      
+      xhr.onprogress = function(event) {
+        if (event.lengthComputable) {
+          const percentComplete = (event.loaded / event.total) * 100;
+          showResult(xhrResult, `Loading: ${percentComplete.toFixed(1)}%`);
+        }
+      };
+      
+      xhr.send();
+    });
+    
+    // Fetch API test
+    document.getElementById('fetch-test').addEventListener('click', function() {
+      const fetchResult = document.getElementById('fetch-result');
+      const audioFile = 'assets/audio/01. Hip-Hop Intro.flac';
+      
+      addLog('Starting Fetch test for', audioFile);
+      showResult(fetchResult, 'Testing FLAC loading using Fetch API...');
+

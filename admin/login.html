@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Luova Studio</title>
+    <link rel="stylesheet" href="../styles.css">
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <style>
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .btn-login:hover {
+            background: var(--primary-dark);
+        }
+        
+        .error-message {
+            color: #d9534f;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body x-data="loginForm()">
+    <div class="login-container">
+        <h1>Admin Login</h1>
+        <form @submit.prevent="login">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" x-model="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" x-model="password" required>
+            </div>
+            
+            <button type="submit" class="btn-login" :disabled="loading">
+                <span x-show="!loading">Login</span>
+                <span x-show="loading">Loading...</span>
+            </button>
+            
+            <div x-show="error" class="error-message" x-text="error"></div>
+        </form>
+    </div>
+
+    <script type="module">
+        import { adminAuth } from '../js/admin-auth.js';
+        
+        window.loginForm = () => ({
+            email: '',
+            password: '',
+            error: '',
+            loading: false,
+            
+            async login() {
+                this.loading = true;
+                this.error = '';
+                
+                try {
+                    await adminAuth.login(this.email, this.password);
+                    window.location.href = '/admin/';
+                } catch (error) {
+                    this.error = error.message;
+                } finally {
+                    this.loading = false;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

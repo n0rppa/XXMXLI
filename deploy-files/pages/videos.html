@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Security Headers -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://commondatastorage.googleapis.com; media-src 'self' https://commondatastorage.googleapis.com; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' cdn.jsdelivr.net; img-src 'self' data: blob: https://*;">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+  <title>Videot - Luova Studio</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <header>
+    <h1>Videot</h1>
+    <nav>
+      <ul>
+        <li><a href="../../index.html">Etusivu</a></li>
+        <li><a href="photography.html">Valokuvaus</a></li>
+        <li><a href="music.html">Musiikki</a></li>
+        <li><a href="videos.html" class="active">Videot</a></li>
+        <li><a href="security.html">Tietoturva</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="video-showcase">
+      <h2>Videogalleria</h2>
+      <div class="video-grid">
+        <article class="video-item">
+          <h3>Luontodokumentti</h3>
+          <video controls>
+            <source src="../assets/video/nature.mp4" type="video/mp4">
+            Selaimesi ei tue videotoistoa.
+          </video>
+          <p>Kaunis luontodokumentti Suomen metsistä.</p>
+        </article>
+
+        <article class="video-item">
+          <h3>Kaupunkielämää</h3>
+          <video controls>
+            <source src="../assets/video/city.mp4" type="video/mp4">
+            Selaimesi ei tue videotoistoa.
+          </video>
+          <p>Urbaani elämä kaupungin sykkeessä.</p>
+        </article>
+
+        <article class="video-item">
+          <h3>Tapahtumataltiointi</h3>
+          <video controls>
+            <source src="../assets/video/event.mp4" type="video/mp4">
+            Selaimesi ei tue videotoistoa.
+          </video>
+          <p>Kooste viimeisimmistä tapahtumistamme.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="video-services">
+      <h2>Videopalvelut</h2>
+      <div class="services-grid">
+        <div class="service">
+          <h3>🎥 Videokuvaus</h3>
+          <ul>
+            <li>Tapahtumataltioinnit</li>
+            <li>Yritysesittelyt</li>
+            <li>Mainokset</li>
+            <li>Dokumentit</li>
+          </ul>
+        </div>
+
+        <div class="service">
+          <h3>✨ Editointi</h3>
+          <ul>
+            <li>Leikkaus</li>
+            <li>Värimäärittely</li>
+            <li>Erikoistehosteet</li>
+            <li>Äänisuunnittelu</li>
+          </ul>
+        </div>
+
+        <div class="service">
+          <h3>📱 Formaatit</h3>
+          <ul>
+            <li>Some-videot</li>
+            <li>Verkkosivuvideot</li>
+            <li>TV-mainokset</li>
+            <li>Elokuvat</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact">
+      <h2>Ota yhteyttä</h2>
+      <form id="video-contact-form" onsubmit="return validateForm(this)">
+        <div class="form-group">
+          <label for="name">Nimi:</label>
+          <input type="text" id="name" name="name" required minlength="2">
+        </div>
+        <div class="form-group">
+          <label for="email">Sähköposti:</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label for="project">Projektin kuvaus:</label>
+          <textarea id="project" name="project" required minlength="10"></textarea>
+        </div>
+        <button type="submit">Lähetä</button>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Luova Studio</p>
+  </footer>
+
+  <script src="../script.js"></script>
+  <script src="../form-validator.js"></script>
+</body>
+</html>

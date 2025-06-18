@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valokuvaus - Luova Studio</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        .gallery { 
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        .gallery-item { 
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .gallery-item:hover {
+            transform: translateY(-5px);
+        }
+        .gallery-item img { 
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 4px;
+            transition: transform 0.3s ease;
+        }
+        .gallery-item:hover img {
+            transform: scale(1.02);
+        }
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.92);
+            text-align: center;
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+            overflow: auto;
+        }
+        .modal.open {
+            display: block;
+        }
+        .modal-content {
+            max-width: 90vw;
+            max-height: 90vh;
+            margin: 40px auto;
+            display: block;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            object-fit: contain;
+            background: #222;
+        }
+        .close {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            color: white;
+            font-size: 48px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1001;
+            background: rgba(0,0,0,0.3);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            line-height: 48px;
+            text-align: center;
+            transition: background 0.2s;
+        }
+        .close:hover {
+            background: rgba(0,0,0,0.7);
+        }
+        nav { margin: 20px 0; text-align: center; }
+        nav a { margin: 0 10px; text-decoration: none; color: #3B719F; }
+        nav a.active { font-weight: bold; text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Valokuvaus</h1>
+        <nav>
+            <a href="../index.html">Etusivu</a>
+            <a href="photography.html" class="active">Valokuvaus</a>
+            <a href="music.html">Musiikki</a>
+            <a href="projects-final.html">Projektit</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="gallery">
+            <!-- GALLERY_START -->
+            <!-- Kuvagalleria generoidaan automaattisesti update_gallery.py -skriptillä. -->
+            <!-- Älä muokkaa tätä osiota käsin, vaan aja skripti uudelleen. -->
+            <!-- GALLERY_END -->
+        </div>
+    </main>
+
+    <!-- Modal for enlarged image -->
+    <div id="imageModal" class="modal">
+        <span class="close" id="closeModalBtn">&times;</span>
+        <img class="modal-content" id="enlargedImage" alt="">
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('enlargedImage');
+            const closeBtn = document.getElementById('closeModalBtn');
+
+            // Open modal on image click
+            document.querySelectorAll('.gallery-item img').forEach(img => {
+                img.addEventListener('click', function() {
+                    modal.classList.add('open');
+                    modalImg.src = this.src;
+                    modalImg.alt = this.alt;
+                    document.body.style.overflow = 'hidden';
+                });
+            });
+
+            // Close modal on X click
+            closeBtn.addEventListener('click', function() {
+                modal.classList.remove('open');
+                document.body.style.overflow = '';
+            });
+
+            // Close modal on background click (but not when clicking the image itself)
+            modal.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    modal.classList.remove('open');
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // Close modal with ESC key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && modal.classList.contains('open')) {
+                    modal.classList.remove('open');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

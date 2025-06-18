@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musiikki - Luova Studio</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/music-player.css">
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Howler.js for audio -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+    
+    <style>
+        :root {
+          --bg-color: #ffffff;
+          --text-color: #333333;
+          --card-bg: #ffffff;
+          --border-color: #e0e0e0;
+        }
+
+        [data-theme="dark"] {
+          --bg-color: #1a1a1a;
+          --text-color: #f5f5f5;
+          --card-bg: #2d2d2d;
+          --border-color: #404040;
+        }
+
+        body {
+          background-color: var(--bg-color);
+          color: var(--text-color);
+        }
+
+        .media-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+          gap: 1.5rem;
+          grid-auto-rows: minmax(180px, 1fr);
+          padding: 1rem;
+          max-width: 1400px;
+          margin: 0 auto;
+          justify-items: center;
+        }
+
+        .track-card {
+          background: var(--card-bg);
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          transition: transform 0.2s ease;
+          width: 100%;
+          max-width: 300px;
+          border: 1px solid var(--border-color);
+        }
+
+        .track-card:hover {
+          transform: translateY(-5px);
+        }
+
+        .track-image {
+          height: 180px;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .track-image img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        @media (max-width: 768px) {
+          .media-grid {
+            grid-template-columns: 1fr;
+            padding: 0.5rem;
+          }
+        }
+
+        .visualizer-container {
+          width: 100%;
+          height: 200px;
+          background: #000;
+          border-radius: 8px;
+          position: relative;
+          overflow: hidden;
+          margin: 20px 0;
+        }
+        
+        .visualizer-canvas {
+          width: 100%;
+          height: 100%;
+        }
+        
+        .winamp-title {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          color: #4a8fc9;
+          font-family: 'Courier New', monospace;
+          font-size: 12px;
+          z-index: 1;
+          text-shadow: 0 0 5px rgba(74, 143, 201, 0.7);
+        }
+        
+        .contact-form {
+          background: var(--card-bg);
+          padding: 2rem;
+          border-radius: 8px;
+          margin: 2rem 0;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-group {
+          margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+          display: block;
+          margin-bottom: 0.5rem;
+          color: var(--text);
+        }
+        
+        .form-group input,
+        .form-group textarea {
+          width: 100%;
+          padding: 0.5rem;
+          border: 1px solid var(--border);
+          border-radius: 4px;
+          background: var(--bg);
+          color: var(--text);
+        }
+        
+        .form-group textarea {
+          min-height: 100px;
+        }
+        
+        .submit-btn {
+          background: var(--primary);
+          color: white;
+          padding: 0.5rem 1rem;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: background 0.3s ease;
+        }
+        
+        .submit-btn:hover {
+          background: var(--primary-dark);
+        }
+        
+        .track-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+          gap: 1.5rem;
+          margin: 2rem 0;
+        }
+        
+        .track-card {
+          background: var(--card-bg);
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .visualizer-controls {
+          display: flex;
+          gap: 10px;
+          margin: 10px 0;
+        }
+        
+        .visualizer-btn {
+          padding: 5px 10px;
+          border: none;
+          background: #3B719F;
+          color: white;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+        
+        .visualizer-btn.active {
+          background: #4a8fc9;
+        }
+      </style>
+</head>
+<body x-data="{ 
+    tracks: [],
+    currentTrack: null,
+    visualizerType: 'bars',
+    isPlaying: false,
+    audioContext: null,
+    visualizer: null,
+    
+    async init() {
+        // Initialize audio context
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Set up tracks
+        this.tracks = [
+            {
+                id: 'track1',
+                title: 'Hip-Hop Intro',
+                artist: 'Studio Artist',
+                file: '../assets/audio/01. Hip-Hop Intro.flac',
+                cover: '../assets/images/deow (12).jpg'
+            },
+            {
+                id: 'track2',
+                title: 'Mellow Vibes',
+                artist: 'Studio Artist',
+                file: '../assets/audio/03.Mellow(1).flac',
+                cover: '../assets/images/deow (22).jpg'
+            }
+        ];
+        
+        // Initialize visualizer
+        const canvas = this.$refs.visualizer;
+        this.visualizer = new AudioVisualizer(this.audioContext, canvas);
+    },
+    
+    async playTrack(track) {
+        if (this.currentTrack?.id === track.id) {
+            if (this.isPlaying) {
+                this.currentTrack.howl.pause();
+                this.isPlaying = false;
+                this.visualizer.stop();
+            } else {
+                this.currentTrack.howl.play();
+                this.isPlaying = true;
+                this.visualizer.start();
+            }
+            return;
+        }
+        
+        if (this.currentTrack?.howl) {
+            this.currentTrack.howl.stop();
+        }
+        
+        if (!track.howl) {
+            track.howl = new Howl({
+                src: [track.file],
+                format: ['flac'],
+                html5: true,
+                onload: () => {
+                    const audioNode = track.howl._sounds[0]._node;
+                    const source = this.audioContext.createMediaElementSource(audioNode);
+                    this.visualizer.connectSource(source);
+                }
+            });
+        }
+        
+        this.currentTrack = track;
+        track.howl.play();
+        this.isPlaying = true;
+        this.visualizer.start();
+    },
+    
+    setVisualizerType(type) {
+        this.visualizerType = type;
+        this.visualizer.setType(type);
+    },
+    
+    async submitFeedback(event) {
+        event.preventDefault();
+        const form = event.target;
+        const data = {
+            name: form.name.value,
+            email: form.email.value,
+            message: form.message.value,
+            to: 'emiliohurppi@protonmail.com'
+        };
+        
+        try {
+            const response = await fetch('/.netlify/functions/send-email', {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                alert('Kiitos palautteestasi!');
+                form.reset();
+            } else {
+                throw new Error('Failed to send feedback');
+            }
+        } catch (error) {
+            alert('Virhe palautteen lähetyksessä. Yritä myöhemmin uudelleen.');
+            console.error('Error:', error);
+        }
+    }
+}" x-init="init">
+    <header>
+        <h1>Musiikki</h1>
+        <nav>
+            <a href="../index.html">Etusivu</a>
+            <a href="../pages/photos.html">Valokuvaus</a>
+            <a href="../pages/music.html" class="active">Musiikki</a>
+            <a href="../pages/projects.html">Projektit</a>
+        </nav>
+    </header>
+    
+    <main class="container">
+        <div class="visualizer-container">
+            <h2 class="winamp-title">Winamp Visualizer</h2>
+            <canvas x-ref="visualizer" class="visualizer-canvas"></canvas>
+            
+            <div class="visualizer-controls">
+                <button class="visualizer-btn" :class="{ active: visualizerType === 'bars' }" @click="setVisualizerType('bars')">Bars</button>
+                <button class="visualizer-btn" :class="{ active: visualizerType === 'wave' }" @click="setVisualizerType('wave')">Wave</button>
+                <button class="visualizer-btn" :class="{ active: visualizerType === 'circle' }" @click="setVisualizerType('circle')">Circle</button>
+            </div>
+        </div>
+        
+        <div class="track-grid">
+            <template x-for="track in tracks" :key="track.id">
+                <div class="track-card">
+                    <img :src="track.cover" :alt="track.title">
+                    <div class="track-info">
+                        <h3 x-text="track.title"></h3>
+                        <p x-text="track.artist"></p>
+                        <button @click="playTrack(track)" 
+                                :class="{ 'playing': currentTrack?.id === track.id && isPlaying }">
+                            <span x-text="currentTrack?.id === track.id && isPlaying ? 'Pause' : 'Play'"></span>
+                        </button>
+                    </div>
+                </div>
+            </template>
+        </div>
+        
+        <div class="contact-form">
+            <h2>Lähetä palautetta</h2>
+            <form @submit.prevent="submitFeedback">
+                <div class="form-group">
+                    <label for="name">Nimi:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Sähköposti:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">Viesti:</label>
+                    <textarea id="message" name="message" required></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn">Lähetä palaute</button>
+            </form>
+        </div>
+    </main>
+    
+    <footer>
+        <p>&copy; 2025 Luova Studio. Kaikki oikeudet pidätetään.</p>
+    </footer>
+    
+    <!-- Audio Visualizer -->
+    <script src="../js/audio-visualizer.js"></script>
+</body>
+</html>

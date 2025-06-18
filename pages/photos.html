@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valokuvagalleria - Luova Studio</title>
+    <meta name="description" content="Luovan studion valokuvagalleria. Kuvia luonnosta, kaupungeista ja tapahtumista.">
+    
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'self' data: blob: http: https:; script-src * 'self' 'unsafe-inline' 'unsafe-eval' cdn.jsdelivr.net cdnjs.cloudflare.com unpkg.com; style-src * 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com unpkg.com; img-src * 'self' data: blob:; media-src * 'self' blob: data:; connect-src * 'self';">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    
+    <link rel="stylesheet" href="../css/styles.css">
+    
+    <!-- Masonry -->
+    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+    <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
+    
+    <!-- Image Gallery -->
+    <script src="../js/image-gallery.js" type="module"></script>
+    
+    <style>
+        .gallery-grid {
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+            max-width: 1600px;
+        }
+        
+        .gallery-item {
+            width: calc(33.333% - 20px);
+            margin: 10px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        @media (max-width: 1200px) {
+            .gallery-item {
+                width: calc(50% - 20px);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .gallery-item {
+                width: calc(100% - 20px);
+            }
+        }
+        
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+        
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+        
+        .gallery-item-content {
+            padding: 1rem;
+            background: var(--card-bg);
+        }
+        
+        .gallery-item-content h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--text);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text);
+            font-size: 1.2rem;
+        }
+        
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            border: 2px solid var(--text);
+            border-right-color: transparent;
+            border-radius: 50%;
+            margin-left: 0.5em;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background: var(--error-bg, #ff4444);
+            color: var(--error-text, white);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem auto;
+            text-align: center;
+            max-width: 600px;
+        }
+        
+        .last-updated {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 2rem;
+            padding: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Valokuvaus</h1>
+        <nav>
+            <a href="../index.html">Etusivu</a>
+            <a href="./photos.html" class="active">Valokuvaus</a>
+            <a href="./music.html">Musiikki</a>
+            <a href="./projects.html">Projektit</a>
+        </nav>
+    </header>
+    
+    <main>
+        <div id="image-gallery" class="gallery-grid"></div>
+        <div class="loading">Ladataan kuvia...</div>
+        <div class="last-updated">
+            Viimeksi päivitetty: <span id="last-updated-time"></span>
+        </div>
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const gallery = new ImageGallery({
+                container: '#image-gallery',
+                imagesPath: '../assets/images/',
+                lazyLoad: true,
+                masonry: true
+            });
+            
+            // Handle image loading with imagesLoaded
+            const grid = document.querySelector('.gallery-grid');
+            imagesLoaded(grid, () => {
+                if (gallery.masonry) {
+                    gallery.masonry.layout();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

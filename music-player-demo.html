@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music Player Demo</title>
+  
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Music Player CSS -->
+  <link rel="stylesheet" href="css/music-player.css">
+  
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f7fa;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    
+    h1 {
+      text-align: center;
+      color: #2d3748;
+      margin-bottom: 2rem;
+    }
+    
+    .player-container {
+      margin-bottom: 2rem;
+    }
+    
+    /* Custom theme example */
+    .custom-theme {
+      --primary-color: #e53e3e;
+      --primary-hover: #c53030;
+      --bg-primary: #fff5f5;
+      --bg-secondary: #fed7d7;
+      --text-primary: #2d3748;
+      --text-secondary: #718096;
+      --border-color: #feb2b2;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Music Player Demo</h1>
+    
+    <div class="player-container">
+      <h2>Default Theme</h2>
+      <div id="player1" class="music-player">
+        <!-- Music player will be rendered here -->
+      </div>
+    </div>
+    
+    <div class="player-container">
+      <h2>Dark Theme</h2>
+      <div id="player2" class="music-player dark-theme">
+        <!-- Music player will be rendered here -->
+      </div>
+    </div>
+    
+    <div class="player-container">
+      <h2>Custom Theme</h2>
+      <div id="player3" class="music-player custom-theme">
+        <!-- Music player will be rendered here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Include required libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Include the MusicPlayer library -->
+  <script src="js/music-player.js"></script>
+  
+  <!-- Include the MusicPlayer component -->
+  <script src="js/music-player-component.js"></script>
+  
+  <script>
+    // Wait for the DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // Sample track list
+      const tracks = [
+        {
+          title: 'Hip-Hop Intro',
+          artist: 'Artist Name',
+          src: 'assets/audio/01. Hip-Hop Intro.flac',
+          cover: 'assets/images/cover1.jpg',
+          duration: 180 // in seconds
+        },
+        {
+          title: 'Jazz Instrumental',
+          artist: 'Jazz Band',
+          src: 'assets/audio/Jazz instrumental.flac',
+          cover: 'assets/images/cover2.jpg',
+          duration: 240
+        },
+        {
+          title: 'Acoustic Session',
+          artist: 'Singer-Songwriter',
+          src: 'assets/audio/acoustic.mp3',
+          cover: 'assets/images/cover3.jpg',
+          duration: 210
+        },
+        {
+          title: 'Electronic Beats',
+          artist: 'DJ Producer',
+          src: 'assets/electronic.mp3',
+          cover: 'assets/images/cover4.jpg',
+          duration: 195
+        },
+        {
+          title: 'Classical Masterpiece',
+          artist: 'Orchestra',
+          src: 'assets/classical.mp3',
+          cover: 'assets/images/cover5.jpg',
+          duration: 320
+        }
+      ];
+      
+      // Initialize players with different configurations
+      const player1 = new MusicPlayerComponent('#player1', {
+        tracks: tracks,
+        showPlaylist: true,
+        visualizer: true,
+        theme: 'light'
+      });
+      
+      const player2 = new MusicPlayerComponent('#player2', {
+        tracks: tracks,
+        showPlaylist: true,
+        visualizer: true,
+        theme: 'dark'
+      });
+      
+      const player3 = new MusicPlayerComponent('#player3', {
+        tracks: tracks,
+        showPlaylist: false, // Hide playlist for this player
+        visualizer: true,
+        theme: 'light'
+      });
+      
+      // Example of programmatic control
+      setTimeout(() => {
+        // Auto-play the first track in the first player after 1 second
+        player1.player.loadTrack(0);
+        player1.player.play().catch(error => {
+          console.error('Auto-play failed:', error);
+        });
+      }, 1000);
+      
+      // Example of event listening
+      player1.player.on('trackChanged', ({ track }) => {
+        console.log('Track changed to:', track.title);
+      });
+      
+      player1.player.on('play', () => {
+        console.log('Playback started');
+      });
+      
+      player1.player.on('pause', () => {
+        console.log('Playback paused');
+      });
+      
+      player1.player.on('end', () => {
+        console.log('Track ended');
+      });
+      
+      player1.player.on('error', ({ error }) => {
+        console.error('Player error:', error);
+      });
+    });
+  </script>
+</body>
+</html>

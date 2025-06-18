@@ -1,0 +1,24 @@
+﻿
+
+    Directory: C:\KOTISIVU\assets\audio
+
+
+Mode                 LastWriteTime         Length Name                                       
+----                 -------------         ------ ----                                       
+-a----         19.9.2024      5.03       11786473 01. Hip-Hop Intro.flac                     
+-a----         19.9.2024      5.03       37303591 03.Mellow(1).flac                          
+-a----         19.9.2024      5.03       58092333 07.Strange.flac                            
+-a----         19.9.2024      5.03       17090201 09.Swishaz.flac                            
+-a----         19.9.2024      5.03       15820320 10.Frosty.flac                             
+-a----         19.9.2024      5.03       29579281 17.Mist.flac                               
+-a----         19.9.2024      5.03       18910768 18.Alley.flac                              
+-a----         19.9.2024      5.03        8328127 20.Cloudy instrumental.flac                
+-a----         19.9.2024      5.03        9010816 23.Chill oldschool beat.flac               
+-a----         19.9.2024      5.03       23317689 4-(2-Fluoroethylthio)-2,5-dimethoxy-PEA.fla
+                                                  c                                          
+-a----         16.5.2025     15.24              0 filelist.txt                               
+-a----         19.9.2024      5.03       15646449 Jazz instrumental.flac                     
+-a----         19.9.2024      5.03       16432616 Rain (1).flac                              
+-a----         19.9.2024      5.03       35347417 Rain (2).flac                              
+
+

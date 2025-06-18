@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Testi Kuvan Polku</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>Kuvan Polun Testaaminen</h1>
+    
+    <div class="test">
+        <h3>Testi 1: Suhteellinen polku</h3>
+        <img src="../assets/images/20250516_201712.jpg" alt="Testi 1" style="max-width: 200px;">
+        <p>Polku: ../assets/images/20250516_201712.jpg</p>
+    </div>
+
+    <div class="test">
+        <h3>Testi 2: Juuripolku</h3>
+        <img src="/assets/images/20250516_201712.jpg" alt="Testi 2" style="max-width: 200px;">
+        <p>Polku: /assets/images/20250516_201712.jpg</p>
+    </div>
+
+    <div class="test">
+        <h3>Testi 3: Juuripolku ilman aloitussivua</h3>
+        <img src="assets/images/20250516_201712.jpg" alt="Testi 3" style="max-width: 200px;">
+        <p>Polku: assets/images/20250516_201712.jpg</p>
+    </div>
+
+    <div class="test">
+        <h3>Testi 4: Täysin suhteellinen polku</h3>
+        <img src="./assets/images/20250516_201712.jpg" alt="Testi 4" style="max-width: 200px;">
+        <p>Polku: ./assets/images/20250516_201712.jpg</p>
+    </div>
+
+    <p>Jos mikään kuvista ei näy, ongelma saattaa olla joko:</p>
+    <ul>
+        <li>Väärä polku kuvatiedostoon</li>
+        <li>Kuvatiedostoa ei ole olemassa määritellyssä sijainnissa</li>
+        <li>Käyttöoikeudet eivät riitä kuvan lukemiseen</li>
+    </ul>
+
+    <p><a href="test-image-path.html">Päivitä sivu</a></p>
+</body>
+</html>

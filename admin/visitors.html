@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en" x-data="visitorStats()" x-init="init()" class="h-full bg-gray-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visitor Statistics - Admin Panel</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Alpine.js -->
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  
+  <style>
+    [x-cloak] { display: none !important; }
+    .sidebar { width: 250px; transition: all 0.3s; }
+    .main-content { margin-left: 250px; transition: all 0.3s; }
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); position: fixed; z-index: 50; height: 100vh; }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; }
+    }
+  </style>
+</head>
+<body class="h-full">
+  <!-- Mobile menu button -->
+  <div class="md:hidden fixed top-4 left-4 z-50">
+    <button @click="isSidebarOpen = !isSidebarOpen" class="p-2 rounded-md text-gray-700 hover:bg-gray-100">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar bg-gray-800 text-white fixed h-full overflow-y-auto" :class="{ 'open': isSidebarOpen }">
+    <div class="p-4">
+      <h1 class="text-2xl font-bold text-white mb-8 mt-4">Admin Panel</h1>
+      <nav class="space-y-2">
+        <a href="index.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded">Dashboard</a>
+        <a href="visitors.html" class="block px-4 py-2 bg-gray-900 text-white rounded">Visitor Analytics</a>
+        <a href="content.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded">Content</a>
+        <a href="media.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded">Media</a>
+        <a href="settings.html" class="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded">Settings</a>
+        <div class="border-t border-gray-700 my-4"></div>
+        <button @click="logout()" class="w-full text-left px-4 py-2 text-red-400 hover:bg-gray-700 rounded flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          </svg>
+          Logout
+        </button>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main-content min-h-screen bg-gray-100">
+    <div class="p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+          <h2 class="text-2xl font-semibold text-gray-800">Visitor Analytics</h2>
+          <p class="text-gray-600">Track and analyze your website visitors</p>
+        </div>
+        <div class="mt-4 md:mt-0">
+          <div class="flex space-x-2">
+            <select x-model="timeRange" @change="loadData" class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="7">Last 7 days</option>
+              <option value="30">Last 30 days</option>
+              <option value="90">Last 90 days</option>
+              <option value="365">Last year</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Visitors -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center">
+            <div class="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-500">Total Visitors</p>
+              <p class="text-2xl font-semibold text-gray-900" x-text="formatNumber(stats.totalVisitors)"></p>
+              <p class="text-xs" :class="stats.visitorChange >= 0 ? 'text-green-600' : 'text-red-600'">
+                <span x-text="stats.visitorChange >= 0 ? '↑' : '↓'"></span>
+                <span x-text="Math.abs(stats.visitorChange) + '%'"></span> from previous period
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Page Views -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center">
+            <div class="p-3 rounded-full bg-green-100 text-green-600 mr-4">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-500">Page Views</p>
+              <p class="text-2xl font-semibold text-gray-900" x-text="formatNumber(stats.pageViews)"></p>
+              <p class="text-xs" :class="stats.pageViewChange >= 0 ? 'text-green-600' : 'text-red-600'">
+                <span x-text="stats.pageViewChange >= 0 ? '↑' : '↓'"></span>
+                <span x-text="Math.abs(stats.pageViewChange) + '%'"></span> from previous period
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bounce Rate -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center">
+            <div class="p-3 rounded-full bg-yellow-100 text-yellow-600 mr-4">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-500">Bounce Rate</p>
+              <p class="text-2xl font-semibold text-gray-900" x-text="stats.bounceRate + '%'"></p>
+              <p class="text-xs" :class="stats.bounceRateChange <= 0 ? 'text-green-600' : 'text-red-600'">
+                <span x-text="stats.bounceRateChange <= 0 ? '↓' : '↑'"></span>
+                <span x-text="Math.abs(stats.bounceRateChange) + '%'"></span> from previous period
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Avg. Session -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center">
+            <div class="p-3 rounded-full bg-purple-100 text-purple-600 mr-4">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-500">Avg. Session</p>
+              <p class="text-2xl font-semibold text-gray-900" x-text="stats.avgSessionDuration + 'm'"></p>
+              <p class="text-xs" :class="stats.sessionDurationChange >= 0 ? 'text-green-600' : 'text-red-600'">
+                <span x-text="stats.sessionDurationChange >= 0 ? '↑' : '↓'"></span>
+                <span x-text="Math.abs(stats.sessionDurationChange) + '%'"></span> from previous period
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Visitors Over Time -->
+        <div class="lg:col-span-2 bg-white rounded-lg shadow p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Visitors Over Time</h3>
+            <div class="flex space-x-2">
+              <button @click="setChartType('day')" :class="{'bg-blue-100 text-blue-700': chartType === 'day'}" class="px-3 py-1 text-sm rounded-md hover:bg-gray-100">Day</button>
+              <button @click="setChartType('week')" :class="{'bg-blue-100 text-blue-700': chartType === 'week'}" class="px-3 py-1 text-sm rounded-md hover:bg-gray-100">Week</button>
+              <button @click="setChartType('month')" :class="{'bg-blue-100 text-blue-700': chartType === 'month'}" class="px-3 py-1 text-sm rounded-md hover:bg-gray-100">Month</button>
+            </div>
+          </div>
+          <div class="h-80">
+            <canvas id="visitorsChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Top Pages -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Top Pages</h3>
+          </div>
+          <div class="divide-y divide-gray-200">
+            <template x-for="(page, index) in topPages" :key="index">
+              <div class="px-6 py-3 flex items-center hover:bg-gray-50">
+                <div class="flex-shrink-0 w-8 text-center text-gray-500 font-medium" x-text="index + 1"></div>
+                <div class="ml-4 flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-900 truncate" x-text="page.path"></p>
+                  <p class="text-xs text-gray-500" x-text="`${page.views} views`"></p>
+                </div>
+                <div class="ml-4">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" :class="page.change >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" x-text="`${page.change >= 0 ? '+' : ''}${page.change}%`"></span>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Traffic Sources -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Traffic Sources</h3>
+          <div class="h-64">
+            <canvas id="sourcesChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Device Distribution -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Device Distribution</h3>
+          <div class="h-64">
+            <canvas id="devicesChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function visitorStats() {
+      return {
+        // State
+        isSidebarOpen: false,
+        timeRange: '30',
+        chartType: 'day',
+        charts: {},
+        stats: {
+          totalVisitors: 0,
+          pageViews: 0,
+          bounceRate: 0,
+          avgSessionDuration: 0,
+          visitorChange: 0,
+          pageViewChange: 0,
+          bounceRateChange: 0,
+          sessionDurationChange: 0
+        },
+        topPages: [],
+        
+        // Initialize
+        init() {
+          this.loadData();
+          this.setupCharts();
+        },
+        
+        // Load data based on selected time range
+        async loadData() {
+          try {
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Generate sample data
+            this.generateSampleData();
+            
+            // Update charts
+            this.updateCharts();
+          } catch (error) {
+            console.error('Error loading data:', error);
+          }
+        },
+        
+        // Set up chart instances
+        setupCharts() {
+          // Visitors Chart
+          const visitorsCtx = document.getElementById('visitorsChart');
+          if (visitorsCtx) {
+            this.charts.visitors = new Chart(visitorsCtx, {
+              type: 'line',
+              data: { labels: [], datasets: [
+                { label: 'Visitors', data: [], borderColor: '#4f46e5', backgroundColor: 'rgba(79, 70, 229, 0.1)', borderWidth: 2, tension: 0.3, fill: true },
+                { label: 'Page Views', data: [], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, tension: 0.3, fill: true }
+              ]},
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { precision: 0 } } }
+              }
+            });
+          }
+          
+          // Sources Chart
+          const sourcesCtx = document.getElementById('sourcesChart');
+          if (sourcesCtx) {
+            this.charts.sources = new Chart(sourcesCtx, {
+              type: 'doughnut',
+              data: {
+                labels: ['Direct', 'Social', 'Referral', 'Search', 'Email'],
+                datasets: [{
+                  data: [30, 20, 25, 15, 10],
+                  backgroundColor: ['#4f46e5', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6']
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                cutout: '70%'
+              }
+            });
+          }
+          
+          // Devices Chart
+          const devicesCtx = document.getElementById('devicesChart');
+          if (devicesCtx) {
+            this.charts.devices = new Chart(devicesCtx, {
+              type: 'pie',
+              data: {
+                labels: ['Desktop', 'Mobile', 'Tablet'],
+                datasets: [{
+                  data: [55, 35, 10],
+                  backgroundColor: ['#4f46e5', '#10b981', '#f59e0b']
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } }
+              }
+            });
+          }
+        },
+        
+        // Update charts with new data
+        updateCharts() {
+          // Update visitors chart
+          if (this.charts.visitors) {
+            const days = parseInt(this.timeRange) || 30;
+            const labels = [];
+            const visitorsData = [];
+            const pageViewsData = [];
+            
+            for (let i = 0; i < days; i++) {
+              labels.push(`Day ${i + 1}`);
+              visitorsData.push(Math.floor(Math.random() * 1000) + 500);
+              pageViewsData.push(Math.floor(visitorsData[i] * (Math.random() * 2 + 1)));
+            }
+            
+            this.charts.visitors.data.labels = labels;
+            this.charts.visitors.data.datasets[0].data = visitorsData;
+            this.charts.visitors.data.datasets[1].data = pageViewsData;
+            this.charts.visitors.update();
+          }
+          
+          // Update stats
+          this.stats = {
+            totalVisitors: Math.floor(Math.random() * 10000) + 5000,
+            pageViews: Math.floor(Math.random() * 50000) + 20000,
+            bounceRate: (Math.random() * 30 + 40).toFixed(1),
+            avgSessionDuration: (Math.random() * 5 + 2).toFixed(1),
+            visitorChange: (Math.random() * 20 - 5).toFixed(1),
+            pageViewChange: (Math.random() * 25 - 5).toFixed(1),
+            bounceRateChange: (Math.random() * 10 - 5).toFixed(1),
+            sessionDurationChange: (Math.random() * 15 - 5).toFixed(1)
+          };
+          
+          // Update top pages
+          this.topPages = [
+            { path: '/', views: 12543, change: 12.5 },
+            { path: '/projects', views: 8672, change: 5.7 },
+            { path: '/about', views: 5432, change: -2.3 },
+            { path: '/blog', views: 3210, change: 8.1 },
+            { path: '/contact', views: 2105, change: -1.2 }
+          ];
+        },
+        
+        // Set chart type
+        setChartType(type) {
+          this.chartType = type;
+          this.updateCharts();
+        },
+        
+        // Format number with commas
+        formatNumber(num) {
+          return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        },
+        
+        // Logout function
+        logout() {
+          // In a real app, you would clear the session here
+          console.log('Logging out...');
+          window.location.href = 'login.html';
+        },
+        
+        // Generate sample data
+        generateSampleData() {
+          const days = parseInt(this.timeRange) || 30;
+          const baseMultiplier = days / 30;
+          
+          this.stats = {
+            totalVisitors: Math.floor(25000 * baseMultiplier),
+            pageViews: Math.floor(100000 * baseMultiplier),
+            bounceRate: (Math.random() * 30 + 40).toFixed(1),
+            avgSessionDuration: (Math.random() * 5 + 2).toFixed(1),
+            visitorChange: (Math.random() * 20 - 5).toFixed(1),
+            pageViewChange: (Math.random() * 25 - 5).toFixed(1),
+            bounceRateChange: (Math.random() * 10 - 5).toFixed(1),
+            sessionDurationChange: (Math.random() * 15 - 5).toFixed(1)
+          };
+        }
+      };
+    }
+  </script>
+</body>
+</html>
