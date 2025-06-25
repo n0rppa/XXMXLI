@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Galleria - XXMXLI</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Copy sidebar and main-content styles from music.html for consistency */
+    body { margin: 0; font-family: system-ui, sans-serif; }
+    .sidebar {
+      width: 280px; background: #f9fcff; min-height: 100vh; position: fixed; left: 0; top: 0; box-shadow: 2px 0 12px #b9eefd33;
+      transition: transform 0.3s cubic-bezier(.5,0,.5,1); z-index: 2; display: flex; flex-direction: column;
+    }
+    .sidebar-header { padding: 28px 18px 18px; font-weight: 600; font-size: 1.3rem; letter-spacing: 1px; color: #3790c7; }
+    .sidebar nav { display: flex; flex-direction: column; }
+    .sidebar nav a { padding: 13px 24px; color: #378ab7; text-decoration: none; border-radius: 7px; margin: 0 0 4px 0; font-size: 1.08rem; }
+    .sidebar nav a.active, .sidebar nav a[aria-current="page"] { background: #e6f6ff; font-weight: bold; }
+    .main-content { margin-left: 280px; padding: 38px 4vw 4vw 4vw; background: #f7fcff; min-height: 100vh; transition: all 0.3s cubic-bezier(.5,0,.5,1); }
+    .nav-toggle { display: none; position:fixed; left:12px; top:16px; z-index: 20; background:#eaf6fd; border:none; border-radius:6px; padding:8px 12px; font-size:1.7rem; color:#3790c7; }
+    @media (max-width: 700px) {
+      .sidebar { width: 85vw; max-width: 320px; left: 0; transform: translateX(-105%); border-radius: 0 16px 16px 0; }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0 !important; padding: 24px 4vw 4vw 4vw; }
+      .nav-toggle { display: block; }
+    }
+  </style>
+</head>
+<body>
+  <button class="nav-toggle" id="navToggle" title="Avaa/Piilota valikko">&#9776;</button>
+  <aside class="sidebar open" id="sidebar">
+    <div class="sidebar-header">XXMXLI</div>
+    <nav>
+      <a href="index.html">Etusivu</a>
+      <a href="music.html">Musiikkisoitin</a>
+      <a href="gallery.html" class="active" aria-current="page">Galleria</a>
+      <a href="about.html">Tietoa</a>
+      <!-- Lisää tarvittaessa -->
+    </nav>
+  </aside>
+  <main class="main-content" id="mainContent">
+    <h2>Galleria</h2>
+    <div class="gallery" style="display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 24px;">
+      <!-- Lisää kuviasi tähän -->
+      <div class="gallery-item">
+        <img src="assets/images/photo1.jpg" alt="Kuva 1" style="width:100%;border-radius:8px;">
+        <div class="image-info"><h3>Kuva 1</h3><p>Kesä 2024</p></div>
+      </div>
+      <div class="gallery-item">
+        <img src="assets/images/photo2.jpg" alt="Kuva 2" style="width:100%;border-radius:8px;">
+        <div class="image-info"><h3>Kuva 2</h3><p>Talvi 2024</p></div>
+      </div>
+      <!-- Lisää muita gallerian kuvia tähän -->
+    </div>
+  </main>
+  <script>
+    // Navigointipaneelin himmennys/mobiilin avaus
+    const navBtn = document.getElementById('navToggle');
+    const sidebar = document.getElementById('sidebar');
+    navBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+    });
+    // Klikkaa ulos paneelista mobiilissa sulkee navin
+    document.addEventListener('click', function(e){
+      if(window.innerWidth < 700){
+        if(!sidebar.contains(e.target) && e.target !== navBtn){
+          sidebar.classList.remove('open');
+        }
+      }
+    });
+  </script>
+</body>
+</html>
