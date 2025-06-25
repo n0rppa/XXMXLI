@@ -2,301 +2,189 @@
 <html lang="fi">
 <head>
   <meta charset="UTF-8">
-  <title>Winamp FLAC-soitin + Visualizer</title>
+  <title>Musiikkisoitin – XXMXLI</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    body {
-      background: #1b1b2b;
-      color: #d8fdff;
+    :root {
+      --nav-bg: linear-gradient(135deg,#b1eaff 0%,#73b5f5 100%);
+      --nav-fg: #12476a;
+      --nav-fg-light: #eaf6ff;
+      --ambient-glow: 0 0 40px 10px #89d7ff88;
+      --main-bg: #eaf6ff;
+      --main-fg: #15405f;
+      --accent: #62aaff;
+    }
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: var(--main-bg);
+      color: var(--main-fg);
       font-family: 'Segoe UI', Arial, sans-serif;
-      display: flex; flex-direction: column; align-items: center;
+      transition: background 0.4s;
+    }
+    body {
+      display: flex;
       min-height: 100vh;
+      overflow-x: hidden;
     }
-    .container {
-      background: #23243a;
-      border-radius: 13px;
-      box-shadow: 0 8px 32px #000a;
-      margin-top: 44px;
-      padding: 32px 30px 24px 30px;
-      width: 420px;
-      max-width: 98vw;
+    .sidebar {
+      width: 220px;
+      background: var(--nav-bg);
+      color: var(--nav-fg);
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      box-shadow: var(--ambient-glow);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.3s cubic-bezier(.5,0,.5,1), box-shadow 0.3s;
     }
-    h2 {
-      color: #5ff;
-      font-family: 'Orbitron', monospace;
-      text-shadow: 0 0 8px #2ef, 0 0 18px #09f5;
+    .sidebar.closed {
+      transform: translateX(-100%);
+      box-shadow: none;
+    }
+    .sidebar-header {
+      width: 100%;
       text-align: center;
-      font-size: 2.2em;
-      letter-spacing: 0.09em;
-      margin-bottom: 18px;
+      padding: 28px 0 18px 0;
+      font-family: 'Orbitron', monospace;
+      font-size: 1.4em;
+      letter-spacing: 0.08em;
+      color: var(--nav-fg);
+      text-shadow: 0 2px 18px #fff5, 0 0 6px #b9f7ffcc;
     }
-    .controls {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 0.7em;
-      margin: 10px 0 16px 0;
+    .sidebar nav {
+      width: 100%;
+      margin-top: 20px;
     }
-    .controls button {
-      background: #1c2a3a;
-      color: #5ff;
-      border: 2px solid #5ff;
-      border-radius: 50%;
-      width: 38px; height: 38px;
-      font-size: 1.1em;
-      cursor: pointer;
-      transition: background 0.18s, border 0.18s, color 0.18s;
-    }
-    .controls button:hover {
-      background: #0ff9;
-      color: #fff;
-      border-color: #fff;
-    }
-    .playlist {
-      background: #181a24;
-      border-radius: 4px;
-      overflow: auto;
-      max-height: 110px;
-      margin-bottom: 11px;
-      box-shadow: 0 2px 8px #0002 inset;
-    }
-    .playlist ul { list-style: none; padding: 0; margin: 0; }
-    .playlist li {
-      padding: 7px 14px;
-      cursor: pointer;
-      color: #8ed;
-      border-bottom: 1px solid #232b34;
-      transition: background 0.14s, color 0.14s;
-    }
-    .playlist li.selected {
-      background: #3af3;
-      color: #fff;
-      font-weight: bold;
-      text-shadow: 0 0 4px #1ff;
-    }
-    .playlist li:hover {
-      background: #4df6;
-      color: #fff;
-    }
-    .slider-group {
-      display: flex;
-      align-items: center;
-      gap: 1em;
-      margin-bottom: 10px;
-      margin-top: 4px;
-    }
-    input[type=range] {
-      accent-color: #5ff;
-      width: 110px;
-    }
-    canvas {
+    .sidebar a {
       display: block;
-      width: 350px;
-      height: 95px;
-      background: #04060a;
-      margin: 0 auto;
-      border-radius: 8px;
-      box-shadow: 0 2px 16px #1ff7 inset;
-      margin-bottom: 10px;
-      border: 1px solid #0ff5;
+      color: var(--nav-fg);
+      background: transparent;
+      padding: 12px 32px;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 1.07em;
+      border-left: 4px solid transparent;
+      transition: background 0.13s, color 0.13s, border-color 0.18s;
     }
-    .display {
-      background: #111;
-      color: #5ff;
-      font-family: monospace;
-      font-size: 1.08em;
-      border-radius: 6px;
-      margin-bottom: 8px;
-      padding: 6px 14px;
-      text-shadow: 0 0 4px #2ef;
-      box-shadow: 0 2px 8px #000a inset;
-      min-height: 30px;
+    .sidebar a:hover, .sidebar a.active {
+      background: #c3e9ff88;
+      color: var(--nav-fg-light);
+      border-left: 4px solid var(--accent);
+      text-shadow: 0 0 8px #6fdcff;
     }
+    .nav-toggle {
+      display: none;
+      position: fixed;
+      top: 18px;
+      left: 18px;
+      z-index: 120;
+      background: #b1eaff;
+      color: #17648d;
+      border: none;
+      border-radius: 50%;
+      box-shadow: 0 2px 12px #8ad0ff66;
+      width: 40px; height: 40px;
+      font-size: 1.5em;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .nav-toggle:hover {
+      background: #62aaff;
+      color: #fff;
+    }
+    .main-content {
+      margin-left: 220px;
+      flex: 1;
+      padding: 38px 32px 32px 32px;
+      background: linear-gradient(135deg, #eaf6ff 80%, #d0e9fa 100%);
+      min-height: 100vh;
+      transition: margin-left 0.3s;
+      position: relative;
+      z-index: 1;
+      box-sizing: border-box;
+      box-shadow: 0 0 80px 0 #b9eefd66 inset;
+    }
+    .sidebar.closed ~ .main-content {
+      margin-left: 0;
+    }
+    /* Responsiivisuus (mobiili) */
+    @media (max-width: 700px) {
+      .sidebar {
+        width: 85vw;
+        max-width: 320px;
+        min-width: 160px;
+        left: 0;
+        transform: translateX(-105%);
+        border-radius: 0 16px 16px 0;
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 0 !important;
+        padding: 24px 4vw 4vw 4vw;
+      }
+      .nav-toggle {
+        display: block;
+      }
+    }
+    /* Animointi */
+    .sidebar, .main-content { transition: all 0.3s cubic-bezier(.5,0,.5,1); }
   </style>
+  <!-- Howler.js -->
   <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h2>Winamp FLAC-soitin</h2>
-    <div class="display" id="display">Valitse kappale ja paina ▶️</div>
-    <div class="controls">
-      <button id="prevBtn" title="Edellinen">&#9198;</button>
-      <button id="playBtn" title="Toista">&#9654;</button>
-      <button id="pauseBtn" title="Tauko">&#10073;&#10073;</button>
-      <button id="stopBtn" title="Pysäytä">&#9209;</button>
-      <button id="nextBtn" title="Seuraava">&#9197;</button>
+  <button class="nav-toggle" id="navToggle" title="Avaa/Piilota valikko">&#9776;</button>
+  <aside class="sidebar open" id="sidebar">
+    <div class="sidebar-header">XXMXLI</div>
+    <nav>
+      <a href="index.html">Etusivu</a>
+      <a href="music.html" class="active">Musiikkisoitin</a>
+      <a href="gallery.html">Galleria</a>
+      <a href="about.html">Tietoa</a>
+      <!-- Lisää tarvittaessa -->
+    </nav>
+  </aside>
+  <main class="main-content" id="mainContent">
+    <h2>Musiikkisoitin</h2>
+    <p style="color:#378ab7;">Tähän upotetaan myöhemmin Winamp-tyylinen soitin ja visualizer pyynnöstäsi!</p>
+    <div style="margin:32px auto; max-width:430px; background:#fff8; border-radius:12px; box-shadow:0 2px 16px #b1eaff33; padding:30px 18px; text-align:center;">
+      <!-- Esimerkin vuoksi pelkkä perussoitin -->
+      <audio id="audio" controls style="width:100%;">
+        <source src="assets/audio/01. Hip-Hop Intro.flac" type="audio/flac">
+        Selaimesi ei tue FLAC-toistoa.
+      </audio>
+      <br><small style="color:#579cd6;">Lisää soitin & visualizer kun pyydät!</small>
     </div>
-    <div class="slider-group">
-      <span>Ääni</span>
-      <input type="range" id="volume" value="80" min="0" max="100">
-      <span id="currentTime">0:00</span>
-      <input type="range" id="seekbar" value="0" min="0" max="100">
-      <span id="duration">0:00</span>
-    </div>
-    <div class="playlist">
-      <ul id="playlist"></ul>
-    </div>
-    <canvas id="visualizer" width="350" height="95"></canvas>
-  </div>
+  </main>
   <script>
-    // --- Soittolista ---
-    const tracks = [
-      { title: "01. Hip-Hop Intro", file: "assets/audio/01. Hip-Hop Intro.flac" },
-      { title: "03. Mellow", file: "assets/audio/03.Mellow(1).flac" },
-      { title: "07. Strange", file: "assets/audio/07.Strange.flac" },
-      { title: "09. Swishaz", file: "assets/audio/09.Swishaz.flac" },
-      { title: "10. Frosty", file: "assets/audio/10.Frosty.flac" },
-      { title: "17. Mist", file: "assets/audio/17.Mist.flac" },
-      { title: "18. Alley", file: "assets/audio/18.Alley.flac" },
-      { title: "20. Cloudy instrumental", file: "assets/audio/20.Cloudy instrumental.flac" },
-      { title: "23. Chill oldschool beat", file: "assets/audio/23.Chill oldschool beat.flac" },
-      { title: "Jazz instrumental", file: "assets/audio/Jazz instrumental.flac" },
-      { title: "Rain (1)", file: "assets/audio/Rain (1).flac" },
-      { title: "Rain (2)", file: "assets/audio/Rain (2).flac" }
-    ];
-
-    // --- DOM ---
-    const playBtn = document.getElementById('playBtn');
-    const pauseBtn = document.getElementById('pauseBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const playlistEl = document.getElementById('playlist');
-    const display = document.getElementById('display');
-    const volumeSlider = document.getElementById('volume');
-    const seekbar = document.getElementById('seekbar');
-    const currentTimeEl = document.getElementById('currentTime');
-    const durationEl = document.getElementById('duration');
-    const canvas = document.getElementById('visualizer');
-    const ctx = canvas.getContext('2d');
-
-    let currentTrack = 0, howl = null, seekTimer = null;
-    let analyser, audioCtx, jsNode, sourceNode, freqData, animationId;
-    let isSeeking = false;
-
-    // Playlistin rakentaminen
-    function renderPlaylist() {
-      playlistEl.innerHTML = '';
-      tracks.forEach((track, i) => {
-        const li = document.createElement('li');
-        li.textContent = track.title;
-        li.className = (i === currentTrack) ? 'selected' : '';
-        li.onclick = () => { selectTrack(i); playTrack(); };
-        playlistEl.appendChild(li);
-      });
-    }
-
-    // Soitinlogiikka
-    function selectTrack(idx) {
-      currentTrack = idx;
-      renderPlaylist();
-      display.textContent = tracks[currentTrack].title;
-      if (howl) {
-        howl.stop(); howl.unload(); howl = null;
+    // Navigointipaneelin himmennys/mobiilin avaus
+    const navBtn = document.getElementById('navToggle');
+    const sidebar = document.getElementById('sidebar');
+    navBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+    });
+    // Klikkaus ulos paneelista mobiilissa sulkee navin
+    document.addEventListener('click', function(e){
+      if(window.innerWidth < 700){
+        if(!sidebar.contains(e.target) && e.target !== navBtn){
+          sidebar.classList.remove('open');
+        }
       }
-      setupHowler();
-    }
-    function setupHowler() {
-      howl = new Howl({
-        src: [tracks[currentTrack].file],
-        format: ['flac'],
-        html5: true,
-        volume: volumeSlider.value / 100,
-        onplay: onPlay,
-        onend: nextTrack,
-        onload: updateDuration
-      });
-      setupVisualizer();
-    }
-    function playTrack() {
-      if (!howl) setupHowler();
-      howl.play();
-      display.textContent = "▶️ " + tracks[currentTrack].title;
-    }
-    function pauseTrack() { if (howl && howl.playing()) { howl.pause(); display.textContent = "⏸️ " + tracks[currentTrack].title; } }
-    function stopTrack() { if (howl) { howl.stop(); display.textContent = "⏹️ " + tracks[currentTrack].title; } }
-    function prevTrack() { selectTrack((currentTrack - 1 + tracks.length) % tracks.length); playTrack(); }
-    function nextTrack() { selectTrack((currentTrack + 1) % tracks.length); playTrack(); }
-
-    // Ajan päivitys
-    function onPlay() {
-      updateDuration();
-      clearInterval(seekTimer);
-      seekTimer = setInterval(() => { if (!isSeeking) updateSeekbar(); }, 420);
-    }
-    function updateDuration() {
-      const sec = howl ? Math.floor(howl.duration() || 0) : 0;
-      durationEl.textContent = formatTime(sec);
-    }
-    function updateSeekbar() {
-      if (!howl) return;
-      const cur = howl.seek() || 0, dur = howl.duration() || 0;
-      seekbar.value = dur ? (cur / dur * 100) : 0;
-      currentTimeEl.textContent = formatTime(cur);
-    }
-    seekbar.oninput = () => { isSeeking = true; };
-    seekbar.onchange = () => {
-      if (!howl) return;
-      const dur = howl.duration() || 0;
-      howl.seek(dur * (seekbar.value / 100));
-      isSeeking = false;
-    };
-    function formatTime(secs) {
-      const m = Math.floor(secs / 60), s = Math.floor(secs % 60);
-      return `${m}:${s < 10 ? '0' : ''}${s}`;
-    }
-
-    // Volyymin säätö
-    volumeSlider.oninput = () => { if (howl) howl.volume(volumeSlider.value / 100); };
-
-    // Visualizer Howler.js + Canvas
-    function setupVisualizer() {
-      if (audioCtx) {
-        if (animationId) cancelAnimationFrame(animationId);
-        if (jsNode) jsNode.disconnect();
-        if (analyser) analyser.disconnect();
-        if (sourceNode) sourceNode.disconnect();
+    });
+    // Avaa nav automaattisesti desktopilla
+    function updateNav() {
+      if(window.innerWidth >= 700){
+        sidebar.classList.add('open');
       }
-      const sound = howl._sounds[0];
-      if (!sound) return;
-      const htmlAudio = sound._node;
-      if (!htmlAudio) return;
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 64;
-      freqData = new Uint8Array(analyser.frequencyBinCount);
-      sourceNode = audioCtx.createMediaElementSource(htmlAudio);
-      sourceNode.connect(analyser);
-      analyser.connect(audioCtx.destination);
-      drawVisualizer();
     }
-    function drawVisualizer() {
-      analyser.getByteFrequencyData(freqData);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const barWidth = canvas.width / freqData.length;
-      for (let i = 0; i < freqData.length; i++) {
-        // Winamp-värit: vihreä–keltainen–punainen
-        let h = Math.floor((i / freqData.length) * 120); // 120 = vihreä, 0 = punainen
-        ctx.fillStyle = `hsl(${h}, 100%, 52%)`;
-        let val = freqData[i];
-        let barHeight = val * 0.85;
-        ctx.fillRect(i * barWidth + 1, canvas.height - barHeight, barWidth - 2, barHeight);
-      }
-      animationId = requestAnimationFrame(drawVisualizer);
-    }
-
-    // Kontrollit
-    playBtn.onclick = playTrack;
-    pauseBtn.onclick = pauseTrack;
-    stopBtn.onclick = stopTrack;
-    prevBtn.onclick = prevTrack;
-    nextBtn.onclick = nextTrack;
-
-    // Aloitus
-    renderPlaylist();
-    selectTrack(0);
-
-    // Siivous kun poistutaan sivulta
-    window.onunload = () => { if (howl) howl.unload(); if (audioCtx) audioCtx.close(); };
+    window.addEventListener('resize', updateNav);
+    updateNav();
   </script>
 </body>
 </html>
