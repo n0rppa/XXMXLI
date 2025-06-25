@@ -2,32 +2,41 @@
 <html lang="fi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Musiikkisoitin</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 500px; margin: 2em auto; background: #fafafa; }
-    .player { border: 1px solid #ccc; border-radius: 10px; padding: 2em; background: #fff; }
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 2em auto; background: #f2f2f2; }
+    .player { background: #fff; border-radius: 10px; padding: 2em; box-shadow: 0 2px 4px #0001; }
     .controls { margin-top: 1em; }
     button { margin: 0 5px; }
     #progress { width: 100%; }
+    select { width: 100%; margin-top: 1em; }
   </style>
 </head>
 <body>
   <div class="player">
-    <h2>Yksinkertainen soitin</h2>
-    <audio id="audio" src="music/song1.mp3"></audio>
+    <h2>Äänisoitin</h2>
+    <audio id="audio" src="assets/audio/01. Hip-Hop Intro.flac"></audio>
     <div class="controls">
       <button onclick="playAudio()">▶️</button>
       <button onclick="pauseAudio()">⏸️</button>
       <button onclick="stopAudio()">⏹️</button>
       <input type="range" id="progress" value="0" min="0" max="100" step="1">
     </div>
-    <div style="margin-top:1em;">
+    <div>
       <label for="track">Valitse kappale:</label>
       <select id="track" onchange="changeTrack()">
-        <option value="music/song1.mp3">Kappale 1</option>
-        <option value="music/song2.mp3">Kappale 2</option>
-        <option value="music/song3.mp3">Kappale 3</option>
+        <option value="assets/audio/01. Hip-Hop Intro.flac">01. Hip-Hop Intro</option>
+        <option value="assets/audio/03.Mellow(1).flac">03. Mellow(1)</option>
+        <option value="assets/audio/07.Strange.flac">07. Strange</option>
+        <option value="assets/audio/09.Swishaz.flac">09. Swishaz</option>
+        <option value="assets/audio/10.Frosty.flac">10. Frosty</option>
+        <option value="assets/audio/17.Mist.flac">17. Mist</option>
+        <option value="assets/audio/18.Alley.flac">18. Alley</option>
+        <option value="assets/audio/20.Cloudy instrumental.flac">20. Cloudy instrumental</option>
+        <option value="assets/audio/23.Chill oldschool beat.flac">23. Chill oldschool beat</option>
+        <option value="assets/audio/Jazz instrumental.flac">Jazz instrumental</option>
+        <option value="assets/audio/Rain (1).flac">Rain (1)</option>
+        <option value="assets/audio/Rain (2).flac">Rain (2)</option>
       </select>
     </div>
   </div>
