@@ -1,23 +1,25 @@
 nav {
   display: flex;
   justify-content: center;
-  background: #4a8fc9; /* Light Blue */
+  background: linear-gradient(135deg, #3B719F, #4a8fc9); /* Light Blue Ambient */
   padding: 1rem;
   border-bottom: 2px solid #3B719F; /* Darker Blue */
 }
 
 nav a {
-  color: white;
+  color: rgba(255, 255, 255, 0.8); /* Dimmed text color */
   text-decoration: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 nav a:hover {
-  background: #3B719F; /* Darker Blue */
+  background: rgba(255, 255, 255, 0.2); /* Slight hover effect */
+  color: white; /* Brighten text on hover */
 }
 
 nav a.active {
-  background: #2865A6; /* Even Darker Blue */
+  background: rgba(255, 255, 255, 0.3); /* Highlight active button */
+  color: white;
 }
