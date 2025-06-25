@@ -1,35 +1,56 @@
 <!DOCTYPE html>
 <html lang="fi">
 <head>
-  <meta charset="UTF-8">
-  <title>Etusivu – XXMXLI</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <style>
-    /* Lisää tyylit täällä (katso aiempia vastauksia tyylien osalta) */
-  </style>
+    <meta charset="UTF-8">
+    <title>Etusivu – XXMXLI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <button class="nav-toggle" id="navToggle" title="Avaa/Piilota valikko">&#9776;</button>
-  <aside class="sidebar open" id="sidebar">
-    <div class="sidebar-header">XXMXLI</div>
+    <!-- Navigation Bar -->
     <nav>
-      <a href="index.html" class="active">Etusivu</a>
-      <a href="music.html">Musiikkisoitin</a>
-      <a href="photography.html">Valokuvaus</a>
-      <a href="projects.html">Projektit</a>
-      <a href="gallery.html">Galleria</a>
+        <ul>
+            <li><a href="index.html" class="active">Etusivu</a></li>
+            <li><a href="music.html">Musiikkisoitin</a></li>
+            <li><a href="photography.html">Valokuvaus</a></li>
+            <li><a href="projects.html">Projektit</a></li>
+            <li><a href="gallery.html">Galleria</a></li>
+        </ul>
     </nav>
-  </aside>
-  <main class="main-content" id="mainContent">
-    <h2>Tervetuloa XXMXLI-projektiin!</h2>
-    <p>
-      Tämä on etusivu.<br>
-      Navigoi vasemmalta muihin osioihin.<br>
-      Tee tästä omannäköisesi!
-    </p>
-  </main>
-  <script>
-    /* Lisää JavaScript-koodi täällä */
-  </script>
+
+    <!-- Main Content -->
+    <main>
+        <h1>Tervetuloa XXMXLI-projektiin!</h1>
+        <p>Tämä on etusivu. Navigoi muihin osioihin ylhäältä.</p>
+
+        <!-- Timeline -->
+        <section id="timeline">
+            <h2>Projektin Aikajana</h2>
+            <ul>
+                <li><strong>2025:</strong> Projekti aloitettu</li>
+                <li><strong>2026:</strong> Ensimmäinen prototyyppi valmis</li>
+                <li><strong>2027:</strong> Julkaisu</li>
+            </ul>
+        </section>
+
+        <!-- Contact Form -->
+        <section id="contact-form">
+            <h2>Ota yhteyttä</h2>
+            <form action="/submit" method="POST" enctype="multipart/form-data">
+                <label for="email">Sähköposti:</label>
+                <input type="email" id="email" name="email" required>
+                <br>
+                <label for="file">Lataa tiedosto:</label>
+                <input type="file" id="file" name="file" required>
+                <br>
+                <button type="submit">Lähetä</button>
+            </form>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 XXMXLI. Kaikki oikeudet pidätetään.</p>
+    </footer>
 </body>
 </html>
