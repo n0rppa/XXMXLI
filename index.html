@@ -1,22 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 <head>
-    <meta charset="UTF-8">
-    <title>Home - XXMXLI</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <title>Etusivu – XXMXLI</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    /* Lisää tyylit täällä (katso aiempia vastauksia tyylien osalta) */
+  </style>
 </head>
 <body>
+  <button class="nav-toggle" id="navToggle" title="Avaa/Piilota valikko">&#9776;</button>
+  <aside class="sidebar open" id="sidebar">
+    <div class="sidebar-header">XXMXLI</div>
     <nav>
-        <ul>
-            <li><a href="index.html" class="active">Home</a></li>
-            <li><a href="photography.html">Photography</a></li>
-            <li><a href="projects.html">Projects</a></li>
-            <li><a href="music.html">Music</a></li>
-        </ul>
+      <a href="index.html" class="active">Etusivu</a>
+      <a href="music.html">Musiikkisoitin</a>
+      <a href="photography.html">Valokuvaus</a>
+      <a href="projects.html">Projektit</a>
+      <a href="gallery.html">Galleria</a>
     </nav>
-    <main>
-        <h1>Welcome to XXMXLI</h1>
-        <p>This is the homepage. Explore my photography, projects, and music using the navigation above.</p>
-    </main>
+  </aside>
+  <main class="main-content" id="mainContent">
+    <h2>Tervetuloa XXMXLI-projektiin!</h2>
+    <p>
+      Tämä on etusivu.<br>
+      Navigoi vasemmalta muihin osioihin.<br>
+      Tee tästä omannäköisesi!
+    </p>
+  </main>
+  <script>
+    /* Lisää JavaScript-koodi täällä */
+  </script>
 </body>
 </html>
