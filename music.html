@@ -1,3 +1,4 @@
+<!-- music.html -->
 <!DOCTYPE html>
 <html lang="fi">
 <head>
@@ -11,13 +12,51 @@
   <script src="https://unpkg.com/butterchurn@2.6.7/lib/butterchurn.min.js"></script>
   <script src="https://unpkg.com/butterchurn-presets@2.4.7/lib/butterchurnPresets.min.js"></script>
   <style>
-    .music-player { max-width: 800px; margin: 0 auto; background: rgba(0,0,0,.85); border-radius: 12px; padding: 24px; }
-    .track-list { display: flex; flex-direction: column; gap: 20px; }
-    .track-card { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 15px; }
-    .track-card button { background: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
-    .track-card button:disabled { background: #999; cursor: not-allowed; }
-    .visualizer-container { width: 100%; height: 220px; margin: 24px 0 0 0; background: #111; border-radius: 8px; overflow: hidden; }
-    #visualizer { width: 100%; height: 100%; display: block; }
+    .music-player {
+      max-width: 800px;
+      margin: 0 auto;
+      background: rgba(0, 0, 0, 0.85);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .track-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .track-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 10px 15px;
+    }
+    .track-card button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .track-card button:disabled {
+      background: #999;
+      cursor: not-allowed;
+    }
+    .visualizer-container {
+      width: 100%;
+      height: 220px;
+      margin-top: 24px;
+      background: #111;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    #visualizer {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -33,17 +72,19 @@
     <div class="music-player">
       <h2>Kuuntele näytteitä</h2>
       <div id="track-list" class="track-list"></div>
-      <div class="visualizer-container"><canvas id="visualizer"></canvas></div>
+      <div class="visualizer-container">
+        <canvas id="visualizer"></canvas>
+      </div>
     </div>
   </main>
   <script>
-    // Define your tracks here
+    // Määrittele kappaleet
     const tracks = [
       { title: 'Ambient Maisema', src: 'pluginit/sample.mp3' },
       { title: 'Elektroninen Tunnelma', src: 'pluginit/sample2.mp3' }
     ];
 
-    // Render the track list
+    // Renderöi kappaleluettelo
     const trackList = document.getElementById('track-list');
     let playingIndex = -1;
     tracks.forEach((track, i) => {
@@ -55,8 +96,14 @@
       document.getElementById(`trackbtn${i}`).onclick = () => playTrack(i);
     });
 
-    // Visualizer setup
+    // Visualisoinnin asetukset
     const canvas = document.getElementById('visualizer');
+    // Yritä alustaa WebGL-konteksti
+    let gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    if (!gl) {
+      console.error('Selaimesi ei tue WebGL:ää. Visualisointi ei toimi.');
+    }
+
     let butterchurnViz, butterchurnPreset;
     let audioCtx, srcNode, analyser, animationFrame;
     let currentHowl = null;
@@ -68,17 +115,18 @@
     }
     window.addEventListener('resize', resizeCanvas);
 
-    // Play track logic
+    // Soita kappale ja käynnistä visualisointi
     function playTrack(idx) {
-      // Stop previous
+      // Pysäytä edellinen kappale
       if (currentHowl) currentHowl.stop();
       if (audioCtx) audioCtx.close();
-      // UI update
-      if (playingIndex !== -1) document.getElementById(`trackbtn${playingIndex}`).textContent = "Play";
+      // Päivitä UI
+      if (playingIndex !== -1) {
+        document.getElementById(`trackbtn${playingIndex}`).textContent = "Play";
+      }
       document.getElementById(`trackbtn${idx}`).textContent = "Pause";
       playingIndex = idx;
 
-      // Start new playback
       currentHowl = new Howl({
         src: [tracks[idx].src],
         html5: true,
@@ -94,7 +142,7 @@
       currentHowl.play();
     }
 
-    // Visualizer and audio context
+    // Aseta Butterchurn-visualisointi ja AudioContext
     function setupButterchurn(howl) {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const media = howl._sounds[0]._node;
@@ -104,22 +152,27 @@
       analyser.connect(audioCtx.destination);
 
       if (!butterchurnViz) {
-        butterchurnViz = butterchurn.createVisualizer(audioCtx, canvas, { width: canvas.width, height: canvas.height });
-        // Choose a preset
-        butterchurnPreset = butterchurnPresets.getPresets()['Flexi & Krash - a moment with you'] ||
-                            Object.values(butterchurnPresets.getPresets())[0];
+        butterchurnViz = butterchurn.createVisualizer(audioCtx, canvas, {
+          width: canvas.width,
+          height: canvas.height
+        });
+        // Valitaan preset, käytetään 'Flexi & Krash - a moment with you' jos saatavilla
+        butterchurnPreset =
+          butterchurnPresets.getPresets()['Flexi & Krash - a moment with you'] ||
+          Object.values(butterchurnPresets.getPresets())[0];
         butterchurnViz.loadPreset(butterchurnPreset, 0.0);
       }
       resizeCanvas();
       renderButterchurn();
     }
 
+    // Renderöi visuaalinen esitys jatkuvasti
     function renderButterchurn() {
       if (butterchurnViz) butterchurnViz.render();
       animationFrame = requestAnimationFrame(renderButterchurn);
     }
 
-    // Initial visualizer size
+    // Aseta canvas-koko heti sivun latauksen jälkeen
     resizeCanvas();
   </script>
 </body>
