@@ -15,8 +15,9 @@
     .track-list { display: flex; flex-direction: column; gap: 20px; }
     .track-card { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 15px; }
     .track-card button { background: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+    .track-card button:disabled { background: #999; cursor: not-allowed; }
     .visualizer-container { width: 100%; height: 220px; margin: 24px 0 0 0; background: #111; border-radius: 8px; overflow: hidden; }
-    #visualizer { width: 100%; height: 100%; }
+    #visualizer { width: 100%; height: 100%; display: block; }
   </style>
 </head>
 <body>
@@ -36,22 +37,25 @@
     </div>
   </main>
   <script>
-    // Tracks
+    // Define your tracks here
     const tracks = [
       { title: 'Ambient Maisema', src: 'pluginit/sample.mp3' },
       { title: 'Elektroninen Tunnelma', src: 'pluginit/sample2.mp3' }
     ];
 
-    // List rendering
+    // Render the track list
     const trackList = document.getElementById('track-list');
-    tracks.forEach(track => {
+    let playingIndex = -1;
+    tracks.forEach((track, i) => {
       const div = document.createElement('div');
       div.className = 'track-card';
-      div.innerHTML = `<span>${track.title}</span><button onclick="playTrack('${track.src}')">Play</button>`;
+      div.innerHTML = `<span>${track.title}</span>
+        <button id="trackbtn${i}">Play</button>`;
       trackList.appendChild(div);
+      document.getElementById(`trackbtn${i}`).onclick = () => playTrack(i);
     });
 
-    // Visualizer
+    // Visualizer setup
     const canvas = document.getElementById('visualizer');
     let butterchurnViz, butterchurnPreset;
     let audioCtx, srcNode, analyser, animationFrame;
@@ -64,22 +68,33 @@
     }
     window.addEventListener('resize', resizeCanvas);
 
-    function playTrack(src) {
+    // Play track logic
+    function playTrack(idx) {
+      // Stop previous
       if (currentHowl) currentHowl.stop();
       if (audioCtx) audioCtx.close();
+      // UI update
+      if (playingIndex !== -1) document.getElementById(`trackbtn${playingIndex}`).textContent = "Play";
+      document.getElementById(`trackbtn${idx}`).textContent = "Pause";
+      playingIndex = idx;
+
+      // Start new playback
       currentHowl = new Howl({
-        src: [src],
+        src: [tracks[idx].src],
         html5: true,
         onplay: function() {
           setupButterchurn(this);
         },
         onend: function() {
+          document.getElementById(`trackbtn${playingIndex}`).textContent = "Play";
+          playingIndex = -1;
           cancelAnimationFrame(animationFrame);
         }
       });
       currentHowl.play();
     }
 
+    // Visualizer and audio context
     function setupButterchurn(howl) {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const media = howl._sounds[0]._node;
@@ -90,7 +105,9 @@
 
       if (!butterchurnViz) {
         butterchurnViz = butterchurn.createVisualizer(audioCtx, canvas, { width: canvas.width, height: canvas.height });
-        butterchurnPreset = butterchurnPresets.getPresets()['Flexi & Krash - a moment with you'];
+        // Choose a preset
+        butterchurnPreset = butterchurnPresets.getPresets()['Flexi & Krash - a moment with you'] ||
+                            Object.values(butterchurnPresets.getPresets())[0];
         butterchurnViz.loadPreset(butterchurnPreset, 0.0);
       }
       resizeCanvas();
@@ -101,6 +118,9 @@
       if (butterchurnViz) butterchurnViz.render();
       animationFrame = requestAnimationFrame(renderButterchurn);
     }
+
+    // Initial visualizer size
+    resizeCanvas();
   </script>
 </body>
 </html>
