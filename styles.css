@@ -1,25 +1,46 @@
-nav {
-  display: flex;
-  justify-content: center;
-  background: linear-gradient(135deg, #3B719F, #4a8fc9); /* Light Blue Ambient */
-  padding: 1rem;
-  border-bottom: 2px solid #3B719F; /* Darker Blue */
+/* Add this to styles.css */
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    min-height: 100vh;
 }
 
-nav a {
-  color: rgba(255, 255, 255, 0.8); /* Dimmed text color */
-  text-decoration: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  transition: background-color 0.3s ease, color 0.3s ease;
+.left-nav {
+    width: 250px;
+    background: #1a1a1a;
+    padding: 20px 0;
+    position: fixed;
+    height: 100vh;
+    left: 0;
+    top: 0;
 }
 
-nav a:hover {
-  background: rgba(255, 255, 255, 0.2); /* Slight hover effect */
-  color: white; /* Brighten text on hover */
+.left-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
-nav a.active {
-  background: rgba(255, 255, 255, 0.3); /* Highlight active button */
-  color: white;
+.left-nav li {
+    padding: 0;
+}
+
+.left-nav a {
+    color: #f5f5f5;
+    text-decoration: none;
+    padding: 15px 25px;
+    display: block;
+    transition: background 0.3s;
+}
+
+.left-nav a:hover,
+.left-nav a.active {
+    background: #333;
+}
+
+main {
+    margin-left: 250px;
+    padding: 20px;
+    flex: 1;
 }
