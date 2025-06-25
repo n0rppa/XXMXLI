@@ -1,29 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 <head>
-    <meta charset="UTF-8">
-    <title>Music - XXMXLI</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <title>Musiikkisoitin – XXMXLI</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    /* Lisää tyylit täällä (katso aiempia vastauksia tyylien osalta) */
+  </style>
 </head>
 <body>
+  <button class="nav-toggle" id="navToggle" title="Avaa/Piilota valikko">&#9776;</button>
+  <aside class="sidebar open" id="sidebar">
+    <div class="sidebar-header">XXMXLI</div>
     <nav>
-        <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="photography.html">Photography</a></li>
-            <li><a href="projects.html">Projects</a></li>
-            <li><a href="music.html" class="active">Music</a></li>
-        </ul>
+      <a href="index.html">Etusivu</a>
+      <a href="music.html" class="active">Musiikkisoitin</a>
+      <a href="photography.html">Valokuvaus</a>
+      <a href="projects.html">Projektit</a>
+      <a href="gallery.html">Galleria</a>
     </nav>
-    <main>
-        <h1>Music</h1>
-        <p>Listen to some of my music below.</p>
-        <audio controls>
-            <source src="music/song1.mp3" type="audio/mpeg">
-            Your browser does not support the audio element.
-        </audio>
-        <audio controls>
-            <source src="music/song2.mp3" type="audio/mpeg">
-        </audio>
-    </main>
+  </aside>
+  <main class="main-content" id="mainContent">
+    <h2>Musiikkisoitin</h2>
+    <p style="color:#378ab7;">Tähän upotetaan myöhemmin Winamp-tyylinen soitin ja visualizer pyynnöstäsi!</p>
+    <div style="margin:32px auto; max-width:430px; background:#fff8; border-radius:12px; box-shadow:0 2px 16px #b1eaff33; padding:30px 18px; text-align:center;">
+      <audio id="audio" controls style="width:100%;">
+        <source src="assets/audio/01. Hip-Hop Intro.flac" type="audio/flac">
+        Selaimesi ei tue FLAC-toistoa.
+      </audio>
+      <br><small style="color:#579cd6;">Lisää soitin & visualizer kun pyydät!</small>
+    </div>
+  </main>
+  <script>
+    /* Lisää JavaScript-koodi täällä */
+  </script>
 </body>
 </html>
