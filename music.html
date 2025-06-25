@@ -2,114 +2,301 @@
 <html lang="fi">
 <head>
   <meta charset="UTF-8">
-  <title>Musiikkisoitin ja visualizer</title>
+  <title>Winamp FLAC-soitin + Visualizer</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: 2em auto; background: #f2f2f2; }
-    .player { background: #fff; border-radius: 10px; padding: 2em; }
-    .controls { margin-top: 1em; }
-    button { margin: 0 5px; }
-    #progress { width: 100%; }
-    canvas { width: 100%; height: 100px; background: #000; display: block; border-radius: 8px; margin-top: 1em; }
-    select { width: 100%; margin-top: 1em; }
+    body {
+      background: #1b1b2b;
+      color: #d8fdff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: flex; flex-direction: column; align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: #23243a;
+      border-radius: 13px;
+      box-shadow: 0 8px 32px #000a;
+      margin-top: 44px;
+      padding: 32px 30px 24px 30px;
+      width: 420px;
+      max-width: 98vw;
+    }
+    h2 {
+      color: #5ff;
+      font-family: 'Orbitron', monospace;
+      text-shadow: 0 0 8px #2ef, 0 0 18px #09f5;
+      text-align: center;
+      font-size: 2.2em;
+      letter-spacing: 0.09em;
+      margin-bottom: 18px;
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.7em;
+      margin: 10px 0 16px 0;
+    }
+    .controls button {
+      background: #1c2a3a;
+      color: #5ff;
+      border: 2px solid #5ff;
+      border-radius: 50%;
+      width: 38px; height: 38px;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: background 0.18s, border 0.18s, color 0.18s;
+    }
+    .controls button:hover {
+      background: #0ff9;
+      color: #fff;
+      border-color: #fff;
+    }
+    .playlist {
+      background: #181a24;
+      border-radius: 4px;
+      overflow: auto;
+      max-height: 110px;
+      margin-bottom: 11px;
+      box-shadow: 0 2px 8px #0002 inset;
+    }
+    .playlist ul { list-style: none; padding: 0; margin: 0; }
+    .playlist li {
+      padding: 7px 14px;
+      cursor: pointer;
+      color: #8ed;
+      border-bottom: 1px solid #232b34;
+      transition: background 0.14s, color 0.14s;
+    }
+    .playlist li.selected {
+      background: #3af3;
+      color: #fff;
+      font-weight: bold;
+      text-shadow: 0 0 4px #1ff;
+    }
+    .playlist li:hover {
+      background: #4df6;
+      color: #fff;
+    }
+    .slider-group {
+      display: flex;
+      align-items: center;
+      gap: 1em;
+      margin-bottom: 10px;
+      margin-top: 4px;
+    }
+    input[type=range] {
+      accent-color: #5ff;
+      width: 110px;
+    }
+    canvas {
+      display: block;
+      width: 350px;
+      height: 95px;
+      background: #04060a;
+      margin: 0 auto;
+      border-radius: 8px;
+      box-shadow: 0 2px 16px #1ff7 inset;
+      margin-bottom: 10px;
+      border: 1px solid #0ff5;
+    }
+    .display {
+      background: #111;
+      color: #5ff;
+      font-family: monospace;
+      font-size: 1.08em;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      padding: 6px 14px;
+      text-shadow: 0 0 4px #2ef;
+      box-shadow: 0 2px 8px #000a inset;
+      min-height: 30px;
+    }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
 </head>
 <body>
-  <div class="player">
-    <h2>Äänisoitin + Visualizer</h2>
-    <audio id="audio" src="assets/audio/01. Hip-Hop Intro.flac"></audio>
+  <div class="container">
+    <h2>Winamp FLAC-soitin</h2>
+    <div class="display" id="display">Valitse kappale ja paina ▶️</div>
     <div class="controls">
-      <button onclick="playAudio()">▶️</button>
-      <button onclick="pauseAudio()">⏸️</button>
-      <button onclick="stopAudio()">⏹️</button>
-      <input type="range" id="progress" value="0" min="0" max="100" step="1">
+      <button id="prevBtn" title="Edellinen">&#9198;</button>
+      <button id="playBtn" title="Toista">&#9654;</button>
+      <button id="pauseBtn" title="Tauko">&#10073;&#10073;</button>
+      <button id="stopBtn" title="Pysäytä">&#9209;</button>
+      <button id="nextBtn" title="Seuraava">&#9197;</button>
     </div>
-    <canvas id="visualizer" width="560" height="100"></canvas>
-    <div>
-      <label for="track">Valitse kappale:</label>
-      <select id="track" onchange="changeTrack()">
-        <option value="assets/audio/01. Hip-Hop Intro.flac">01. Hip-Hop Intro</option>
-        <option value="assets/audio/03.Mellow(1).flac">03. Mellow(1)</option>
-        <option value="assets/audio/07.Strange.flac">07. Strange</option>
-        <option value="assets/audio/09.Swishaz.flac">09. Swishaz</option>
-        <option value="assets/audio/10.Frosty.flac">10. Frosty</option>
-        <option value="assets/audio/17.Mist.flac">17. Mist</option>
-        <option value="assets/audio/18.Alley.flac">18. Alley</option>
-        <option value="assets/audio/20.Cloudy instrumental.flac">20. Cloudy instrumental</option>
-        <option value="assets/audio/23.Chill oldschool beat.flac">23. Chill oldschool beat</option>
-        <option value="assets/audio/Jazz instrumental.flac">Jazz instrumental</option>
-        <option value="assets/audio/Rain (1).flac">Rain (1)</option>
-        <option value="assets/audio/Rain (2).flac">Rain (2)</option>
-      </select>
+    <div class="slider-group">
+      <span>Ääni</span>
+      <input type="range" id="volume" value="80" min="0" max="100">
+      <span id="currentTime">0:00</span>
+      <input type="range" id="seekbar" value="0" min="0" max="100">
+      <span id="duration">0:00</span>
     </div>
+    <div class="playlist">
+      <ul id="playlist"></ul>
+    </div>
+    <canvas id="visualizer" width="350" height="95"></canvas>
   </div>
   <script>
-    const audio = document.getElementById('audio');
-    const progress = document.getElementById('progress');
-    const track = document.getElementById('track');
+    // --- Soittolista ---
+    const tracks = [
+      { title: "01. Hip-Hop Intro", file: "assets/audio/01. Hip-Hop Intro.flac" },
+      { title: "03. Mellow", file: "assets/audio/03.Mellow(1).flac" },
+      { title: "07. Strange", file: "assets/audio/07.Strange.flac" },
+      { title: "09. Swishaz", file: "assets/audio/09.Swishaz.flac" },
+      { title: "10. Frosty", file: "assets/audio/10.Frosty.flac" },
+      { title: "17. Mist", file: "assets/audio/17.Mist.flac" },
+      { title: "18. Alley", file: "assets/audio/18.Alley.flac" },
+      { title: "20. Cloudy instrumental", file: "assets/audio/20.Cloudy instrumental.flac" },
+      { title: "23. Chill oldschool beat", file: "assets/audio/23.Chill oldschool beat.flac" },
+      { title: "Jazz instrumental", file: "assets/audio/Jazz instrumental.flac" },
+      { title: "Rain (1)", file: "assets/audio/Rain (1).flac" },
+      { title: "Rain (2)", file: "assets/audio/Rain (2).flac" }
+    ];
+
+    // --- DOM ---
+    const playBtn = document.getElementById('playBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const playlistEl = document.getElementById('playlist');
+    const display = document.getElementById('display');
+    const volumeSlider = document.getElementById('volume');
+    const seekbar = document.getElementById('seekbar');
+    const currentTimeEl = document.getElementById('currentTime');
+    const durationEl = document.getElementById('duration');
     const canvas = document.getElementById('visualizer');
     const ctx = canvas.getContext('2d');
 
-    // Audio analysointi
-    let audioContext, analyser, source, dataArray, animationId;
+    let currentTrack = 0, howl = null, seekTimer = null;
+    let analyser, audioCtx, jsNode, sourceNode, freqData, animationId;
+    let isSeeking = false;
 
-    function setupAudioContext() {
-      if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = audioContext.createAnalyser();
-        source = audioContext.createMediaElementSource(audio);
-        source.connect(analyser);
-        analyser.connect(audioContext.destination);
-        analyser.fftSize = 64;
-        dataArray = new Uint8Array(analyser.frequencyBinCount);
-      }
+    // Playlistin rakentaminen
+    function renderPlaylist() {
+      playlistEl.innerHTML = '';
+      tracks.forEach((track, i) => {
+        const li = document.createElement('li');
+        li.textContent = track.title;
+        li.className = (i === currentTrack) ? 'selected' : '';
+        li.onclick = () => { selectTrack(i); playTrack(); };
+        playlistEl.appendChild(li);
+      });
     }
 
+    // Soitinlogiikka
+    function selectTrack(idx) {
+      currentTrack = idx;
+      renderPlaylist();
+      display.textContent = tracks[currentTrack].title;
+      if (howl) {
+        howl.stop(); howl.unload(); howl = null;
+      }
+      setupHowler();
+    }
+    function setupHowler() {
+      howl = new Howl({
+        src: [tracks[currentTrack].file],
+        format: ['flac'],
+        html5: true,
+        volume: volumeSlider.value / 100,
+        onplay: onPlay,
+        onend: nextTrack,
+        onload: updateDuration
+      });
+      setupVisualizer();
+    }
+    function playTrack() {
+      if (!howl) setupHowler();
+      howl.play();
+      display.textContent = "▶️ " + tracks[currentTrack].title;
+    }
+    function pauseTrack() { if (howl && howl.playing()) { howl.pause(); display.textContent = "⏸️ " + tracks[currentTrack].title; } }
+    function stopTrack() { if (howl) { howl.stop(); display.textContent = "⏹️ " + tracks[currentTrack].title; } }
+    function prevTrack() { selectTrack((currentTrack - 1 + tracks.length) % tracks.length); playTrack(); }
+    function nextTrack() { selectTrack((currentTrack + 1) % tracks.length); playTrack(); }
+
+    // Ajan päivitys
+    function onPlay() {
+      updateDuration();
+      clearInterval(seekTimer);
+      seekTimer = setInterval(() => { if (!isSeeking) updateSeekbar(); }, 420);
+    }
+    function updateDuration() {
+      const sec = howl ? Math.floor(howl.duration() || 0) : 0;
+      durationEl.textContent = formatTime(sec);
+    }
+    function updateSeekbar() {
+      if (!howl) return;
+      const cur = howl.seek() || 0, dur = howl.duration() || 0;
+      seekbar.value = dur ? (cur / dur * 100) : 0;
+      currentTimeEl.textContent = formatTime(cur);
+    }
+    seekbar.oninput = () => { isSeeking = true; };
+    seekbar.onchange = () => {
+      if (!howl) return;
+      const dur = howl.duration() || 0;
+      howl.seek(dur * (seekbar.value / 100));
+      isSeeking = false;
+    };
+    function formatTime(secs) {
+      const m = Math.floor(secs / 60), s = Math.floor(secs % 60);
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    // Volyymin säätö
+    volumeSlider.oninput = () => { if (howl) howl.volume(volumeSlider.value / 100); };
+
+    // Visualizer Howler.js + Canvas
+    function setupVisualizer() {
+      if (audioCtx) {
+        if (animationId) cancelAnimationFrame(animationId);
+        if (jsNode) jsNode.disconnect();
+        if (analyser) analyser.disconnect();
+        if (sourceNode) sourceNode.disconnect();
+      }
+      const sound = howl._sounds[0];
+      if (!sound) return;
+      const htmlAudio = sound._node;
+      if (!htmlAudio) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 64;
+      freqData = new Uint8Array(analyser.frequencyBinCount);
+      sourceNode = audioCtx.createMediaElementSource(htmlAudio);
+      sourceNode.connect(analyser);
+      analyser.connect(audioCtx.destination);
+      drawVisualizer();
+    }
     function drawVisualizer() {
-      analyser.getByteFrequencyData(dataArray);
+      analyser.getByteFrequencyData(freqData);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      let barWidth = (canvas.width / dataArray.length) * 1.5;
-      let barHeight;
-      let x = 0;
-      for (let i = 0; i < dataArray.length; i++) {
-        barHeight = dataArray[i] * 0.7;
-        ctx.fillStyle = 'rgb(' + (barHeight + 80) + ',50,180)';
-        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-        x += barWidth + 1;
+      const barWidth = canvas.width / freqData.length;
+      for (let i = 0; i < freqData.length; i++) {
+        // Winamp-värit: vihreä–keltainen–punainen
+        let h = Math.floor((i / freqData.length) * 120); // 120 = vihreä, 0 = punainen
+        ctx.fillStyle = `hsl(${h}, 100%, 52%)`;
+        let val = freqData[i];
+        let barHeight = val * 0.85;
+        ctx.fillRect(i * barWidth + 1, canvas.height - barHeight, barWidth - 2, barHeight);
       }
       animationId = requestAnimationFrame(drawVisualizer);
     }
 
-    audio.addEventListener('play', () => {
-      setupAudioContext();
-      drawVisualizer();
-    });
+    // Kontrollit
+    playBtn.onclick = playTrack;
+    pauseBtn.onclick = pauseTrack;
+    stopBtn.onclick = stopTrack;
+    prevBtn.onclick = prevTrack;
+    nextBtn.onclick = nextTrack;
 
-    audio.addEventListener('pause', () => cancelAnimationFrame(animationId));
-    audio.addEventListener('ended', () => cancelAnimationFrame(animationId));
+    // Aloitus
+    renderPlaylist();
+    selectTrack(0);
 
-    // Soitinohjaimet
-    audio.addEventListener('timeupdate', () => {
-      progress.value = (audio.currentTime / audio.duration) * 100 || 0;
-    });
-
-    progress.addEventListener('input', () => {
-      audio.currentTime = (progress.value / 100) * audio.duration;
-    });
-
-    function playAudio() {
-      audio.play();
-      if (audioContext && audioContext.state === 'suspended') {
-        audioContext.resume();
-      }
-    }
-    function pauseAudio() { audio.pause(); }
-    function stopAudio() { audio.pause(); audio.currentTime = 0; }
-
-    function changeTrack() {
-      audio.src = track.value;
-      audio.currentTime = 0;
-      audio.play();
-    }
+    // Siivous kun poistutaan sivulta
+    window.onunload = () => { if (howl) howl.unload(); if (audioCtx) audioCtx.close(); };
   </script>
 </body>
 </html>
