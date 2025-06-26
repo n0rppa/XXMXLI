@@ -40,7 +40,6 @@ jobs:
                 const pic = metadata.common.picture[0];
                 pictureData = `data:${pic.format};base64,${pic.data.toString('base64')}`;
               }
-              // Duration in mm:ss
               let duration = "";
               if (metadata.format.duration) {
                 const mins = Math.floor(metadata.format.duration / 60);
