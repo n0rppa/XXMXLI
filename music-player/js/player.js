@@ -1,12 +1,7 @@
+// Helper: Generate title from filename
 function niceTrackTitleFromPath(path) {
-    // Get the filename (strip folder)
-    let filename = path.split('/').pop();
-    // Remove extension
-    filename = filename.replace(/\.[^/.]+$/, "");
-    // Replace dashes/underscores with spaces and capitalize words
-    return filename
-        .replace(/[-_]/g, ' ')
-        .replace(/\b\w/g, c => c.toUpperCase());
+    let filename = path.split('/').pop().replace(/\.[^/.]+$/, "");
+    return filename.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
 function musicPlayer() {
@@ -34,7 +29,6 @@ function musicPlayer() {
             try {
                 const response = await fetch('assets/audio/filelist.json');
                 let tracks = await response.json();
-                // Auto-generate missing title/artist
                 this.tracks = tracks.map(track => ({
                     ...track,
                     title: track.title || niceTrackTitleFromPath(track.path),
