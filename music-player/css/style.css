@@ -8,6 +8,7 @@ body {
     align-items: center;
     justify-content: center;
     height: 100vh;
+    color: #333;
 }
 
 #music-player {
@@ -19,16 +20,23 @@ body {
     text-align: center;
 }
 
+/* Header Styling */
+header h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #007bff;
+}
+
 /* Canvas Styling */
 canvas {
     display: block;
     margin: 0 auto 20px;
     border-radius: 8px;
-    background: linear-gradient(120deg, #ff9a9e, #fad0c4);
+    background: #f0f0f0;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Controls Area */
+/* Controls Styling */
 #controls {
     display: flex;
     flex-direction: column;
@@ -36,8 +44,7 @@ canvas {
     gap: 10px;
 }
 
-/* Button Styling */
-button {
+#buttons button {
     background: linear-gradient(120deg, #ff6a00, #ee0979);
     color: white;
     border: none;
@@ -49,16 +56,11 @@ button {
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
-button:hover {
+#buttons button:hover {
     transform: scale(1.05);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
-button:active {
-    transform: scale(0.95);
-}
-
-/* Progress Bar Styling */
 input[type="range"] {
     width: 80%;
     appearance: none;
@@ -69,32 +71,9 @@ input[type="range"] {
     cursor: pointer;
 }
 
-input[type="range"]::-webkit-slider-thumb {
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #ffffff;
-    border: 3px solid #ee0979;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-input[type="range"]::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-}
-
-/* Track Info Styling */
-#track-info {
-    font-size: 18px;
-    font-weight: bold;
-    color: #333;
-    margin-top: 10px;
-}
-
-#time-info {
-    font-size: 16px;
+/* Footer Styling */
+footer {
+    margin-top: 20px;
+    font-size: 14px;
     color: #666;
-    margin-bottom: 10px;
 }
