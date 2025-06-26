@@ -1,347 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Auto-listing Music Player</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css?family=Barlow:400,700|Barlow+Condensed:700&display=swap" rel="stylesheet">
-<style>
-body {
-  font-family: 'Barlow', sans-serif;
-  background: #181818;
-  color: #e8e8f0;
-  margin: 0;
-  padding: 0;
-}
-.wrapper {
-  max-width: 430px;
-  margin: 70px auto 0 auto;
-  background: #23232c;
-  border-radius: 18px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.25);
-  overflow: hidden;
-}
-.content {
-  padding: 20px 30px 30px 30px;
-}
-.menuBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-.menuBar .appName {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1.4em;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: #ffedc0;
-  margin: 0;
-}
-.musicGroups {
-  margin-top: 24px;
-}
-ul.song-list {
-  list-style: none;
-  padding: 0; margin: 0;
-}
-ul.song-list li {
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  background: #222234;
-  border-radius: 12px;
-  padding: 12px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-ul.song-list li.active {
-  background: #ffedc0;
-  color: #23232c;
-}
-.song-info {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.song-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1.1em;
-  font-weight: 700;
-  color: inherit;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.song-artist {
-  font-size: 0.92em;
-  color: #b0b0c0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.song-duration {
-  margin-left: 12px;
-  font-size: 0.98em;
-  color: #aeea00;
-  min-width: 46px;
-  text-align: right;
-}
-.song-play {
-  margin-left: 12px;
-  background: #ffedc0;
-  color: #23232c;
-  border: none;
-  border-radius: 50%;
-  width: 36px; height: 36px;
-  font-size: 1.3em;
-  cursor: pointer;
-  transition: background 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.song-play:hover {
-  background: #ffe08c;
-}
-.player-controls {
-  margin-top: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-}
-.player-controls button {
-  background: #23232c;
-  color: #ffedc0;
-  border: none;
-  border-radius: 50%;
-  width: 36px; height: 36px;
-  font-size: 1.2em;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.player-controls button:hover {
-  background: #ffedc0;
-  color: #23232c;
-}
-#now-playing {
-  margin-top: 16px;
-  text-align: center;
-  color: #ffedc0;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1.1em;
-  min-height: 1.5em;
-  word-break: break-all;
-}
-audio {
-  width: 100%;
-  margin-top: 16px;
-  outline: none;
-  background: #23232c;
-  border-radius: 8px;
-}
-.visualizer-container {
-  width: 100%;
-  height: 90px;
-  margin: 18px 0 0 0;
-  background: #111;
-  border-radius: 8px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-#visualizer {
-  width: 100%;
-  height: 100%;
-  display: block;
-  background: #000;
-}
-@media (max-width: 480px) {
-  .wrapper { margin: 30px 3vw 0 3vw; }
-  .content { padding: 12px 6px 24px 6px; }
-  .song-title, .song-artist { font-size:1em; }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* CSS - Light Blue Theme */
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #ADD8E6; /* Light Blue */
+        }
+
+        .music-container {
+            width: 100%;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+        }
+
+        .music-body {
+            box-shadow: 0 20px 50px #87CEEB9f; /* Light Sky Blue */
+            background: #E0FFFF; /* Light Cyan */
+            padding: 1.3rem;
+            border-radius: 1.5rem;
+            position: relative;
+        }
+
+        /* Add more CSS styling here to complete the light blue theme */
+        /* Example: */
+        #title {
+            color: #4682B4; /* Steel Blue */
+        }
+
+        /* Basic Styling - Keep and Adjust as Needed */
+        .top-icons {
+            /* Your existing styling */
+        }
+
+        .music-img {
+            /* Your existing styling */
+        }
+
+        .music-info {
+            /* Your existing styling */
+        }
+
+        .music-progress {
+            /* Your existing styling */
+        }
+
+        .music-controls {
+            /* Your existing styling */
+        }
+    </style>
 </head>
 <body>
-<div class="wrapper">
-  <div class="content">
-    <div class="menuBar">
-      <p class="appName">Your Library</p>
+    <div class="music-container">
+        <div class="music-body">
+            <div class="volume-container">
+                <div class="volume-bar">
+                    <span class="bar"></span>
+                    <input type='range' min='0.01' max='1' value='1' step='0.01' class="volumerange"/>
+                </div>
+            </div>
+            <div class="top-icons">
+                <button class="volume btn" id="volume">
+                    <i id="volumeicon" class="fas fa-volume-up"></i>
+                </button>
+                <button class="list btn" id="list">
+                    <i class="fas fa-list"></i>
+                </button>
+            </div>
+            <div class="music-img">
+                <img src="https://images.genius.com/ee202c6f724ffd4cf61bd01a205eeb47.1000x1000x1.jpg" alt="song-images" id="img">
+            </div>
+            <div class="music-info">
+                <h2 id="title">Yıldız Tozu</h2>
+            </div>
+            <audio id="audio"></audio>
+            <div class="music-progress">
+                <div class="progress-bar">
+                    <span class="progress-line"></span>
+                    <input type='range' min='0' max='100' value='0' class="progress" id="progress"/>
+                </div>
+                <div class="duration">
+                    <span class="current-time">00:00</span>
+                    <span class="duration-time">00:00</span>
+                </div>
+            </div>
+            <div class="music-controls">
+                <button class="repeat btn" id="repeat">
+                    <i class="fas fa-redo-alt"></i>
+                </button>
+            </div>
+        </div>
     </div>
-    <div class="musicGroups">
-      <ul class="song-list" id="song-list"></ul>
-      <div class="player-controls">
-        <button id="prev-btn" title="Previous">&#9198;</button>
-        <button id="play-btn" title="Play/Pause">&#9658;</button>
-        <button id="next-btn" title="Next">&#9197;</button>
-      </div>
-      <div id="now-playing"></div>
-      <audio id="audio" controls preload="metadata"></audio>
-      <div class="visualizer-container">
-        <canvas id="visualizer"></canvas>
-      </div>
-    </div>
-  </div>
-</div>
-<script>
-const AUDIO_DIR = "assets/audio/";
-let songs = [];
-let current = 0;
 
-const audio = document.getElementById('audio');
-const songList = document.getElementById('song-list');
-const nowPlaying = document.getElementById('now-playing');
-const playBtn = document.getElementById('play-btn');
-const nextBtn = document.getElementById('next-btn');
-const prevBtn = document.getElementById('prev-btn');
-const visualizerCanvas = document.getElementById('visualizer');
-let audioCtx, analyser, source, animationId;
+    <script>
+        const img = document.querySelector("#img");
+        const audio = document.querySelector("#audio");
+        const title = document.querySelector("#title");
+        const progress = document.querySelector("#progress");
+        const progressBar = document.querySelector(".progress-bar");
+        const currTime = document.querySelector(".current-time");
+        const totalDuration = document.querySelector(".duration-time");
+        const volumeRange = document.querySelector(".volumerange");
 
-function formatTime(sec) {
-  if (!sec || isNaN(sec)) return "--:--";
-  sec = Math.floor(sec);
-  return `${Math.floor(sec/60)}:${(sec%60).toString().padStart(2,"0")}`;
-}
+        let songs = []; // Array to hold song file names
+        let songIndex = 0;
 
-async function loadSongs() {
-  try {
-    const res = await fetch(AUDIO_DIR + "tracklist.json");
-    if (!res.ok) throw new Error("tracklist.json not found");
-    songs = await res.json();
-    if (!songs.length) throw new Error("No songs found");
-    renderList();
-    playSong(0);
-  } catch (e) {
-    songList.innerHTML = "<li style='color:#f55;'>No songs found! Make sure assets/audio/tracklist.json exists and is not empty.</li>";
-  }
-}
+        async function getSongs() {
+            try {
+                const response = await fetch('https://api.github.com/repos/n0rppa/XXMXLI/contents/assets/audio');
+                const data = await response.json();
 
-function renderList() {
-  songList.innerHTML = '';
-  songs.forEach((song, idx) => {
-    const li = document.createElement('li');
-    if (idx === current) li.className = 'active';
-    // Cover art
-    if (song.picture) {
-      const img = document.createElement('img');
-      img.src = song.picture;
-      img.alt = "";
-      img.style = "width:44px;height:44px;border-radius:6px;margin-right:10px;object-fit:cover;";
-      li.appendChild(img);
-    }
-    // Info
-    const info = document.createElement('div');
-    info.className = 'song-info';
-    const title = document.createElement('div');
-    title.className = 'song-title';
-    title.textContent = song.title || song.file;
-    const artist = document.createElement('div');
-    artist.className = 'song-artist';
-    artist.textContent = song.artist || "";
-    info.appendChild(title);
-    info.appendChild(artist);
-    // Album (optional)
-    if (song.album) {
-      const album = document.createElement('div');
-      album.style = "font-size:0.92em;color:#a5a5b0;";
-      album.textContent = song.album;
-      info.appendChild(album);
-    }
-    li.appendChild(info);
-    // Duration
-    const dur = document.createElement('div');
-    dur.className = 'song-duration';
-    dur.textContent = song.duration || '--:--';
-    li.appendChild(dur);
-    // Play button
-    const btn = document.createElement('button');
-    btn.className = 'song-play';
-    btn.innerHTML = (idx === current && !audio.paused) ? '&#10073;&#10073;' : '&#9658;';
-    btn.onclick = (e) => {
-      e.stopPropagation();
-      if (current === idx) {
-        if (audio.paused) audio.play();
-        else audio.pause();
-      } else {
-        playSong(idx);
-      }
-    };
-    li.appendChild(btn);
-    li.onclick = () => playSong(idx);
-    songList.appendChild(li);
-  });
-}
+                songs = data
+                    .filter(item => item.name.endsWith('.mp3'))
+                    .map(item => item.name);
 
-function playSong(idx) {
-  if (!songs[idx]) return;
-  current = idx;
-  audio.src = AUDIO_DIR + songs[idx].file;
-  audio.play();
-  updateUI();
-}
+                loadSong(songs[songIndex]);
 
-function updateUI() {
-  renderList();
-  const song = songs[current];
-  nowPlaying.innerHTML = `<b>${song.title || song.file}</b>${song.artist ? " — "+song.artist : ""}${song.album ? " <span style='color:#ffa'>&#x1f3b5; " + song.album + "</span>" : ""}`;
-}
+            } catch (error) {
+                console.error("Error fetching songs:", error);
+                // Provide a default song list or display an error message to the user
+                songs = ['default.mp3']; // Example default
+                loadSong(songs[songIndex]);
+            }
+        }
 
-// Visualizer
-function startVisualizer() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    source = audioCtx.createMediaElementSource(audio);
-    analyser = audioCtx.createAnalyser();
-    source.connect(analyser);
-    analyser.connect(audioCtx.destination);
-  }
-  drawVisualizer();
-}
-function drawVisualizer() {
-  const ctx = visualizerCanvas.getContext('2d');
-  analyser.fftSize = 64;
-  const bufferLength = analyser.frequencyBinCount;
-  const dataArray = new Uint8Array(bufferLength);
-  ctx.clearRect(0,0,visualizerCanvas.width,visualizerCanvas.height);
-  analyser.getByteFrequencyData(dataArray);
-  const w = visualizerCanvas.width / bufferLength;
-  for (let i=0;i<bufferLength;i++) {
-    const val = dataArray[i];
-    ctx.fillStyle = `rgb(${100+val},${val},${200-val})`;
-    ctx.fillRect(i*w, visualizerCanvas.height-val/2, w-2, val/2);
-  }
-  animationId = requestAnimationFrame(drawVisualizer);
-}
+        function loadSong(song) {
+            title.innerText = song.replace(".mp3", "");
+            audio.src = `assets/audio/${song}`;
+            img.src = "https://images.genius.com/ee202c6f724ffd4cf61bd01a205eeb47.1000x1000x1.jpg"; //default image
+        }
 
-audio.addEventListener('play', () => {
-  if (!audioCtx) startVisualizer();
-  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-  drawVisualizer();
-});
-audio.addEventListener('pause', () => { if (animationId) cancelAnimationFrame(animationId); });
-window.addEventListener('resize', () => {
-  visualizerCanvas.width = visualizerCanvas.offsetWidth;
-  visualizerCanvas.height = visualizerCanvas.offsetHeight;
-});
-window.addEventListener('DOMContentLoaded', () => {
-  visualizerCanvas.width = visualizerCanvas.offsetWidth;
-  visualizerCanvas.height = visualizerCanvas.offsetHeight;
-  loadSongs();
-});
-playBtn.onclick = () => {
-  if (audio.paused) audio.play();
-  else audio.pause();
-};
-nextBtn.onclick = () => { current = (current + 1) % songs.length; playSong(current); };
-prevBtn.onclick = () => { current = (current - 1 + songs.length) % songs.length; playSong(current); };
-audio.addEventListener('ended', () => { current = (current + 1) % songs.length; playSong(current); });
-audio.addEventListener('play', updateUI);
-audio.addEventListener('pause', updateUI);
-</script>
+        function updateProgress(e) {
+            const { duration, currentTime } = e.srcElement;
+            const progressPercent = (currentTime / duration) * 100;
+            progress.value = progressPercent;
+            progressLine.style.width = `${progressPercent}%`;
+            currTime.textContent = formatTime(currentTime);
+        }
+
+        function setProgress(e) {
+            const width = this.clientWidth;
+            const clickX = e.offsetX;
+            const duration = audio.duration;
+            audio.currentTime = (clickX / width) * duration;
+        }
+
+        function setVolume() {
+            audio.volume = volumeRange.value;
+        }
+
+        function formatTime(time) {
+            let minutes = Math.floor(time / 60);
+            let seconds = Math.floor(time % 60);
+            return `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+        }
+
+        audio.addEventListener('loadeddata', () => {
+            totalDuration.textContent = formatTime(audio.duration);
+        });
+
+        audio.addEventListener('timeupdate', updateProgress);
+        progressBar.addEventListener('click', setProgress);
+        volumeRange.addEventListener('input', setVolume);
+
+        // Load songs on page load
+        getSongs();
+    </script>
 </body>
 </html>
