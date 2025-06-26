@@ -1,11 +1,163 @@
 <!DOCTYPE html>
 <html lang="fi">
 <head>
-    <!-- [Previous head content remains the same] -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; 
+        img-src 'self' https: data:; 
+        script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; 
+        style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; 
+        font-src 'self' https://cdnjs.cloudflare.com;
+        media-src 'self' blob:;
+        worker-src blob:;
+        connect-src 'self' blob:;">
+    <title>Musiikki - XXMXLI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
     <style>
-        /* [Previous styles remain the same] */
+        :root {
+            --background: #000000;
+            --text-primary: #00ff00;
+            --text-secondary: #008000;
+            --accent: #00ff00;
+            --accent-hover: #00cc00;
+            --border: #003300;
+            --card-bg: #001100;
+        }
 
-        /* Add playlist styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(0, 17, 0, 0.95);
+            padding: 1rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 1rem;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent);
+            text-decoration: none;
+            text-shadow: 0 0 5px var(--accent);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+            text-shadow: 0 0 5px var(--accent);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(to bottom, var(--card-bg), var(--background));
+            border-bottom: 1px solid var(--accent);
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px var(--accent);
+            animation: pulse 2s infinite;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+
+        /* Music Player Styles */
+        .music-player {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        #waveform {
+            margin: 20px 0;
+            background: var(--background);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .player-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .control-btn {
+            background: none;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 4px;
+        }
+
+        .control-btn:hover {
+            background: var(--accent);
+            color: var(--background);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        /* Playlist Styles */
         .playlist {
             margin-top: 2rem;
             border: 1px solid var(--accent);
@@ -58,10 +210,49 @@
             font-size: 0.9rem;
             opacity: 0.8;
         }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { text-shadow: 0 0 10px var(--accent); }
+            50% { text-shadow: 0 0 20px var(--accent), 0 0 30px var(--accent); }
+            100% { text-shadow: 0 0 10px var(--accent); }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .music-player {
+                margin: 1rem;
+                padding: 1rem;
+            }
+
+            .player-controls {
+                gap: 0.5rem;
+            }
+
+            .control-btn {
+                padding: 0.4rem 0.8rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- [Previous header content remains the same] -->
+    <header class="header">
+        <div class="nav-container">
+            <a href="/" class="logo">XXMXLI</a>
+            <nav>
+                <ul class="nav-menu">
+                    <li><a href="/" class="nav-link">Etusivu</a></li>
+                    <li><a href="/photography.html" class="nav-link">Valokuvaus</a></li>
+                    <li><a href="/music.html" class="nav-link active">Musiikki</a></li>
+                    <li><a href="/videos.html" class="nav-link">Videot</a></li>
+                    <li><a href="/security.html" class="nav-link">Tietoturva</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
 
     <div class="main-content">
         <section class="hero">
