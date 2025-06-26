@@ -1,4 +1,4 @@
-name: Generate tracklist.json with metadata
+name: Auto-generate tracklist.json with metadata
 
 on:
   push:
@@ -30,7 +30,7 @@ jobs:
           const path = require('path');
           const audioDir = 'assets/audio';
           const files = fs.readdirSync(audioDir)
-            .filter(f => /\.(mp3|flac|ogg|wav)$/i.test(f));
+            .filter(f => /\.(mp3|flac|ogg|wav|m4a|aac|oga|opus)$/i.test(f));
           const tasks = files.map(async f => {
             const p = path.join(audioDir, f);
             try {
@@ -69,5 +69,5 @@ jobs:
       - name: Commit and push tracklist.json
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Auto-generate tracklist.json with metadata"
+          commit_message: "Auto-generate tracklist.json with all audio metadata"
           file_pattern: assets/audio/tracklist.json
