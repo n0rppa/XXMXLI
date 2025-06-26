@@ -1,30 +1,30 @@
-name: Auto-generate tracklist.json
+name: Generate tracklist.json
 
 on:
   push:
     paths:
       - 'assets/audio/**'
+      - '.github/workflows/generate-tracklist.yml'
   workflow_dispatch:
 
 jobs:
-  generate-tracklist:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Generate tracklist.json
-        run: |
-          cd assets/audio
-          ls *.mp3 *.flac *.ogg 2>/dev/null | jq -R -s -c 'split("\n")[:-1] | map({ "file": . })' > tracklist.json
+    - name: Generate tracklist.json
+      run: |
+        mkdir -p assets/audio
+        # List supported audio files, strip path, output as JSON array
+        find assets/audio -maxdepth 1 -type f \( -iname '*.mp3' -o -iname '*.flac' -o -iname '*.wav' -o -iname '*.ogg' \) \
+          | sed 's|assets/audio/||' \
+          | jq -R . | jq -s . > assets/audio/tracklist.json
+        cat assets/audio/tracklist.json
 
-      - name: Commit and push if changed
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add assets/audio/tracklist.json
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "Auto-update tracklist.json"
-            git push
-          fi
+    - name: Commit and push tracklist.json
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "Auto-generate tracklist.json"
+        file_pattern: assets/audio/tracklist.json
