@@ -65,7 +65,6 @@
             background: rgba(0,0,0,0.9);
             z-index: 1000;
             padding: 20px;
-            display: flex;
             justify-content: center;
             align-items: center;
             opacity: 0;
@@ -76,6 +75,7 @@
         #imageModal.active {
             opacity: 1;
             pointer-events: auto;
+            display: flex;
         }
 
         #modalImage {
@@ -134,32 +134,33 @@
     </div>
 
     <script>
-        // Funktio kuvakansion skannaamiseen
-        async function loadImages() {
-            try {
-                const response = await fetch('/api/photos');
-                const images = await response.json();
-                const gallery = document.getElementById('gallery');
+        // Staattinen kuvaluettelo
+        const images = [
+            { name: 'Kuva 1', url: 'photos/1.jpg' },
+            { name: 'Kuva 2', url: 'photos/2.jpg' },
+            { name: 'Kuva 3', url: 'photos/3.jpg' }
+            // Lisää tähän lisää kuvia
+        ];
+
+        function loadImages() {
+            const gallery = document.getElementById('gallery');
+            
+            images.forEach(image => {
+                const item = document.createElement('div');
+                item.className = 'gallery-item';
                 
-                images.forEach(image => {
-                    const item = document.createElement('div');
-                    item.className = 'gallery-item';
-                    
-                    item.innerHTML = `
-                        <img src="${image.url}" alt="${image.name}" loading="lazy">
-                        <div class="gallery-caption">
-                            <h3>${image.name}</h3>
-                        </div>
-                    `;
-                    
-                    // Lisää click event kuvan avaamiseksi modaalissa
-                    item.addEventListener('click', () => openModal(image.url));
-                    
-                    gallery.appendChild(item);
-                });
-            } catch (error) {
-                console.error('Error loading images:', error);
-            }
+                item.innerHTML = `
+                    <img src="${image.url}" alt="${image.name}" loading="lazy">
+                    <div class="gallery-caption">
+                        <h3>${image.name}</h3>
+                    </div>
+                `;
+                
+                // Lisää click event kuvan avaamiseksi modaalissa
+                item.addEventListener('click', () => openModal(image.url));
+                
+                gallery.appendChild(item);
+            });
         }
 
         // Modal toiminnallisuus
