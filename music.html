@@ -8,12 +8,12 @@
         script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; 
         style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; 
         font-src 'self' https://cdnjs.cloudflare.com;
-        media-src 'self' blob:;
-        worker-src blob:;
-        connect-src 'self' blob:;">
+        media-src 'self' blob: https:;
+        worker-src blob: 'self';
+        connect-src 'self' blob: https:;">
     <title>Musiikki - XXMXLI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
+    <script src="https://unpkg.com/wavesurfer.js"></script>
     <style>
         :root {
             --background: #000000;
@@ -39,7 +39,6 @@
             overflow-x: hidden;
         }
 
-        /* Header Styles */
         .header {
             background: rgba(0, 17, 0, 0.95);
             padding: 1rem;
@@ -91,7 +90,6 @@
             text-shadow: 0 0 5px var(--accent);
         }
 
-        /* Main Content */
         .main-content {
             margin-top: 80px;
             padding: 2rem;
@@ -116,7 +114,6 @@
             color: var(--text-secondary);
         }
 
-        /* Music Player Styles */
         .music-player {
             max-width: 800px;
             margin: 2rem auto;
@@ -149,6 +146,7 @@
             cursor: pointer;
             transition: all 0.3s;
             border-radius: 4px;
+            min-width: 44px;
         }
 
         .control-btn:hover {
@@ -157,7 +155,6 @@
             box-shadow: 0 0 10px var(--accent);
         }
 
-        /* Playlist Styles */
         .playlist {
             margin-top: 2rem;
             border: 1px solid var(--accent);
@@ -211,7 +208,6 @@
             opacity: 0.8;
         }
 
-        /* Animations */
         @keyframes pulse {
             0% { text-shadow: 0 0 10px var(--accent); }
             50% { text-shadow: 0 0 20px var(--accent), 0 0 30px var(--accent); }
@@ -296,7 +292,6 @@
 
         let currentTrackIndex = 0;
 
-        // Initialize WaveSurfer
         const wavesurfer = WaveSurfer.create({
             container: '#waveform',
             waveColor: '#008000',
@@ -306,10 +301,22 @@
             barRadius: 3,
             cursorWidth: 1,
             height: 100,
-            barGap: 3
+            barGap: 3,
+            backend: 'MediaElement',
+            mediaType: 'audio',
+            normalize: true,
+            responsive: true,
+            fillParent: true
         });
 
-        // Create playlist HTML
+        wavesurfer.on('error', (err) => {
+            console.error('WaveSurfer error:', err);
+        });
+
+        wavesurfer.on('loading', (percent) => {
+            console.log('Loading track:', percent + '%');
+        });
+
         const playlist = document.getElementById('playlist');
         tracks.forEach((track, index) => {
             const trackElement = document.createElement('div');
@@ -325,31 +332,42 @@
             playlist.appendChild(trackElement);
         });
 
-        // Load and play track
         function loadTrack(index) {
             currentTrackIndex = index;
-            wavesurfer.load(tracks[index].file);
-            updateActiveTrack();
+            const track = tracks[index];
+            
+            wavesurfer.unAll();
+            
             wavesurfer.on('ready', () => {
+                console.log('Track ready to play');
                 wavesurfer.play();
                 updatePlayButton();
             });
+
+            wavesurfer.on('error', (err) => {
+                console.error('Error loading track:', err);
+            });
+
+            try {
+                console.log('Loading track:', track.file);
+                wavesurfer.load(track.file);
+                updateActiveTrack();
+            } catch (err) {
+                console.error('Error in loadTrack:', err);
+            }
         }
 
-        // Update active track in playlist
         function updateActiveTrack() {
             document.querySelectorAll('.track-item').forEach((item, index) => {
                 item.classList.toggle('active', index === currentTrackIndex);
             });
         }
 
-        // Update play button icon
         function updatePlayButton() {
             const icon = playBtn.querySelector('i');
             icon.className = wavesurfer.isPlaying() ? 'fas fa-pause' : 'fas fa-play';
         }
 
-        // Control buttons
         const playBtn = document.getElementById('playBtn');
         const stopBtn = document.getElementById('stopBtn');
         const prevBtn = document.getElementById('prevBtn');
@@ -375,14 +393,13 @@
             loadTrack(currentTrackIndex);
         });
 
-        // Auto-play next track when current track ends
         wavesurfer.on('finish', () => {
             currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
             loadTrack(currentTrackIndex);
         });
 
-        // Load first track initially
         loadTrack(0);
+        console.log('WaveSurfer version:', WaveSurfer.VERSION);
     </script>
 </body>
 </html>
