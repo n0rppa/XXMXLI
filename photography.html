@@ -3,18 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com;">
     <title>Valokuvaus - XXMXLI</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --background: #000000;
-            --text-primary: #00ff00;
-            --text-secondary: #008000;
-            --accent: #00ff00;
-            --accent-hover: #00cc00;
-            --border: #003300;
-            --card-bg: #001100;
+            --primary: #0f0;
+            --primary-dark: #020;
+            --bg: #000;
+            --text: #0f0;
+            --border: #030;
         }
 
         * {
@@ -24,132 +20,76 @@
         }
 
         body {
+            background: var(--bg);
+            color: var(--text);
             font-family: 'Courier New', monospace;
-            background-color: var(--background);
-            color: var(--text-primary);
             line-height: 1.6;
-            overflow-x: hidden;
         }
 
-        /* Header Styles */
         .header {
             background: rgba(0, 17, 0, 0.95);
             padding: 1rem;
             position: fixed;
             width: 100%;
             top: 0;
-            z-index: 1000;
-            border-bottom: 1px solid var(--accent);
-            box-shadow: 0 0 10px var(--accent);
+            z-index: 100;
+            border-bottom: 1px solid var(--primary);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
         }
 
-        .nav-container {
+        .nav {
             max-width: 1200px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 1rem;
         }
 
-        .logo {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--accent);
-            text-decoration: none;
-            text-shadow: 0 0 5px var(--accent);
-        }
-
-        .nav-menu {
+        .nav-links {
             display: flex;
             gap: 2rem;
             list-style: none;
         }
 
         .nav-link {
-            color: var(--text-primary);
+            color: var(--text);
             text-decoration: none;
             padding: 0.5rem 1rem;
             border: 1px solid transparent;
-            transition: all 0.3s ease;
-            font-size: 1.1rem;
-            text-transform: uppercase;
+            transition: all 0.3s;
         }
 
-        .nav-link:hover, .nav-link.active {
-            border-color: var(--accent);
-            color: var(--accent);
-            box-shadow: 0 0 10px var(--accent);
-            text-shadow: 0 0 5px var(--accent);
+        .nav-link:hover,
+        .nav-link.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
         }
 
-        /* Main Content */
-        .main-content {
+        .main {
             margin-top: 80px;
             padding: 2rem;
-            max-width: 1400px;
-            margin: 80px auto 0;
         }
 
-        .gallery-header {
-            text-align: center;
-            padding: 2rem 0;
-            border-bottom: 1px solid var(--accent);
-            margin-bottom: 3rem;
-        }
-
-        .gallery-header h1 {
-            font-size: 2.5rem;
-            text-shadow: 0 0 10px var(--accent);
-            margin-bottom: 1rem;
-        }
-
-        /* Gallery Filters */
-        .gallery-filters {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            background: transparent;
-            border: 1px solid var(--accent);
-            color: var(--accent);
-            padding: 0.5rem 1.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Courier New', monospace;
-            text-transform: uppercase;
-        }
-
-        .filter-btn:hover, .filter-btn.active {
-            background: var(--accent);
-            color: var(--background);
-            box-shadow: 0 0 10px var(--accent);
-        }
-
-        /* Gallery Grid */
-        .gallery-grid {
+        .gallery {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 2rem;
             padding: 1rem;
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
         .gallery-item {
             position: relative;
-            overflow: hidden;
             border: 1px solid var(--border);
+            overflow: hidden;
+            transition: all 0.3s;
             aspect-ratio: 1;
-            cursor: pointer;
-            transition: all 0.3s ease;
         }
 
         .gallery-item:hover {
-            border-color: var(--accent);
-            box-shadow: 0 0 15px var(--accent);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary);
             transform: scale(1.02);
         }
 
@@ -157,254 +97,168 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
         }
 
         .gallery-item:hover img {
-            opacity: 0.7;
+            opacity: 0.8;
         }
 
-        .gallery-item-overlay {
-            position: absolute;
-            bottom: -100%;
-            left: 0;
-            right: 0;
-            background: rgba(0, 17, 0, 0.9);
-            padding: 1rem;
-            transition: all 0.3s ease;
-            border-top: 1px solid var(--accent);
+        .title {
+            text-align: center;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px var(--primary);
         }
 
-        .gallery-item:hover .gallery-item-overlay {
-            bottom: 0;
-        }
-
-        /* Lightbox */
-        .lightbox {
-            display: none;
+        .modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.9);
-            z-index: 2000;
-            padding: 2rem;
-        }
-
-        .lightbox.active {
-            display: flex;
+            display: none;
             justify-content: center;
             align-items: center;
+            z-index: 1000;
         }
 
-        .lightbox-content {
-            position: relative;
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
             max-width: 90%;
             max-height: 90vh;
+            border: 1px solid var(--primary);
+            box-shadow: 0 0 20px var(--primary);
         }
 
-        .lightbox-img {
-            max-width: 100%;
-            max-height: 90vh;
-            object-fit: contain;
-            border: 1px solid var(--accent);
-            box-shadow: 0 0 20px var(--accent);
-        }
-
-        .lightbox-close {
+        .modal-close {
             position: absolute;
-            top: 1rem;
-            right: 1rem;
-            color: var(--accent);
+            top: 20px;
+            right: 20px;
+            color: var(--text);
             font-size: 2rem;
             cursor: pointer;
-            border: none;
-            background: none;
+            border: 1px solid var(--primary);
             width: 40px;
             height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid var(--accent);
-            transition: all 0.3s ease;
+            transition: all 0.3s;
         }
 
-        .lightbox-close:hover {
-            background: var(--accent);
-            color: var(--background);
-            box-shadow: 0 0 10px var(--accent);
+        .modal-close:hover {
+            background: var(--primary);
+            color: var(--bg);
+            box-shadow: 0 0 10px var(--primary);
         }
 
         @media (max-width: 768px) {
-            .nav-menu {
+            .nav-links {
                 display: none;
                 position: absolute;
                 top: 100%;
                 left: 0;
                 right: 0;
-                background: var(--card-bg);
+                background: var(--bg);
                 flex-direction: column;
                 padding: 1rem;
-                border-bottom: 1px solid var(--accent);
+                border-bottom: 1px solid var(--primary);
             }
 
-            .nav-menu.active {
+            .nav-links.active {
                 display: flex;
             }
 
-            .menu-button {
+            .menu-btn {
                 display: block;
                 background: none;
                 border: none;
-                color: var(--accent);
+                color: var(--text);
                 font-size: 1.5rem;
                 cursor: pointer;
-            }
-
-            .gallery-header h1 {
-                font-size: 2rem;
-            }
-
-            .gallery-grid {
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                gap: 1rem;
             }
         }
     </style>
 </head>
 <body>
     <header class="header">
-        <nav class="nav-container">
+        <nav class="nav">
             <a href="index.html" class="logo">XXMXLI</a>
-            <button class="menu-button">
-                <i class="fas fa-bars"></i>
-            </button>
-            <ul class="nav-menu">
-                <li><a href="index.html" class="nav-link">
-                    <i class="fas fa-home"></i> Etusivu
-                </a></li>
-                <li><a href="music.html" class="nav-link">
-                    <i class="fas fa-music"></i> Musiikki
-                </a></li>
-                <li><a href="photography.html" class="nav-link active">
-                    <i class="fas fa-camera"></i> Valokuvaus
-                </a></li>
-                <li><a href="projects.html" class="nav-link">
-                    <i class="fas fa-project-diagram"></i> Projektit
-                </a></li>
+            <button class="menu-btn">≡</button>
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link">Etusivu</a></li>
+                <li><a href="music.html" class="nav-link">Musiikki</a></li>
+                <li><a href="photography.html" class="nav-link active">Valokuvaus</a></li>
+                <li><a href="projects.html" class="nav-link">Projektit</a></li>
             </ul>
         </nav>
     </header>
 
-    <main class="main-content">
-        <div class="gallery-header">
-            <h1>[ VALOKUVAGALLERIA ]</h1>
-            <p>// Visuaalisia tarinoita digitaalisessa muodossa //</p>
-        </div>
-
-        <div class="gallery-filters">
-            <button class="filter-btn active" data-filter="all">Kaikki</button>
-            <button class="filter-btn" data-filter="nature">Luonto</button>
-            <button class="filter-btn" data-filter="urban">Kaupunki</button>
-            <button class="filter-btn" data-filter="abstract">Abstrakti</button>
-        </div>
-
-        <div class="gallery-grid" id="gallery">
-            <!-- Kuvat lisätään dynaamisesti JavaScriptillä -->
+    <main class="main">
+        <h1 class="title">[ VALOKUVAGALLERIA ]</h1>
+        <div class="gallery">
+            <!-- Kuvat lisätään tähän dynaamisesti -->
         </div>
     </main>
 
-    <!-- Lightbox -->
-    <div class="lightbox" id="lightbox">
-        <button class="lightbox-close" id="lightbox-close">
-            <i class="fas fa-times"></i>
-        </button>
-        <div class="lightbox-content">
-            <img src="" alt="" class="lightbox-img" id="lightbox-img">
-        </div>
+    <div class="modal" id="modal">
+        <span class="modal-close">&times;</span>
+        <img class="modal-content" id="modal-img">
     </div>
 
     <script>
-        // Mobile menu
-        const menuButton = document.querySelector('.menu-button');
-        const navMenu = document.querySelector('.nav-menu');
+        // Mobiilivalikko
+        const menuBtn = document.querySelector('.menu-btn');
+        const navLinks = document.querySelector('.nav-links');
 
-        menuButton.addEventListener('click', () => {
-            navMenu.classList.toggle('active');
+        menuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
         });
 
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', () => {
-                navMenu.classList.remove('active');
-            });
-        });
+        // Galleria
+        const gallery = document.querySelector('.gallery');
+        const modal = document.getElementById('modal');
+        const modalImg = document.getElementById('modal-img');
+        const modalClose = document.querySelector('.modal-close');
 
-        // Gallery functionality
-        const gallery = document.getElementById('gallery');
-        const lightbox = document.getElementById('lightbox');
-        const lightboxImg = document.getElementById('lightbox-img');
-        const lightboxClose = document.getElementById('lightbox-close');
-
-        // Esimerkki kuvadata (korvaa omilla kuvilla)
+        // Esimerkkikuvat (korvaa omat kuvat)
         const images = [
-            { src: 'assets/images/1.jpg', category: 'nature', title: 'Luontokuva 1' },
-            { src: 'assets/images/2.jpg', category: 'urban', title: 'Kaupunkikuva 1' },
-            { src: 'assets/images/3.jpg', category: 'abstract', title: 'Abstrakti 1' },
+            'assets/images/1.jpg',
+            'assets/images/2.jpg',
+            'assets/images/3.jpg',
             // Lisää kuvia tarpeen mukaan
         ];
 
-        // Luo kuvagalleria
-        function createGallery(images) {
-            gallery.innerHTML = '';
-            images.forEach(img => {
-                const item = document.createElement('div');
-                item.className = 'gallery-item';
-                item.dataset.category = img.category;
-                
-                item.innerHTML = `
-                    <img src="${img.src}" alt="${img.title}">
-                    <div class="gallery-item-overlay">
-                        <h3>${img.title}</h3>
-                    </div>
-                `;
+        // Luo galleria
+        images.forEach(src => {
+            const item = document.createElement('div');
+            item.className = 'gallery-item';
+            
+            const img = document.createElement('img');
+            img.src = src;
+            
+            item.appendChild(img);
+            gallery.appendChild(item);
 
-                item.addEventListener('click', () => {
-                    lightboxImg.src = img.src;
-                    lightboxImg.alt = img.title;
-                    lightbox.classList.add('active');
-                });
-
-                gallery.appendChild(item);
-            });
-        }
-
-        // Alusta galleria
-        createGallery(images);
-
-        // Suodattimet
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelector('.filter-btn.active').classList.remove('active');
-                btn.classList.add('active');
-                const filter = btn.dataset.filter;
-                
-                const filteredImages = filter === 'all' 
-                    ? images 
-                    : images.filter(img => img.category === filter);
-                
-                createGallery(filteredImages);
+            // Avaa kuva modaaliin klikkauksesta
+            item.addEventListener('click', () => {
+                modal.classList.add('active');
+                modalImg.src = src;
             });
         });
 
-        // Lightbox toiminnallisuus
-        lightboxClose.addEventListener('click', () => {
-            lightbox.classList.remove('active');
+        // Sulje modaali
+        modalClose.addEventListener('click', () => {
+            modal.classList.remove('active');
         });
 
-        lightbox.addEventListener('click', (e) => {
-            if (e.target === lightbox) {
-                lightbox.classList.remove('active');
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
             }
         });
     </script>
