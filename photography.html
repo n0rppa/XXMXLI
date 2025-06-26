@@ -4,263 +4,190 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Valokuvaus - XXMXLI</title>
+    <link rel="stylesheet" href="theme.css">
     <style>
-        :root {
-            --primary: #0f0;
-            --primary-dark: #020;
-            --bg: #000;
-            --text: #0f0;
-            --border: #030;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Courier New', monospace;
-            line-height: 1.6;
-        }
-
-        .header {
-            background: rgba(0, 17, 0, 0.95);
-            padding: 1rem;
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 100;
-            border-bottom: 1px solid var(--primary);
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
-        }
-
-        .nav {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .nav-link {
-            color: var(--text);
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border: 1px solid transparent;
-            transition: all 0.3s;
-        }
-
-        .nav-link:hover,
-        .nav-link.active {
-            border-color: var(--primary);
-            box-shadow: 0 0 10px var(--primary);
-        }
-
-        .main {
-            margin-top: 80px;
-            padding: 2rem;
-        }
-
-        .gallery {
+        .gallery-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 2rem;
-            padding: 1rem;
-            max-width: 1400px;
-            margin: 0 auto;
+            gap: 20px;
+            padding: 20px;
         }
 
         .gallery-item {
             position: relative;
-            border: 1px solid var(--border);
-            overflow: hidden;
-            transition: all 0.3s;
             aspect-ratio: 1;
+            overflow: hidden;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
         }
 
         .gallery-item:hover {
-            border-color: var(--primary);
-            box-shadow: 0 0 15px var(--primary);
             transform: scale(1.02);
+            box-shadow: var(--glow);
         }
 
         .gallery-item img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: all 0.3s;
+            transition: transform 0.3s ease;
         }
 
         .gallery-item:hover img {
-            opacity: 0.8;
+            transform: scale(1.1);
         }
 
-        .title {
-            text-align: center;
-            margin-bottom: 2rem;
-            text-shadow: 0 0 10px var(--primary);
+        .gallery-caption {
+            position: absolute;
+            bottom: -100%;
+            left: 0;
+            right: 0;
+            padding: 15px;
+            background: var(--surface);
+            color: var(--text);
+            transition: bottom 0.3s ease;
+            border-top: 1px solid var(--primary);
         }
 
-        .modal {
+        .gallery-item:hover .gallery-caption {
+            bottom: 0;
+        }
+
+        #imageModal {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: none;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            padding: 20px;
+            display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
 
-        .modal.active {
-            display: flex;
+        #imageModal.active {
+            opacity: 1;
+            pointer-events: auto;
         }
 
-        .modal-content {
+        #modalImage {
             max-width: 90%;
             max-height: 90vh;
-            border: 1px solid var(--primary);
-            box-shadow: 0 0 20px var(--primary);
+            border: 2px solid var(--primary);
+            box-shadow: var(--glow);
         }
 
-        .modal-close {
+        #closeModal {
             position: absolute;
             top: 20px;
             right: 20px;
-            color: var(--text);
-            font-size: 2rem;
-            cursor: pointer;
-            border: 1px solid var(--primary);
+            background: none;
+            border: 2px solid var(--primary);
+            color: var(--primary);
             width: 40px;
             height: 40px;
+            font-size: 24px;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s;
+            border-radius: 50%;
         }
 
-        .modal-close:hover {
+        #closeModal:hover {
             background: var(--primary);
-            color: var(--bg);
-            box-shadow: 0 0 10px var(--primary);
-        }
-
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: var(--bg);
-                flex-direction: column;
-                padding: 1rem;
-                border-bottom: 1px solid var(--primary);
-            }
-
-            .nav-links.active {
-                display: flex;
-            }
-
-            .menu-btn {
-                display: block;
-                background: none;
-                border: none;
-                color: var(--text);
-                font-size: 1.5rem;
-                cursor: pointer;
-            }
+            color: var(--bg1);
         }
     </style>
 </head>
 <body>
-    <header class="header">
-        <nav class="nav">
-            <a href="index.html" class="logo">XXMXLI</a>
-            <button class="menu-btn">≡</button>
-            <ul class="nav-links">
-                <li><a href="index.html" class="nav-link">Etusivu</a></li>
-                <li><a href="music.html" class="nav-link">Musiikki</a></li>
-                <li><a href="photography.html" class="nav-link active">Valokuvaus</a></li>
-                <li><a href="projects.html" class="nav-link">Projektit</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <main class="main">
-        <h1 class="title">[ VALOKUVAGALLERIA ]</h1>
-        <div class="gallery">
-            <!-- Kuvat lisätään tähän dynaamisesti -->
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-logo">XXMXLI</div>
+        <div class="navbar-links">
+            <a href="index.html">Etusivu</a>
+            <a href="projects.html">Projektit</a>
+            <a href="photography.html" class="active">Valokuvaus</a>
+            <a href="music.html">Musiikki</a>
         </div>
-    </main>
+    </nav>
 
-    <div class="modal" id="modal">
-        <span class="modal-close">&times;</span>
-        <img class="modal-content" id="modal-img">
+    <div class="main-container">
+        <h1>[ VALOKUVAGALLERIA ]</h1>
+        <div id="gallery" class="gallery-container">
+            <!-- Kuvat ladataan tähän dynaamisesti -->
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="imageModal">
+        <button id="closeModal">&times;</button>
+        <img id="modalImage" src="" alt="">
     </div>
 
     <script>
-        // Mobiilivalikko
-        const menuBtn = document.querySelector('.menu-btn');
-        const navLinks = document.querySelector('.nav-links');
-
-        menuBtn.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-        });
-
-        // Galleria
-        const gallery = document.querySelector('.gallery');
-        const modal = document.getElementById('modal');
-        const modalImg = document.getElementById('modal-img');
-        const modalClose = document.querySelector('.modal-close');
-
-        // Esimerkkikuvat (korvaa omat kuvat)
-        const images = [
-            'assets/images/1.jpg',
-            'assets/images/2.jpg',
-            'assets/images/3.jpg',
-            // Lisää kuvia tarpeen mukaan
-        ];
-
-        // Luo galleria
-        images.forEach(src => {
-            const item = document.createElement('div');
-            item.className = 'gallery-item';
-            
-            const img = document.createElement('img');
-            img.src = src;
-            
-            item.appendChild(img);
-            gallery.appendChild(item);
-
-            // Avaa kuva modaaliin klikkauksesta
-            item.addEventListener('click', () => {
-                modal.classList.add('active');
-                modalImg.src = src;
-            });
-        });
-
-        // Sulje modaali
-        modalClose.addEventListener('click', () => {
-            modal.classList.remove('active');
-        });
-
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.classList.remove('active');
+        // Funktio kuvakansion skannaamiseen
+        async function loadImages() {
+            try {
+                const response = await fetch('/api/photos');
+                const images = await response.json();
+                const gallery = document.getElementById('gallery');
+                
+                images.forEach(image => {
+                    const item = document.createElement('div');
+                    item.className = 'gallery-item';
+                    
+                    item.innerHTML = `
+                        <img src="${image.url}" alt="${image.name}" loading="lazy">
+                        <div class="gallery-caption">
+                            <h3>${image.name}</h3>
+                        </div>
+                    `;
+                    
+                    // Lisää click event kuvan avaamiseksi modaalissa
+                    item.addEventListener('click', () => openModal(image.url));
+                    
+                    gallery.appendChild(item);
+                });
+            } catch (error) {
+                console.error('Error loading images:', error);
             }
+        }
+
+        // Modal toiminnallisuus
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        const closeBtn = document.getElementById('closeModal');
+
+        function openModal(imgUrl) {
+            modalImg.src = imgUrl;
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
+        closeBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
         });
+
+        // Sulje modaali Esc-näppäimellä
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Lataa kuvat kun sivu latautuu
+        document.addEventListener('DOMContentLoaded', loadImages);
     </script>
 </body>
 </html>
