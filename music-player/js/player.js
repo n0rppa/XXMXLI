@@ -16,12 +16,12 @@ function musicPlayer() {
         },
         async loadTracks() {
             try {
-                const response = await fetch('../assets/audio/filelist.json');
+                const response = await fetch('assets/audio/filelist.json');
                 this.tracks = await response.json();
             } catch (error) {
                 console.error('%c[Error] Failed to load tracks:', 'color: #ff00cc; font-weight: bold;', error);
                 this.tracks = [
-                    { id: "default-1", title: "Sample Track", artist: "Unknown Artist", path: "../assets/audio/sample.mp3" }
+                    { id: "default-1", title: "Sample Track", artist: "Unknown Artist", path: "assets/audio/sample.mp3" }
                 ];
             }
         },
@@ -81,12 +81,14 @@ function musicPlayer() {
             this.audio.play();
             this.isPlaying = true;
             document.body.classList.add('playing');
+            document.getElementById('play-btn').innerHTML = '&#10073;&#10073;';
         },
         pause() {
             if (!this.audio) return;
             this.audio.pause();
             this.isPlaying = false;
             document.body.classList.remove('playing');
+            document.getElementById('play-btn').innerHTML = '&#9654;';
         },
         togglePlay() {
             this.isPlaying ? this.pause() : this.play();
@@ -95,14 +97,27 @@ function musicPlayer() {
             let next = (this.currentIndex + 1) % this.tracks.length;
             this.loadTrack(next);
             if (this.isPlaying) this.play();
+            updateUI(this);
         },
         prevTrack() {
             let prev = (this.currentIndex - 1 + this.tracks.length) % this.tracks.length;
             this.loadTrack(prev);
             if (this.isPlaying) this.play();
+            updateUI(this);
         },
         setVolume(vol) {
             if (this.audio) this.audio.volume = vol;
         }
     };
+}
+
+// Helper to update UI outside the player instance (must be global for event handlers)
+function updateUI(player) {
+    const track = player.tracks[player.currentIndex];
+    document.getElementById('track-title').textContent = track.title || 'Unknown Title';
+    document.getElementById('track-artist').textContent = track.artist || '';
+    // Update playlist highlighting
+    document.querySelectorAll('.playlist-item').forEach((el, idx) => {
+        el.classList.toggle('active', idx === player.currentIndex);
+    });
 }
