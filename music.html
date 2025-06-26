@@ -6,15 +6,13 @@
     <title>Musiikki - XXMXLI</title>
     <style>
         :root {
-            --background: #000000;
-            --text-primary: #00ff00;
-            --text-secondary: #008000;
-            --accent: #00ff00;
-            --accent-hover: #00cc00;
-            --border: #003300;
-            --card-bg: #001100;
+            --primary: #0f0;
+            --primary-dark: #020;
+            --bg: #000;
+            --text: #0f0;
+            --border: #030;
             --surface: rgba(0, 17, 0, 0.95);
-            --glow: 0 0 10px var(--accent);
+            --glow: 0 0 10px var(--primary);
         }
 
         * {
@@ -24,11 +22,10 @@
         }
 
         body {
-            background-color: var(--background);
-            color: var(--text-primary);
+            background: var(--bg);
+            color: var(--text);
             font-family: 'Courier New', monospace;
             line-height: 1.6;
-            min-height: 100vh;
         }
 
         .header {
@@ -37,8 +34,8 @@
             position: fixed;
             width: 100%;
             top: 0;
-            z-index: 1000;
-            border-bottom: 1px solid var(--accent);
+            z-index: 100;
+            border-bottom: 1px solid var(--primary);
             box-shadow: var(--glow);
         }
 
@@ -53,9 +50,9 @@
         .logo {
             font-size: 2rem;
             font-weight: bold;
-            color: var(--accent);
+            color: var(--text);
             text-decoration: none;
-            text-shadow: 0 0 5px var(--accent);
+            text-shadow: 0 0 5px var(--primary);
         }
 
         .nav-menu {
@@ -65,7 +62,7 @@
         }
 
         .nav-link {
-            color: var(--text-primary);
+            color: var(--text);
             text-decoration: none;
             padding: 0.5rem 1rem;
             border: 1px solid transparent;
@@ -74,9 +71,8 @@
 
         .nav-link:hover,
         .nav-link.active {
-            border-color: var(--accent);
+            border-color: var(--primary);
             box-shadow: var(--glow);
-            color: var(--accent);
         }
 
         .main-container {
@@ -87,8 +83,8 @@
         }
 
         .player-container {
-            background: var(--card-bg);
-            border: 1px solid var(--accent);
+            background: var(--primary-dark);
+            border: 1px solid var(--primary);
             box-shadow: var(--glow);
             padding: 20px;
             margin-bottom: 30px;
@@ -106,9 +102,9 @@
         }
 
         .controls button {
-            background: none;
-            border: 1px solid var(--accent);
-            color: var(--text-primary);
+            background: var(--bg);
+            border: 1px solid var(--primary);
+            color: var(--text);
             padding: 5px 15px;
             cursor: pointer;
             border-radius: 4px;
@@ -116,16 +112,16 @@
         }
 
         .controls button:hover {
-            background: var(--accent);
-            color: var(--background);
+            background: var(--primary);
+            color: var(--bg);
             box-shadow: var(--glow);
         }
 
         .progress-container {
             width: 100%;
             height: 20px;
-            background: var(--card-bg);
-            border: 1px solid var(--accent);
+            background: var(--bg);
+            border: 1px solid var(--primary);
             border-radius: 10px;
             overflow: hidden;
         }
@@ -133,7 +129,7 @@
         .progress-bar {
             width: 0%;
             height: 100%;
-            background: var(--accent);
+            background: var(--primary);
             transition: width 0.1s linear;
         }
 
@@ -141,14 +137,20 @@
             display: flex;
             justify-content: space-between;
             margin-top: 5px;
-            color: var(--text-secondary);
+            color: var(--text);
         }
 
         h1 {
             text-align: center;
             margin-bottom: 2rem;
-            text-shadow: 0 0 10px var(--accent);
+            color: var(--text);
+            text-shadow: 0 0 10px var(--primary);
             letter-spacing: 2px;
+        }
+
+        h2 {
+            color: var(--text);
+            margin-bottom: 1rem;
         }
 
         @media (max-width: 768px) {
@@ -171,7 +173,7 @@
                 display: block;
                 background: none;
                 border: none;
-                color: var(--accent);
+                color: var(--text);
                 font-size: 1.5rem;
                 cursor: pointer;
             }
