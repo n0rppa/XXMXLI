@@ -1,62 +1,44 @@
 <!DOCTYPE html>
-<html lang="fi">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Valokuvaus - XXMXLI</title>
-  <link rel="stylesheet" href="styles.css">
-  <style>
-    .gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      padding: 20px;
-    }
-    .gallery-item {
-      background: var(--card-bg);
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    .gallery-item img {
-      width: 100%;
-      display: block;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>XXMXLI Photography</title>
+<link rel="stylesheet" href="theme.cs
+<link href="https://fonts.googleapis.
 </head>
 <body>
-  <nav class="left-nav">
-    <ul>
-      <li><a href="index.html">Etusivu</a></li>
-      <li><a href="music.html">Musiikki</a></li>
-      <li><a href="photography.html" class="active">Valokuvaus</a></li>
-      <li><a href="projects.html">Projektit</a></li>
-    </ul>
-  </nav>
-  <main>
-    <div class="content">
-      <h1>Valokuvaus</h1>
-      <div id="gallery" class="gallery">
-        <!-- Kuvat lisätään tähän dynaamisesti -->
-      </div>
-    </div>
-  </main>
-  <script>
-    fetch('assets/images/images.json')
-      .then(response => response.json())
-      .then(data => {
-        const gallery = document.getElementById('gallery');
-        data.forEach(filename => {
-          const div = document.createElement('div');
-          div.className = 'gallery-item';
-          const img = document.createElement('img');
-          img.src = 'assets/images/' + filename;
-          img.alt = filename;
-          div.appendChild(img);
-          gallery.appendChild(div);
-        });
-      })
-      .catch(err => console.error('Virhe kuvia ladattaessa:', err));
-  </script>
+<!-- Navigation Bar
+<nav class="navbar">
+<div class="navbar-logo">XXMXLI</di
+<div class="navbar-links">
+<a href="index.html" id="nav-home
+<a href="projects.html" id="nav-p
+<a href="photography.html" id="na
+<a href="music.html" id="nav-musi
+<a href="about.html" id="nav-abou
+</div>
+</nav>
+<script>
+const navMap =
+= {
+};
+"index.html": "nav-home",
+"projects.html": "nav-projects",
+"photography.html": "nav-photogra
+"music.html": "nav-music",
+"about.html": "nav-about"
+const page = window.location.pathna
+if (navMap[page]) {
+}
+document.getElementById(navMap[pa
+</script>
+<div class="main-container">
+<h1>Photography</h1>
+<div class="gallery">
+<!-- Replace with your own photo
+<img src="photos/photo1.jpg" alt=
+<!-- Add more images as needed
+</div>
+</div>
 </body>
 </html>
