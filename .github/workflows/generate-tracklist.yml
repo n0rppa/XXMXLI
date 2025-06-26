@@ -1,4 +1,4 @@
-name: Auto-generate tracklist.json with metadata
+name: Auto-generate tracklist.json with metadata and cover art
 
 on:
   push:
@@ -22,7 +22,7 @@ jobs:
       - name: Install music-metadata
         run: npm install music-metadata
 
-      - name: Generate tracklist.json with metadata
+      - name: Generate tracklist.json
         run: |
           node <<'EOF'
           const fs = require('fs');
@@ -47,7 +47,7 @@ jobs:
                 duration = `${mins}:${secs}`;
               }
               return {
-                file: f,
+                file: f, // original filename
                 title: metadata.common.title || f,
                 artist: metadata.common.artist || "",
                 album: metadata.common.album || "",
@@ -69,5 +69,5 @@ jobs:
       - name: Commit and push tracklist.json
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Auto-generate tracklist.json with all audio metadata"
+          commit_message: "Auto-generate tracklist.json with metadata and original filenames"
           file_pattern: assets/audio/tracklist.json
