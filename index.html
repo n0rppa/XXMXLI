@@ -1,43 +1,141 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 <head>
-<meta charset="UTF-8">
-<title>XXMXLI Home</title>
-<link rel="stylesheet" href="theme.cs
-<link href="https://fonts.googleapis.
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="XXMXLI - Luova Studio">
+    <title>Etusivu - XXMXLI</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-<!-- Navigation Bar -->
-<nav class="navbar">
-<div class="navbar-logo">XXMXLI</di
-<div class="navbar-links">
-<a href="index.html" id="nav-home
-<a href="projects.html" id="nav-p
-<a href="photography.html" id="na
-<a href="music.html" id="nav-musi
-<a href="about.html" id="nav-abou
-</div>
-</nav>
-<script>
-const navMap = {
-};
-"index.html": "nav-home",
-"projects.html": "nav-projects",
-"photography.html": "nav-photogra
-"music.html": "nav-music",
-"about.html": "nav-about"
-const page = window.location.pathna
-if (navMap[page]) {
-}
-document.getElementById(navMap[pa
-</script>
-<div class="main-container">
-<h1>Welcome to XXMXLI</h1>
-<p>
-Explore my high-tech portfolio an
-<strong>Navigate</strong> using t
-</p>
-<button class="btn" onclick="window
-</div>
+    <!-- Modern Header with Animated Navigation -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo">
+                <a href="index.html">
+                    <h1>XXMXLI</h1>
+                </a>
+            </div>
+            
+            <nav class="main-nav">
+                <button class="mobile-menu-toggle" aria-label="Toggle Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                
+                <ul class="nav-links">
+                    <li><a href="index.html" class="nav-link active">
+                        <i class="fas fa-home"></i>
+                        <span>Etusivu</span>
+                    </a></li>
+                    <li><a href="music.html" class="nav-link">
+                        <i class="fas fa-music"></i>
+                        <span>Musiikki</span>
+                    </a></li>
+                    <li><a href="photography.html" class="nav-link">
+                        <i class="fas fa-camera"></i>
+                        <span>Valokuvaus</span>
+                    </a></li>
+                    <li><a href="projects.html" class="nav-link">
+                        <i class="fas fa-project-diagram"></i>
+                        <span>Projektit</span>
+                    </a></li>
+                </ul>
+            </nav>
+
+            <div class="header-controls">
+                <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">Tervetuloa Luova Studioon</h1>
+                <p class="hero-subtitle">Taide • Musiikki • Valokuvaus • Innovaatio</p>
+                <div class="hero-cta">
+                    <a href="projects.html" class="primary-btn">
+                        Tutustu projekteihin
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Sections -->
+        <section class="featured-grid">
+            <div class="featured-card">
+                <i class="fas fa-music card-icon"></i>
+                <h2>Musiikki</h2>
+                <p>Tutustu uusimpiin musiikkiprojekteihin ja sävellyksiin.</p>
+                <a href="music.html" class="card-link">Kuuntele <i class="fas fa-chevron-right"></i></a>
+            </div>
+
+            <div class="featured-card">
+                <i class="fas fa-camera card-icon"></i>
+                <h2>Valokuvaus</h2>
+                <p>Katso viimeisimmät valokuvat ja portfoliot.</p>
+                <a href="photography.html" class="card-link">Katso galleria <i class="fas fa-chevron-right"></i></a>
+            </div>
+
+            <div class="featured-card">
+                <i class="fas fa-project-diagram card-icon"></i>
+                <h2>Projektit</h2>
+                <p>Tutustu meneillään oleviin ja valmistuneisiin projekteihin.</p>
+                <a href="projects.html" class="card-link">Lue lisää <i class="fas fa-chevron-right"></i></a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-info">
+                <p>&copy; 2023 XXMXLI. Kaikki oikeudet pidätetään.</p>
+            </div>
+            <div class="social-links">
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const icon = themeToggle.querySelector('i');
+            icon.classList.toggle('fa-moon');
+            icon.classList.toggle('fa-sun');
+        });
+
+        // Mobile Menu Toggle
+        const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+        const mainNav = document.querySelector('.main-nav');
+        
+        mobileMenuToggle.addEventListener('click', () => {
+            mainNav.classList.toggle('nav-open');
+            mobileMenuToggle.classList.toggle('active');
+        });
+
+        // Smooth Scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
 </body>
 </html>
