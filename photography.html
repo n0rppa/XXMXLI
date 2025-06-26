@@ -1,44 +1,34 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 <head>
-<meta charset="UTF-8">
-<title>XXMXLI Photography</title>
-<link rel="stylesheet" href="theme.cs
-<link href="https://fonts.googleapis.
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Valokuvaus - XXMXLI</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-<!-- Navigation Bar
-<nav class="navbar">
-<div class="navbar-logo">XXMXLI</di
-<div class="navbar-links">
-<a href="index.html" id="nav-home
-<a href="projects.html" id="nav-p
-<a href="photography.html" id="na
-<a href="music.html" id="nav-musi
-<a href="about.html" id="nav-abou
-</div>
-</nav>
-<script>
-const navMap =
-= {
-};
-"index.html": "nav-home",
-"projects.html": "nav-projects",
-"photography.html": "nav-photogra
-"music.html": "nav-music",
-"about.html": "nav-about"
-const page = window.location.pathna
-if (navMap[page]) {
-}
-document.getElementById(navMap[pa
-</script>
-<div class="main-container">
-<h1>Photography</h1>
-<div class="gallery">
-<!-- Replace with your own photo
-<img src="photos/photo1.jpg" alt=
-<!-- Add more images as needed
-</div>
-</div>
+  <!-- Header and Nav from above -->
+  <main>
+    <div class="content">
+      <h1 class="page-title">Valokuvaus Portfolio</h1>
+      <div class="gallery-filters">
+        <button class="filter-btn active" data-filter="all">Kaikki</button>
+        <button class="filter-btn" data-filter="nature">Luonto</button>
+        <button class="filter-btn" data-filter="urban">Kaupunki</button>
+        <button class="filter-btn" data-filter="portrait">Muotokuvat</button>
+      </div>
+      <div id="gallery" class="gallery">
+        <!-- Images will be added dynamically -->
+      </div>
+    </div>
+  </main>
+  <div id="lightbox" class="lightbox">
+    <span class="close-lightbox">&times;</span>
+    <img id="lightbox-img" src="" alt="">
+    <button class="prev-btn"><i class="fas fa-chevron-left"></i></button>
+    <button class="next-btn"><i class="fas fa-chevron-right"></i></button>
+  </div>
 </body>
 </html>
