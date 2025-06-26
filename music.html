@@ -5,21 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>XXMXLI - Music</title>
     <style>
+        :root {
+            --neon-red: #ff1e1e;
+            --neon-blue: #1e90ff;
+            --dark-bg: #000000;
+        }
+
         body {
             margin: 0;
             padding: 0;
-            background-color: #000;
+            background-color: var(--dark-bg);
             color: #fff;
-            font-family: Arial, sans-serif;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            background: linear-gradient(45deg, #000000, #1a1a1a);
         }
 
         nav {
-            background-color: #000;
+            background-color: rgba(0, 0, 0, 0.8);
             padding: 1em;
             position: fixed;
             width: 100%;
             top: 0;
             z-index: 1000;
+            box-shadow: 0 0 20px rgba(255, 30, 30, 0.3);
         }
 
         nav ul {
@@ -38,10 +47,37 @@
             color: #fff;
             text-decoration: none;
             font-size: 1.2em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            padding: 5px 10px;
+            position: relative;
+        }
+
+        nav ul li a:hover {
+            color: var(--neon-red);
+            text-shadow: 0 0 10px var(--neon-red);
         }
 
         nav ul li a.active {
-            color: #ff0000;
+            color: var(--neon-red);
+            text-shadow: 0 0 10px var(--neon-red);
+        }
+
+        nav ul li a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--neon-red);
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px var(--neon-red);
+        }
+
+        nav ul li a:hover::after {
+            width: 100%;
         }
 
         .music-player {
@@ -54,54 +90,84 @@
         }
 
         #player-container {
-            background-color: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 10px;
-            width: 80%;
-            max-width: 500px;
+            background: rgba(30, 30, 30, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 0 20px rgba(255, 30, 30, 0.2),
+                        inset 0 0 15px rgba(30, 144, 255, 0.2);
+            border: 1px solid rgba(255, 30, 30, 0.1);
+            backdrop-filter: blur(10px);
         }
 
         .controls {
             display: flex;
             justify-content: center;
-            gap: 10px;
+            gap: 20px;
             margin: 20px 0;
         }
 
         button {
-            background-color: #ff0000;
+            background: transparent;
             color: #fff;
-            border: none;
-            padding: 10px 20px;
+            border: 2px solid var(--neon-red);
+            padding: 10px 25px;
             border-radius: 5px;
             cursor: pointer;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
 
         button:hover {
-            background-color: #cc0000;
+            background: var(--neon-red);
+            box-shadow: 0 0 20px var(--neon-red);
+            color: #fff;
         }
 
         #track-info {
             text-align: center;
-            margin-top: 10px;
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background: rgba(30, 30, 30, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.9em;
+            border: 1px solid rgba(255, 30, 30, 0.2);
         }
 
         #audio-player {
             width: 100%;
+            margin: 20px 0;
+            border-radius: 15px;
         }
 
-        /* Kustomoidaan audio player kontrollit */
         audio::-webkit-media-controls-panel {
-            background-color: rgba(255, 255, 255, 0.1);
+            background: rgba(30, 30, 30, 0.9);
         }
 
         audio::-webkit-media-controls-play-button,
         audio::-webkit-media-controls-mute-button {
-            color: #ff0000;
+            filter: hue-rotate(180deg) brightness(1.5);
         }
 
         audio::-webkit-media-controls-timeline {
-            background-color: #ff0000;
+            background-color: var(--neon-red);
+        }
+
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px var(--neon-red); }
+            50% { box-shadow: 0 0 20px var(--neon-red), 0 0 30px var(--neon-blue); }
+            100% { box-shadow: 0 0 5px var(--neon-red); }
+        }
+
+        #player-container {
+            animation: glow 4s infinite;
         }
     </style>
 </head>
@@ -118,7 +184,6 @@
     <div class="music-player">
         <div id="player-container">
             <audio id="audio-player" controls>
-                <source id="audio-source" type="audio/flac">
                 Your browser does not support the audio element.
             </audio>
             <div class="controls">
@@ -134,13 +199,12 @@
 
     <script>
         const playlist = [
-            { name: 'Track 1', url: '/XXMXLI/assets/audio/track1.flac' },
-            { name: 'Track 2', url: '/XXMXLI/assets/audio/track2.flac' }
+            { name: 'Track 1', url: 'assets/audio/track1.flac' },
+            { name: 'Track 2', url: 'assets/audio/track2.flac' }
         ];
 
         let currentTrackIndex = 0;
         const audioPlayer = document.getElementById('audio-player');
-        const audioSource = document.getElementById('audio-source');
         const playButton = document.getElementById('play-button');
         const prevButton = document.getElementById('prev-button');
         const nextButton = document.getElementById('next-button');
@@ -149,9 +213,11 @@
         function loadTrack(index) {
             if (index >= 0 && index < playlist.length) {
                 currentTrackIndex = index;
-                audioSource.src = playlist[index].url;
-                audioPlayer.load();
+                audioPlayer.src = playlist[index].url;
                 currentTrackSpan.textContent = playlist[index].name;
+                if (!audioPlayer.paused) {
+                    audioPlayer.play();
+                }
             }
         }
 
@@ -170,14 +236,25 @@
         nextButton.addEventListener('click', () => loadTrack(currentTrackIndex + 1));
 
         audioPlayer.addEventListener('ended', () => {
-            loadTrack(currentTrackIndex + 1);
-            audioPlayer.play();
+            if (currentTrackIndex < playlist.length - 1) {
+                loadTrack(currentTrackIndex + 1);
+            }
+        });
+
+        audioPlayer.addEventListener('play', () => {
+            playButton.textContent = 'Pause';
+        });
+
+        audioPlayer.addEventListener('pause', () => {
+            playButton.textContent = 'Play';
         });
 
         audioPlayer.addEventListener('error', (e) => {
             console.error('Audio player error:', e);
+            currentTrackSpan.textContent = 'Error loading track';
         });
 
+        // Load the first track
         loadTrack(0);
     </script>
 </body>
