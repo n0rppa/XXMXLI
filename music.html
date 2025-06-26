@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com;">
-    <title>XXMXLI</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com;">
+    <title>Musiikki - XXMXLI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
     <style>
         :root {
             --background: #000000;
@@ -95,6 +96,67 @@
             background: linear-gradient(to bottom, var(--card-bg), var(--background));
             border-bottom: 1px solid var(--accent);
         }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px var(--accent);
+            animation: pulse 2s infinite;
+        }
+
+        /* Music Player Styles */
+        .music-player {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        #waveform {
+            margin: 20px 0;
+            background: var(--background);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .player-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .control-btn {
+            background: none;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 4px;
+        }
+
+        .control-btn:hover {
+            background: var(--accent);
+            color: var(--background);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { text-shadow: 0 0 10px var(--accent); }
+            50% { text-shadow: 0 0 20px var(--accent), 0 0 30px var(--accent); }
+            100% { text-shadow: 0 0 10px var(--accent); }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -120,35 +182,49 @@
         </section>
 
         <section class="music-player">
-            <div class="track-list">
-                <div class="track">
-                    <h3>Ambient Maisema</h3>
-                    <audio controls>
-                        <source src="pluginit/sample.mp3" type="audio/mpeg">
-                        Selaimesi ei tue audiotoistoa.
-                    </audio>
-                </div>
-                <div class="track">
-                    <h3>Elektroninen Tunnelma</h3>
-                    <audio controls>
-                        <source src="pluginit/sample2.mp3" type="audio/mpeg">
-                        Selaimesi ei tue audiotoistoa.
-                    </audio>
-                </div>
+            <div id="waveform"></div>
+            <div class="player-controls">
+                <button class="control-btn" id="playBtn">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button class="control-btn" id="stopBtn">
+                    <i class="fas fa-stop"></i>
+                </button>
             </div>
-        </section>
-
-        <section class="music-services">
-            <h2>Musiikkipalvelut</h2>
-            <ul>
-                <li>Taustamusiikki tapahtumiin</li>
-                <li>Äänisuunnittelu</li>
-                <li>Musiikkituotanto</li>
-                <li>Äänimaisemien luonti</li>
-            </ul>
         </section>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // Initialize WaveSurfer
+        const wavesurfer = WaveSurfer.create({
+            container: '#waveform',
+            waveColor: '#008000',
+            progressColor: '#00ff00',
+            cursorColor: '#00ff00',
+            barWidth: 2,
+            barRadius: 3,
+            cursorWidth: 1,
+            height: 100,
+            barGap: 3
+        });
+
+        // Load audio file
+        wavesurfer.load('assets/audio/sample.mp3');
+
+        // Play/Pause button
+        const playBtn = document.getElementById('playBtn');
+        playBtn.addEventListener('click', () => {
+            wavesurfer.playPause();
+            const icon = playBtn.querySelector('i');
+            icon.className = wavesurfer.isPlaying() ? 'fas fa-pause' : 'fas fa-play';
+        });
+
+        // Stop button
+        const stopBtn = document.getElementById('stopBtn');
+        stopBtn.addEventListener('click', () => {
+            wavesurfer.stop();
+            playBtn.querySelector('i').className = 'fas fa-play';
+        });
+    </script>
 </body>
 </html>
