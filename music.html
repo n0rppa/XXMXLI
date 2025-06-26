@@ -26,7 +26,17 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: wrap;
     }
+    .track-info {
+      flex: 1 1 350px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .track-title { font-weight: bold; color: #fff; }
+    .track-meta { font-size: 0.93em; color: #ccc; }
+    .track-duration { font-size: 0.95em; color: #aeea00; margin-left: 14px; }
     .track-list button {
       background: #2196F3;
       color: #fff;
@@ -66,6 +76,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
   <script src="https://unpkg.com/butterchurn@2.6.7/lib/butterchurn.min.js"></script>
   <script src="https://unpkg.com/butterchurn-presets@2.4.7/lib/butterchurnPresets.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js"></script>
 </head>
 <body>
   <main>
@@ -88,11 +99,47 @@
     let audioCtx, sourceNode;
     const visualizerCanvas = document.getElementById('visualizer');
 
+    // Helper: Format seconds as mm:ss
+    function formatTime(sec) {
+      sec = Math.floor(sec);
+      const m = Math.floor(sec / 60);
+      let s = sec % 60;
+      if (s < 10) s = "0" + s;
+      return `${m}:${s}`;
+    }
+
+    // Helper: Read duration and metadata from file if not present in JSON
+    function fetchMetadataIfNeeded(track, idx) {
+      if (track.duration && track.artist && track.album) return Promise.resolve();
+      return new Promise((resolve) => {
+        // Read duration
+        const tempAudio = document.createElement('audio');
+        tempAudio.src = 'assets/audio/' + track.file;
+        tempAudio.preload = 'metadata';
+        tempAudio.addEventListener('loadedmetadata', function() {
+          if (!track.duration) track.duration = formatTime(tempAudio.duration);
+          // Read tags (jsmediatags)
+          window.jsmediatags.read(tempAudio.src, {
+            onSuccess: function(tag) {
+              if (!track.artist && tag.tags.artist) track.artist = tag.tags.artist;
+              if (!track.album && tag.tags.album) track.album = tag.tags.album;
+              if (!track.title && tag.tags.title) track.title = tag.tags.title;
+              resolve();
+            },
+            onError: function() { resolve(); }
+          });
+        });
+        tempAudio.addEventListener('error', () => resolve());
+      });
+    }
+
     // Load tracklist.json and render tracks
     fetch('assets/audio/tracklist.json')
       .then(response => response.json())
-      .then(data => {
+      .then(async data => {
         tracks = data;
+        // Fetch metadata for all tracks before rendering
+        await Promise.all(tracks.map(fetchMetadataIfNeeded));
         renderTrackList();
       })
       .catch(err => {
@@ -105,11 +152,38 @@
       list.innerHTML = '';
       tracks.forEach((track, idx) => {
         const li = document.createElement('li');
-        li.textContent = track.title;
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'track-info';
+        // Title
+        const title = document.createElement('span');
+        title.className = 'track-title';
+        title.textContent = track.title || track.file;
+        infoDiv.appendChild(title);
+
+        // Meta (artist, album, etc)
+        const meta = document.createElement('span');
+        meta.className = 'track-meta';
+        let metaText = '';
+        if (track.artist) metaText += track.artist;
+        if (track.album) metaText += (metaText ? ' — ' : '') + track.album;
+        if (track.tags) metaText += (metaText ? ' — ' : '') + track.tags.join(", ");
+        meta.textContent = metaText;
+        infoDiv.appendChild(meta);
+
+        // Duration
+        const duration = document.createElement('span');
+        duration.className = 'track-duration';
+        duration.textContent = track.duration || '?';
+        infoDiv.appendChild(duration);
+
+        li.appendChild(infoDiv);
+
+        // Play button
         const btn = document.createElement('button');
         btn.textContent = 'Soita';
         btn.onclick = () => playTrack(idx);
         li.appendChild(btn);
+
         list.appendChild(li);
       });
     }
@@ -119,7 +193,11 @@
       if (!track) return;
       audio.src = 'assets/audio/' + track.file;
       audio.play();
-      document.getElementById('current-track').textContent = 'Toistetaan: ' + track.title;
+      document.getElementById('current-track').textContent =
+        'Toistetaan: ' +
+        (track.title || track.file) +
+        (track.artist ? ' — ' + track.artist : '') +
+        (track.album ? ' — ' + track.album : '');
 
       // Highlight active button
       const buttons = document.querySelectorAll('.track-list button');
