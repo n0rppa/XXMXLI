@@ -1,44 +1,289 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 <head>
-<meta charset="UTF-8">
-<title>XXMXLI Projects</title>
-<link rel="stylesheet" href="theme.cs
-<link href="https://fonts.googleapis.
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com;">
+    <title>Projektit - XXMXLI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --background: #000000;
+            --text-primary: #00ff00;
+            --text-secondary: #008000;
+            --accent: #00ff00;
+            --accent-hover: #00cc00;
+            --border: #003300;
+            --card-bg: #001100;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(0, 17, 0, 0.95);
+            padding: 1rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 1rem;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent);
+            text-decoration: none;
+            text-shadow: 0 0 5px var(--accent);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+            text-shadow: 0 0 5px var(--accent);
+        }
+
+        /* Project Content */
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 80px auto 0;
+        }
+
+        .project-header {
+            text-align: center;
+            padding: 2rem 0;
+            border-bottom: 1px solid var(--accent);
+            margin-bottom: 3rem;
+        }
+
+        .project-header h1 {
+            font-size: 2.5rem;
+            text-shadow: 0 0 10px var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .project-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .project-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent);
+            transform: translateY(-5px);
+        }
+
+        .project-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+            text-shadow: 0 0 5px var(--accent);
+        }
+
+        .project-card p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .project-card .tags {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: var(--background);
+            color: var(--accent);
+            padding: 0.3rem 0.8rem;
+            border: 1px solid var(--accent);
+            border-radius: 2px;
+            font-size: 0.9rem;
+        }
+
+        .project-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent);
+            text-decoration: none;
+            border: 1px solid var(--accent);
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .project-link:hover {
+            background: var(--accent);
+            color: var(--background);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--card-bg);
+                flex-direction: column;
+                padding: 1rem;
+                border-bottom: 1px solid var(--accent);
+            }
+
+            .nav-menu.active {
+                display: flex;
+            }
+
+            .menu-button {
+                display: block;
+                background: none;
+                border: none;
+                color: var(--accent);
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+
+            .project-header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
 </head>
 <body>
-<!-- Navigation Bar -->
-<nav class="navbar">
-<div class="navbar-logo">XXMXLI</di
-<div class="navbar-links">
-<a href="index.html" id="nav-home
-<a href="projects.html" id="nav-p
-<a href="photography.html" id="na
-<a href="music.html" id="nav-musi
-<a href="about.html" id="nav-abou
-</div>
-</nav>
-<script>
-const navMap = {
-};
-"index.html": "nav-home",
-"projects.html": "nav-projects",
-"photography.html": "nav-photogra
-"music.html": "nav-music",
-"about.html": "nav-about"
-const page = window.location.pathna
-if (navMap[page]) {
-}
-document.getElementById(navMap[pa
-</script>
-<div class="main-container">
-<h1>Projects</h1>
-<ul>
-<li>
-<a href="https://github.com/nor
-</li>
-<!-- Add more projects here
-</ul>
-</div>
+    <header class="header">
+        <nav class="nav-container">
+            <a href="index.html" class="logo">XXMXLI</a>
+            <button class="menu-button">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">
+                    <i class="fas fa-home"></i> Etusivu
+                </a></li>
+                <li><a href="music.html" class="nav-link">
+                    <i class="fas fa-music"></i> Musiikki
+                </a></li>
+                <li><a href="photography.html" class="nav-link">
+                    <i class="fas fa-camera"></i> Valokuvaus
+                </a></li>
+                <li><a href="projects.html" class="nav-link active">
+                    <i class="fas fa-project-diagram"></i> Projektit
+                </a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <div class="project-header">
+            <h1>[ PROJEKTIT ]</h1>
+            <p>// Viimeisimmät työt ja kehitysprojektit //</p>
+        </div>
+
+        <div class="project-grid">
+            <div class="project-card">
+                <h2>Project One</h2>
+                <p>Kuvaus projektista yksi ja sen toteutuksesta.</p>
+                <div class="tags">
+                    <span class="tag">Web</span>
+                    <span class="tag">Design</span>
+                    <span class="tag">UI/UX</span>
+                </div>
+                <a href="#" class="project-link">
+                    Lue lisää <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="project-card">
+                <h2>Project Two</h2>
+                <p>Kuvaus projektista kaksi ja sen toteutuksesta.</p>
+                <div class="tags">
+                    <span class="tag">Audio</span>
+                    <span class="tag">Production</span>
+                </div>
+                <a href="#" class="project-link">
+                    Lue lisää <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="project-card">
+                <h2>Project Three</h2>
+                <p>Kuvaus projektista kolme ja sen toteutuksesta.</p>
+                <div class="tags">
+                    <span class="tag">Photography</span>
+                    <span class="tag">Art</span>
+                </div>
+                <a href="#" class="project-link">
+                    Lue lisää <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const menuButton = document.querySelector('.menu-button');
+        const navMenu = document.querySelector('.nav-menu');
+
+        menuButton.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+            });
+        });
+    </script>
 </body>
 </html>
