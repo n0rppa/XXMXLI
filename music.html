@@ -2,27 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Music Player</title>
-    <!-- Link to the CSS file -->
-    <link rel="stylesheet" href="xxmxli/music-player/css/style.css">
+    <link rel="stylesheet" href="music-player/css/style.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="music-player">
         <header>
             <h1>Music Player</h1>
         </header>
-        
         <main>
-            <!-- Visualizer -->
             <canvas id="visualizer" width="600" height="200"></canvas>
-            
-            <!-- Controls -->
             <div id="controls">
                 <div id="buttons">
-                    <button id="play-pause">Play</button>
-                    <button id="next-track">Next</button>
-                    <button id="previous-track">Previous</button>
+                    <button id="previous-track" title="Previous">&#9664;&#9664;</button>
+                    <button id="play-pause" title="Play/Pause">&#9654;</button>
+                    <button id="next-track" title="Next">&#9654;&#9654;</button>
                 </div>
                 <input type="range" id="progress" min="0" max="100" value="0">
                 <div id="track-info-container">
@@ -31,53 +26,11 @@
                 </div>
             </div>
         </main>
-
         <footer>
             <p>Music Player © 2025</p>
         </footer>
     </div>
-
-    <!-- Link to the JavaScript files -->
-    <script src="xxmxli/music-player/js/player.js"></script>
-    <script src="xxmxli/music-player/js/visualizer.js"></script>
-    <script>
-        // Initialize the music player
-        const player = musicPlayer();
-        player.init();
-
-        // Bind UI elements
-        const playPauseButton = document.getElementById('play-pause');
-        const nextTrackButton = document.getElementById('next-track');
-        const previousTrackButton = document.getElementById('previous-track');
-        const progressBar = document.getElementById('progress');
-        const trackInfo = document.getElementById('track-info');
-        const timeInfo = document.getElementById('time-info');
-
-        const visualizerCanvas = document.getElementById('visualizer');
-        player.$refs = { visualizer: visualizerCanvas };
-
-        // Add event listeners
-        playPauseButton.addEventListener('click', () => {
-            player.togglePlay();
-            playPauseButton.textContent = player.isPlaying ? 'Pause' : 'Play';
-        });
-
-        nextTrackButton.addEventListener('click', () => {
-            // Logic to skip to the next track
-        });
-
-        previousTrackButton.addEventListener('click', () => {
-            // Logic to go back to the previous track
-        });
-
-        // Update UI based on player state
-        setInterval(() => {
-            if (player.currentTrack) {
-                trackInfo.textContent = `${player.currentTrack.title} - ${player.currentTrack.artist}`;
-                timeInfo.textContent = player.formatTime(player.currentTime) + ' / ' + player.formatTime(player.duration);
-                progressBar.value = (player.progress * 100).toFixed(2);
-            }
-        }, 500);
-    </script>
+    <script src="music-player/js/player.js"></script>
+    <script src="music-player/js/visualizer.js"></script>
 </body>
 </html>
