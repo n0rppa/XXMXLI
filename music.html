@@ -1,136 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music Player</title>
-    <!-- Neon High-Tech UI Styles -->
-    <link rel="stylesheet" href="assets/css/style.css">
-    <style>
-        body {
-            background-color: #000;
-            color: #0ff;
-            font-family: 'Orbitron', sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        nav {
-            background-color: #111;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        nav a {
-            color: #0ff;
-            text-decoration: none;
-            margin: 0 10px;
-            font-weight: bold;
-        }
-
-        nav a:hover {
-            text-shadow: 0 0 5px #0ff, 0 0 10px #0ff, 0 0 20px #00f;
-        }
-
-        h1 {
-            text-align: center;
-            margin-top: 20px;
-            text-shadow: 0 0 5px #0ff, 0 0 10px #0ff, 0 0 20px #00f;
-        }
-
-        .track-list {
-            margin: 20px auto;
-            width: 80%;
-            text-align: center;
-        }
-
-        .track-list button {
-            border: 2px solid #0ff;
-            background-color: transparent;
-            color: #0ff;
-            padding: 10px 20px;
-            margin: 10px;
-            cursor: pointer;
-            box-shadow: 0 0 5px #0ff, 0 0 10px #0ff;
-        }
-
-        .track-list button:hover {
-            background-color: #0ff;
-            color: #000;
-        }
-
-        .visualizer {
-            margin: 20px auto;
-            text-align: center;
-        }
-
-        .visualizer canvas {
-            border: 2px solid #0ff;
-            box-shadow: 0 0 5px #0ff, 0 0 10px #0ff;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music – XXMXLI</title>
+  <!-- Sama CSS-linkki kuin etusivulla! -->
+  <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-    <!-- Navigointivalikko -->
-    <nav>
-        <div class="logo">
-            <a href="index.html">Home</a>
-        </div>
-        <div class="links">
-            <a href="projects.html">Projects</a>
-            <a href="music.html">Music</a>
-        </div>
-    </nav>
+  <!-- Sama NAV kuin etusivulla -->
+  <nav>
+    <a href="index.html" class="logo">XXMXLI</a>
+    <ul>
+      <li><a href="index.html">Etusivu</a></li>
+      <li><a href="projects.html">Projektit</a></li>
+      <li><a href="music.html" class="active">Musiikki</a></li>
+    </ul>
+  </nav>
 
-    <!-- Neon High-Tech UI -->
-    <h1>Music Player</h1>
-
-    <!-- Track List -->
-    <div class="track-list">
-        <h2>Tracks</h2>
+  <!-- Sama neon-tyylinen pääotsikko kuin etusivulla -->
+  <main>
+    <h1 class="neon-title">Musiikki</h1>
+    <!-- Tähän varsinainen sisältö: -->
+    <section class="music-player-section">
+      <div class="track-list">
         <button onclick="playTrack('track1.flac')">Track 1</button>
         <button onclick="playTrack('track2.flac')">Track 2</button>
-        <button onclick="playTrack('track3.flac')">Track 3</button>
-        <button onclick="playTrack('track4.flac')">Track 4</button>
-        <button onclick="playTrack('track5.flac')">Track 5</button>
-        <button onclick="playTrack('track6.flac')">Track 6</button>
-        <button onclick="playTrack('track7.flac')">Track 7</button>
-        <button onclick="playTrack('track8.flac')">Track 8</button>
-        <button onclick="playTrack('track9.flac')">Track 9</button>
+        <!-- ... track3.flac – track10.flac ... -->
         <button onclick="playTrack('track10.flac')">Track 10</button>
-    </div>
-
-    <!-- Visualizer -->
-    <div class="visualizer">
-        <h2>Audio Visualizer</h2>
+      </div>
+      <div class="visualizer">
         <canvas id="audioVisualizer" width="800" height="200"></canvas>
-    </div>
+      </div>
+    </section>
+  </main>
 
-    <!-- Beep Go Library Integration -->
-    <script>
-        function playTrack(track) {
-            fetch(`/assets/audio/${track}`)
-                .then(response => {
-                    console.log(`Playing ${track}`);
-                    // Beep-kirjaston toisto ja visualisointi lisätään palvelinpuolella!
-                })
-                .catch(error => console.error('Error:', error));
-        }
+  <!-- Sama footer kuin etusivulla (jos sellainen on) -->
+  <footer>
+    <p>&copy; 2025 XXMXLI</p>
+  </footer>
 
-        // Simulated Visualizer (JS Canvas)
-        const canvas = document.getElementById('audioVisualizer');
-        const ctx = canvas.getContext('2d');
-
-        function drawVisualizer() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#0ff';
-            ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 10, 10);
-            requestAnimationFrame(drawVisualizer);
-        }
-
-        drawVisualizer();
-    </script>
+  <!-- Sama JS-linkitys kuin etusivulla, lisää omat musiikkisoittimen JS:t tähän -->
+  <script src="assets/js/main.js"></script>
+  <script>
+    // Lisäät tänne playTrack()-funktion ja visualizerin koodin.
+  </script>
 </body>
 </html>
