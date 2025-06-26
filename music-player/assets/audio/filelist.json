@@ -1,1 +1,20 @@
-
+[
+    {
+        "id": "track1",
+        "title": "Track One",
+        "artist": "Artist One",
+        "path": "../assets/audio/track1.mp3"
+    },
+    {
+        "id": "track2",
+        "title": "Track Two",
+        "artist": "Artist Two",
+        "path": "../assets/audio/track2.mp3"
+    },
+    {
+        "id": "track3",
+        "title": "Track Three",
+        "artist": "Artist Three",
+        "path": "../assets/audio/track3.mp3"
+    }
+]
