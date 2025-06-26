@@ -18,7 +18,10 @@
 
     <div class="music-player">
         <div id="player-container">
-            <audio id="audio-player"></audio>
+            <audio id="audio-player" controls>
+                <source id="audio-source" type="audio/flac">
+                Your browser does not support the audio element.
+            </audio>
             <div class="controls">
                 <button id="prev-button">Previous</button>
                 <button id="play-button">Play</button>
@@ -32,20 +35,13 @@
 
     <script>
         const playlist = [
-            { name: 'Track 1', url: 'assets/audio/track1.flac' },
-            { name: 'Track 2', url: 'assets/audio/track2.flac' },
-            { name: 'Track 3', url: 'assets/audio/track3.flac' },
-            { name: 'Track 4', url: 'assets/audio/track4.flac' },
-            { name: 'Track 5', url: 'assets/audio/track5.flac' },
-            { name: 'Track 6', url: 'assets/audio/track6.flac' },
-            { name: 'Track 7', url: 'assets/audio/track7.flac' },
-            { name: 'Track 8', url: 'assets/audio/track8.flac' },
-            { name: 'Track 9', url: 'assets/audio/track9.flac' },
-            { name: 'Track 10', url: 'assets/audio/track10.flac' }
+            { name: 'Track 1', url: '/XXMXLI/assets/audio/track1.flac' },
+            { name: 'Track 2', url: '/XXMXLI/assets/audio/track2.flac' }
         ];
 
         let currentTrackIndex = 0;
         const audioPlayer = document.getElementById('audio-player');
+        const audioSource = document.getElementById('audio-source');
         const playButton = document.getElementById('play-button');
         const prevButton = document.getElementById('prev-button');
         const nextButton = document.getElementById('next-button');
@@ -54,7 +50,8 @@
         function loadTrack(index) {
             if (index >= 0 && index < playlist.length) {
                 currentTrackIndex = index;
-                audioPlayer.src = playlist[index].url;
+                audioSource.src = playlist[index].url;
+                audioPlayer.load(); // Tärkeä! Lataa uuden lähteen
                 currentTrackSpan.textContent = playlist[index].name;
             }
         }
@@ -76,6 +73,11 @@
         audioPlayer.addEventListener('ended', () => {
             loadTrack(currentTrackIndex + 1);
             audioPlayer.play();
+        });
+
+        // Lisätään virheiden käsittely
+        audioPlayer.addEventListener('error', (e) => {
+            console.error('Audio player error:', e);
         });
 
         // Load the first track
