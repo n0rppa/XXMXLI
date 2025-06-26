@@ -1,26 +1,43 @@
-<!-- index.html -->
 <!DOCTYPE html>
-<html lang="fi">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Etusivu - XXMXLI</title>
-  <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<title>XXMXLI Home</title>
+<link rel="stylesheet" href="theme.cs
+<link href="https://fonts.googleapis.
 </head>
 <body>
-  <nav class="left-nav">
-    <ul>
-      <li><a href="index.html" class="active">Etusivu</a></li>
-      <li><a href="music.html">Musiikki</a></li>
-      <li><a href="photography.html">Valokuvaus</a></li>
-      <li><a href="projects.html">Projektit</a></li>
-    </ul>
-  </nav>
-  <main>
-    <div class="content">
-      <h1>Tervetuloa Luova Studioon</h1>
-      <p>Tämä on XXMXLI:n kotisivu. Tutustu projekteihin, musiikkiin ja valokuviin vasemman reunan navigaatiosta.</p>
-    </div>
-  </main>
+<!-- Navigation Bar -->
+<nav class="navbar">
+<div class="navbar-logo">XXMXLI</di
+<div class="navbar-links">
+<a href="index.html" id="nav-home
+<a href="projects.html" id="nav-p
+<a href="photography.html" id="na
+<a href="music.html" id="nav-musi
+<a href="about.html" id="nav-abou
+</div>
+</nav>
+<script>
+const navMap = {
+};
+"index.html": "nav-home",
+"projects.html": "nav-projects",
+"photography.html": "nav-photogra
+"music.html": "nav-music",
+"about.html": "nav-about"
+const page = window.location.pathna
+if (navMap[page]) {
+}
+document.getElementById(navMap[pa
+</script>
+<div class="main-container">
+<h1>Welcome to XXMXLI</h1>
+<p>
+Explore my high-tech portfolio an
+<strong>Navigate</strong> using t
+</p>
+<button class="btn" onclick="window
+</div>
 </body>
 </html>
