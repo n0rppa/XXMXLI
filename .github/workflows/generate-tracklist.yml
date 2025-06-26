@@ -1,4 +1,4 @@
-name: Generate tracklist.json
+name: Generate tracklist.json with metadata
 
 on:
   push:
@@ -11,20 +11,64 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Generate tracklist.json
-      run: |
-        mkdir -p assets/audio
-        # List supported audio files, strip path, output as JSON array
-        find assets/audio -maxdepth 1 -type f \( -iname '*.mp3' -o -iname '*.flac' -o -iname '*.wav' -o -iname '*.ogg' \) \
-          | sed 's|assets/audio/||' \
-          | jq -R . | jq -s . > assets/audio/tracklist.json
-        cat assets/audio/tracklist.json
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-    - name: Commit and push tracklist.json
-      uses: stefanzweifel/git-auto-commit-action@v5
-      with:
-        commit_message: "Auto-generate tracklist.json"
-        file_pattern: assets/audio/tracklist.json
+      - name: Install music-metadata
+        run: npm install music-metadata
+
+      - name: Generate tracklist.json with metadata
+        run: |
+          node <<'EOF'
+          const fs = require('fs');
+          const mm = require('music-metadata');
+          const path = require('path');
+          const audioDir = 'assets/audio';
+          const files = fs.readdirSync(audioDir)
+            .filter(f => /\.(mp3|flac|ogg|wav)$/i.test(f));
+          const tasks = files.map(async f => {
+            const p = path.join(audioDir, f);
+            try {
+              const metadata = await mm.parseFile(p);
+              let pictureData = null;
+              if (metadata.common.picture && metadata.common.picture.length > 0) {
+                const pic = metadata.common.picture[0];
+                pictureData = `data:${pic.format};base64,${pic.data.toString('base64')}`;
+              }
+              // Duration in mm:ss
+              let duration = "";
+              if (metadata.format.duration) {
+                const mins = Math.floor(metadata.format.duration / 60);
+                const secs = Math.round(metadata.format.duration % 60).toString().padStart(2,'0');
+                duration = `${mins}:${secs}`;
+              }
+              return {
+                file: f,
+                title: metadata.common.title || f,
+                artist: metadata.common.artist || "",
+                album: metadata.common.album || "",
+                picture: pictureData,
+                duration
+              };
+            } catch (err) {
+              return { file: f, title: f };
+            }
+          });
+          Promise.all(tasks).then(list => {
+            fs.writeFileSync(
+              path.join(audioDir, 'tracklist.json'),
+              JSON.stringify(list, null, 2)
+            );
+          });
+          EOF
+
+      - name: Commit and push tracklist.json
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto-generate tracklist.json with metadata"
+          file_pattern: assets/audio/tracklist.json
