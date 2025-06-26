@@ -1,3 +1,14 @@
+function niceTrackTitleFromPath(path) {
+    // Get the filename (strip folder)
+    let filename = path.split('/').pop();
+    // Remove extension
+    filename = filename.replace(/\.[^/.]+$/, "");
+    // Replace dashes/underscores with spaces and capitalize words
+    return filename
+        .replace(/[-_]/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase());
+}
+
 function musicPlayer() {
     return {
         tracks: [],
@@ -8,16 +19,27 @@ function musicPlayer() {
         audio: null,
         currentIndex: 0,
         visualizerAnimation: null,
+
         async init() {
             await this.loadTracks();
             this.setupAudioContext();
             this.setupVisualizer();
             this.loadTrack(0);
+            this.updateUI();
+            this.setupControls();
+            this.renderPlaylist();
         },
+
         async loadTracks() {
             try {
                 const response = await fetch('assets/audio/filelist.json');
-                this.tracks = await response.json();
+                let tracks = await response.json();
+                // Auto-generate missing title/artist
+                this.tracks = tracks.map(track => ({
+                    ...track,
+                    title: track.title || niceTrackTitleFromPath(track.path),
+                    artist: track.artist || 'Unknown Artist'
+                }));
             } catch (error) {
                 console.error('%c[Error] Failed to load tracks:', 'color: #ff00cc; font-weight: bold;', error);
                 this.tracks = [
@@ -25,12 +47,14 @@ function musicPlayer() {
                 ];
             }
         },
+
         setupAudioContext() {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             this.audioContext = new AudioContext();
             this.analyser = this.audioContext.createAnalyser();
             this.analyser.fftSize = 512;
         },
+
         setupVisualizer() {
             const canvas = document.getElementById('visualizer');
             if (this.analyser && canvas) {
@@ -43,7 +67,6 @@ function musicPlayer() {
                     this.analyser.getByteFrequencyData(dataArray);
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                    // Futuristic neon bars
                     const barWidth = (canvas.width / bufferLength) * 2.5;
                     let x = 0;
 
@@ -61,6 +84,7 @@ function musicPlayer() {
                 draw();
             }
         },
+
         loadTrack(index) {
             if (this.audio) {
                 this.audio.pause();
@@ -75,49 +99,76 @@ function musicPlayer() {
             this.analyser.connect(this.audioContext.destination);
 
             this.audio.onended = () => this.nextTrack();
+            this.updateUI();
+            this.highlightActiveTrack();
         },
+
         play() {
             if (!this.audio) return;
             this.audio.play();
             this.isPlaying = true;
-            document.body.classList.add('playing');
             document.getElementById('play-btn').innerHTML = '&#10073;&#10073;';
         },
+
         pause() {
             if (!this.audio) return;
             this.audio.pause();
             this.isPlaying = false;
-            document.body.classList.remove('playing');
             document.getElementById('play-btn').innerHTML = '&#9654;';
         },
+
         togglePlay() {
             this.isPlaying ? this.pause() : this.play();
         },
+
         nextTrack() {
             let next = (this.currentIndex + 1) % this.tracks.length;
             this.loadTrack(next);
             if (this.isPlaying) this.play();
-            updateUI(this);
         },
+
         prevTrack() {
             let prev = (this.currentIndex - 1 + this.tracks.length) % this.tracks.length;
             this.loadTrack(prev);
             if (this.isPlaying) this.play();
-            updateUI(this);
         },
+
         setVolume(vol) {
             if (this.audio) this.audio.volume = vol;
+        },
+
+        updateUI() {
+            const track = this.tracks[this.currentIndex];
+            document.getElementById('track-title').textContent = track.title || 'Unknown Title';
+            document.getElementById('track-artist').textContent = track.artist || '';
+        },
+
+        renderPlaylist() {
+            const playlist = document.getElementById('playlist');
+            playlist.innerHTML = '';
+            this.tracks.forEach((track, idx) => {
+                const item = document.createElement('div');
+                item.className = 'playlist-item';
+                item.textContent = `${track.title} — ${track.artist}`;
+                item.onclick = () => {
+                    this.loadTrack(idx);
+                    this.play();
+                };
+                playlist.appendChild(item);
+            });
+            this.highlightActiveTrack();
+        },
+
+        highlightActiveTrack() {
+            document.querySelectorAll('.playlist-item').forEach((el, idx) => {
+                el.classList.toggle('active', idx === this.currentIndex);
+            });
+        },
+
+        setupControls() {
+            document.getElementById('play-btn').onclick = () => { this.togglePlay(); };
+            document.getElementById('prev-btn').onclick = () => { this.prevTrack(); };
+            document.getElementById('next-btn').onclick = () => { this.nextTrack(); };
         }
     };
-}
-
-// Helper to update UI outside the player instance (must be global for event handlers)
-function updateUI(player) {
-    const track = player.tracks[player.currentIndex];
-    document.getElementById('track-title').textContent = track.title || 'Unknown Title';
-    document.getElementById('track-artist').textContent = track.artist || '';
-    // Update playlist highlighting
-    document.querySelectorAll('.playlist-item').forEach((el, idx) => {
-        el.classList.toggle('active', idx === player.currentIndex);
-    });
 }
