@@ -1,6 +1,7 @@
+/* General Styling */
 body {
     font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
+    background: linear-gradient(120deg, #89f7fe, #66a6ff);
     margin: 0;
     padding: 0;
     display: flex;
@@ -10,39 +11,90 @@ body {
 }
 
 #music-player {
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
     padding: 20px;
     width: 600px;
     text-align: center;
 }
 
+/* Canvas Styling */
 canvas {
     display: block;
     margin: 0 auto 20px;
+    border-radius: 8px;
+    background: linear-gradient(120deg, #ff9a9e, #fad0c4);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Controls Area */
 #controls {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 10px;
 }
 
+/* Button Styling */
 button {
-    background-color: #007bff;
-    color: #fff;
+    background: linear-gradient(120deg, #ff6a00, #ee0979);
+    color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
     padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
     cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 button:hover {
-    background-color: #0056b3;
+    transform: scale(1.05);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
+button:active {
+    transform: scale(0.95);
+}
+
+/* Progress Bar Styling */
 input[type="range"] {
     width: 80%;
-    margin: 10px 0;
+    appearance: none;
+    height: 10px;
+    background: linear-gradient(120deg, #ff6a00, #ee0979);
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 3px solid #ee0979;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Track Info Styling */
+#track-info {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin-top: 10px;
+}
+
+#time-info {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 10px;
 }
