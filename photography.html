@@ -4,8 +4,88 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Valokuvaus - XXMXLI</title>
-    <link rel="stylesheet" href="theme.css">
     <style>
+        :root {
+            --background: #000000;
+            --text-primary: #00ff00;
+            --text-secondary: #008000;
+            --accent: #00ff00;
+            --accent-hover: #00cc00;
+            --border: #003300;
+            --card-bg: #001100;
+            --surface: rgba(0, 17, 0, 0.95);
+            --glow: 0 0 10px var(--accent);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: var(--surface);
+            padding: 1rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--accent);
+            box-shadow: var(--glow);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent);
+            text-decoration: none;
+            text-shadow: 0 0 5px var(--accent);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            border-color: var(--accent);
+            box-shadow: var(--glow);
+            color: var(--accent);
+        }
+
+        .main-container {
+            margin-top: 80px;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 80px auto 0;
+        }
+
         .gallery-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -17,22 +97,22 @@
             position: relative;
             aspect-ratio: 1;
             overflow: hidden;
-            border: 2px solid var(--primary);
+            border: 1px solid var(--accent);
             border-radius: 8px;
-            box-shadow: var(--shadow);
-            transition: all 0.3s ease;
+            box-shadow: var(--glow);
+            transition: all 0.3s;
         }
 
         .gallery-item:hover {
             transform: scale(1.02);
-            box-shadow: var(--glow);
+            box-shadow: 0 0 20px var(--accent);
         }
 
         .gallery-item img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s;
         }
 
         .gallery-item:hover img {
@@ -46,9 +126,9 @@
             right: 0;
             padding: 15px;
             background: var(--surface);
-            color: var(--text);
-            transition: bottom 0.3s ease;
-            border-top: 1px solid var(--primary);
+            color: var(--text-primary);
+            transition: bottom 0.3s;
+            border-top: 1px solid var(--accent);
         }
 
         .gallery-item:hover .gallery-caption {
@@ -62,26 +142,21 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0, 0, 0, 0.9);
             z-index: 1000;
             padding: 20px;
             justify-content: center;
             align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
         }
 
         #imageModal.active {
-            opacity: 1;
-            pointer-events: auto;
             display: flex;
         }
 
         #modalImage {
             max-width: 90%;
             max-height: 90vh;
-            border: 2px solid var(--primary);
+            border: 1px solid var(--accent);
             box-shadow: var(--glow);
         }
 
@@ -90,8 +165,8 @@
             top: 20px;
             right: 20px;
             background: none;
-            border: 2px solid var(--primary);
-            color: var(--primary);
+            border: 1px solid var(--accent);
+            color: var(--accent);
             width: 40px;
             height: 40px;
             font-size: 24px;
@@ -100,25 +175,68 @@
             align-items: center;
             justify-content: center;
             border-radius: 50%;
+            transition: all 0.3s;
         }
 
         #closeModal:hover {
-            background: var(--primary);
-            color: var(--bg1);
+            background: var(--accent);
+            color: var(--background);
+            box-shadow: var(--glow);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px var(--accent);
+            letter-spacing: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--surface);
+                flex-direction: column;
+                padding: 1rem;
+            }
+
+            .nav-menu.active {
+                display: flex;
+            }
+
+            .menu-button {
+                display: block;
+                background: none;
+                border: none;
+                color: var(--accent);
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+
+            .gallery-container {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 15px;
+                padding: 15px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="navbar-logo">XXMXLI</div>
-        <div class="navbar-links">
-            <a href="index.html">Etusivu</a>
-            <a href="projects.html">Projektit</a>
-            <a href="photography.html" class="active">Valokuvaus</a>
-            <a href="music.html">Musiikki</a>
-        </div>
-    </nav>
+    <header class="header">
+        <nav class="nav-container">
+            <a href="index.html" class="logo">XXMXLI</a>
+            <button class="menu-button">☰</button>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Etusivu</a></li>
+                <li><a href="music.html" class="nav-link">Musiikki</a></li>
+                <li><a href="photography.html" class="nav-link active">Valokuvaus</a></li>
+                <li><a href="projects.html" class="nav-link">Projektit</a></li>
+            </ul>
+        </nav>
+    </header>
 
     <div class="main-container">
         <h1>[ VALOKUVAGALLERIA ]</h1>
@@ -127,21 +245,27 @@
         </div>
     </div>
 
-    <!-- Modal -->
     <div id="imageModal">
         <button id="closeModal">&times;</button>
         <img id="modalImage" src="" alt="">
     </div>
 
     <script>
-        // Staattinen kuvaluettelo
         const images = [
-            { name: 'Kuva 1', url: 'photos/1.jpg' },
-            { name: 'Kuva 2', url: 'photos/2.jpg' },
-            { name: 'Kuva 3', url: 'photos/3.jpg' }
-            // Lisää tähän lisää kuvia
+            { name: 'Kuva 1', url: 'assets/images/1.jpg' },
+            { name: 'Kuva 2', url: 'assets/images/2.jpg' },
+            { name: 'Kuva 3', url: 'assets/images/3.jpg' }
         ];
 
+        // Mobile menu
+        const menuButton = document.querySelector('.menu-button');
+        const navMenu = document.querySelector('.nav-menu');
+
+        menuButton?.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        // Gallery
         function loadImages() {
             const gallery = document.getElementById('gallery');
             
@@ -156,14 +280,12 @@
                     </div>
                 `;
                 
-                // Lisää click event kuvan avaamiseksi modaalissa
                 item.addEventListener('click', () => openModal(image.url));
-                
                 gallery.appendChild(item);
             });
         }
 
-        // Modal toiminnallisuus
+        // Modal functionality
         const modal = document.getElementById('imageModal');
         const modalImg = document.getElementById('modalImage');
         const closeBtn = document.getElementById('closeModal');
@@ -182,12 +304,10 @@
             if (e.target === modal) closeModal();
         });
 
-        // Sulje modaali Esc-näppäimellä
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeModal();
         });
 
-        // Lataa kuvat kun sivu latautuu
         document.addEventListener('DOMContentLoaded', loadImages);
     </script>
 </body>
