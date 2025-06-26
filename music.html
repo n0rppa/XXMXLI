@@ -4,170 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Music Player</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <style>
-        /* CSS - Light Blue Theme */
-        body {
-            font-family: 'Lato', sans-serif;
-            background-color: #ADD8E6; /* Light Blue */
-        }
-
-        .music-container {
-            width: 100%;
-            min-height: 100vh;
-            display: grid;
-            place-items: center;
-        }
-
-        .music-body {
-            box-shadow: 0 20px 50px #87CEEB9f; /* Light Sky Blue */
-            background: #E0FFFF; /* Light Cyan */
-            padding: 1.3rem;
-            border-radius: 1.5rem;
-            position: relative;
-        }
-
-        /* Add more CSS styling here to complete the light blue theme */
-        /* Example: */
-        #title {
-            color: #4682B4; /* Steel Blue */
-        }
-
-        /* Basic Styling - Keep and Adjust as Needed */
-        .top-icons {
-            /* Your existing styling */
-        }
-
-        .music-img {
-            /* Your existing styling */
-        }
-
-        .music-info {
-            /* Your existing styling */
-        }
-
-        .music-progress {
-            /* Your existing styling */
-        }
-
-        .music-controls {
-            /* Your existing styling */
-        }
-    </style>
+    <link rel="stylesheet" href="xxmxli/music-player/css/style.css"> <!-- Optional: Add styles if needed -->
 </head>
 <body>
-    <div class="music-container">
-        <div class="music-body">
-            <div class="volume-container">
-                <div class="volume-bar">
-                    <span class="bar"></span>
-                    <input type='range' min='0.01' max='1' value='1' step='0.01' class="volumerange"/>
-                </div>
-            </div>
-            <div class="top-icons">
-                <button class="volume btn" id="volume">
-                    <i id="volumeicon" class="fas fa-volume-up"></i>
-                </button>
-                <button class="list btn" id="list">
-                    <i class="fas fa-list"></i>
-                </button>
-            </div>
-            <div class="music-img">
-                <img src="https://images.genius.com/ee202c6f724ffd4cf61bd01a205eeb47.1000x1000x1.jpg" alt="song-images" id="img">
-            </div>
-            <div class="music-info">
-                <h2 id="title">Yıldız Tozu</h2>
-            </div>
-            <audio id="audio"></audio>
-            <div class="music-progress">
-                <div class="progress-bar">
-                    <span class="progress-line"></span>
-                    <input type='range' min='0' max='100' value='0' class="progress" id="progress"/>
-                </div>
-                <div class="duration">
-                    <span class="current-time">00:00</span>
-                    <span class="duration-time">00:00</span>
-                </div>
-            </div>
-            <div class="music-controls">
-                <button class="repeat btn" id="repeat">
-                    <i class="fas fa-redo-alt"></i>
-                </button>
-            </div>
+    <div id="music-player">
+        <canvas id="visualizer" width="600" height="200"></canvas>
+        <div id="controls">
+            <button id="play-pause">Play/Pause</button>
+            <span id="track-info"></span>
+            <input type="range" id="progress" min="0" max="100" value="0">
+            <span id="time-info"></span>
         </div>
     </div>
 
+    <script src="xxmxli/music-player/js/player.js"></script>
+    <script src="xxmxli/music-player/js/visualizer.js"></script>
     <script>
-        const img = document.querySelector("#img");
-        const audio = document.querySelector("#audio");
-        const title = document.querySelector("#title");
-        const progress = document.querySelector("#progress");
-        const progressBar = document.querySelector(".progress-bar");
-        const currTime = document.querySelector(".current-time");
-        const totalDuration = document.querySelector(".duration-time");
-        const volumeRange = document.querySelector(".volumerange");
+        // Initialize the music player
+        const player = musicPlayer();
+        player.init();
 
-        let songs = []; // Array to hold song file names
-        let songIndex = 0;
+        // Bind UI elements
+        const playPauseButton = document.getElementById('play-pause');
+        const progressBar = document.getElementById('progress');
+        const trackInfo = document.getElementById('track-info');
+        const timeInfo = document.getElementById('time-info');
 
-        async function getSongs() {
-            try {
-                const response = await fetch('https://api.github.com/repos/n0rppa/XXMXLI/contents/assets/audio');
-                const data = await response.json();
+        const visualizerCanvas = document.getElementById('visualizer');
+        player.$refs = { visualizer: visualizerCanvas };
 
-                songs = data.map(item => item.name);
-
-                loadSong(songs[songIndex]);
-
-            } catch (error) {
-                console.error("Error fetching songs:", error);
-                // Provide a default song list or display an error message to the user
-                songs = ['default.mp3']; // Example default
-                loadSong(songs[songIndex]);
-            }
-        }
-
-        function loadSong(song) {
-            title.innerText = song.replace(".mp3", "");
-            audio.src = `assets/audio/${song}`;
-            img.src = "https://images.genius.com/ee202c6f724ffd4cf61bd01a205eeb47.1000x1000x1.jpg"; //default image
-        }
-
-        function updateProgress(e) {
-            const { duration, currentTime } = e.srcElement;
-            const progressPercent = (currentTime / duration) * 100;
-            progress.value = progressPercent;
-            progressLine.style.width = `${progressPercent}%`;
-            currTime.textContent = formatTime(currentTime);
-        }
-
-        function setProgress(e) {
-            const width = this.clientWidth;
-            const clickX = e.offsetX;
-            const duration = audio.duration;
-            audio.currentTime = (clickX / width) * duration;
-        }
-
-        function setVolume() {
-            audio.volume = volumeRange.value;
-        }
-
-        function formatTime(time) {
-            let minutes = Math.floor(time / 60);
-            let seconds = Math.floor(time % 60);
-            return `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
-        }
-
-        audio.addEventListener('loadeddata', () => {
-            totalDuration.textContent = formatTime(audio.duration);
+        playPauseButton.addEventListener('click', () => {
+            player.togglePlay();
         });
 
-        audio.addEventListener('timeupdate', updateProgress);
-        progressBar.addEventListener('click', setProgress);
-        volumeRange.addEventListener('input', setVolume);
-
-        // Load songs on page load
-        getSongs();
+        // Update UI based on player state
+        setInterval(() => {
+            if (player.currentTrack) {
+                trackInfo.textContent = `${player.currentTrack.title} - ${player.currentTrack.artist}`;
+                timeInfo.textContent = player.formatTime(player.currentTime) + ' / ' + player.formatTime(player.duration);
+                progressBar.value = (player.progress * 100).toFixed(2);
+            }
+        }, 500);
     </script>
 </body>
 </html>
