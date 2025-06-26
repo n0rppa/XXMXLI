@@ -2,9 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>XXMXLI Futuristic Music Player</title>
+  <title>XXMXLI High-Tech Music Player</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Orbitron font for a tech feel -->
   <link href="https://fonts.googleapis.com/css?family=Orbitron:wght@700&display=swap" rel="stylesheet">
   <style>
     body {
@@ -132,156 +131,21 @@
     </div>
     <div id="playlist"></div>
   </div>
+  <script src="music-player/js/player.js"></script>
   <script>
-    // High-tech Neon Visualizer (no module required)
-    function setupVisualizer(analyser, canvas) {
-      const ctx = canvas.getContext('2d');
-      const bufferLength = analyser.frequencyBinCount;
-      const dataArray = new Uint8Array(bufferLength);
-
-      function draw() {
-        requestAnimationFrame(draw);
-        analyser.getByteFrequencyData(dataArray);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        const barWidth = (canvas.width / bufferLength) * 2.2;
-        let x = 0;
-
-        for (let i = 0; i < bufferLength; i++) {
-          let barHeight = dataArray[i] * 1.6;
-          ctx.save();
-          ctx.shadowColor = `hsl(${i * 2.2}, 90%, 60%)`;
-          ctx.shadowBlur = 15;
-          ctx.fillStyle = `hsl(${i * 2.2}, 100%, 55%)`;
-          ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-          ctx.restore();
-          x += barWidth + 0.7;
-        }
-      }
-      draw();
-    }
-
-    // Futuristic Music Player logic
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    let analyser = audioContext.createAnalyser();
-    analyser.fftSize = 512;
-
-    let tracks = [];
-    let currentIndex = 0;
-    let audio = null;
-    let source = null;
-
-    async function loadTracks() {
-      try {
-        const response = await fetch('assets/audio/filelist.json');
-        tracks = await response.json();
-      } catch (e) {
-        tracks = [
-          { id: "default-1", title: "Sample Track", artist: "Unknown Artist", path: "assets/audio/sample.mp3" }
-        ];
-      }
-      renderPlaylist();
-      loadTrack(0);
-    }
-
-    function loadTrack(index) {
-      if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
-        if (source) source.disconnect();
-      }
-      currentIndex = index;
-      const track = tracks[currentIndex];
-      audio = new Audio(track.path);
-      // For visualizer
-      source = audioContext.createMediaElementSource(audio);
-      source.connect(analyser);
-      analyser.connect(audioContext.destination);
-      updateUI();
-      highlightActiveTrack();
-      audio.onended = () => nextTrack();
-    }
-
-    function play() {
-      if (!audio) return;
-      audioContext.resume();
-      audio.play();
-      document.getElementById('play-btn').innerHTML = '&#10073;&#10073;'; // Pause icon
-    }
-
-    function pause() {
-      if (!audio) return;
-      audio.pause();
-      document.getElementById('play-btn').innerHTML = '&#9654;'; // Play icon
-    }
-
-    function togglePlay() {
-      if (!audio) return;
-      if (audio.paused) play();
-      else pause();
-    }
-
-    function prevTrack() {
-      let idx = (currentIndex - 1 + tracks.length) % tracks.length;
-      loadTrack(idx);
-      play();
-    }
-
-    function nextTrack() {
-      let idx = (currentIndex + 1) % tracks.length;
-      loadTrack(idx);
-      play();
-    }
-
-    // UI Functions
-    function updateUI() {
-      const track = tracks[currentIndex];
-      document.getElementById('track-title').textContent = track.title || 'Unknown Title';
-      document.getElementById('track-artist').textContent = track.artist || '';
-    }
-
-    function renderPlaylist() {
-      const playlist = document.getElementById('playlist');
-      playlist.innerHTML = '';
-      tracks.forEach((track, idx) => {
-        const item = document.createElement('div');
-        item.className = 'playlist-item';
-        item.textContent = `${track.title} — ${track.artist}`;
-        item.onclick = () => {
-          loadTrack(idx);
-          play();
-        };
-        playlist.appendChild(item);
-      });
-      highlightActiveTrack();
-    }
-
-    function highlightActiveTrack() {
-      const items = document.querySelectorAll('.playlist-item');
-      items.forEach((item, idx) => {
-        item.classList.toggle('active', idx === currentIndex);
-      });
-    }
-
-    // Controls
-    document.getElementById('play-btn').onclick = togglePlay;
-    document.getElementById('prev-btn').onclick = prevTrack;
-    document.getElementById('next-btn').onclick = nextTrack;
-
-    // Visualizer
-    setupVisualizer(analyser, document.getElementById('visualizer'));
-
-    // Responsive canvas
     function resizeCanvas() {
       const canvas = document.getElementById('visualizer');
-      canvas.width = canvas.offsetWidth * window.devicePixelRatio;
-      canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = canvas.offsetWidth * dpr;
+      canvas.height = canvas.offsetHeight * dpr;
+      canvas.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
     }
     window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    // Load tracks on page load
-    loadTracks();
+    window.addEventListener('DOMContentLoaded', async () => {
+      resizeCanvas();
+      const player = musicPlayer();
+      await player.init();
+    });
   </script>
 </body>
 </html>
