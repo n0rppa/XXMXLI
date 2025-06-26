@@ -72,6 +72,14 @@
       font-size: 1.1em;
       color: #aeea00;
     }
+    #preset-selector {
+      margin: 8px 0 16px 0;
+      background: #222;
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 4px;
+      padding: 6px 12px;
+    }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
   <script src="https://unpkg.com/butterchurn@2.6.7/lib/butterchurn.min.js"></script>
@@ -82,6 +90,7 @@
   <main>
     <div class="music-player">
       <h2>Omat biisit</h2>
+      <select id="preset-selector"></select>
       <div id="current-track"></div>
       <ul id="track-list" class="track-list"></ul>
       <audio id="audio" crossorigin="anonymous"></audio>
@@ -91,13 +100,18 @@
     </div>
   </main>
   <script>
+    // Configuration
+    const AUDIO_DIR = "assets/audio/";
+
     let tracks = [];
     let currentTrack = null;
     let audio = document.getElementById('audio');
     let ctx = document.getElementById('visualizer').getContext('2d');
     let butterchurn, presetList, presetIndex = 0;
     let audioCtx, sourceNode;
+    let butterchurnPresets, presetNames = [];
     const visualizerCanvas = document.getElementById('visualizer');
+    const presetSelector = document.getElementById('preset-selector');
 
     // Helper: Format seconds as mm:ss
     function formatTime(sec) {
@@ -109,16 +123,15 @@
     }
 
     // Helper: Read duration and metadata from file if not present in JSON
-    function fetchMetadataIfNeeded(track, idx) {
-      if (track.duration && track.artist && track.album) return Promise.resolve();
+    function fetchMetadata(track) {
       return new Promise((resolve) => {
-        // Read duration
+        // Duration
         const tempAudio = document.createElement('audio');
-        tempAudio.src = 'assets/audio/' + track.file;
+        tempAudio.src = AUDIO_DIR + track.file;
         tempAudio.preload = 'metadata';
         tempAudio.addEventListener('loadedmetadata', function() {
           if (!track.duration) track.duration = formatTime(tempAudio.duration);
-          // Read tags (jsmediatags)
+          // jsmediatags for artist/album/title
           window.jsmediatags.read(tempAudio.src, {
             onSuccess: function(tag) {
               if (!track.artist && tag.tags.artist) track.artist = tag.tags.artist;
@@ -133,19 +146,35 @@
       });
     }
 
-    // Load tracklist.json and render tracks
-    fetch('assets/audio/tracklist.json')
-      .then(response => response.json())
-      .then(async data => {
-        tracks = data;
-        // Fetch metadata for all tracks before rendering
-        await Promise.all(tracks.map(fetchMetadataIfNeeded));
-        renderTrackList();
-      })
-      .catch(err => {
-        document.getElementById('track-list').innerHTML = "<li>Kappalelistaa ei löytynyt!</li>";
-        console.error(err);
-      });
+    // Dynamically list audio files in the directory (requires server-side API or static file list)
+    // For static hosting, use a server-generated filelist or update this list manually
+    async function loadAudioFiles() {
+      // Try auto-load from a filelist.json or tracklist.json, fallback to manual list if not available
+      let files = [];
+      try {
+        let res = await fetch(AUDIO_DIR + "tracklist.json");
+        if (res.ok) {
+          files = await res.json();
+          // Support both [{file:...}] and ["file.mp3", ...] styles
+          if (files.length && typeof files[0] === "string") {
+            files = files.map(f => ({ file: f }));
+          }
+        }
+      } catch (e) {}
+
+      // If not found, fallback to guessing (edit here if needed!)
+      if (!files.length) {
+        files = [
+          // List your files here if not using tracklist.json:
+          // { file: "song1.mp3" }, { file: "song2.mp3" }
+        ];
+      }
+
+      // Add metadata for each file
+      tracks = files;
+      await Promise.all(tracks.map(fetchMetadata));
+      renderTrackList();
+    }
 
     function renderTrackList() {
       const list = document.getElementById('track-list');
@@ -191,7 +220,7 @@
     function playTrack(idx) {
       const track = tracks[idx];
       if (!track) return;
-      audio.src = 'assets/audio/' + track.file;
+      audio.src = AUDIO_DIR + track.file;
       audio.play();
       document.getElementById('current-track').textContent =
         'Toistetaan: ' +
@@ -214,12 +243,35 @@
         });
         sourceNode.connect(butterchurn.audioInput);
         butterchurn.connectAudio(audioCtx.destination);
-        presetList = Object.keys(window.butterchurnPresets.getPresets());
-        butterchurn.loadPreset(window.butterchurnPresets.getPresets()[presetList[presetIndex]], 0.0);
+        butterchurnPresets = window.butterchurnPresets.getPresets();
+        presetNames = Object.keys(butterchurnPresets);
+        // Set up the selector
+        setupPresetSelector();
+        // Default: Winamp Llama (if found)
+        let llamaIndex = presetNames.findIndex(n => n.toLowerCase().includes('llama'));
+        presetIndex = llamaIndex !== -1 ? llamaIndex : 0;
+        presetSelector.selectedIndex = presetIndex;
+        butterchurn.loadPreset(butterchurnPresets[presetNames[presetIndex]], 0.0);
         butterchurn.start();
         requestAnimationFrame(drawVisualizer);
+      } else {
+        butterchurn.loadPreset(butterchurnPresets[presetNames[presetIndex]], 0.0);
       }
       currentTrack = idx;
+    }
+
+    function setupPresetSelector() {
+      presetSelector.innerHTML = '';
+      presetNames.forEach((name, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = name;
+        presetSelector.appendChild(opt);
+      });
+      presetSelector.onchange = function() {
+        presetIndex = Number(this.value);
+        butterchurn.loadPreset(butterchurnPresets[presetNames[presetIndex]], 1.0);
+      };
     }
 
     // Visualizer draw loop
@@ -228,11 +280,12 @@
       requestAnimationFrame(drawVisualizer);
     }
 
-    // Change visualizer preset on canvas click
+    // Clicking canvas moves to next preset
     visualizerCanvas.addEventListener('click', () => {
-      if (butterchurn && presetList) {
-        presetIndex = (presetIndex + 1) % presetList.length;
-        butterchurn.loadPreset(window.butterchurnPresets.getPresets()[presetList[presetIndex]], 2.0);
+      if (butterchurn && presetNames.length) {
+        presetIndex = (presetIndex + 1) % presetNames.length;
+        presetSelector.selectedIndex = presetIndex;
+        butterchurn.loadPreset(butterchurnPresets[presetNames[presetIndex]], 2.0);
       }
     });
 
@@ -243,7 +296,10 @@
       if (butterchurn) butterchurn.setRendererSize(visualizerCanvas.width, visualizerCanvas.height);
     }
     window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('DOMContentLoaded', resizeCanvas);
+    window.addEventListener('DOMContentLoaded', () => {
+      resizeCanvas();
+      loadAudioFiles();
+    });
   </script>
 </body>
 </html>
