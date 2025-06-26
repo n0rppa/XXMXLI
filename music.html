@@ -1,17 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- Aiempi head ja style osio pysyy samana -->
+<!-- Head ja style osat pysyvät samana -->
 
 <body>
     <!-- Navigaatio pysyy samana -->
 
     <div class="music-player">
         <div id="player-container">
-            <!-- Muutetaan audio-elementtiä -->
-            <audio id="audio-player" controls preload="none">
-                <!-- Lisätään useampi source-elementti eri formaateille -->
-                <source id="flac-source" type="audio/flac">
-                <source id="mp3-source" type="audio/mpeg">
+            <audio id="audio-player" controls>
+                <source src="assets/audio/track1.mp3" type="audio/mpeg">
+                <source src="assets/audio/track1.flac" type="audio/flac">
                 Your browser does not support the audio element.
             </audio>
             <div class="controls">
@@ -20,7 +18,7 @@
                 <button id="next-button">Next</button>
             </div>
             <div id="track-info">
-                <span id="current-track">No track selected</span>
+                <span id="current-track">Track 1</span>
             </div>
         </div>
     </div>
@@ -29,82 +27,80 @@
         const playlist = [
             {
                 name: 'Track 1',
-                flac: 'assets/audio/track1.flac',
-                mp3: 'assets/audio/track1.mp3'
+                sources: [
+                    { src: 'assets/audio/track1.mp3', type: 'audio/mpeg' },
+                    { src: 'assets/audio/track1.flac', type: 'audio/flac' }
+                ]
             },
             {
                 name: 'Track 2',
-                flac: 'assets/audio/track2.flac',
-                mp3: 'assets/audio/track2.mp3'
+                sources: [
+                    { src: 'assets/audio/track2.mp3', type: 'audio/mpeg' },
+                    { src: 'assets/audio/track2.flac', type: 'audio/flac' }
+                ]
             }
         ];
 
         let currentTrackIndex = 0;
         const audioPlayer = document.getElementById('audio-player');
-        const flacSource = document.getElementById('flac-source');
-        const mp3Source = document.getElementById('mp3-source');
         const playButton = document.getElementById('play-button');
         const prevButton = document.getElementById('prev-button');
         const nextButton = document.getElementById('next-button');
         const currentTrackSpan = document.getElementById('current-track');
+
+        function updateAudioSources(track) {
+            // Poista vanhat source elementit
+            while (audioPlayer.firstChild) {
+                audioPlayer.removeChild(audioPlayer.firstChild);
+            }
+            
+            // Lisää uudet source elementit
+            track.sources.forEach(source => {
+                const sourceElement = document.createElement('source');
+                sourceElement.src = source.src;
+                sourceElement.type = source.type;
+                audioPlayer.appendChild(sourceElement);
+            });
+        }
 
         function loadTrack(index) {
             if (index >= 0 && index < playlist.length) {
                 currentTrackIndex = index;
                 const track = playlist[index];
                 
-                // Päivitetään molemmat source-elementit
-                flacSource.src = track.flac;
-                mp3Source.src = track.mp3;
+                // Pysäytä nykyinen toisto
+                audioPlayer.pause();
                 
-                // Pakotetaan audio-elementin päivitys
+                // Päivitä lähteet
+                updateAudioSources(track);
+                
+                // Lataa uusi audio
                 audioPlayer.load();
-                currentTrackSpan.textContent = track.name;
                 
-                console.log('Loading track:', track.name);
-                console.log('FLAC source:', track.flac);
-                console.log('MP3 source:', track.mp3);
+                // Päivitä kappaleen nimi
+                currentTrackSpan.textContent = track.name;
             }
         }
 
-        function togglePlay() {
+        playButton.addEventListener('click', () => {
             if (audioPlayer.paused) {
-                const playPromise = audioPlayer.play();
-                if (playPromise !== undefined) {
-                    playPromise
-                        .then(() => {
-                            playButton.textContent = 'Pause';
-                        })
-                        .catch(error => {
-                            console.error('Playback failed:', error);
-                            currentTrackSpan.textContent = 'Playback failed - Check console';
-                        });
-                }
+                audioPlayer.play().catch(error => {
+                    console.error('Playback failed:', error);
+                });
             } else {
                 audioPlayer.pause();
-                playButton.textContent = 'Play';
             }
-        }
+        });
 
-        // Event listeners
-        playButton.addEventListener('click', togglePlay);
-        
         prevButton.addEventListener('click', () => {
             if (currentTrackIndex > 0) {
                 loadTrack(currentTrackIndex - 1);
             }
         });
-        
+
         nextButton.addEventListener('click', () => {
             if (currentTrackIndex < playlist.length - 1) {
                 loadTrack(currentTrackIndex + 1);
-            }
-        });
-
-        audioPlayer.addEventListener('ended', () => {
-            if (currentTrackIndex < playlist.length - 1) {
-                loadTrack(currentTrackIndex + 1);
-                audioPlayer.play();
             }
         });
 
@@ -118,34 +114,11 @@
 
         audioPlayer.addEventListener('error', (e) => {
             console.error('Audio player error:', e);
-            let errorMessage = 'Error loading track - ';
-            
-            if (e.target.error) {
-                switch (e.target.error.code) {
-                    case e.target.error.MEDIA_ERR_ABORTED:
-                        errorMessage += 'Playback aborted';
-                        break;
-                    case e.target.error.MEDIA_ERR_NETWORK:
-                        errorMessage += 'Network error';
-                        break;
-                    case e.target.error.MEDIA_ERR_DECODE:
-                        errorMessage += 'Format not supported';
-                        break;
-                    case e.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
-                        errorMessage += 'File not found or format not supported';
-                        break;
-                    default:
-                        errorMessage += 'Unknown error';
-                }
-            }
-            
-            currentTrackSpan.textContent = errorMessage;
+            currentTrackSpan.textContent = 'Error loading track';
         });
 
-        // Load the first track when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            loadTrack(0);
-        });
+        // Lataa ensimmäinen kappale
+        loadTrack(0);
     </script>
 </body>
 </html>
