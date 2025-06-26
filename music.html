@@ -4,19 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Music Player</title>
-    <link rel="stylesheet" href="xxmxli/music-player/css/style.css"> <!-- Optional: Add styles if needed -->
+    <!-- Link to the CSS file -->
+    <link rel="stylesheet" href="xxmxli/music-player/css/style.css">
 </head>
 <body>
     <div id="music-player">
-        <canvas id="visualizer" width="600" height="200"></canvas>
-        <div id="controls">
-            <button id="play-pause">Play/Pause</button>
-            <span id="track-info"></span>
-            <input type="range" id="progress" min="0" max="100" value="0">
-            <span id="time-info"></span>
-        </div>
+        <header>
+            <h1>Music Player</h1>
+        </header>
+        
+        <main>
+            <!-- Visualizer -->
+            <canvas id="visualizer" width="600" height="200"></canvas>
+            
+            <!-- Controls -->
+            <div id="controls">
+                <div id="buttons">
+                    <button id="play-pause">Play</button>
+                    <button id="next-track">Next</button>
+                    <button id="previous-track">Previous</button>
+                </div>
+                <input type="range" id="progress" min="0" max="100" value="0">
+                <div id="track-info-container">
+                    <span id="track-info">Track Information</span>
+                    <span id="time-info">00:00 / 00:00</span>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Music Player © 2025</p>
+        </footer>
     </div>
 
+    <!-- Link to the JavaScript files -->
     <script src="xxmxli/music-player/js/player.js"></script>
     <script src="xxmxli/music-player/js/visualizer.js"></script>
     <script>
@@ -26,6 +47,8 @@
 
         // Bind UI elements
         const playPauseButton = document.getElementById('play-pause');
+        const nextTrackButton = document.getElementById('next-track');
+        const previousTrackButton = document.getElementById('previous-track');
         const progressBar = document.getElementById('progress');
         const trackInfo = document.getElementById('track-info');
         const timeInfo = document.getElementById('time-info');
@@ -33,8 +56,18 @@
         const visualizerCanvas = document.getElementById('visualizer');
         player.$refs = { visualizer: visualizerCanvas };
 
+        // Add event listeners
         playPauseButton.addEventListener('click', () => {
             player.togglePlay();
+            playPauseButton.textContent = player.isPlaying ? 'Pause' : 'Play';
+        });
+
+        nextTrackButton.addEventListener('click', () => {
+            // Logic to skip to the next track
+        });
+
+        previousTrackButton.addEventListener('click', () => {
+            // Logic to go back to the previous track
         });
 
         // Update UI based on player state
