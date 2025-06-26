@@ -1,36 +1,287 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Music Player</title>
-    <link rel="stylesheet" href="music-player/css/style.css">
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <title>XXMXLI Futuristic Music Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Orbitron font for a tech feel -->
+  <link href="https://fonts.googleapis.com/css?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #181c29 0%, #2c185a 100%);
+      color: #ccf7ff;
+      font-family: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+    }
+    #music-player {
+      background: rgba(22, 27, 41, 0.88);
+      border: 2px solid #0fffc3;
+      border-radius: 18px;
+      box-shadow: 0 0 44px #0fffc388, 0 0 8px #ff0066;
+      padding: 30px;
+      margin: 40px auto;
+      max-width: 440px;
+      position: relative;
+    }
+    #visualizer {
+      width: 100%;
+      height: 120px;
+      border-radius: 12px;
+      background: #151a24;
+      box-shadow: 0 0 20px #0fffc355;
+      margin-bottom: 24px;
+      display: block;
+    }
+    .track-info {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+    .track-title {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #0fffc3;
+      letter-spacing: 1.5px;
+      margin-bottom: 6px;
+      text-shadow: 0 0 6px #0fffc3cc;
+    }
+    .track-artist {
+      font-size: 1.05rem;
+      color: #ff7edb;
+      text-shadow: 0 0 6px #ff7edbcc;
+    }
+    #controls {
+      display: flex;
+      justify-content: center;
+      gap: 22px;
+      margin-bottom: 14px;
+    }
+    #controls button {
+      background: linear-gradient(90deg, #0fffc3 0%, #ff0066 100%);
+      border: none;
+      border-radius: 100px;
+      color: #fff;
+      font-size: 1.7rem;
+      padding: 13px 22px;
+      cursor: pointer;
+      box-shadow: 0 0 12px #0fffc3cc;
+      transition: box-shadow 0.18s, background 0.22s, transform 0.16s;
+      outline: none;
+    }
+    #controls button:hover, #controls button:focus {
+      background: linear-gradient(90deg, #ff0066 0%, #0fffc3 100%);
+      box-shadow: 0 0 24px #ff0066cc;
+      transform: scale(1.06);
+    }
+    #playlist {
+      margin-top: 12px;
+      border-top: 1px solid #2c185a;
+      padding-top: 14px;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    .playlist-item {
+      color: #c0eaff;
+      padding: 7px 0;
+      border-bottom: 1px solid #232755;
+      cursor: pointer;
+      transition: background 0.13s, color 0.13s;
+      font-size: 1.06rem;
+      padding-left: 9px;
+      border-radius: 5px;
+    }
+    .playlist-item:last-child {
+      border-bottom: none;
+    }
+    .playlist-item.active,
+    .playlist-item:hover {
+      background: #21264d;
+      color: #0fffc3;
+    }
+    #playlist::-webkit-scrollbar {
+      width: 8px;
+      background: #181c29;
+    }
+    #playlist::-webkit-scrollbar-thumb {
+      background: #0fffc3;
+      border-radius: 4px;
+    }
+    @media (max-width: 520px) {
+      #music-player {
+        max-width: 96vw;
+        padding: 12px;
+      }
+      #controls button {
+        font-size: 1.2rem;
+        padding: 9px 12px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div id="music-player">
-        <header>
-            <h1>Music Player</h1>
-        </header>
-        <main>
-            <canvas id="visualizer" width="600" height="200"></canvas>
-            <div id="controls">
-                <div id="buttons">
-                    <button id="previous-track" title="Previous">&#9664;&#9664;</button>
-                    <button id="play-pause" title="Play/Pause">&#9654;</button>
-                    <button id="next-track" title="Next">&#9654;&#9654;</button>
-                </div>
-                <input type="range" id="progress" min="0" max="100" value="0">
-                <div id="track-info-container">
-                    <span id="track-info">Track Information</span>
-                    <span id="time-info">00:00 / 00:00</span>
-                </div>
-            </div>
-        </main>
-        <footer>
-            <p>Music Player © 2025</p>
-        </footer>
+  <div id="music-player">
+    <canvas id="visualizer"></canvas>
+    <div class="track-info">
+      <div class="track-title" id="track-title">Loading...</div>
+      <div class="track-artist" id="track-artist"></div>
     </div>
-    <script src="music-player/js/player.js"></script>
-    <script src="music-player/js/visualizer.js"></script>
+    <div id="controls">
+      <button id="prev-btn" title="Previous">&#9198;</button>
+      <button id="play-btn" title="Play/Pause">&#9654;</button>
+      <button id="next-btn" title="Next">&#9197;</button>
+    </div>
+    <div id="playlist"></div>
+  </div>
+  <script>
+    // High-tech Neon Visualizer (no module required)
+    function setupVisualizer(analyser, canvas) {
+      const ctx = canvas.getContext('2d');
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+
+      function draw() {
+        requestAnimationFrame(draw);
+        analyser.getByteFrequencyData(dataArray);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const barWidth = (canvas.width / bufferLength) * 2.2;
+        let x = 0;
+
+        for (let i = 0; i < bufferLength; i++) {
+          let barHeight = dataArray[i] * 1.6;
+          ctx.save();
+          ctx.shadowColor = `hsl(${i * 2.2}, 90%, 60%)`;
+          ctx.shadowBlur = 15;
+          ctx.fillStyle = `hsl(${i * 2.2}, 100%, 55%)`;
+          ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+          ctx.restore();
+          x += barWidth + 0.7;
+        }
+      }
+      draw();
+    }
+
+    // Futuristic Music Player logic
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    let analyser = audioContext.createAnalyser();
+    analyser.fftSize = 512;
+
+    let tracks = [];
+    let currentIndex = 0;
+    let audio = null;
+    let source = null;
+
+    async function loadTracks() {
+      try {
+        const response = await fetch('assets/audio/filelist.json');
+        tracks = await response.json();
+      } catch (e) {
+        tracks = [
+          { id: "default-1", title: "Sample Track", artist: "Unknown Artist", path: "assets/audio/sample.mp3" }
+        ];
+      }
+      renderPlaylist();
+      loadTrack(0);
+    }
+
+    function loadTrack(index) {
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+        if (source) source.disconnect();
+      }
+      currentIndex = index;
+      const track = tracks[currentIndex];
+      audio = new Audio(track.path);
+      // For visualizer
+      source = audioContext.createMediaElementSource(audio);
+      source.connect(analyser);
+      analyser.connect(audioContext.destination);
+      updateUI();
+      highlightActiveTrack();
+      audio.onended = () => nextTrack();
+    }
+
+    function play() {
+      if (!audio) return;
+      audioContext.resume();
+      audio.play();
+      document.getElementById('play-btn').innerHTML = '&#10073;&#10073;'; // Pause icon
+    }
+
+    function pause() {
+      if (!audio) return;
+      audio.pause();
+      document.getElementById('play-btn').innerHTML = '&#9654;'; // Play icon
+    }
+
+    function togglePlay() {
+      if (!audio) return;
+      if (audio.paused) play();
+      else pause();
+    }
+
+    function prevTrack() {
+      let idx = (currentIndex - 1 + tracks.length) % tracks.length;
+      loadTrack(idx);
+      play();
+    }
+
+    function nextTrack() {
+      let idx = (currentIndex + 1) % tracks.length;
+      loadTrack(idx);
+      play();
+    }
+
+    // UI Functions
+    function updateUI() {
+      const track = tracks[currentIndex];
+      document.getElementById('track-title').textContent = track.title || 'Unknown Title';
+      document.getElementById('track-artist').textContent = track.artist || '';
+    }
+
+    function renderPlaylist() {
+      const playlist = document.getElementById('playlist');
+      playlist.innerHTML = '';
+      tracks.forEach((track, idx) => {
+        const item = document.createElement('div');
+        item.className = 'playlist-item';
+        item.textContent = `${track.title} — ${track.artist}`;
+        item.onclick = () => {
+          loadTrack(idx);
+          play();
+        };
+        playlist.appendChild(item);
+      });
+      highlightActiveTrack();
+    }
+
+    function highlightActiveTrack() {
+      const items = document.querySelectorAll('.playlist-item');
+      items.forEach((item, idx) => {
+        item.classList.toggle('active', idx === currentIndex);
+      });
+    }
+
+    // Controls
+    document.getElementById('play-btn').onclick = togglePlay;
+    document.getElementById('prev-btn').onclick = prevTrack;
+    document.getElementById('next-btn').onclick = nextTrack;
+
+    // Visualizer
+    setupVisualizer(analyser, document.getElementById('visualizer'));
+
+    // Responsive canvas
+    function resizeCanvas() {
+      const canvas = document.getElementById('visualizer');
+      canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+      canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Load tracks on page load
+    loadTracks();
+  </script>
 </body>
 </html>
