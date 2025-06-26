@@ -10,114 +10,92 @@
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   
   <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #0F0F0F;
+      color: #E0E0E0;
+    }
+
+    header {
+      text-align: center;
+      padding: 20px;
+      background: #1A1A1A;
+      border-bottom: 2px solid #333333;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+
+    header h1 {
+      font-size: 2rem;
+      color: #00FFCC;
+      text-shadow: 0 0 5px #00FFCC, 0 0 10px #00FFCC;
+    }
+
+    nav a {
+      color: #E0E0E0;
+      margin: 0 15px;
+      text-decoration: none;
+    }
+    nav a.active {
+      color: #FF007F;
+      text-shadow: 0 0 5px #FF007F, 0 0 10px #FF007F;
+    }
+
     .track-list {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 16px;
-      padding: 16px;
+      padding: 20px;
       max-width: 1400px;
       margin: 0 auto;
     }
+
     .track-card {
-      border: 1px solid #eee;
+      border: 1px solid #333333;
       border-radius: 8px;
       padding: 12px;
-      background: #fff;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      background: #1A1A1A;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
       transition: transform 0.2s, box-shadow 0.2s;
     }
+
     .track-card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      box-shadow: 0 4px 12px rgba(255,0,127,0.7);
     }
-    .track-header {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      margin-bottom: 15px;
-    }
-    .track-cover {
-      width: 64px;
-      height: 64px;
-      border-radius: 6px;
-      object-fit: cover;
-      flex-shrink: 0;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .track-info {
-      flex-grow: 1;
-    }
+
     .track-title {
-      margin: 0 0 4px 0;
-      font-size: 15px;
-      font-weight: 600;
-      color: #2c3e50;
-      line-height: 1.3;
+      font-size: 1.2rem;
+      color: #00FFCC;
     }
-    .track-artist {
-      margin: 0 0 6px 0;
-      color: #5d6d7e;
-      font-size: 13px;
-      font-weight: 500;
-    }
-    .track-duration {
-      font-size: 11px;
-      color: #7f8c8d;
-      margin-bottom: 6px;
-    }
-    .track-tags {
-      display: flex;
-      gap: 5px;
-      flex-wrap: wrap;
-      margin-top: 5px;
-    }
-    .tag {
-      font-size: 11px;
-      background: #f0f0f0;
-      padding: 2px 8px;
-      border-radius: 10px;
-      color: #555;
-    }
+
     .play-button {
-      width: 36px;
-      height: 36px;
+      width: 50px;
+      height: 50px;
       border-radius: 50%;
-      background: #3B719F;
+      background: linear-gradient(45deg, #FF007F, #00FFCC);
       border: none;
       color: white;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      flex-shrink: 0;
       transition: all 0.2s ease;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
+
     .play-button:hover {
-      background: #2a5a8a;
+      box-shadow: 0 4px 12px rgba(255,0,127,0.7);
+      transform: scale(1.1);
     }
-    .play-button:disabled {
-      background: #cccccc;
-      cursor: not-allowed;
-    }
+
     .visualizer-container {
       width: 100%;
-      height: 80px;
-      background: #f8f9fa;
+      height: 100px;
+      background: rgba(255,0,127,0.1);
       border-radius: 6px;
       margin-top: 12px;
       overflow: hidden;
-      border: 1px solid #eee;
-    }
-    .visualizer-canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-    .play-button svg {
-      width: 20px;
-      height: 20px;
-      flex-shrink: 0;
+      border: 1px solid #FF007F;
     }
   </style>
 </head>
@@ -136,26 +114,15 @@
     <div class="track-list">
       <template x-for="track in tracks" :key="track.id">
         <div class="track-card">
-          <div class="track-header">
-            <img :src="track.cover" :alt="track.title" class="track-cover">
-            <div class="track-info">
-              <h3 class="track-title" x-text="track.title"></h3>
-              <p class="track-artist" x-text="track.artist"></p>
-              <div class="track-duration" x-text="track.duration"></div>
-              <div class="track-tags">
-                <template x-for="tag in track.tags" :key="tag">
-                  <span class="tag" x-text="tag"></span>
-                </template>
-              </div>
-            </div>
-            <button 
-              @click="playTrack(track)" 
-              class="play-button"
-              :disabled="currentTrack && currentTrack.id === track.id && isPlaying"
-            >
-              Play
-            </button>
-          </div>
+          <h3 class="track-title" x-text="track.title"></h3>
+          <p x-text="track.artist"></p>
+          <button 
+            @click="playTrack(track)" 
+            class="play-button"
+            :disabled="currentTrack && currentTrack.id === track.id && isPlaying"
+          >
+            ▶
+          </button>
         </div>
       </template>
     </div>
