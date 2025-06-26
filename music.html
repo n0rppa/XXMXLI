@@ -138,12 +138,15 @@
             letter-spacing: 2px;
             font-size: 0.9em;
             border: 1px solid rgba(0, 255, 0, 0.2);
+            color: var(--neon-green);
+            text-shadow: 0 0 5px var(--neon-green);
         }
 
         #audio-player {
             width: 100%;
             margin: 20px 0;
             border-radius: 15px;
+            background: transparent;
         }
 
         audio::-webkit-media-controls-panel {
@@ -198,8 +201,8 @@
 
     <script>
         const playlist = [
-            { name: 'Track 1', url: 'https://n0rppa.github.io/XXMXLI/assets/audio/track1.flac' },
-            { name: 'Track 2', url: 'https://n0rppa.github.io/XXMXLI/assets/audio/track2.flac' }
+            { name: 'Track 1', url: './assets/audio/track1.flac' },
+            { name: 'Track 2', url: './assets/audio/track2.flac' }
         ];
 
         let currentTrackIndex = 0;
@@ -209,48 +212,101 @@
         const nextButton = document.getElementById('next-button');
         const currentTrackSpan = document.getElementById('current-track');
 
+        // Debug info
+        function logDebugInfo(message) {
+            console.log(`Debug: ${message}`);
+            console.log(`Current src: ${audioPlayer.src}`);
+            console.log(`Current time: ${audioPlayer.currentTime}`);
+            console.log(`Ready state: ${audioPlayer.readyState}`);
+        }
+
         function loadTrack(index) {
             if (index >= 0 && index < playlist.length) {
                 currentTrackIndex = index;
                 audioPlayer.src = playlist[index].url;
+                audioPlayer.load(); // Important: force reload the audio source
                 currentTrackSpan.textContent = playlist[index].name;
-                if (!audioPlayer.paused) {
-                    audioPlayer.play();
-                }
+                logDebugInfo(`Loading track: ${playlist[index].name}`);
             }
         }
 
         function togglePlay() {
             if (audioPlayer.paused) {
-                audioPlayer.play();
-                playButton.textContent = 'Pause';
+                const playPromise = audioPlayer.play();
+                if (playPromise !== undefined) {
+                    playPromise
+                        .then(() => {
+                            playButton.textContent = 'Pause';
+                            logDebugInfo('Playback started successfully');
+                        })
+                        .catch(error => {
+                            console.error('Playback failed:', error);
+                            currentTrackSpan.textContent = 'Playback failed - Check console';
+                        });
+                }
             } else {
                 audioPlayer.pause();
                 playButton.textContent = 'Play';
+                logDebugInfo('Playback paused');
             }
         }
 
         playButton.addEventListener('click', togglePlay);
-        prevButton.addEventListener('click', () => loadTrack(currentTrackIndex - 1));
-        nextButton.addEventListener('click', () => loadTrack(currentTrackIndex + 1));
-
-        audioPlayer.addEventListener('ended', () => {
+        
+        prevButton.addEventListener('click', () => {
+            if (currentTrackIndex > 0) {
+                loadTrack(currentTrackIndex - 1);
+            }
+        });
+        
+        nextButton.addEventListener('click', () => {
             if (currentTrackIndex < playlist.length - 1) {
                 loadTrack(currentTrackIndex + 1);
             }
         });
 
+        audioPlayer.addEventListener('ended', () => {
+            if (currentTrackIndex < playlist.length - 1) {
+                loadTrack(currentTrackIndex + 1);
+                audioPlayer.play();
+            }
+        });
+
         audioPlayer.addEventListener('play', () => {
             playButton.textContent = 'Pause';
+            logDebugInfo('Play event triggered');
         });
 
         audioPlayer.addEventListener('pause', () => {
             playButton.textContent = 'Play';
+            logDebugInfo('Pause event triggered');
         });
 
         audioPlayer.addEventListener('error', (e) => {
-            console.error('Audio player error:', e);
-            currentTrackSpan.textContent = 'Error loading track';
+            console.error('Audio player error:', e.target.error);
+            let errorMessage = 'Error loading track: ';
+            
+            if (e.target.error) {
+                switch (e.target.error.code) {
+                    case e.target.error.MEDIA_ERR_ABORTED:
+                        errorMessage += 'Playback aborted';
+                        break;
+                    case e.target.error.MEDIA_ERR_NETWORK:
+                        errorMessage += 'Network error';
+                        break;
+                    case e.target.error.MEDIA_ERR_DECODE:
+                        errorMessage += 'Format not supported';
+                        break;
+                    case e.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                        errorMessage += 'File not found or format not supported';
+                        break;
+                    default:
+                        errorMessage += 'Unknown error';
+                }
+            }
+            
+            currentTrackSpan.textContent = errorMessage;
+            logDebugInfo('Error event triggered');
         });
 
         // Load the first track
