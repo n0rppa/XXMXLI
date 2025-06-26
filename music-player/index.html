@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; img-src 'self' https: data:; media-src 'self' https:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:;">
-    <title>XXMXLI Music Player</title>
-    
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; media-src 'self' https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+    <title>XXMXLI Ultimate Music Player</title>
+
     <!-- External Dependencies -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
-    
+
     <!-- Internal Resources -->
     <link rel="stylesheet" href="css/styles.css">
     <script src="js/visualizer.js"></script>
@@ -25,4 +25,50 @@
                      :alt="currentTrack?.title || 'No track selected'" 
                      class="cover-art">
                 <div class="track-info">
-                    <h2 x
+                    <h2 x-text="currentTrack?.title || 'No track selected'"></h2>
+                    <p x-text="currentTrack?.artist || 'Unknown Artist'"></p>
+                </div>
+            </div>
+
+            <div class="player-controls">
+                <button @click="previousTrack" class="control-btn">
+                    <i class="fas fa-backward"></i>
+                </button>
+                <button @click="togglePlay" class="control-btn play-btn">
+                    <i :class="isPlaying ? 'fas fa-pause' : 'fas fa-play'"></i>
+                </button>
+                <button @click="nextTrack" class="control-btn">
+                    <i class="fas fa-forward"></i>
+                </button>
+            </div>
+
+            <div class="progress-container">
+                <span x-text="formatTime(currentTime)"></span>
+                <input type="range" x-model="progress" @input="seek($event.target.value)" min="0" max="100" class="progress-slider">
+                <span x-text="formatTime(duration)"></span>
+            </div>
+
+            <div class="volume-container">
+                <input type="range" x-model="volume" @input="setVolume($event.target.value)" min="0" max="1" step="0.01" class="volume-slider">
+            </div>
+
+            <div class="visualizer-container">
+                <canvas x-ref="visualizer"></canvas>
+            </div>
+        </div>
+
+        <!-- Playlist -->
+        <div class="track-list">
+            <template x-for="track in tracks" :key="track.id">
+                <div class="track-card" :class="{'active': currentTrack?.id === track.id}">
+                    <h3 x-text="track.title"></h3>
+                    <p x-text="track.artist"></p>
+                    <button @click="playTrack(track)" class="play-btn">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </div>
+            </template>
+        </div>
+    </div>
+</body>
+</html>
