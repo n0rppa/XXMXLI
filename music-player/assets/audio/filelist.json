@@ -1,20 +1,45 @@
 [
-    {
-        "id": "track1",
-        "title": "Track One",
-        "artist": "Artist One",
-        "path": "../assets/audio/track1.mp3"
-    },
-    {
-        "id": "track2",
-        "title": "Track Two",
-        "artist": "Artist Two",
-        "path": "../assets/audio/track2.mp3"
-    },
-    {
-        "id": "track3",
-        "title": "Track Three",
-        "artist": "Artist Three",
-        "path": "../assets/audio/track3.mp3"
-    }
+  {
+    "id": "track1",
+    "title": "Hip-Hop Intro",
+    "artist": "n0rppa",
+    "path": "../assets/audio/01. Hip-Hop Intro.flac",
+    "tags": ["hip-hop", "instrumental"]
+  },
+  {
+    "id": "track2",
+    "title": "Jazz Instrumental",
+    "artist": "n0rppa",
+    "path": "../assets/audio/Jazz instrumental.flac",
+    "tags": ["jazz", "instrumental"]
+  },
+  {
+    "id": "track3",
+    "title": "Mellow",
+    "artist": "n0rppa",
+    "path": "../assets/audio/03.Mellow(1).flac",
+    "tags": ["chill"]
+  },
+  {
+    "id": "track4",
+    "title": "Strange",
+    "artist": "n0rppa",
+    "path": "../assets/audio/07.Strange.flac",
+    "tags": ["experimental"]
+  },
+  {
+    "id": "track5",
+    "title": "Swishaz",
+    "artist": "n0rppa",
+    "path": "../assets/audio/09.Swishaz.flac",
+    "tags": ["electronic"]
+  },
+  {
+    "id": "track6",
+    "title": "Frosty",
+    "artist": "n0rppa",
+    "path": "../assets/audio/10.Frosty.flac",
+    "tags": ["ambient"]
+  }
+  // Add more tracks here as needed
 ]
