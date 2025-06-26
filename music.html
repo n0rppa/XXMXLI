@@ -1,5 +1,171 @@
-[
-  { "title": "Biisi 1", "file": "biisi1.mp3" },
-  { "title": "Biisi 2", "file": "biisi2.mp3" },
-  { "title": "Biisi 3", "file": "biisi3.mp3" }
-]
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Musiikki - XXMXLI</title>
+  <style>
+    body { background: #181818; color: #fff; }
+    .music-player {
+      max-width: 800px;
+      margin: 30px auto;
+      background: rgba(0,0,0,0.92);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .track-list {
+      margin: 0 0 30px 0;
+      padding: 0;
+      list-style: none;
+    }
+    .track-list li {
+      margin: 10px 0;
+      padding: 10px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .track-list button {
+      background: #2196F3;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-left: 12px;
+    }
+    .track-list button.active {
+      background: #f44336;
+    }
+    .visualizer-container {
+      width: 100%;
+      height: 260px;
+      margin: 30px 0 0 0;
+      background: #111;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #visualizer {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #000;
+    }
+    #current-track {
+      margin-bottom: 10px;
+      text-align: center;
+      font-size: 1.1em;
+      color: #aeea00;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+  <script src="https://unpkg.com/butterchurn@2.6.7/lib/butterchurn.min.js"></script>
+  <script src="https://unpkg.com/butterchurn-presets@2.4.7/lib/butterchurnPresets.min.js"></script>
+</head>
+<body>
+  <main>
+    <div class="music-player">
+      <h2>Omat biisit</h2>
+      <div id="current-track"></div>
+      <ul id="track-list" class="track-list"></ul>
+      <audio id="audio" crossorigin="anonymous"></audio>
+      <div class="visualizer-container">
+        <canvas id="visualizer"></canvas>
+      </div>
+    </div>
+  </main>
+  <script>
+    let tracks = [];
+    let currentTrack = null;
+    let audio = document.getElementById('audio');
+    let ctx = document.getElementById('visualizer').getContext('2d');
+    let butterchurn, presetList, presetIndex = 0;
+    let audioCtx, sourceNode;
+    const visualizerCanvas = document.getElementById('visualizer');
+
+    // Load tracklist.json and render tracks
+    fetch('assets/audio/tracklist.json')
+      .then(response => response.json())
+      .then(data => {
+        tracks = data;
+        renderTrackList();
+      })
+      .catch(err => {
+        document.getElementById('track-list').innerHTML = "<li>Kappalelistaa ei löytynyt!</li>";
+        console.error(err);
+      });
+
+    function renderTrackList() {
+      const list = document.getElementById('track-list');
+      list.innerHTML = '';
+      tracks.forEach((track, idx) => {
+        const li = document.createElement('li');
+        li.textContent = track.title;
+        const btn = document.createElement('button');
+        btn.textContent = 'Soita';
+        btn.onclick = () => playTrack(idx);
+        li.appendChild(btn);
+        list.appendChild(li);
+      });
+    }
+
+    function playTrack(idx) {
+      const track = tracks[idx];
+      if (!track) return;
+      audio.src = 'assets/audio/' + track.file;
+      audio.play();
+      document.getElementById('current-track').textContent = 'Toistetaan: ' + track.title;
+
+      // Highlight active button
+      const buttons = document.querySelectorAll('.track-list button');
+      buttons.forEach(b => b.classList.remove('active'));
+      buttons[idx].classList.add('active');
+
+      // Start visualizer
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        sourceNode = audioCtx.createMediaElementSource(audio);
+        butterchurn = butterchurn || window.butterchurn.createVisualizer(audioCtx, visualizerCanvas, {
+          width: visualizerCanvas.width,
+          height: visualizerCanvas.height,
+        });
+        sourceNode.connect(butterchurn.audioInput);
+        butterchurn.connectAudio(audioCtx.destination);
+        presetList = Object.keys(window.butterchurnPresets.getPresets());
+        butterchurn.loadPreset(window.butterchurnPresets.getPresets()[presetList[presetIndex]], 0.0);
+        butterchurn.start();
+        requestAnimationFrame(drawVisualizer);
+      }
+      currentTrack = idx;
+    }
+
+    // Visualizer draw loop
+    function drawVisualizer() {
+      if (butterchurn) butterchurn.render();
+      requestAnimationFrame(drawVisualizer);
+    }
+
+    // Change visualizer preset on canvas click
+    visualizerCanvas.addEventListener('click', () => {
+      if (butterchurn && presetList) {
+        presetIndex = (presetIndex + 1) % presetList.length;
+        butterchurn.loadPreset(window.butterchurnPresets.getPresets()[presetList[presetIndex]], 2.0);
+      }
+    });
+
+    // Resize canvas automatically
+    function resizeCanvas() {
+      visualizerCanvas.width = visualizerCanvas.offsetWidth;
+      visualizerCanvas.height = visualizerCanvas.offsetHeight;
+      if (butterchurn) butterchurn.setRendererSize(visualizerCanvas.width, visualizerCanvas.height);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('DOMContentLoaded', resizeCanvas);
+  </script>
+</body>
+</html>
