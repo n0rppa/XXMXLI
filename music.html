@@ -6,8 +6,8 @@
     <title>XXMXLI - Music</title>
     <style>
         :root {
-            --neon-red: #ff1e1e;
-            --neon-blue: #1e90ff;
+            --neon-green: #00ff00;
+            --dark-green: #006400;
             --dark-bg: #000000;
         }
 
@@ -18,7 +18,7 @@
             color: #fff;
             font-family: 'Courier New', monospace;
             min-height: 100vh;
-            background: linear-gradient(45deg, #000000, #1a1a1a);
+            background: linear-gradient(45deg, #000000, #001a00);
         }
 
         nav {
@@ -28,7 +28,7 @@
             width: 100%;
             top: 0;
             z-index: 1000;
-            box-shadow: 0 0 20px rgba(255, 30, 30, 0.3);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
         }
 
         nav ul {
@@ -55,13 +55,13 @@
         }
 
         nav ul li a:hover {
-            color: var(--neon-red);
-            text-shadow: 0 0 10px var(--neon-red);
+            color: var(--neon-green);
+            text-shadow: 0 0 10px var(--neon-green);
         }
 
         nav ul li a.active {
-            color: var(--neon-red);
-            text-shadow: 0 0 10px var(--neon-red);
+            color: var(--neon-green);
+            text-shadow: 0 0 10px var(--neon-green);
         }
 
         nav ul li a::after {
@@ -71,9 +71,9 @@
             left: 0;
             width: 0;
             height: 2px;
-            background: var(--neon-red);
+            background: var(--neon-green);
             transition: width 0.3s ease;
-            box-shadow: 0 0 10px var(--neon-red);
+            box-shadow: 0 0 10px var(--neon-green);
         }
 
         nav ul li a:hover::after {
@@ -90,14 +90,13 @@
         }
 
         #player-container {
-            background: rgba(30, 30, 30, 0.9);
+            background: rgba(0, 20, 0, 0.9);
             padding: 30px;
             border-radius: 15px;
             width: 90%;
             max-width: 600px;
-            box-shadow: 0 0 20px rgba(255, 30, 30, 0.2),
-                        inset 0 0 15px rgba(30, 144, 255, 0.2);
-            border: 1px solid rgba(255, 30, 30, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+            border: 1px solid rgba(0, 255, 0, 0.1);
             backdrop-filter: blur(10px);
         }
 
@@ -111,7 +110,7 @@
         button {
             background: transparent;
             color: #fff;
-            border: 2px solid var(--neon-red);
+            border: 2px solid var(--neon-green);
             padding: 10px 25px;
             border-radius: 5px;
             cursor: pointer;
@@ -124,9 +123,9 @@
         }
 
         button:hover {
-            background: var(--neon-red);
-            box-shadow: 0 0 20px var(--neon-red);
-            color: #fff;
+            background: var(--neon-green);
+            box-shadow: 0 0 20px var(--neon-green);
+            color: #000;
         }
 
         #track-info {
@@ -134,11 +133,11 @@
             margin: 20px 0;
             padding: 10px;
             border-radius: 5px;
-            background: rgba(30, 30, 30, 0.5);
+            background: rgba(0, 20, 0, 0.5);
             text-transform: uppercase;
             letter-spacing: 2px;
             font-size: 0.9em;
-            border: 1px solid rgba(255, 30, 30, 0.2);
+            border: 1px solid rgba(0, 255, 0, 0.2);
         }
 
         #audio-player {
@@ -148,22 +147,22 @@
         }
 
         audio::-webkit-media-controls-panel {
-            background: rgba(30, 30, 30, 0.9);
+            background: rgba(0, 20, 0, 0.9);
         }
 
         audio::-webkit-media-controls-play-button,
         audio::-webkit-media-controls-mute-button {
-            filter: hue-rotate(180deg) brightness(1.5);
+            filter: hue-rotate(120deg) brightness(1.5);
         }
 
         audio::-webkit-media-controls-timeline {
-            background-color: var(--neon-red);
+            background-color: var(--neon-green);
         }
 
         @keyframes glow {
-            0% { box-shadow: 0 0 5px var(--neon-red); }
-            50% { box-shadow: 0 0 20px var(--neon-red), 0 0 30px var(--neon-blue); }
-            100% { box-shadow: 0 0 5px var(--neon-red); }
+            0% { box-shadow: 0 0 5px var(--neon-green); }
+            50% { box-shadow: 0 0 20px var(--neon-green); }
+            100% { box-shadow: 0 0 5px var(--neon-green); }
         }
 
         #player-container {
@@ -199,8 +198,8 @@
 
     <script>
         const playlist = [
-            { name: 'Track 1', url: 'assets/audio/track1.flac' },
-            { name: 'Track 2', url: 'assets/audio/track2.flac' }
+            { name: 'Track 1', url: 'https://n0rppa.github.io/XXMXLI/assets/audio/track1.flac' },
+            { name: 'Track 2', url: 'https://n0rppa.github.io/XXMXLI/assets/audio/track2.flac' }
         ];
 
         let currentTrackIndex = 0;
