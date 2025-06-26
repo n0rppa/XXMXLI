@@ -1,30 +1,44 @@
-<!-- projects.html -->
 <!DOCTYPE html>
-<html lang="fi">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Projektit - XXMXLI</title>
-  <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<title>XXMXLI Projects</title>
+<link rel="stylesheet" href="theme.cs
+<link href="https://fonts.googleapis.
 </head>
 <body>
-  <nav class="left-nav">
-    <ul>
-      <li><a href="index.html">Etusivu</a></li>
-      <li><a href="music.html">Musiikki</a></li>
-      <li><a href="photography.html">Valokuvaus</a></li>
-      <li><a href="projects.html" class="active">Projektit</a></li>
-    </ul>
-  </nav>
-  <main>
-    <div class="content">
-      <h1>Projektit</h1>
-      <ul>
-        <li><b>Project One:</b> Kuvaus projektista yksi.</li>
-        <li><b>Project Two:</b> Kuvaus projektista kaksi.</li>
-        <li><b>Project Three:</b> Kuvaus projektista kolme.</li>
-      </ul>
-    </div>
-  </main>
+<!-- Navigation Bar -->
+<nav class="navbar">
+<div class="navbar-logo">XXMXLI</di
+<div class="navbar-links">
+<a href="index.html" id="nav-home
+<a href="projects.html" id="nav-p
+<a href="photography.html" id="na
+<a href="music.html" id="nav-musi
+<a href="about.html" id="nav-abou
+</div>
+</nav>
+<script>
+const navMap = {
+};
+"index.html": "nav-home",
+"projects.html": "nav-projects",
+"photography.html": "nav-photogra
+"music.html": "nav-music",
+"about.html": "nav-about"
+const page = window.location.pathna
+if (navMap[page]) {
+}
+document.getElementById(navMap[pa
+</script>
+<div class="main-container">
+<h1>Projects</h1>
+<ul>
+<li>
+<a href="https://github.com/nor
+</li>
+<!-- Add more projects here
+</ul>
+</div>
 </body>
 </html>
