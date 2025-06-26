@@ -1,151 +1,299 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 <head>
-  <meta charset="UTF-8">
-  <title>XXMXLI High-Tech Music Player</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css?family=Orbitron:wght@700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      background: linear-gradient(135deg, #181c29 0%, #2c185a 100%);
-      color: #ccf7ff;
-      font-family: 'Orbitron', 'Segoe UI', Arial, sans-serif;
-      margin: 0;
-      min-height: 100vh;
-    }
-    #music-player {
-      background: rgba(22, 27, 41, 0.88);
-      border: 2px solid #0fffc3;
-      border-radius: 18px;
-      box-shadow: 0 0 44px #0fffc388, 0 0 8px #ff0066;
-      padding: 30px;
-      margin: 40px auto;
-      max-width: 440px;
-      position: relative;
-    }
-    #visualizer {
-      width: 100%;
-      height: 120px;
-      border-radius: 12px;
-      background: #151a24;
-      box-shadow: 0 0 20px #0fffc355;
-      margin-bottom: 24px;
-      display: block;
-    }
-    .track-info {
-      text-align: center;
-      margin-bottom: 18px;
-    }
-    .track-title {
-      font-size: 1.4rem;
-      font-weight: bold;
-      color: #0fffc3;
-      letter-spacing: 1.5px;
-      margin-bottom: 6px;
-      text-shadow: 0 0 6px #0fffc3cc;
-    }
-    .track-artist {
-      font-size: 1.05rem;
-      color: #ff7edb;
-      text-shadow: 0 0 6px #ff7edbcc;
-    }
-    #controls {
-      display: flex;
-      justify-content: center;
-      gap: 22px;
-      margin-bottom: 14px;
-    }
-    #controls button {
-      background: linear-gradient(90deg, #0fffc3 0%, #ff0066 100%);
-      border: none;
-      border-radius: 100px;
-      color: #fff;
-      font-size: 1.7rem;
-      padding: 13px 22px;
-      cursor: pointer;
-      box-shadow: 0 0 12px #0fffc3cc;
-      transition: box-shadow 0.18s, background 0.22s, transform 0.16s;
-      outline: none;
-    }
-    #controls button:hover, #controls button:focus {
-      background: linear-gradient(90deg, #ff0066 0%, #0fffc3 100%);
-      box-shadow: 0 0 24px #ff0066cc;
-      transform: scale(1.06);
-    }
-    #playlist {
-      margin-top: 12px;
-      border-top: 1px solid #2c185a;
-      padding-top: 14px;
-      max-height: 180px;
-      overflow-y: auto;
-    }
-    .playlist-item {
-      color: #c0eaff;
-      padding: 7px 0;
-      border-bottom: 1px solid #232755;
-      cursor: pointer;
-      transition: background 0.13s, color 0.13s;
-      font-size: 1.06rem;
-      padding-left: 9px;
-      border-radius: 5px;
-    }
-    .playlist-item:last-child {
-      border-bottom: none;
-    }
-    .playlist-item.active,
-    .playlist-item:hover {
-      background: #21264d;
-      color: #0fffc3;
-    }
-    #playlist::-webkit-scrollbar {
-      width: 8px;
-      background: #181c29;
-    }
-    #playlist::-webkit-scrollbar-thumb {
-      background: #0fffc3;
-      border-radius: 4px;
-    }
-    @media (max-width: 520px) {
-      #music-player {
-        max-width: 96vw;
-        padding: 12px;
-      }
-      #controls button {
-        font-size: 1.2rem;
-        padding: 9px 12px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musiikki - XXMXLI</title>
+    <style>
+        :root {
+            --background: #000000;
+            --text-primary: #00ff00;
+            --text-secondary: #008000;
+            --accent: #00ff00;
+            --accent-hover: #00cc00;
+            --border: #003300;
+            --card-bg: #001100;
+            --surface: rgba(0, 17, 0, 0.95);
+            --glow: 0 0 10px var(--accent);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: var(--surface);
+            padding: 1rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--accent);
+            box-shadow: var(--glow);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent);
+            text-decoration: none;
+            text-shadow: 0 0 5px var(--accent);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            border-color: var(--accent);
+            box-shadow: var(--glow);
+            color: var(--accent);
+        }
+
+        .main-container {
+            margin-top: 80px;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 80px auto 0;
+        }
+
+        .player-container {
+            background: var(--card-bg);
+            border: 1px solid var(--accent);
+            box-shadow: var(--glow);
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        .track-info {
+            margin-bottom: 15px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .controls button {
+            background: none;
+            border: 1px solid var(--accent);
+            color: var(--text-primary);
+            padding: 5px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .controls button:hover {
+            background: var(--accent);
+            color: var(--background);
+            box-shadow: var(--glow);
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--accent);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: var(--accent);
+            transition: width 0.1s linear;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            color: var(--text-secondary);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px var(--accent);
+            letter-spacing: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--surface);
+                flex-direction: column;
+                padding: 1rem;
+            }
+
+            .nav-menu.active {
+                display: flex;
+            }
+
+            .menu-button {
+                display: block;
+                background: none;
+                border: none;
+                color: var(--accent);
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div id="music-player">
-    <canvas id="visualizer"></canvas>
-    <div class="track-info">
-      <div class="track-title" id="track-title">Loading...</div>
-      <div class="track-artist" id="track-artist"></div>
+    <header class="header">
+        <nav class="nav-container">
+            <a href="index.html" class="logo">XXMXLI</a>
+            <button class="menu-button">☰</button>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Etusivu</a></li>
+                <li><a href="music.html" class="nav-link active">Musiikki</a></li>
+                <li><a href="photography.html" class="nav-link">Valokuvaus</a></li>
+                <li><a href="projects.html" class="nav-link">Projektit</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="main-container">
+        <h1>[ MUSIIKKI ]</h1>
+        <div class="player-container">
+            <div class="track-info">
+                <h2>Now Playing: <span id="trackName">Track Name</span></h2>
+            </div>
+            <div class="controls">
+                <button id="prevButton">Previous</button>
+                <button id="playButton">Play</button>
+                <button id="nextButton">Next</button>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+            </div>
+            <div class="time-display">
+                <span id="currentTime">0:00</span>
+                <span id="totalTime">0:00</span>
+            </div>
+            <audio id="audioPlayer" src=""></audio>
+        </div>
     </div>
-    <div id="controls">
-      <button id="prev-btn" title="Previous">&#9198;</button>
-      <button id="play-btn" title="Play/Pause">&#9654;</button>
-      <button id="next-btn" title="Next">&#9197;</button>
-    </div>
-    <div id="playlist"></div>
-  </div>
-  <script src="music-player/js/player.js"></script>
-  <script>
-    function resizeCanvas() {
-      const canvas = document.getElementById('visualizer');
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = canvas.offsetWidth * dpr;
-      canvas.height = canvas.offsetHeight * dpr;
-      canvas.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-    window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('DOMContentLoaded', async () => {
-      resizeCanvas();
-      const player = musicPlayer();
-      await player.init();
-    });
-  </script>
+
+    <script>
+        // Mobile menu
+        const menuButton = document.querySelector('.menu-button');
+        const navMenu = document.querySelector('.nav-menu');
+
+        menuButton?.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        // Audio Player
+        const audioPlayer = document.getElementById('audioPlayer');
+        const playButton = document.getElementById('playButton');
+        const prevButton = document.getElementById('prevButton');
+        const nextButton = document.getElementById('nextButton');
+        const progressBar = document.querySelector('.progress-bar');
+        const currentTimeDisplay = document.getElementById('currentTime');
+        const totalTimeDisplay = document.getElementById('totalTime');
+        const trackNameDisplay = document.getElementById('trackName');
+
+        const playlist = [
+            { name: 'Track 1', url: 'assets/audio/track1.mp3' },
+            { name: 'Track 2', url: 'assets/audio/track2.mp3' },
+            { name: 'Track 3', url: 'assets/audio/track3.mp3' }
+        ];
+
+        let currentTrackIndex = 0;
+
+        function loadTrack(index) {
+            const track = playlist[index];
+            audioPlayer.src = track.url;
+            trackNameDisplay.textContent = track.name;
+            audioPlayer.load();
+        }
+
+        function playPause() {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                playButton.textContent = 'Pause';
+            } else {
+                audioPlayer.pause();
+                playButton.textContent = 'Play';
+            }
+        }
+
+        function nextTrack() {
+            currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+            loadTrack(currentTrackIndex);
+            if (!audioPlayer.paused) audioPlayer.play();
+        }
+
+        function prevTrack() {
+            currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+            loadTrack(currentTrackIndex);
+            if (!audioPlayer.paused) audioPlayer.play();
+        }
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            seconds = Math.floor(seconds % 60);
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        playButton.addEventListener('click', playPause);
+        nextButton.addEventListener('click', nextTrack);
+        prevButton.addEventListener('click', prevTrack);
+
+        audioPlayer.addEventListener('timeupdate', () => {
+            const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+            progressBar.style.width = progress + '%';
+            currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
+        });
+
+        audioPlayer.addEventListener('loadedmetadata', () => {
+            totalTimeDisplay.textContent = formatTime(audioPlayer.duration);
+        });
+
+        audioPlayer.addEventListener('ended', nextTrack);
+
+        // Load first track
+        loadTrack(currentTrackIndex);
+    </script>
 </body>
 </html>
