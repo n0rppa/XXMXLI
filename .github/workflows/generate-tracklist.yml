@@ -1,36 +1,30 @@
-
-name: Generate tracklist.json
+name: Auto-generate tracklist.json
 
 on:
   push:
     paths:
       - 'assets/audio/**'
+  workflow_dispatch:
 
 jobs:
   generate-tracklist:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Generate tracklist.json
         run: |
           cd assets/audio
-          printf '[\n' > tracklist.json
-          files=( *.mp3 )
-          for i in "${!files[@]}"; do
-            file="${files[$i]}"
-            title="${file%.*}"
-            # Poista tiedostonimestä mahdolliset korvausmerkit, jos haluat siistimmän titlen:
-            title="${title//_/ }"
-            printf '  { "title": "%s", "file": "%s" }%s\n' "$title" "$file" $( [ $i -lt $((${#files[@]}-1)) ] && echo ',' )
-          done >> tracklist.json
-          printf ']\n' >> tracklist.json
+          ls *.mp3 *.flac *.ogg 2>/dev/null | jq -R -s -c 'split("\n")[:-1] | map({ "file": . })' > tracklist.json
 
-      - name: Commit and push tracklist.json
+      - name: Commit and push if changed
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add assets/audio/tracklist.json
-          git commit -m "Auto-generate tracklist.json" || exit 0
-          git push
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Auto-update tracklist.json"
+            git push
+          fi
