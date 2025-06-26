@@ -1,124 +1,166 @@
 <!DOCTYPE html>
-<html lang="en">
-<!-- Head ja style osat pysyvät samana -->
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Musiikki - Luova Studio</title>
+  <link rel="stylesheet" href="../styles.css?t=202506261010">
+  
+  <!-- Alpine.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  
+  <style>
+    .track-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      padding: 16px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .track-card {
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 12px;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .track-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+    .track-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    .track-cover {
+      width: 64px;
+      height: 64px;
+      border-radius: 6px;
+      object-fit: cover;
+      flex-shrink: 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .track-info {
+      flex-grow: 1;
+    }
+    .track-title {
+      margin: 0 0 4px 0;
+      font-size: 15px;
+      font-weight: 600;
+      color: #2c3e50;
+      line-height: 1.3;
+    }
+    .track-artist {
+      margin: 0 0 6px 0;
+      color: #5d6d7e;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .track-duration {
+      font-size: 11px;
+      color: #7f8c8d;
+      margin-bottom: 6px;
+    }
+    .track-tags {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      margin-top: 5px;
+    }
+    .tag {
+      font-size: 11px;
+      background: #f0f0f0;
+      padding: 2px 8px;
+      border-radius: 10px;
+      color: #555;
+    }
+    .play-button {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #3B719F;
+      border: none;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .play-button:hover {
+      background: #2a5a8a;
+    }
+    .play-button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+    }
+    .visualizer-container {
+      width: 100%;
+      height: 80px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      margin-top: 12px;
+      overflow: hidden;
+      border: 1px solid #eee;
+    }
+    .visualizer-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .play-button svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body x-data="audioPlayer()" x-init="init()">
+  <header>
+    <h1>Musiikki</h1>
+    <nav aria-label="Päävalikko">
+      <a href="../index.html">Etusivu</a>
+      <a href="photography.html">Valokuvaus</a>
+      <a href="music.html" class="active" aria-current="page">Musiikki</a>
+      <a href="projects-final.html">Projektit</a>
+    </nav>
+  </header>
 
-<body>
-    <!-- Navigaatio pysyy samana -->
-
-    <div class="music-player">
-        <div id="player-container">
-            <audio id="audio-player" controls>
-                <source src="assets/audio/track1.mp3" type="audio/mpeg">
-                <source src="assets/audio/track1.flac" type="audio/flac">
-                Your browser does not support the audio element.
-            </audio>
-            <div class="controls">
-                <button id="prev-button">Previous</button>
-                <button id="play-button">Play</button>
-                <button id="next-button">Next</button>
+  <main>
+    <div class="track-list">
+      <template x-for="track in tracks" :key="track.id">
+        <div class="track-card">
+          <div class="track-header">
+            <img :src="track.cover" :alt="track.title" class="track-cover">
+            <div class="track-info">
+              <h3 class="track-title" x-text="track.title"></h3>
+              <p class="track-artist" x-text="track.artist"></p>
+              <div class="track-duration" x-text="track.duration"></div>
+              <div class="track-tags">
+                <template x-for="tag in track.tags" :key="tag">
+                  <span class="tag" x-text="tag"></span>
+                </template>
+              </div>
             </div>
-            <div id="track-info">
-                <span id="current-track">Track 1</span>
-            </div>
+            <button 
+              @click="playTrack(track)" 
+              class="play-button"
+              :disabled="currentTrack && currentTrack.id === track.id && isPlaying"
+            >
+              Play
+            </button>
+          </div>
         </div>
+      </template>
     </div>
+  </main>
 
-    <script>
-        const playlist = [
-            {
-                name: 'Track 1',
-                sources: [
-                    { src: 'assets/audio/track1.mp3', type: 'audio/mpeg' },
-                    { src: 'assets/audio/track1.flac', type: 'audio/flac' }
-                ]
-            },
-            {
-                name: 'Track 2',
-                sources: [
-                    { src: 'assets/audio/track2.mp3', type: 'audio/mpeg' },
-                    { src: 'assets/audio/track2.flac', type: 'audio/flac' }
-                ]
-            }
-        ];
-
-        let currentTrackIndex = 0;
-        const audioPlayer = document.getElementById('audio-player');
-        const playButton = document.getElementById('play-button');
-        const prevButton = document.getElementById('prev-button');
-        const nextButton = document.getElementById('next-button');
-        const currentTrackSpan = document.getElementById('current-track');
-
-        function updateAudioSources(track) {
-            // Poista vanhat source elementit
-            while (audioPlayer.firstChild) {
-                audioPlayer.removeChild(audioPlayer.firstChild);
-            }
-            
-            // Lisää uudet source elementit
-            track.sources.forEach(source => {
-                const sourceElement = document.createElement('source');
-                sourceElement.src = source.src;
-                sourceElement.type = source.type;
-                audioPlayer.appendChild(sourceElement);
-            });
-        }
-
-        function loadTrack(index) {
-            if (index >= 0 && index < playlist.length) {
-                currentTrackIndex = index;
-                const track = playlist[index];
-                
-                // Pysäytä nykyinen toisto
-                audioPlayer.pause();
-                
-                // Päivitä lähteet
-                updateAudioSources(track);
-                
-                // Lataa uusi audio
-                audioPlayer.load();
-                
-                // Päivitä kappaleen nimi
-                currentTrackSpan.textContent = track.name;
-            }
-        }
-
-        playButton.addEventListener('click', () => {
-            if (audioPlayer.paused) {
-                audioPlayer.play().catch(error => {
-                    console.error('Playback failed:', error);
-                });
-            } else {
-                audioPlayer.pause();
-            }
-        });
-
-        prevButton.addEventListener('click', () => {
-            if (currentTrackIndex > 0) {
-                loadTrack(currentTrackIndex - 1);
-            }
-        });
-
-        nextButton.addEventListener('click', () => {
-            if (currentTrackIndex < playlist.length - 1) {
-                loadTrack(currentTrackIndex + 1);
-            }
-        });
-
-        audioPlayer.addEventListener('play', () => {
-            playButton.textContent = 'Pause';
-        });
-
-        audioPlayer.addEventListener('pause', () => {
-            playButton.textContent = 'Play';
-        });
-
-        audioPlayer.addEventListener('error', (e) => {
-            console.error('Audio player error:', e);
-            currentTrackSpan.textContent = 'Error loading track';
-        });
-
-        // Lataa ensimmäinen kappale
-        loadTrack(0);
-    </script>
+  <script src="../scripts.js?t=202506261010"></script>
 </body>
 </html>
