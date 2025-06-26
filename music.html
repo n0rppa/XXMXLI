@@ -4,7 +4,106 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>XXMXLI - Music</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+
+        nav {
+            background-color: #000;
+            padding: 1em;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav ul li {
+            margin: 0 1em;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.2em;
+        }
+
+        nav ul li a.active {
+            color: #ff0000;
+        }
+
+        .music-player {
+            margin-top: 80px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 80px);
+        }
+
+        #player-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        button {
+            background-color: #ff0000;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #cc0000;
+        }
+
+        #track-info {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        #audio-player {
+            width: 100%;
+        }
+
+        /* Kustomoidaan audio player kontrollit */
+        audio::-webkit-media-controls-panel {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        audio::-webkit-media-controls-play-button,
+        audio::-webkit-media-controls-mute-button {
+            color: #ff0000;
+        }
+
+        audio::-webkit-media-controls-timeline {
+            background-color: #ff0000;
+        }
+    </style>
 </head>
 <body>
     <nav>
@@ -51,7 +150,7 @@
             if (index >= 0 && index < playlist.length) {
                 currentTrackIndex = index;
                 audioSource.src = playlist[index].url;
-                audioPlayer.load(); // Tärkeä! Lataa uuden lähteen
+                audioPlayer.load();
                 currentTrackSpan.textContent = playlist[index].name;
             }
         }
@@ -75,12 +174,10 @@
             audioPlayer.play();
         });
 
-        // Lisätään virheiden käsittely
         audioPlayer.addEventListener('error', (e) => {
             console.error('Audio player error:', e);
         });
 
-        // Load the first track
         loadTrack(0);
     </script>
 </body>
