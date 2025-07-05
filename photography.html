@@ -31,61 +31,6 @@
             min-height: 100vh;
         }
 
-        .header {
-            background: var(--surface);
-            padding: 1rem;
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 1px solid var(--accent);
-            box-shadow: var(--glow);
-        }
-
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--accent);
-            text-decoration: none;
-            text-shadow: 0 0 5px var(--accent);
-        }
-
-        .nav-menu {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .nav-link {
-            color: var(--text-primary);
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border: 1px solid transparent;
-            transition: all 0.3s;
-        }
-
-        .nav-link:hover,
-        .nav-link.active {
-            border-color: var(--accent);
-            box-shadow: var(--glow);
-            color: var(--accent);
-        }
-
-        .main-container {
-            margin-top: 80px;
-            padding: 2rem;
-            max-width: 1400px;
-            margin: 80px auto 0;
-        }
-
         .gallery-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -114,201 +59,30 @@
             object-fit: cover;
             transition: transform 0.3s;
         }
-
-        .gallery-item:hover img {
-            transform: scale(1.1);
-        }
-
-        .gallery-caption {
-            position: absolute;
-            bottom: -100%;
-            left: 0;
-            right: 0;
-            padding: 15px;
-            background: var(--surface);
-            color: var(--text-primary);
-            transition: bottom 0.3s;
-            border-top: 1px solid var(--accent);
-        }
-
-        .gallery-item:hover .gallery-caption {
-            bottom: 0;
-        }
-
-        #imageModal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 1000;
-            padding: 20px;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #imageModal.active {
-            display: flex;
-        }
-
-        #modalImage {
-            max-width: 90%;
-            max-height: 90vh;
-            border: 1px solid var(--accent);
-            box-shadow: var(--glow);
-        }
-
-        #closeModal {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: none;
-            border: 1px solid var(--accent);
-            color: var(--accent);
-            width: 40px;
-            height: 40px;
-            font-size: 24px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: all 0.3s;
-        }
-
-        #closeModal:hover {
-            background: var(--accent);
-            color: var(--background);
-            box-shadow: var(--glow);
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 2rem;
-            text-shadow: 0 0 10px var(--accent);
-            letter-spacing: 2px;
-        }
-
-        @media (max-width: 768px) {
-            .nav-menu {
-                display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: var(--surface);
-                flex-direction: column;
-                padding: 1rem;
-            }
-
-            .nav-menu.active {
-                display: flex;
-            }
-
-            .menu-button {
-                display: block;
-                background: none;
-                border: none;
-                color: var(--accent);
-                font-size: 1.5rem;
-                cursor: pointer;
-            }
-
-            .gallery-container {
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                gap: 15px;
-                padding: 15px;
-            }
-        }
     </style>
 </head>
 <body>
-    <header class="header">
-        <nav class="nav-container">
-            <a href="index.html" class="logo">XXMXLI</a>
-            <button class="menu-button">☰</button>
-            <ul class="nav-menu">
-                <li><a href="index.html" class="nav-link">Etusivu</a></li>
-                <li><a href="music.html" class="nav-link">Musiikki</a></li>
-                <li><a href="photography.html" class="nav-link active">Valokuvaus</a></li>
-                <li><a href="projects.html" class="nav-link">Projektit</a></li>
-            </ul>
-        </nav>
-    </header>
+    <nav>
+        <a href="index.html">Etusivu</a>
+        <a href="photography.html" class="active">Valokuvaus</a>
+        <a href="music.html">Musiikki</a>
+        <a href="projects.html">Projektit</a>
+    </nav>
 
-    <div class="main-container">
-        <h1>[ VALOKUVAGALLERIA ]</h1>
-        <div id="gallery" class="gallery-container">
-            <!-- Kuvat ladataan tähän dynaamisesti -->
+    <div class="gallery-container">
+        <!-- GALLERY_START -->
+        <!-- Kuvagalleria generoidaan automaattisesti update_gallery.py -skriptillä. -->
+        <!-- Älä muokkaa tätä osiota käsin, vaan aja skripti uudelleen. -->
+        <div class="gallery-item">
+            <img src="images/gallery/kuva1.jpg" alt="Kuva 1">
         </div>
+        <div class="gallery-item">
+            <img src="images/gallery/kuva2.jpg" alt="Kuva 2">
+        </div>
+        <div class="gallery-item">
+            <img src="images/gallery/kuva3.jpg" alt="Kuva 3">
+        </div>
+        <!-- GALLERY_END -->
     </div>
-
-    <div id="imageModal">
-        <button id="closeModal">&times;</button>
-        <img id="modalImage" src="" alt="">
-    </div>
-
-    <script>
-        const images = [
-            { name: 'Kuva 1', url: 'assets/images/1.jpg' },
-            { name: 'Kuva 2', url: 'assets/images/2.jpg' },
-            { name: 'Kuva 3', url: 'assets/images/3.jpg' }
-        ];
-
-        // Mobile menu
-        const menuButton = document.querySelector('.menu-button');
-        const navMenu = document.querySelector('.nav-menu');
-
-        menuButton?.addEventListener('click', () => {
-            navMenu.classList.toggle('active');
-        });
-
-        // Gallery
-        function loadImages() {
-            const gallery = document.getElementById('gallery');
-            
-            images.forEach(image => {
-                const item = document.createElement('div');
-                item.className = 'gallery-item';
-                
-                item.innerHTML = `
-                    <img src="${image.url}" alt="${image.name}" loading="lazy">
-                    <div class="gallery-caption">
-                        <h3>${image.name}</h3>
-                    </div>
-                `;
-                
-                item.addEventListener('click', () => openModal(image.url));
-                gallery.appendChild(item);
-            });
-        }
-
-        // Modal functionality
-        const modal = document.getElementById('imageModal');
-        const modalImg = document.getElementById('modalImage');
-        const closeBtn = document.getElementById('closeModal');
-
-        function openModal(imgUrl) {
-            modalImg.src = imgUrl;
-            modal.classList.add('active');
-        }
-
-        function closeModal() {
-            modal.classList.remove('active');
-        }
-
-        closeBtn.addEventListener('click', closeModal);
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeModal();
-        });
-
-        document.addEventListener('DOMContentLoaded', loadImages);
-    </script>
 </body>
 </html>
