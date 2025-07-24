@@ -277,9 +277,9 @@
               this.setupAudioContext();
             }
             
-            // Create source and connect to analyzer
-            this.source = this.audioContext.createMediaElementSource(this.audioElement);
-            this.source.connect(this.analyser);
+// Create source and connect to analyzer
+            const source = this.audioContext.createMediaElementSource(this.audioElement);
+            source.connect(this.analyser);
             this.analyser.connect(this.audioContext.destination);
             
             // Set up event listeners
