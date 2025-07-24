@@ -3,7 +3,7 @@ import os
 gallery_dir = "images/gallery"
 gallery_html_file = "photography.html"
 
-# Etsi kaikki kuvatiedostot
+# Find all image files
 images = [f for f in os.listdir(gallery_dir) if f.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp'))]
 
 gallery_items = ""
@@ -12,7 +12,7 @@ for img in images:
             <img src="{gallery_dir}/{img}" alt="{img}">
         </div>\n'''
 
-# Lue photography.html ja korvaa GALLERY_START/END väli
+# Read photography.html and replace GALLERY_START/END section
 with open(gallery_html_file, "r", encoding="utf-8") as f:
     html = f.read()
 
