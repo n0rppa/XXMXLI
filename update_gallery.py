@@ -24,4 +24,3 @@ with open(gallery_html_file, "w", encoding="utf-8") as f:
     f.write(new_html)
 
 print("Kuvagalleria päivitetty automaattisesti.")
-print("Kuvagalleria päivitetty automaattisesti.")
