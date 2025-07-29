@@ -1,3 +1,10 @@
 [submodule "XXMXLI"]
-	path = XXMXLI
-	url = https://github.com/n0rppa/XXMXLI.git
+    path = XXMXLI
+    url = https://github.com/n0rppa/XXMXLI.git
+[submodule "assets/audio/XXMXLI"]
+       path = assets/audio/XXMXLI
+[submodule "assets/audio/pcp"]
+       path = assets/audio/pcp
+       url = https://github.[submodule "assets/audio/pcp"]
+       path = assets/audio/pcp
+       url = https://github.com/your-repo/pcp.git  # Use the correct URL for the submodule
