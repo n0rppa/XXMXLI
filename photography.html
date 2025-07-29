@@ -1,106 +1,359 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + Svelte</title>
-    <script type="module" crossorigin src="/assets/index-DwXfpC5N.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-DdxJXtVd.css">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src * data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
-  </head>
-  <body>
-    <div id="app"></div>
-    <div id="gallery">
-      <!-- GALLERY_START -->
-        <div class="gallery-item">
-            <img src="assets/images/deow (28).jpg" alt="deow (28).jpg">
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com;">
+    <title>XXMXLI - Valokuvaus</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --background: #000000;
+            --text-primary: #00ff00;
+            --text-secondary: #008000;
+            --accent: #00ff00;
+            --accent-hover: #00cc00;
+            --border: #003300;
+            --card-bg: #001100;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(0, 17, 0, 0.95);
+            padding: 1rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 1rem;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent);
+            text-decoration: none;
+            text-shadow: 0 0 5px var(--accent);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+            text-shadow: 0 0 5px var(--accent);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(to bottom, var(--card-bg), var(--background));
+            border-bottom: 1px solid var(--accent);
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px var(--accent);
+            animation: pulse 2s infinite;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Grid Layout */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .grid-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .grid-item:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent);
+            transform: translateY(-5px);
+        }
+
+        .grid-item i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .grid-item h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .grid-item p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .grid-item a {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            color: var(--accent);
+            text-decoration: none;
+            border: 1px solid var(--accent);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .grid-item a:hover {
+            background: var(--accent);
+            color: var(--background);
+            box-shadow: 0 0 15px var(--accent);
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% {
+                text-shadow: 0 0 10px var(--accent);
+            }
+            50% {
+                text-shadow: 0 0 20px var(--accent), 0 0 30px var(--accent);
+            }
+            100% {
+                text-shadow: 0 0 10px var(--accent);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--card-bg);
+                flex-direction: column;
+                padding: 1rem;
+                border-bottom: 1px solid var(--accent);
+            }
+
+            .nav-menu.active {
+                display: flex;
+            }
+
+            .menu-button {
+                display: block;
+                background: none;
+                border: none;
+                color: var(--accent);
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav-container">
+            <a href="index.html" class="logo">XXMXLI</a>
+            <button class="menu-button">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">
+                    <i class="fas fa-home"></i> Etusivu
+                </a></li>
+                <li><a href="music.html" class="nav-link">
+                    <i class="fas fa-music"></i> Musiikki
+                </a></li>
+                <li><a href="photography.html" class="nav-link active">
+                    <i class="fas fa-camera"></i> Valokuvaus
+                </a></li>
+                <li><a href="projects.html" class="nav-link">
+                    <i class="fas fa-project-diagram"></i> Projektit
+                </a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <section class="hero">
+            <h1>Valokuvaus</h1>
+            <p>Katso viimeisimmät valokuvat ja portfoliot.</p>
+        </section>
+
+        <div class="grid-container">
+            <!-- GALLERY_START -->
+            <div class="grid-item">
+                <img src="assets/images/deow (28).jpg" alt="deow (28).jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/deow (23).jpg" alt="deow (23).jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/deow (35).jpg" alt="deow (35).jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/deow (36).jpg" alt="deow (36).jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/deow (22).jpg" alt="deow (22).jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/13.jpg" alt="13.jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/deow (31).jpg" alt="deow (31).jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/deow (33).jpg" alt="deow (33).jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/deow (29).jpg" alt="deow (29).jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/111.jpg" alt="111.jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/12.jpg" alt="12.jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/deow (25).jpg" alt="deow (25).jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/17.jpg" alt="17.jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/112.jpg" alt="112.jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/19.jpg" alt="19.jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/113.jpg" alt="113.jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/deow (27).jpg" alt="deow (27).jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/115.jpg" alt="115.jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/16.jpg" alt="16.jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/1.jpg" alt="1.jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/11.jpg" alt="11.jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/deow (12).jpg" alt="deow (12).jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/114.jpg" alt="114.jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/deow (32).jpg" alt="deow (32).jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/20.jpg" alt="20.jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/deow (34).jpg" alt="deow (34).jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/14.jpg" alt="14.jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/18.jpg" alt="18.jpg">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/15.jpg" alt="15.jpg">
+            </div>
+            <!-- GALLERY_END -->
         </div>
-        <div class="gallery-item">
-            <img src="assets/images/deow (23).jpg" alt="deow (23).jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/deow (35).jpg" alt="deow (35).jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/deow (36).jpg" alt="deow (36).jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/deow (22).jpg" alt="deow (22).jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/13.jpg" alt="13.jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/deow (31).jpg" alt="deow (31).jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/deow (33).jpg" alt="deow (33).jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/deow (29).jpg" alt="deow (29).jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/111.jpg" alt="111.jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/12.jpg" alt="12.jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/deow (25).jpg" alt="deow (25).jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/17.jpg" alt="17.jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/112.jpg" alt="112.jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/19.jpg" alt="19.jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/113.jpg" alt="113.jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/deow (27).jpg" alt="deow (27).jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/115.jpg" alt="115.jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/16.jpg" alt="16.jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/1.jpg" alt="1.jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/11.jpg" alt="11.jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/deow (12).jpg" alt="deow (12).jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/114.jpg" alt="114.jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/deow (32).jpg" alt="deow (32).jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/20.jpg" alt="20.jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/deow (34).jpg" alt="deow (34).jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/14.jpg" alt="14.jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/18.jpg" alt="18.jpg">
-        </div>
-        <div class="gallery-item">
-            <img src="assets/images/15.jpg" alt="15.jpg">
-        </div>
-        <!-- GALLERY_END -->
-    </div>
-  </body>
+    </main>
+
+    <script>
+        // Mobile menu functionality
+        const menuButton = document.querySelector('.menu-button');
+        const navMenu = document.querySelector('.nav-menu');
+
+        menuButton.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        // Close menu when clicking a link
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+            });
+        });
+    </script>
+</body>
 </html>
