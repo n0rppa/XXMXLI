@@ -1,34 +1,90 @@
 [
   {
-    "file": "diamond_intro.mp3",
-    "title": "Diamond Intro",
-    "artist": "Shine Band",
-    "album": "Diamond Collection",
-    "picture": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD...", 
-    "duration": "1:23"
-  },
-  {
-    "file": "brilliant_cut.flac",
-    "title": "Brilliant Cut",
-    "artist": "Facet Crew",
-    "album": "Diamond Collection",
-    "picture": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...", 
-    "duration": "3:47"
-  },
-  {
-    "file": "emerald_edge.ogg",
-    "title": "Emerald Edge",
-    "artist": "Gem Sounds",
-    "album": "Diamond Collection",
+    "file": "10.Frosty.flac",
+    "title": "10.Frosty",
+    "artist": "Eemeli",
+    "album": "",
     "picture": null,
-    "duration": "2:54"
+    "duration": "1:47"
   },
   {
-    "file": "diamond_theme.wav",
-    "title": "Diamond Theme",
-    "artist": "Shine Band",
-    "album": "Diamond Collection",
+    "file": "Rain (1).flac",
+    "title": "13.Rain",
+    "artist": "Eemeli",
+    "album": "",
     "picture": null,
-    "duration": "2:10"
+    "duration": "2:01"
+  },
+  {
+    "file": "track1.flac",
+    "title": "03.Mellow",
+    "artist": "Eemeli",
+    "album": "",
+    "picture": null,
+    "duration": "4:11"
+  },
+  {
+    "file": "track2.flac",
+    "title": "Astrologik",
+    "artist": "Eemeli",
+    "album": "",
+    "picture": null,
+    "duration": "2:38"
+  },
+  {
+    "file": "track3.flac",
+    "title": "13.Rain",
+    "artist": "Eemeli",
+    "album": "",
+    "picture": null,
+    "duration": "2:01"
+  },
+  {
+    "file": "track4.flac",
+    "title": "07.Strange",
+    "artist": "Eemeli",
+    "album": "",
+    "picture": null,
+    "duration": "5:50"
+  },
+  {
+    "file": "track5.flac",
+    "title": "09.Swishaz",
+    "artist": "Eemeli",
+    "album": "",
+    "picture": null,
+    "duration": "2:09"
+  },
+  {
+    "file": "track6.flac",
+    "title": "18.Alley",
+    "artist": "Eemeli",
+    "album": "",
+    "picture": null,
+    "duration": "2:13"
+  },
+  {
+    "file": "track7.flac",
+    "title": "20.Cloudy instrumental",
+    "artist": "Eemeli",
+    "album": "",
+    "picture": null,
+    "duration": "1:07"
+  },
+  {
+    "file": "track8.flac",
+    "title": "21.Oldschool hip-hop beat",
+    "artist": "Eemeli",
+    "album": "",
+    "picture": null,
+    "duration": "0:59"
+  },
+  {
+    "file": "track9.flac",
+    "title": "23.Chill oldschool beat",
+    "artist": "Eemeli",
+    "album": "",
+    "picture": null,
+    "duration": "1:08"
   }
 ]
