@@ -1,6 +1,6 @@
 import os
 
-gallery_dir = "images/gallery"
+gallery_dir = "assets/images"
 gallery_html_file = "photography.html"
 
 # Find all image files
@@ -23,4 +23,5 @@ new_html = html[:start] + "<!-- GALLERY_START -->\n" + gallery_items + "        
 with open(gallery_html_file, "w", encoding="utf-8") as f:
     f.write(new_html)
 
+print("Kuvagalleria päivitetty automaattisesti.")
 print("Kuvagalleria päivitetty automaattisesti.")
