@@ -1,4 +1,93 @@
-<meta charset="UTF-8">
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('enlargedImage');
+    const closeBtn = document.getElementById('closeModalBtn');
+    // Open modal when gallery images are clicked
+    document.querySelectorAll('.gallery-item img').forEach(img => {
+      img.addEventListener('click', function() {
+        modal.classList.add('open');
+        modalImg.src = this.src;
+        modalImg.alt = this.alt;
+        document.body.style.overflow = 'hidden'; // Disable background scroll
+      });
+    });
+    // Close modal when clicking the close button
+    closeBtn.addEventListener('click', function() {
+      modal.classList.remove('open');
+      document.body.style.overflow = ''; // Restore scrolling
+    });
+    // Close modal when clicking outside the image container
+    modal.addEventListener('click', function(event) {
+      if (event.target === modal) {
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    });
+    // Close modal with the ESC key
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape' && modal.classList.contains('open')) {
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    });
+  });
+</script>
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.9); /* Dark overlay */
+  justify-content: center;
+  align-items: center;
+}
+/* When modal is active */
+.modal.open {
+  display: flex; /* Use flex to center the content */
+}
+/* Container for modal content */
+.modal-content-container {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+/* Enlarged image styling */
+.modal-content {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 8px;
+}
+/* Close button styling */
+.close-button {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: #fff;
+  border: none;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+.close-button:hover {
+  background-color: #ddd;
+}
+<div id="imageModal" class="modal">
+  <div class="modal-content-container">
+    <img class="modal-content" id="enlargedImage" alt="Enlarged Photo">
+    <button class="close-button" id="closeModalBtn" aria-label="Close">&times;</button>
+  </div>
+</div>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <html lang="en">
 <html lang="fi">
