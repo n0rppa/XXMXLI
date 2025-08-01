@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Music File Scanner and HTML Generator
+Enhanced Music File Scanner and HTML Generator
 Scans assets/music/ directory for audio files and updates music.html
 """
 
@@ -12,7 +12,7 @@ from datetime import datetime
 import mimetypes
 
 # Supported audio formats
-AUDIO_EXTENSIONS = {'.mp3', '.flac', '.wav', '.ogg', '.m4a', '.aac', '.wma'}
+AUDIO_EXTENSIONS = {'.mp3', '.flac', '.wav', '.ogg', '.m4a', '.aac', '.wma', '.opus'}
 
 # Music directory path
 MUSIC_DIR = Path('assets/music')
@@ -88,24 +88,44 @@ def extract_title_from_filename(filename):
     
     return title if title else filename
 
-def generate_js_tracks_array(music_files):
-    """Generate JavaScript tracks array for music.html"""
+def generate_music_html_content(music_files):
+    """Generate the track list HTML content"""
     if not music_files:
-        return "const tracks = [];"
+        return """
+        <div class="no-music">
+            <p>Ei musiikkitiedostoja. Lisää äänitteitä assets/music/ -kansioon ja aja skripti uudelleen.</p>
+        </div>
+        """
     
-    tracks_js = "const tracks = [\n"
+    tracks_html = []
     
-    for i, file_info in enumerate(music_files):
+    for i, file_info in enumerate(music_files, 1):
         title = extract_title_from_filename(file_info['filename'])
-        tracks_js += f"            {{ id: {i+1}, title: '{title}', file: '{file_info['path']}' }}"
+        file_size = format_file_size(file_info['size'])
         
-        # Add comma if not last item
-        if i < len(music_files) - 1:
-            tracks_js += ","
-        tracks_js += "\n"
+        track_html = f"""
+        <div class="track-item" data-track-id="track{i}">
+            <div class="track-info">
+                <div class="track-title">{title}</div>
+                <div class="track-details">
+                    <span class="track-filename">{file_info['filename']}</span>
+                    <span class="track-size">{file_size}</span>
+                    <span class="track-format">{file_info['extension'].upper()}</span>
+                </div>
+            </div>
+            <div class="track-controls">
+                <button class="control-btn play-btn" onclick="playTrack('{file_info['path']}', '{title}')">
+                    ▶
+                </button>
+                <button class="control-btn download-btn" onclick="downloadTrack('{file_info['path']}', '{file_info['filename']}')">
+                    ⬇
+                </button>
+            </div>
+        </div>"""
+        
+        tracks_html.append(track_html)
     
-    tracks_js += "        ];"
-    return tracks_js
+    return '\n'.join(tracks_html)
 
 def update_music_html(music_files):
     """Update the music.html file with new track list"""
@@ -115,24 +135,94 @@ def update_music_html(music_files):
             with open(MUSIC_HTML_FILE, 'r', encoding='utf-8') as f:
                 html_content = f.read()
         else:
-            print(f"{MUSIC_HTML_FILE} not found. Please make sure the file exists.")
-            return False
+            print(f"{MUSIC_HTML_FILE} not found. Creating basic template...")
+            html_content = create_basic_music_html()
         
-        # Generate new JavaScript tracks array
-        tracks_js = generate_js_tracks_array(music_files)
+        # Generate new tracks content
+        tracks_content = generate_music_html_content(music_files)
         
-        # Find and replace the tracks array in the JavaScript
-        tracks_start = html_content.find('const tracks = [')
-        if tracks_start != -1:
-            tracks_end = html_content.find('];', tracks_start) + 2
+        # Find and replace the playlist section
+        playlist_start = html_content.find('<!-- MUSIC_TRACKS_START -->')
+        playlist_end = html_content.find('<!-- MUSIC_TRACKS_END -->')
+        
+        if playlist_start != -1 and playlist_end != -1:
+            # Replace the content between markers
             new_html = (
-                html_content[:tracks_start] +
-                tracks_js +
-                html_content[tracks_end:]
+                html_content[:playlist_start + len('<!-- MUSIC_TRACKS_START -->')] +
+                f'\n{tracks_content}\n        ' +
+                html_content[playlist_end:]
             )
         else:
-            print("Could not find tracks array in music.html")
-            return False
+            # If markers not found, try to find playlist div
+            playlist_start = html_content.find('<div class="playlist">')
+            playlist_end = html_content.find('</div>', playlist_start)
+            
+            if playlist_start != -1 and playlist_end != -1:
+                new_html = (
+                    html_content[:playlist_start] +
+                    f'<div class="playlist">\n        <!-- MUSIC_TRACKS_START -->\n{tracks_content}\n        <!-- MUSIC_TRACKS_END -->\n    ' +
+                    html_content[playlist_end:]
+                )
+            else:
+                # Add playlist section before closing body tag
+                body_end = html_content.rfind('</body>')
+                if body_end != -1:
+                    playlist_html = f"""
+    <div class="playlist">
+        <!-- MUSIC_TRACKS_START -->
+{tracks_content}
+        <!-- MUSIC_TRACKS_END -->
+    </div>
+    
+    <script>
+        let currentAudio = null;
+        
+        function playTrack(path, title) {{
+            console.log('Playing:', title, 'from', path);
+            
+            // Stop current audio if playing
+            if (currentAudio) {{
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }}
+            
+            // Create new audio element
+            currentAudio = new Audio(path);
+            currentAudio.play().catch(error => {{
+                console.error('Error playing audio:', error);
+                alert('Virhe äänen toistossa: ' + error.message);
+            }});
+            
+            // Update button states
+            document.querySelectorAll('.play-btn').forEach(btn => {{
+                btn.textContent = '▶';
+            }});
+            
+            // Find and update current button
+            const button = event.target;
+            button.textContent = '⏸';
+            
+            currentAudio.addEventListener('ended', () => {{
+                button.textContent = '▶';
+            }});
+            
+            currentAudio.addEventListener('pause', () => {{
+                button.textContent = '▶';
+            }});
+        }}
+        
+        function downloadTrack(path, filename) {{
+            const link = document.createElement('a');
+            link.href = path;
+            link.download = filename;
+            link.click();
+        }}
+    </script>
+"""
+                    new_html = html_content[:body_end] + playlist_html + html_content[body_end:]
+                else:
+                    print("Could not find proper location to insert playlist.")
+                    return False
         
         # Add timestamp comment
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -140,6 +230,13 @@ def update_music_html(music_files):
             '<!-- MUSIC_UPDATED_TIMESTAMP -->', 
             f'<!-- MUSIC_UPDATED_TIMESTAMP: {timestamp} -->'
         )
+        
+        # If timestamp marker doesn't exist, add it
+        if '<!-- MUSIC_UPDATED_TIMESTAMP:' not in new_html:
+            new_html = new_html.replace(
+                '</head>',
+                f'    <!-- MUSIC_UPDATED_TIMESTAMP: {timestamp} -->\n</head>'
+            )
         
         # Write updated HTML
         with open(MUSIC_HTML_FILE, 'w', encoding='utf-8') as f:
@@ -151,6 +248,37 @@ def update_music_html(music_files):
     except Exception as e:
         print(f"Error updating HTML file: {e}")
         return False
+
+def create_basic_music_html():
+    """Create a basic music.html template if it doesn't exist"""
+    return """<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musiikki - XXMXLI</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- MUSIC_UPDATED_TIMESTAMP -->
+</head>
+<body>
+    <header>
+        <h1>Musiikki</h1>
+        <nav>
+            <a href="index.html">Etusivu</a>
+            <a href="photography.html">Valokuvaus</a>
+            <a href="music.html" class="active">Musiikki</a>
+            <a href="projects-final.html">Projektit</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="playlist">
+            <!-- MUSIC_TRACKS_START -->
+            <!-- MUSIC_TRACKS_END -->
+        </div>
+    </main>
+</body>
+</html>"""
 
 def save_music_data(music_files):
     """Save music file data to JSON for other scripts"""
@@ -170,7 +298,7 @@ def save_music_data(music_files):
 
 def main():
     """Main function"""
-    print("=== Music File Scanner ===")
+    print("=== Enhanced Music File Scanner ===")
     print(f"Scanning directory: {MUSIC_DIR.absolute()}")
     
     # Scan for music files
@@ -194,4 +322,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
