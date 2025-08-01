@@ -1,240 +1,865 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-gray-100" x-data="photoUploader" x-init="init()">
+<html lang="fi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Photo Gallery Admin</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Alpine.js -->
-  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  <!-- Supabase JS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Our Photo Uploader -->
-  <script src="photo-upload.js" defer></script>
-  <style>
-    [x-cloak] { display: none !important; }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    .animate-spin {
-      animation: spin 1s linear infinite;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Gallery Manager - XXMXLI Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        :root {
+            --primary-color: #00ff00;
+            --primary-dark: #00cc00;
+            --secondary-color: #008000;
+            --background: #000000;
+            --card-bg: #001100;
+            --border: #003300;
+            --danger: #ff4444;
+            --success: #00ff00;
+            --warning: #ffff00;
+            --border-radius: 8px;
+            --box-shadow: 0 0 10px var(--primary-color);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: var(--background);
+            color: var(--primary-color);
+            line-height: 1.6;
+        }
+
+        .admin-header {
+            background: rgba(0, 17, 0, 0.95);
+            padding: 1rem;
+            border-bottom: 1px solid var(--primary-color);
+            box-shadow: var(--box-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-title {
+            font-size: 1.8rem;
+            margin: 0;
+            color: var(--primary-color);
+            text-shadow: 0 0 5px var(--primary-color);
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .admin-nav a {
+            color: var(--primary-color);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--primary-color);
+            transition: var(--transition);
+            border-radius: 4px;
+        }
+
+        .admin-nav a:hover {
+            background: var(--primary-color);
+            color: var(--background);
+            box-shadow: var(--box-shadow);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: var(--background);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            box-shadow: var(--box-shadow);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: #cc0000;
+        }
+
+        .search-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--primary-color);
+            padding: 0.8rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            width: 300px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px var(--primary-color);
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .photo-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .photo-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--box-shadow);
+            transform: translateY(-5px);
+        }
+
+        .photo-preview {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .photo-info {
+            padding: 1.5rem;
+        }
+
+        .photo-title {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .photo-details {
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .photo-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--primary-color);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: var(--box-shadow);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .form-input {
+            width: 100%;
+            background: var(--background);
+            border: 1px solid var(--border);
+            color: var(--primary-color);
+            padding: 0.8rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px var(--primary-color);
+        }
+
+        .file-upload {
+            border: 2px dashed var(--border);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary-color);
+            background: rgba(0, 255, 0, 0.05);
+        }
+
+        .file-upload input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            border: 1px solid;
+        }
+
+        .alert-error {
+            background: rgba(255, 68, 68, 0.1);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .alert-success {
+            background: rgba(0, 255, 0, 0.1);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: 4px;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .stat-label {
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .gallery-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
-<body class="h-full">
-  <!-- Header -->
-  <header class="bg-white shadow">
-    <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-gray-900">Photo Gallery Admin</h1>
-      <button @click="showAddPhoto = true" 
-              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-        Add Photo
-      </button>
-    </div>
-  </header>
-
-  <!-- Main Content -->
-  <main class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-    <!-- Messages -->
-    <div x-show="errorMessage" class="mb-4 rounded-md bg-red-50 p-4">
-      <div class="flex">
-        <div class="flex-shrink-0">
-          <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-          </svg>
-        </div>
-        <div class="ml-3">
-          <p class="text-sm font-medium text-red-800" x-text="errorMessage"></p>
-        </div>
-      </div>
+<body x-data="photoGallery()">
+    <div class="admin-header">
+        <h1 class="admin-title">
+            <i class="fas fa-images"></i>
+            Photo Gallery Manager
+        </h1>
+        <nav class="admin-nav">
+            <a href="index.html"><i class="fas fa-dashboard"></i> Dashboard</a>
+            <a href="visitors.html"><i class="fas fa-chart-line"></i> Analytics</a>
+            <a href="supabase.html"><i class="fas fa-database"></i> Database</a>
+            <a href="sanity.html"><i class="fas fa-cog"></i> Content</a>
+        </nav>
     </div>
 
-    <div x-show="successMessage" class="mb-4 rounded-md bg-green-50 p-4">
-      <div class="flex">
-        <div class="flex-shrink-0">
-          <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-          </svg>
-        </div>
-        <div class="ml-3">
-          <p class="text-sm font-medium text-green-800" x-text="successMessage"></p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Loading State -->
-    <div x-show="isLoading && photos.length === 0" class="flex justify-center items-center py-12">
-      <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-    </div>
-
-    <!-- Empty State -->
-    <div x-show="!isLoading && photos.length === 0" class="text-center py-12">
-      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-      <h3 class="mt-2 text-sm font-medium text-gray-900">No photos</h3>
-      <p class="mt-1 text-sm text-gray-500">Get started by uploading a new photo.</p>
-      <div class="mt-6">
-        <button @click="showAddPhoto = true" 
-                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-          <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-          </svg>
-          New Photo
-        </button>
-      </div>
-    </div>
-
-    <!-- Photo Grid -->
-    <div x-show="!isLoading && photos.length > 0" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      <template x-for="photo in photos" :key="photo.id">
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-          <div class="h-48 bg-gray-200 overflow-hidden">
-            <img :src="photo.image_url" :alt="photo.title || 'Untitled'" class="w-full h-full object-cover">
-          </div>
-          <div class="p-4">
-            <h3 class="text-lg font-medium text-gray-900 truncate" x-text="photo.title || 'Untitled'"></h3>
-            <div class="mt-2 flex flex-wrap gap-1">
-              <template x-for="tag in (Array.isArray(photo.tags) ? photo.tags : [].concat(photo.tags || [])).slice(0, 3)" :key="tag">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800" x-text="tag"></span>
-              </template>
-              <span x-show="(Array.isArray(photo.tags) ? photo.tags : []).length > 3" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                +<span x-text="(Array.isArray(photo.tags) ? photo.tags : []).length - 3"></span> more
-              </span>
+    <div class="container">
+        <!-- Statistics -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-number" x-text="totalPhotos">0</div>
+                <div class="stat-label">Total Photos</div>
             </div>
-            <div class="mt-4 flex justify-between items-center">
-              <span class="text-xs text-gray-500" x-text="new Date(photo.created_at).toLocaleDateString()"></span>
-              <div class="flex space-x-2">
-                <button @click="editPhoto(photo)" class="text-blue-600 hover:text-blue-900">
-                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
-                <button @click="deletePhoto(photo)" class="text-red-600 hover:text-red-900">
-                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
+            <div class="stat-item">
+                <div class="stat-number" x-text="uploadedToday">0</div>
+                <div class="stat-label">Uploaded Today</div>
             </div>
-          </div>
+            <div class="stat-item">
+                <div class="stat-number" x-text="totalSize">0 MB</div>
+                <div class="stat-label">Total Size</div>
+            </div>
         </div>
-      </template>
-    </div>
-  </main>
 
-  <!-- Photo Upload/Edit Modal -->
-  <div x-show="showAddPhoto" 
-       x-transition:enter="transition ease-out duration-200"
-       x-transition:enter-start="opacity-0" 
-       x-transition:enter-end="opacity-100"
-       x-transition:leave="transition ease-in duration-200"
-       x-transition:leave-start="opacity-100" 
-       x-transition:leave-end="opacity-0"
-       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
-       x-cloak>
-    <div class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-lg shadow-xl" 
-         @click.away="closeModal"
-         x-on:keydown.escape.window="closeModal">
-      <div class="flex items-center justify-between p-4 border-b">
-        <h3 class="text-lg font-medium" x-text="editingPhotoId ? 'Edit Photo' : 'Upload New Photo'"></h3>
-        <button @click="closeModal" class="text-gray-500 hover:text-gray-700">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
-      
-      <div x-show="!isLoading" class="p-6">
-        <!-- File Upload Area -->
-        <div class="mb-6">
-          <label class="block text-sm font-medium text-gray-700 mb-2">Photo</label>
-          <div class="mt-1 flex flex-col items-center">
-            <div class="w-full max-w-xs mx-auto text-center">
-              <div class="mt-2 flex items-center justify-center">
-                <div class="w-full">
-                  <div @click="$refs.fileInput.click()" 
-                       class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
-                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                      <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                      </svg>
-                      <p class="mt-1 text-sm text-gray-600" x-text="newPhoto.image_url ? 'Change photo' : 'Upload a photo'"></p>
-                      <p class="mt-1 text-xs text-gray-500">
-                        PNG, JPG, GIF up to 5MB
-                      </p>
+        <!-- Controls -->
+        <div class="controls">
+            <div style="display: flex; gap: 1rem;">
+                <button 
+                    class="btn" 
+                    @click="showUploadModal = true"
+                    :disabled="uploading">
+                    <i class="fas fa-upload"></i>
+                    Upload Photos
+                </button>
+                <button 
+                    class="btn" 
+                    @click="refreshGallery()"
+                    :disabled="loading">
+                    <i class="fas fa-refresh"></i>
+                    Refresh
+                </button>
+            </div>
+            <input 
+                type="text" 
+                class="search-box" 
+                placeholder="Search photos..."
+                x-model="searchTerm"
+                @input="filterPhotos()">
+        </div>
+
+        <!-- Loading State -->
+        <div x-show="loading" class="loading">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Error/Success Messages -->
+        <div x-show="error" x-text="error" class="alert alert-error" x-cloak></div>
+        <div x-show="success" x-text="success" class="alert alert-success" x-cloak></div>
+
+        <!-- Photo Gallery -->
+        <div class="gallery-grid" x-show="!loading">
+            <template x-for="photo in filteredPhotos" :key="photo.id">
+                <div class="photo-card">
+                    <img 
+                        :src="photo.thumbnail || photo.url" 
+                        :alt="photo.caption"
+                        class="photo-preview"
+                        loading="lazy">
+                    <div class="photo-info">
+                        <div class="photo-title" x-text="photo.filename"></div>
+                        <div class="photo-details">
+                            <div>Uploaded: <span x-text="formatDate(photo.created_at)"></span></div>
+                            <div>Size: <span x-text="formatFileSize(photo.size)"></span></div>
+                            <div x-show="photo.caption">Caption: <span x-text="photo.caption"></span></div>
+                        </div>
+                        <div class="photo-actions">
+                            <button 
+                                class="btn btn-small" 
+                                @click="editPhoto(photo)">
+                                <i class="fas fa-edit"></i>
+                                Edit
+                            </button>
+                            <button 
+                                class="btn btn-small btn-danger" 
+                                @click="deletePhoto(photo.id)"
+                                :disabled="deleting === photo.id">
+                                <i class="fas fa-trash"></i>
+                                Delete
+                            </button>
+                        </div>
                     </div>
-                    <input id="file-upload" name="file-upload" type="file" class="sr-only" x-ref="fileInput" @change="handleFileSelect($event)" accept="image/*">
-                  </div>
                 </div>
-              </div>
-              
-              <!-- Image Preview -->
-              <div x-show="newPhoto.image_url" class="mt-4">
-                <img :src="newPhoto.image_url" 
-                     class="mx-auto max-h-48 rounded-lg shadow-sm" 
-                     :alt="newPhoto.title || 'Selected image'">
-              </div>
-            </div>
-          </div>
+            </template>
         </div>
-        
-        <!-- Title Input -->
-        <div class="mb-6">
-          <label for="photo-title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-          <input type="text" 
-                 id="photo-title"
-                 x-model="newPhoto.title" 
-                 class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                 placeholder="Enter a title for your photo">
+
+        <!-- Empty State -->
+        <div x-show="!loading && filteredPhotos.length === 0" 
+             class="alert alert-success" 
+             style="text-align: center; padding: 3rem;">
+            <i class="fas fa-images" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+            <h3>No photos found</h3>
+            <p>Upload some photos to get started!</p>
         </div>
-        
-        <!-- Tags Input -->
-        <div class="mb-6">
-          <label for="photo-tags" class="block text-sm font-medium text-gray-700 mb-1">Tags</label>
-          <input type="text" 
-                 id="photo-tags"
-                 x-model="newPhoto.tags" 
-                 class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                 placeholder="e.g., nature, landscape, summer">
-          <p class="mt-1 text-xs text-gray-500">Separate tags with commas</p>
-        </div>
-        
-        <!-- Form Actions -->
-        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-          <button type="button" 
-                  @click="closeModal" 
-                  class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-            Cancel
-          </button>
-          <button type="button" 
-                  @click="handlePhotoUpload()" 
-                  class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" 
-                  :disabled="!newPhoto.image_url"
-                  :class="{'opacity-50 cursor-not-allowed': !newPhoto.image_url}">
-            <span x-text="editingPhotoId ? 'Update Photo' : 'Upload Photo'"></span>
-          </button>
-        </div>
-      </div>
-      
-      <!-- Loading State -->
-      <div x-show="isLoading" class="p-8 text-center">
-        <div class="flex flex-col items-center justify-center">
-          <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
-          <p class="mt-4 text-lg font-medium text-gray-900" x-text="uploadProgress > 0 ? 'Uploading...' : 'Processing...'"></p>
-          <p class="mt-1 text-sm text-gray-500">Please wait while we process your photo</p>
-          
-          <div x-show="uploadProgress > 0" class="w-full max-w-xs mt-6">
-            <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div class="h-full bg-blue-600 transition-all duration-300 ease-out" 
-                   :style="`width: ${uploadProgress}%`"></div>
-            </div>
-            <p class="mt-2 text-sm text-gray-600" x-text="`${Math.round(uploadProgress)}% Complete`"></p>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
+
+    <!-- Upload Modal -->
+    <div class="modal" :class="{ active: showUploadModal }">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Upload Photos</h2>
+                <button class="close-btn" @click="closeUploadModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form @submit.prevent="uploadPhotos()">
+                <div class="form-group">
+                    <label class="form-label">Select Photos</label>
+                    <div class="file-upload" @click="$refs.fileInput.click()">
+                        <input 
+                            type="file" 
+                            ref="fileInput"
+                            multiple 
+                            accept="image/*"
+                            @change="handleFileSelect($event)">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div>Click to select photos or drag and drop</div>
+                        <div style="color: var(--secondary-color); margin-top: 0.5rem;">
+                            Supports: JPG, PNG, GIF, WebP
+                        </div>
+                    </div>
+                    <div x-show="selectedFiles.length > 0" style="margin-top: 1rem;">
+                        <div style="color: var(--primary-color); margin-bottom: 0.5rem;">
+                            Selected files: <span x-text="selectedFiles.length"></span>
+                        </div>
+                        <template x-for="file in selectedFiles" :key="file.name">
+                            <div style="padding: 0.5rem; background: var(--background); border-radius: 4px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                                <span x-text="file.name"></span>
+                                <button type="button" @click="removeFile(file)" style="background: none; border: none; color: var(--danger); cursor: pointer;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Caption (Optional)</label>
+                    <input 
+                        type="text" 
+                        class="form-input" 
+                        x-model="uploadCaption"
+                        placeholder="Enter a caption for these photos...">
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button 
+                        type="button" 
+                        class="btn btn-danger" 
+                        @click="closeUploadModal()">
+                        Cancel
+                    </button>
+                    <button 
+                        type="submit" 
+                        class="btn" 
+                        :disabled="uploading || selectedFiles.length === 0">
+                        <span x-show="!uploading">
+                            <i class="fas fa-upload"></i>
+                            Upload Photos
+                        </span>
+                        <span x-show="uploading">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            Uploading...
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal" :class="{ active: showEditModal }">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Edit Photo</h2>
+                <button class="close-btn" @click="closeEditModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form @submit.prevent="updatePhoto()">
+                <div class="form-group">
+                    <label class="form-label">Filename</label>
+                    <input 
+                        type="text" 
+                        class="form-input" 
+                        x-model="editingPhoto.filename"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Caption</label>
+                    <input 
+                        type="text" 
+                        class="form-input" 
+                        x-model="editingPhoto.caption"
+                        placeholder="Enter photo caption...">
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button 
+                        type="button" 
+                        class="btn btn-danger" 
+                        @click="closeEditModal()">
+                        Cancel
+                    </button>
+                    <button 
+                        type="submit" 
+                        class="btn" 
+                        :disabled="updating">
+                        <span x-show="!updating">
+                            <i class="fas fa-save"></i>
+                            Save Changes
+                        </span>
+                        <span x-show="updating">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            Saving...
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function photoGallery() {
+            return {
+                // State
+                photos: [],
+                filteredPhotos: [],
+                loading: false,
+                uploading: false,
+                updating: false,
+                deleting: null,
+                error: '',
+                success: '',
+                searchTerm: '',
+                
+                // Modal states
+                showUploadModal: false,
+                showEditModal: false,
+                
+                // Upload data
+                selectedFiles: [],
+                uploadCaption: '',
+                
+                // Edit data
+                editingPhoto: {},
+                
+                // Stats
+                totalPhotos: 0,
+                uploadedToday: 0,
+                totalSize: 0,
+
+                // Initialize
+                init() {
+                    this.loadPhotos();
+                    this.setupDragAndDrop();
+                },
+
+                // Load photos from storage
+                async loadPhotos() {
+                    this.loading = true;
+                    this.error = '';
+                    
+                    try {
+                        // Simulate API call - replace with actual implementation
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                        // Mock data - replace with actual API call
+                        this.photos = [
+                            {
+                                id: 1,
+                                filename: 'sunset.jpg',
+                                caption: 'Beautiful sunset over the mountains',
+                                url: '../images/gallery/placeholder1.jpg',
+                                thumbnail: '../images/gallery/placeholder1.jpg',
+                                size: 2048576,
+                                created_at: new Date().toISOString()
+                            },
+                            {
+                                id: 2,
+                                filename: 'forest.jpg',
+                                caption: 'Dense forest in autumn',
+                                url: '../images/gallery/placeholder2.jpg',
+                                thumbnail: '../images/gallery/placeholder2.jpg',
+                                size: 1536000,
+                                created_at: new Date(Date.now() - 86400000).toISOString()
+                            }
+                        ];
+                        
+                        this.updateStats();
+                        this.filterPhotos();
+                        
+                    } catch (error) {
+                        this.error = 'Failed to load photos: ' + error.message;
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                // Update statistics
+                updateStats() {
+                    this.totalPhotos = this.photos.length;
+                    this.totalSize = Math.round(this.photos.reduce((sum, photo) => sum + photo.size, 0) / 1024 / 1024);
+                    
+                    const today = new Date().toDateString();
+                    this.uploadedToday = this.photos.filter(photo => 
+                        new Date(photo.created_at).toDateString() === today
+                    ).length;
+                },
+
+                // Filter photos based on search
+                filterPhotos() {
+                    if (!this.searchTerm) {
+                        this.filteredPhotos = [...this.photos];
+                    } else {
+                        const term = this.searchTerm.toLowerCase();
+                        this.filteredPhotos = this.photos.filter(photo => 
+                            photo.filename.toLowerCase().includes(term) ||
+                            (photo.caption && photo.caption.toLowerCase().includes(term))
+                        );
+                    }
+                },
+
+                // Refresh gallery
+                refreshGallery() {
+                    this.loadPhotos();
+                },
+
+                // File selection handler
+                handleFileSelect(event) {
+                    const files = Array.from(event.target.files);
+                    this.selectedFiles = files.filter(file => {
+                        const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                        return validTypes.includes(file.type);
+                    });
+                },
+
+                // Remove selected file
+                removeFile(fileToRemove) {
+                    this.selectedFiles = this.selectedFiles.filter(file => file !== fileToRemove);
+                },
+
+                // Upload photos
+                async uploadPhotos() {
+                    if (this.selectedFiles.length === 0) return;
+                    
+                    this.uploading = true;
+                    this.error = '';
+                    
+                    try {
+                        // Simulate upload - replace with actual implementation
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        
+                        this.success = `Successfully uploaded ${this.selectedFiles.length} photo(s)`;
+                        this.closeUploadModal();
+                        this.loadPhotos();
+                        
+                    } catch (error) {
+                        this.error = 'Upload failed: ' + error.message;
+                    } finally {
+                        this.uploading = false;
+                    }
+                },
+
+                // Edit photo
+                editPhoto(photo) {
+                    this.editingPhoto = { ...photo };
+                    this.showEditModal = true;
+                },
+
+                // Update photo
+                async updatePhoto() {
+                    this.updating = true;
+                    this.error = '';
+                    
+                    try {
+                        // Simulate update - replace with actual implementation
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                        const index = this.photos.findIndex(p => p.id === this.editingPhoto.id);
+                        if (index !== -1) {
+                            this.photos[index] = { ...this.editingPhoto };
+                            this.filterPhotos();
+                        }
+                        
+                        this.success = 'Photo updated successfully';
+                        this.closeEditModal();
+                        
+                    } catch (error) {
+                        this.error = 'Update failed: ' + error.message;
+                    } finally {
+                        this.updating = false;
+                    }
+                },
+
+                // Delete photo
+                async deletePhoto(photoId) {
+                    if (!confirm('Are you sure you want to delete this photo?')) return;
+                    
+                    this.deleting = photoId;
+                    this.error = '';
+                    
+                    try {
+                        // Simulate delete - replace with actual implementation
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                        this.photos = this.photos.filter(p => p.id !== photoId);
+                        this.updateStats();
+                        this.filterPhotos();
+                        this.success = 'Photo deleted successfully';
+                        
+                    } catch (error) {
+                        this.error = 'Delete failed: ' + error.message;
+                    } finally {
+                        this.deleting = null;
+                    }
+                },
+
+                // Modal controls
+                closeUploadModal() {
+                    this.showUploadModal = false;
+                    this.selectedFiles = [];
+                    this.uploadCaption = '';
+                },
+
+                closeEditModal() {
+                    this.showEditModal = false;
+                    this.editingPhoto = {};
+                },
+
+                // Drag and drop setup
+                setupDragAndDrop() {
+                    // Add drag and drop functionality here if needed
+                },
+
+                // Utility functions
+                formatDate(dateString) {
+                    return new Date(dateString).toLocaleDateString();
+                },
+
+                formatFileSize(bytes) {
+                    if (bytes === 0) return '0 B';
+                    const k = 1024;
+                    const sizes = ['B', 'KB', 'MB', 'GB'];
+                    const i = Math.floor(Math.log(bytes) / Math.log(k));
+                    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                }
+            }
+        }
+
+        // Clear messages after a delay
+        document.addEventListener('alpine:init', () => {
+            setInterval(() => {
+                const data = Alpine.store || {};
+                if (data.success) data.success = '';
+                if (data.error) data.error = '';
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
 </body>
 </html>

@@ -1,33 +1,668 @@
 <!DOCTYPE html>
-<html lang="en" x-data="visitorStats()" x-init="init()" class="h-full bg-gray-100">
+<html lang="fi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Visitor Statistics - Admin Panel</title>
-  
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  
-  <!-- Alpine.js -->
-  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  
-  <style>
-    [x-cloak] { display: none !important; }
-    .sidebar { width: 250px; transition: all 0.3s; }
-    .main-content { margin-left: 250px; transition: all 0.3s; }
-    @media (max-width: 768px) {
-      .sidebar { transform: translateX(-100%); position: fixed; z-index: 50; height: 100vh; }
-      .sidebar.open { transform: translateX(0); }
-      .main-content { margin-left: 0; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visitor Analytics - XXMXLI Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #00ff00;
+            --primary-dark: #00cc00;
+            --secondary-color: #008000;
+            --background: #000000;
+            --card-bg: #001100;
+            --border: #003300;
+            --danger: #ff4444;
+            --success: #00ff00;
+            --warning: #ffff00;
+            --border-radius: 8px;
+            --box-shadow: 0 0 10px var(--primary-color);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: var(--background);
+            color: var(--primary-color);
+            line-height: 1.6;
+        }
+
+        .admin-header {
+            background: rgba(0, 17, 0, 0.95);
+            padding: 1rem;
+            border-bottom: 1px solid var(--primary-color);
+            box-shadow: var(--box-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-title {
+            font-size: 1.8rem;
+            margin: 0;
+            color: var(--primary-color);
+            text-shadow: 0 0 5px var(--primary-color);
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .admin-nav a {
+            color: var(--primary-color);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--primary-color);
+            transition: var(--transition);
+            border-radius: 4px;
+        }
+
+        .admin-nav a:hover {
+            background: var(--primary-color);
+            color: var(--background);
+            box-shadow: var(--box-shadow);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--box-shadow);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-title {
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .stat-icon {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-shadow: 0 0 5px var(--primary-color);
+        }
+
+        .stat-change {
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .stat-change.positive {
+            color: var(--success);
+        }
+
+        .stat-change.negative {
+            color: var(--danger);
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-title {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+        }
+
+        .visitor-table {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: var(--background);
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table-title {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--background);
+            color: var(--primary-color);
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        td {
+            color: var(--secondary-color);
+        }
+
+        tr:hover {
+            background: rgba(0, 255, 0, 0.05);
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-button {
+            background: var(--background);
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .filter-button:hover,
+        .filter-button.active {
+            background: var(--primary-color);
+            color: var(--background);
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .realtime-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--success);
+            font-size: 0.9rem;
+        }
+
+        .realtime-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .admin-nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-controls {
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
-<body class="h-full">
-  <!-- Mobile menu button -->
-  <div class="md:hidden fixed top-4 left-4 z-50">
+<body>
+    <header class="admin-header">
+        <h1 class="admin-title">
+            <i class="fas fa-chart-line"></i> Visitor Analytics
+        </h1>
+        <nav class="admin-nav">
+            <a href="index.html"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="sanity.html"><i class="fas fa-edit"></i> Sanity</a>
+            <a href="supabase.html"><i class="fas fa-database"></i> Supabase</a>
+            <a href="../index.html"><i class="fas fa-arrow-left"></i> Back to Site</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="realtime-indicator">
+            <div class="realtime-dot"></div>
+            <span>Real-time Analytics</span>
+        </div>
+
+        <div class="filter-controls">
+            <button class="filter-button active" onclick="setTimeRange('today')">Today</button>
+            <button class="filter-button" onclick="setTimeRange('week')">7 Days</button>
+            <button class="filter-button" onclick="setTimeRange('month')">30 Days</button>
+            <button class="filter-button" onclick="setTimeRange('year')">1 Year</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Total Visitors</span>
+                    <i class="fas fa-users stat-icon"></i>
+                </div>
+                <div class="stat-value" id="totalVisitors">1,247</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i> +12.5% from last period
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Page Views</span>
+                    <i class="fas fa-eye stat-icon"></i>
+                </div>
+                <div class="stat-value" id="pageViews">3,891</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i> +8.2% from last period
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Bounce Rate</span>
+                    <i class="fas fa-chart-pie stat-icon"></i>
+                </div>
+                <div class="stat-value" id="bounceRate">32.4%</div>
+                <div class="stat-change negative">
+                    <i class="fas fa-arrow-down"></i> -2.1% from last period
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Avg. Session</span>
+                    <i class="fas fa-clock stat-icon"></i>
+                </div>
+                <div class="stat-value" id="avgSession">2:34</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i> +15.3% from last period
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Online Now</span>
+                    <i class="fas fa-circle stat-icon"></i>
+                </div>
+                <div class="stat-value" id="onlineNow">42</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-users"></i> Active users
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Top Country</span>
+                    <i class="fas fa-flag stat-icon"></i>
+                </div>
+                <div class="stat-value" id="topCountry">Finland</div>
+                <div class="stat-change">
+                    <i class="fas fa-globe"></i> 67% of traffic
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2 class="chart-title">Visitor Traffic Over Time</h2>
+            <div class="chart-wrapper">
+                <canvas id="trafficChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2 class="chart-title">Popular Pages</h2>
+            <div class="chart-wrapper">
+                <canvas id="pagesChart"></canvas>
+            </div>
+        </div>
+
+        <div class="visitor-table">
+            <div class="table-header">
+                <h3 class="table-title">Recent Visitors</h3>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Location</th>
+                        <th>Page</th>
+                        <th>Device</th>
+                        <th>Browser</th>
+                    </tr>
+                </thead>
+                <tbody id="visitorData">
+                    <tr>
+                        <td>2 min ago</td>
+                        <td>Helsinki, Finland</td>
+                        <td>/music.html</td>
+                        <td>Desktop</td>
+                        <td>Chrome</td>
+                    </tr>
+                    <tr>
+                        <td>5 min ago</td>
+                        <td>Turku, Finland</td>
+                        <td>/photography.html</td>
+                        <td>Mobile</td>
+                        <td>Safari</td>
+                    </tr>
+                    <tr>
+                        <td>8 min ago</td>
+                        <td>Tampere, Finland</td>
+                        <td>/projects.html</td>
+                        <td>Desktop</td>
+                        <td>Firefox</td>
+                    </tr>
+                    <tr>
+                        <td>12 min ago</td>
+                        <td>Oulu, Finland</td>
+                        <td>/security.html</td>
+                        <td>Tablet</td>
+                        <td>Chrome</td>
+                    </tr>
+                    <tr>
+                        <td>15 min ago</td>
+                        <td>Espoo, Finland</td>
+                        <td>/index.html</td>
+                        <td>Desktop</td>
+                        <td>Edge</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Chart.js configuration for cyberpunk theme
+        Chart.defaults.color = '#00ff00';
+        Chart.defaults.borderColor = '#003300';
+        Chart.defaults.backgroundColor = 'rgba(0, 255, 0, 0.1)';
+
+        // Traffic chart
+        const trafficCtx = document.getElementById('trafficChart').getContext('2d');
+        const trafficChart = new Chart(trafficCtx, {
+            type: 'line',
+            data: {
+                labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+                datasets: [{
+                    label: 'Visitors',
+                    data: [12, 19, 35, 51, 49, 62, 45],
+                    borderColor: '#00ff00',
+                    backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#00ff00'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: '#008000'
+                        },
+                        grid: {
+                            color: '#003300'
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            color: '#008000'
+                        },
+                        grid: {
+                            color: '#003300'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Pages chart
+        const pagesCtx = document.getElementById('pagesChart').getContext('2d');
+        const pagesChart = new Chart(pagesCtx, {
+            type: 'bar',
+            data: {
+                labels: ['/', '/music.html', '/photography.html', '/projects.html', '/security.html'],
+                datasets: [{
+                    label: 'Page Views',
+                    data: [1250, 890, 650, 420, 380],
+                    backgroundColor: [
+                        'rgba(0, 255, 0, 0.8)',
+                        'rgba(0, 255, 0, 0.6)',
+                        'rgba(0, 255, 0, 0.4)',
+                        'rgba(0, 255, 0, 0.3)',
+                        'rgba(0, 255, 0, 0.2)'
+                    ],
+                    borderColor: '#00ff00',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#00ff00'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: '#008000'
+                        },
+                        grid: {
+                            color: '#003300'
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            color: '#008000'
+                        },
+                        grid: {
+                            color: '#003300'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Filter functions
+        function setTimeRange(range) {
+            // Remove active class from all buttons
+            document.querySelectorAll('.filter-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Update charts and data based on selected range
+            updateData(range);
+        }
+
+        function updateData(range) {
+            // Simulate data update based on time range
+            const ranges = {
+                today: {
+                    visitors: 1247,
+                    pageViews: 3891,
+                    bounceRate: '32.4%',
+                    avgSession: '2:34'
+                },
+                week: {
+                    visitors: 8934,
+                    pageViews: 24567,
+                    bounceRate: '28.7%',
+                    avgSession: '3:12'
+                },
+                month: {
+                    visitors: 42158,
+                    pageViews: 128456,
+                    bounceRate: '35.2%',
+                    avgSession: '2:58'
+                },
+                year: {
+                    visitors: 156789,
+                    pageViews: 487234,
+                    bounceRate: '31.8%',
+                    avgSession: '3:45'
+                }
+            };
+
+            const data = ranges[range];
+            if (data) {
+                document.getElementById('totalVisitors').textContent = data.visitors.toLocaleString();
+                document.getElementById('pageViews').textContent = data.pageViews.toLocaleString();
+                document.getElementById('bounceRate').textContent = data.bounceRate;
+                document.getElementById('avgSession').textContent = data.avgSession;
+            }
+        }
+
+        // Simulate real-time updates
+        function simulateRealTimeUpdates() {
+            setInterval(() => {
+                // Update online users count
+                const onlineNow = document.getElementById('onlineNow');
+                const currentCount = parseInt(onlineNow.textContent);
+                const newCount = currentCount + Math.floor(Math.random() * 10) - 5;
+                onlineNow.textContent = Math.max(1, newCount);
+
+                // Add new visitor row occasionally
+                if (Math.random() < 0.3) {
+                    addNewVisitorRow();
+                }
+            }, 10000); // Update every 10 seconds
+        }
+
+        function addNewVisitorRow() {
+            const tbody = document.getElementById('visitorData');
+            const cities = ['Helsinki', 'Turku', 'Tampere', 'Oulu', 'Espoo', 'Vantaa'];
+            const pages = ['/index.html', '/music.html', '/photography.html', '/projects.html', '/security.html'];
+            const devices = ['Desktop', 'Mobile', 'Tablet'];
+            const browsers = ['Chrome', 'Firefox', 'Safari', 'Edge'];
+
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>Just now</td>
+                <td>${cities[Math.floor(Math.random() * cities.length)]}, Finland</td>
+                <td>${pages[Math.floor(Math.random() * pages.length)]}</td>
+                <td>${devices[Math.floor(Math.random() * devices.length)]}</td>
+                <td>${browsers[Math.floor(Math.random() * browsers.length)]}</td>
+            `;
+
+            tbody.insertBefore(newRow, tbody.firstChild);
+
+            // Remove last row if more than 10 rows
+            if (tbody.children.length > 10) {
+                tbody.removeChild(tbody.lastChild);
+            }
+
+            // Highlight new row
+            newRow.style.background = 'rgba(0, 255, 0, 0.2)';
+            setTimeout(() => {
+                newRow.style.background = '';
+            }, 2000);
+        }
+
+        // Initialize real-time updates
+        document.addEventListener('DOMContentLoaded', function() {
+            simulateRealTimeUpdates();
+        });
+    </script>
+</body>
+</html>
     <button @click="isSidebarOpen = !isSidebarOpen" class="p-2 rounded-md text-gray-700 hover:bg-gray-100">
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>

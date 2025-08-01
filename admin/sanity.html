@@ -3,124 +3,272 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sanity Studio - Luova Studio</title>
-  <link rel="stylesheet" href="../styles.css?t=202505152110">
-  
-  <!-- Sanity Studio -->
-  <script type="module">
-    import {defineConfig} from 'https://esm.sh/@sanity/cli';
-    import {deskTool} from 'https://esm.sh/@sanity/desk-tool';
-    
-    export default defineConfig({
-      name: 'default',
-      title: 'Luova Studio CMS',
-      
-      projectId: '5njdlic9', // Your Sanity project ID
-      dataset: 'production',
-      
-      plugins: [deskTool()],
-      
-      schema: {
-        types: [
-          // Import schema types here
-        ],
-      },
-    })
-  </script>
+  <title>Sanity Studio - XXMXLI Admin</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   
   <style>
+    :root {
+      --primary-color: #00ff00;
+      --background: #000000;
+      --card-bg: #001100;
+      --border: #003300;
+    }
+
     body, html {
       height: 100%;
       margin: 0;
       padding: 0;
-      overflow: hidden;
+      font-family: 'Courier New', monospace;
+      background-color: var(--background);
+      color: var(--primary-color);
     }
-    #sanity {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 100;
+
+    .admin-header {
+      background: rgba(0, 17, 0, 0.95);
+      padding: 1rem;
+      border-bottom: 1px solid var(--primary-color);
+      box-shadow: 0 0 10px var(--primary-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .loading {
+
+    .admin-header h1 {
+      margin: 0;
+      color: var(--primary-color);
+      text-shadow: 0 0 5px var(--primary-color);
+    }
+
+    .admin-nav {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .admin-nav a {
+      color: var(--primary-color);
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--primary-color);
+      transition: all 0.3s ease;
+    }
+
+    .admin-nav a:hover {
+      background: var(--primary-color);
+      color: var(--background);
+      box-shadow: 0 0 10px var(--primary-color);
+    }
+
+    #sanity-studio {
+      height: calc(100vh - 80px);
+      width: 100%;
+      border: none;
+    }
+
+    .loading-container {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100vh;
-      background-color: #f5f5f5;
-      color: #333;
-      font-family: sans-serif;
+      height: calc(100vh - 80px);
+      background-color: var(--background);
+      color: var(--primary-color);
     }
-    .loading h1 {
+
+    .loading-container h2 {
       margin-bottom: 20px;
+      text-shadow: 0 0 5px var(--primary-color);
     }
+
     .spinner {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #3B719F;
+      border: 4px solid var(--border);
+      border-top: 4px solid var(--primary-color);
       border-radius: 50%;
       width: 40px;
       height: 40px;
       animation: spin 1s linear infinite;
+      margin-bottom: 20px;
     }
+
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    .error-container {
+      padding: 2rem;
+      text-align: center;
+      color: #ff4444;
+      background: var(--card-bg);
+      margin: 2rem;
+      border: 1px solid #ff4444;
+    }
+
+    .studio-container {
+      background: white;
+      height: calc(100vh - 80px);
+      overflow: hidden;
+    }
   </style>
 </head>
 <body>
-  <div id="sanity">
-    <div class="loading">
-      <h1>Loading Sanity Studio...</h1>
+  <header class="admin-header">
+    <h1><i class="fas fa-database"></i> Sanity Studio - XXMXLI</h1>
+    <nav class="admin-nav">
+      <a href="index.html"><i class="fas fa-home"></i> Dashboard</a>
+      <a href="supabase.html"><i class="fas fa-server"></i> Supabase</a>
+      <a href="../index.html"><i class="fas fa-arrow-left"></i> Back to Site</a>
+    </nav>
+  </header>
+
+  <div id="sanity-container">
+    <div class="loading-container" id="loading">
+      <h2>Loading Sanity Studio...</h2>
       <div class="spinner"></div>
-      <p>This may take a moment. Please wait.</p>
+      <p>Initializing content management system...</p>
     </div>
   </div>
-  
-  <!-- Sanity Studio Scripts -->
-  <script async src="https://cdn.jsdelivr.net/npm/@sanity/client"></script>
+
   <script>
-    document.addEventListener('DOMContentLoaded', async () => {
+    // Sanity Studio Configuration
+    const SANITY_CONFIG = {
+      projectId: '5njdlic9',
+      dataset: 'production',
+      apiVersion: '2024-01-01',
+      useCdn: false,
+      token: null // Add your token here if needed
+    };
+
+    // Initialize Sanity Studio
+    async function initializeSanityStudio() {
       try {
-        // Check if Sanity is already initialized
-        if (window.sanityClient) return;
-        
-        // Initialize Sanity client 
-        const sanityClientConfig = {
-          projectId: '5njdlic9', // Your Sanity project ID
-          dataset: 'production',
-          apiVersion: '2025-05-16',
-          useCdn: true
+        // Create iframe for Sanity Studio
+        const iframe = document.createElement('iframe');
+        iframe.id = 'sanity-studio';
+        iframe.src = `https://www.sanity.io/manage?projectId=${SANITY_CONFIG.projectId}`;
+        iframe.allow = 'camera; microphone; geolocation';
+        iframe.style.cssText = `
+          width: 100%;
+          height: calc(100vh - 80px);
+          border: none;
+          display: block;
+        `;
+
+        // Replace loading with iframe
+        document.getElementById('sanity-container').innerHTML = '';
+        document.getElementById('sanity-container').appendChild(iframe);
+
+        // Handle iframe load
+        iframe.onload = function() {
+          console.log('Sanity Studio loaded successfully');
         };
-        
-        // Lazy-load the Sanity Studio
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/@sanity/default-layout';
-        script.async = true;
-        script.defer = true;
-        script.onload = () => {
-          console.log('Sanity Studio loaded');
-          // Initialize studio
-          const studio = window.sanityStudio.createStudio({
-            rootElement: document.getElementById('sanity'),
-            config: sanityClientConfig
-          });
-          studio.render();
+
+        iframe.onerror = function() {
+          showError('Failed to load Sanity Studio iframe');
         };
-        document.body.appendChild(script);
-        
+
       } catch (error) {
         console.error('Error initializing Sanity Studio:', error);
-        document.getElementById('sanity').innerHTML = `
-          <div class="loading">
-            <h1>Error Loading Sanity Studio</h1>
-            <p>${error.message}</p>
-            <p>Please check your configuration and try again.</p>
-          </div>
-        `;
+        showError(error.message);
       }
+    }
+
+    // Alternative: Direct Sanity Studio embed
+    function loadSanityStudioDirect() {
+      const container = document.getElementById('sanity-container');
+      container.innerHTML = `
+        <div class="studio-container">
+          <iframe 
+            src="https://${SANITY_CONFIG.projectId}.sanity.studio/"
+            style="width: 100%; height: 100%; border: none;"
+            title="Sanity Studio"
+            allow="camera; microphone; geolocation"
+          ></iframe>
+        </div>
+      `;
+    }
+
+    // Show error message
+    function showError(message) {
+      document.getElementById('sanity-container').innerHTML = `
+        <div class="error-container">
+          <h2><i class="fas fa-exclamation-triangle"></i> Error</h2>
+          <p>${message}</p>
+          <p>Please check your Sanity configuration and try again.</p>
+          <button onclick="initializeSanityStudio()" style="
+            background: var(--primary-color);
+            color: var(--background);
+            border: none;
+            padding: 0.5rem 1rem;
+            margin-top: 1rem;
+            cursor: pointer;
+          ">Retry</button>
+        </div>
+      `;
+    }
+
+    // Alternative local studio configuration
+    function createLocalStudio() {
+      const container = document.getElementById('sanity-container');
+      container.innerHTML = `
+        <div class="studio-container" style="padding: 2rem; background: white; color: #333;">
+          <h2>Sanity Studio Configuration</h2>
+          <p>Project ID: ${SANITY_CONFIG.projectId}</p>
+          <p>Dataset: ${SANITY_CONFIG.dataset}</p>
+          
+          <div style="margin-top: 2rem;">
+            <h3>Quick Actions:</h3>
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+              <button onclick="openSanityManage()" style="
+                background: #333;
+                color: white;
+                border: none;
+                padding: 0.8rem 1.5rem;
+                cursor: pointer;
+                border-radius: 4px;
+              ">
+                <i class="fas fa-external-link-alt"></i> Open Sanity Manage
+              </button>
+              <button onclick="openSanityStudio()" style="
+                background: #007ac1;
+                color: white;
+                border: none;
+                padding: 0.8rem 1.5rem;
+                cursor: pointer;
+                border-radius: 4px;
+              ">
+                <i class="fas fa-edit"></i> Open Studio
+              </button>
+            </div>
+          </div>
+
+          <div style="margin-top: 2rem; padding: 1rem; background: #f5f5f5; border-radius: 4px;">
+            <h4>Studio URLs:</h4>
+            <p><strong>Manage:</strong> <a href="https://www.sanity.io/manage?projectId=${SANITY_CONFIG.projectId}" target="_blank">https://www.sanity.io/manage?projectId=${SANITY_CONFIG.projectId}</a></p>
+            <p><strong>Studio:</strong> <a href="https://${SANITY_CONFIG.projectId}.sanity.studio/" target="_blank">https://${SANITY_CONFIG.projectId}.sanity.studio/</a></p>
+          </div>
+        </div>
+      `;
+    }
+
+    function openSanityManage() {
+      window.open(`https://www.sanity.io/manage?projectId=${SANITY_CONFIG.projectId}`, '_blank');
+    }
+
+    function openSanityStudio() {
+      window.open(`https://${SANITY_CONFIG.projectId}.sanity.studio/`, '_blank');
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Try to load the studio iframe first
+      setTimeout(() => {
+        try {
+          loadSanityStudioDirect();
+        } catch (error) {
+          console.log('Direct studio load failed, showing local configuration');
+          createLocalStudio();
+        }
+      }, 1000);
     });
   </script>
 </body>
