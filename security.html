@@ -1,17 +1,467 @@
 <!DOCTYPE html>
 <html lang="fi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Turvallisuus</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com;">
+    <title>Internet Safety & Security - XXMXLI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --background: #000000;
+            --text-primary: #00ff00;
+            --text-secondary: #008000;
+            --accent: #00ff00;
+            --accent-hover: #00cc00;
+            --border: #003300;
+            --card-bg: #001100;
+            --warning: #ff4444;
+            --warning-bg: #330000;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(0, 17, 0, 0.95);
+            padding: 1rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 1rem;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent);
+            text-decoration: none;
+            text-shadow: 0 0 5px var(--accent);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+            text-shadow: 0 0 5px var(--accent);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 80px auto 0;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: linear-gradient(to bottom, var(--card-bg), var(--background));
+            border-bottom: 1px solid var(--accent);
+            margin-bottom: 3rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            text-shadow: 0 0 10px var(--accent);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .safety-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .safety-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .safety-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent);
+            transform: translateY(-5px);
+        }
+
+        .safety-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .safety-card ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .safety-card li {
+            padding: 0.3rem 0;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .safety-card li i {
+            color: var(--accent);
+            width: 16px;
+        }
+
+        .warning-box {
+            background: var(--warning-bg);
+            border: 2px solid var(--warning);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 4px;
+        }
+
+        .warning-box h3 {
+            color: var(--warning);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tools-section {
+            background: var(--card-bg);
+            border: 1px solid var(--accent);
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .tools-section h2 {
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+
+        .tool-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            margin: 0.5rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .tool-item:hover {
+            border-color: var(--accent);
+            background: var(--background);
+        }
+
+        .tool-info h3 {
+            color: var(--text-primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .tool-info p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent);
+            text-decoration: none;
+            border: 1px solid var(--accent);
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background: var(--accent);
+            color: var(--background);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .code-block {
+            background: var(--background);
+            border: 1px solid var(--accent);
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            color: var(--accent);
+            overflow-x: auto;
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--card-bg);
+                flex-direction: column;
+                padding: 1rem;
+                border-bottom: 1px solid var(--accent);
+            }
+
+            .nav-menu.active {
+                display: flex;
+            }
+
+            .menu-button {
+                display: block;
+                background: none;
+                border: none;
+                color: var(--accent);
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+                flex-direction: column;
+            }
+
+            .tool-item {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>Turvallisuus</h1>
-  </header>
-  <main>
-    <p>Tämä sivu on varattu turvallisuus- ja tietosuojatiedoille.</p>
-  </main>
+    <header class="header">
+        <nav class="nav-container">
+            <a href="index.html" class="logo">XXMXLI</a>
+            <button class="menu-button">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">
+                    <i class="fas fa-home"></i> Etusivu
+                </a></li>
+                <li><a href="music.html" class="nav-link">
+                    <i class="fas fa-music"></i> Musiikki
+                </a></li>
+                <li><a href="photography.html" class="nav-link">
+                    <i class="fas fa-camera"></i> Valokuvaus
+                </a></li>
+                <li><a href="projects.html" class="nav-link">
+                    <i class="fas fa-project-diagram"></i> Projektit
+                </a></li>
+                <li><a href="security.html" class="nav-link active">
+                    <i class="fas fa-shield-alt"></i> Turvallisuus
+                </a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <section class="hero">
+            <h1>
+                <i class="fas fa-shield-alt"></i>
+                Internet Safety & Security
+            </h1>
+            <p>Comprehensive tools and guides to protect yourself in the digital world</p>
+        </section>
+
+        <div class="warning-box">
+            <h3><i class="fas fa-exclamation-triangle"></i> Important Notice</h3>
+            <p>These tools are provided for educational and legitimate security purposes only. Always use responsibly and in accordance with applicable laws and regulations.</p>
+        </div>
+
+        <div class="safety-grid">
+            <div class="safety-card">
+                <h2><i class="fas fa-ban"></i> IP Blacklisting</h2>
+                <ul>
+                    <li><i class="fas fa-check"></i> Block malicious IPs automatically</li>
+                    <li><i class="fas fa-check"></i> Real-time threat detection</li>
+                    <li><i class="fas fa-check"></i> Multiple blacklist sources</li>
+                    <li><i class="fas fa-check"></i> Custom rule support</li>
+                </ul>
+                <div class="code-block">
+python process_w_blacklists.py
+                </div>
+            </div>
+
+            <div class="safety-card">
+                <h2><i class="fas fa-eye-slash"></i> Privacy Protection</h2>
+                <ul>
+                    <li><i class="fas fa-check"></i> Anonymous browsing techniques</li>
+                    <li><i class="fas fa-check"></i> Data encryption tools</li>
+                    <li><i class="fas fa-check"></i> Tracker blocking</li>
+                    <li><i class="fas fa-check"></i> Secure communication</li>
+                </ul>
+            </div>
+
+            <div class="safety-card">
+                <h2><i class="fas fa-lock"></i> Web Security</h2>
+                <ul>
+                    <li><i class="fas fa-check"></i> HTTPS enforcement</li>
+                    <li><i class="fas fa-check"></i> Content Security Policy</li>
+                    <li><i class="fas fa-check"></i> XSS protection</li>
+                    <li><i class="fas fa-check"></i> Secure headers</li>
+                </ul>
+            </div>
+
+            <div class="safety-card">
+                <h2><i class="fas fa-bug"></i> Threat Detection</h2>
+                <ul>
+                    <li><i class="fas fa-check"></i> Malware scanning</li>
+                    <li><i class="fas fa-check"></i> Vulnerability assessment</li>
+                    <li><i class="fas fa-check"></i> Network monitoring</li>
+                    <li><i class="fas fa-check"></i> Incident response</li>
+                </ul>
+            </div>
+        </div>
+
+        <section class="tools-section">
+            <h2><i class="fas fa-download"></i> Download Safety Tools</h2>
+            
+            <div class="tool-item">
+                <div class="tool-info">
+                    <h3>IP Blacklist Processor</h3>
+                    <p>Python script that processes multiple IP blacklist sources and generates JavaScript blocklists for web protection.</p>
+                </div>
+                <a href="process_w_blacklists.py" class="download-btn" download>
+                    <i class="fas fa-python"></i> Download
+                </a>
+            </div>
+
+            <div class="tool-item">
+                <div class="tool-info">
+                    <h3>Blocked IPs JavaScript</h3>
+                    <p>Ready-to-use JavaScript file containing processed IP blacklists for client-side protection.</p>
+                </div>
+                <a href="assets/security/blocked_ips.js" class="download-btn" download>
+                    <i class="fas fa-js"></i> Download
+                </a>
+            </div>
+
+            <div class="tool-item">
+                <div class="tool-info">
+                    <h3>Blacklist Statistics</h3>
+                    <p>JSON file containing statistics and metadata about processed blacklists and threat intelligence.</p>
+                </div>
+                <a href="assets/security/blacklist_stats.json" class="download-btn" download>
+                    <i class="fas fa-chart-bar"></i> Download
+                </a>
+            </div>
+
+            <div class="tool-item">
+                <div class="tool-info">
+                    <h3>Complete Safety Toolkit</h3>
+                    <p>All tools and scripts bundled together in a convenient ZIP archive for easy deployment.</p>
+                </div>
+                <a href="#" class="download-btn" onclick="createSafetyToolkit()">
+                    <i class="fas fa-archive"></i> Generate Toolkit
+                </a>
+            </div>
+        </section>
+
+        <div class="safety-card">
+            <h2><i class="fas fa-graduation-cap"></i> Security Best Practices</h2>
+            <ul>
+                <li><i class="fas fa-key"></i> Use strong, unique passwords for all accounts</li>
+                <li><i class="fas fa-mobile-alt"></i> Enable two-factor authentication (2FA)</li>
+                <li><i class="fas fa-shield-virus"></i> Keep software and systems updated</li>
+                <li><i class="fas fa-wifi"></i> Use secure networks and VPN when necessary</li>
+                <li><i class="fas fa-envelope"></i> Be cautious with email attachments and links</li>
+                <li><i class="fas fa-user-secret"></i> Regularly review privacy settings</li>
+                <li><i class="fas fa-backup"></i> Maintain regular backups of important data</li>
+                <li><i class="fas fa-search"></i> Monitor accounts for suspicious activity</li>
+            </ul>
+        </div>
+    </main>
+
+    <script>
+        // Mobile menu functionality
+        const menuButton = document.querySelector('.menu-button');
+        const navMenu = document.querySelector('.nav-menu');
+
+        menuButton?.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+            });
+        });
+
+        // Generate safety toolkit function
+        function createSafetyToolkit() {
+            alert('Safety toolkit generation feature coming soon! For now, download individual tools above.');
+        }
+
+        // Add some interactive security tips
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.safety-card');
+            cards.forEach(card => {
+                card.addEventListener('click', function() {
+                    this.style.transform = 'scale(1.02)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 200);
+                });
+            });
+        });
+    </script>
 </body>
 </html>
