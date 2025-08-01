@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://formspree.io; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://formspree.io;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://formspree.io https://api.ipify.org; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://formspree.io https://api.ipify.org;">
     <title>XXMXLI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Load Comprehensive IP Blacklist -->
+    <script src="assets/security/blocked_ips.js"></script>
+    
     <style>
         :root {
             --background: #000000;
@@ -280,6 +284,39 @@
             color: #ff0000;
         }
 
+        /* Security Alert Styles */
+        .security-alert {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #000000, #110000, #000000);
+            z-index: 999999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #ff0000;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .security-content {
+            text-align: center;
+            border: 3px solid #ff0000;
+            padding: 60px;
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.95);
+            box-shadow: 0 0 50px #ff0000;
+            animation: securityPulse 2s infinite;
+            max-width: 700px;
+        }
+        
+        @keyframes securityPulse {
+            0% { box-shadow: 0 0 50px #ff0000; }
+            50% { box-shadow: 0 0 80px #ff0000, 0 0 100px #ff0000; }
+            100% { box-shadow: 0 0 50px #ff0000; }
+        }
+
         /* Animations */
         @keyframes pulse {
             0% {
@@ -327,6 +364,11 @@
             .grid-container {
                 grid-template-columns: 1fr;
                 padding: 1rem;
+            }
+
+            .security-content {
+                padding: 30px;
+                margin: 20px;
             }
         }
     </style>
@@ -427,6 +469,182 @@
     </main>
 
     <script>
+        // Enhanced Security System with Comprehensive Blacklist
+        const xxmxliSecurity = {
+            async init() {
+                console.log('🔒 XXMXLI Security System initializing...');
+                
+                // Check if blacklist is loaded
+                if (typeof BLOCKED_IPS === 'undefined') {
+                    console.warn('⚠️ IP blacklist not loaded, security limited');
+                    return true;
+                }
+                
+                // Get visitor info
+                try {
+                    const visitorData = await this.getVisitorInfo();
+                    console.log('🌐 Visitor IP:', visitorData.ip);
+                    
+                    // Check against blacklist
+                    const isBlocked = this.checkBlacklist(visitorData.ip);
+                    
+                    if (isBlocked) {
+                        this.blockAccess(visitorData);
+                        return false;
+                    }
+                    
+                    // Log legitimate visitor
+                    this.logVisitor(visitorData);
+                    
+                    // Show security stats in console
+                    this.showSecurityStats();
+                    
+                    return true;
+                    
+                } catch (error) {
+                    console.error('🚨 Security check failed:', error);
+                    return true; // Allow access if check fails
+                }
+            },
+            
+            async getVisitorInfo() {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                
+                return {
+                    ip: data.ip,
+                    timestamp: new Date().toISOString(),
+                    userAgent: navigator.userAgent,
+                    page: window.location.pathname,
+                    referrer: document.referrer || 'direct'
+                };
+            },
+            
+            checkBlacklist(ip) {
+                // Use fast check if available, otherwise regular check
+                if (typeof isIPBlockedFast === 'function') {
+                    return isIPBlockedFast(ip);
+                } else if (typeof isIPBlocked === 'function') {
+                    return isIPBlocked(ip);
+                } else if (typeof BLOCKED_IPS !== 'undefined') {
+                    return BLOCKED_IPS.includes(ip);
+                }
+                
+                return false;
+            },
+            
+            blockAccess(visitorData) {
+                console.error('🚫 BLOCKING ACCESS:', visitorData.ip);
+                
+                // Log the block
+                this.logBlockedAttempt(visitorData);
+                
+                // Get blacklist stats
+                const stats = typeof getBlacklistStats === 'function' ? getBlacklistStats() : null;
+                
+                // Create blocking interface
+                document.body.innerHTML = `
+                    <div class="security-alert">
+                        <div class="security-content">
+                            <h1 style="font-size: 4rem; margin-bottom: 30px; text-shadow: 0 0 20px #ff0000;">
+                                🛡️ SECURITY BLOCK 🛡️
+                            </h1>
+                            
+                            <div style="background: rgba(255,0,0,0.1); border: 2px solid #ff0000; padding: 30px; margin: 30px 0; border-radius: 10px;">
+                                <h2 style="font-size: 2rem; margin-bottom: 20px;">ACCESS DENIED</h2>
+                                <p style="font-size: 1.3rem; margin-bottom: 15px;">Your IP is on our security blacklist</p>
+                                <p style="font-size: 1.2rem; color: #ffff00; font-weight: bold;">IP: ${visitorData.ip}</p>
+                                <p style="font-size: 1rem; color: #888; margin-top: 15px;">Blocked: ${new Date().toLocaleString()}</p>
+                            </div>
+                            
+                            ${stats ? `
+                                <div style="border-top: 1px solid #333; padding-top: 30px; margin-top: 30px;">
+                                    <h3 style="color: #ff6666; margin-bottom: 15px;">🔍 Security Details</h3>
+                                    <p style="font-size: 0.9rem; color: #999;">Blacklist Database: ${stats.total_ips?.toLocaleString()} blocked IPs</p>
+                                    <p style="font-size: 0.9rem; color: #999;">Sources: ${stats.sources_count} threat intelligence feeds</p>
+                                    <p style="font-size: 0.9rem; color: #999;">Last Updated: ${stats.generated ? new Date(stats.generated).toLocaleDateString() : 'Unknown'}</p>
+                                    ${stats.performance_mode ? '<p style="font-size: 0.8rem; color: #666; margin-top: 10px;">⚡ High-performance blocking mode active</p>' : ''}
+                                </div>
+                            ` : ''}
+                            
+                            <div style="margin-top: 40px; font-size: 0.9rem; color: #666; font-style: italic;">
+                                <p>This block is based on threat intelligence data</p>
+                                <p>Contact administrator if you believe this is an error</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.title = '🚫 Access Blocked - XXMXLI Security';
+                
+                // Prevent interactions
+                this.lockdownPage();
+            },
+            
+            lockdownPage() {
+                // Disable context menu
+                document.addEventListener('contextmenu', e => e.preventDefault());
+                
+                // Disable key combinations
+                document.addEventListener('keydown', e => {
+                    if (e.ctrlKey || e.altKey || e.metaKey || e.key === 'F12') {
+                        e.preventDefault();
+                    }
+                });
+                
+                // Prevent navigation
+                window.addEventListener('beforeunload', e => {
+                    e.preventDefault();
+                    e.returnValue = 'Access denied';
+                });
+            },
+            
+            logVisitor(visitorData) {
+                try {
+                    const visitors = JSON.parse(localStorage.getItem('xxmxli_visitors') || '[]');
+                    visitors.push(visitorData);
+                    
+                    // Keep last 500 visitors
+                    if (visitors.length > 500) {
+                        visitors.splice(0, visitors.length - 500);
+                    }
+                    
+                    localStorage.setItem('xxmxli_visitors', JSON.stringify(visitors));
+                } catch (error) {
+                    console.error('Failed to log visitor:', error);
+                }
+            },
+            
+            logBlockedAttempt(visitorData) {
+                try {
+                    const blocked = JSON.parse(localStorage.getItem('xxmxli_blocked') || '[]');
+                    blocked.push({
+                        ...visitorData,
+                        blocklist_stats: typeof getBlacklistStats === 'function' ? getBlacklistStats() : null
+                    });
+                    
+                    localStorage.setItem('xxmxli_blocked', JSON.stringify(blocked));
+                    
+                    // Also send to console for monitoring
+                    console.error('🚨 SECURITY BLOCK:', visitorData);
+                } catch (error) {
+                    console.error('Failed to log blocked attempt:', error);
+                }
+            },
+            
+            showSecurityStats() {
+                if (typeof getBlacklistStats === 'function') {
+                    const stats = getBlacklistStats();
+                    console.log('🛡️ Security Status:', {
+                        'Blocked IPs': stats.total_ips?.toLocaleString(),
+                        'Sources': stats.sources_count,
+                        'Performance Mode': stats.performance_mode,
+                        'Memory Usage': `${Math.round((stats.memory_usage || 0) / 1024)}KB`
+                    });
+                }
+            }
+        };
+
         // Mobile menu functionality
         const menuButton = document.querySelector('.menu-button');
         const navMenu = document.querySelector('.nav-menu');
@@ -509,9 +727,10 @@
                 console.error('Failed to save to localStorage:', error);
             }
         }
-
-        // Debug functions
+        
+        // Enhanced admin functions
         window.xxmxli = {
+            // Contact functions
             getContacts: () => JSON.parse(localStorage.getItem('xxmxli_contacts') || '[]'),
             clearContacts: () => {
                 localStorage.removeItem('xxmxli_contacts');
@@ -529,12 +748,48 @@
                 link.href = URL.createObjectURL(dataBlob);
                 link.download = `xxmxli_contacts_${new Date().toISOString().split('T')[0]}.json`;
                 link.click();
+            },
+            
+            // Security functions
+            security: {
+                checkIP: (ip) => xxmxliSecurity.checkBlacklist(ip),
+                getStats: () => typeof getBlacklistStats === 'function' ? getBlacklistStats() : null,
+                getVisitors: () => JSON.parse(localStorage.getItem('xxmxli_visitors') || '[]'),
+                getBlocked: () => JSON.parse(localStorage.getItem('xxmxli_blocked') || '[]'),
+                
+                exportAll: () => {
+                    const data = {
+                        exported: new Date().toISOString(),
+                        blacklist_stats: typeof getBlacklistStats === 'function' ? getBlacklistStats() : null,
+                        visitors: JSON.parse(localStorage.getItem('xxmxli_visitors') || '[]'),
+                        blocked: JSON.parse(localStorage.getItem('xxmxli_blocked') || '[]'),
+                        contacts: JSON.parse(localStorage.getItem('xxmxli_contacts') || '[]')
+                    };
+                    
+                    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `xxmxli_complete_export_${new Date().toISOString().split('T')[0]}.json`;
+                    link.click();
+                },
+                
+                clearLogs: () => {
+                    localStorage.removeItem('xxmxli_visitors');
+                    localStorage.removeItem('xxmxli_blocked');
+                    console.log('🗑️ Security logs cleared');
+                }
             }
         };
-
-        // Initialize
+        
+        // Initialize security system and page
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('XXMXLI website loaded with Formspree integration');
+            xxmxliSecurity.init().then(allowed => {
+                if (allowed) {
+                    console.log('✅ XXMXLI Security: Access granted');
+                    console.log('XXMXLI website loaded with comprehensive security');
+                    console.log('Available commands: xxmxli.security.getStats(), xxmxli.exportContacts(), etc.');
+                }
+            });
         });
     </script>
 </body>
