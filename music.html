@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fi">
 <head>
-    <meta charset="UTF-7">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; 
         img-src 'self' https: data:; 
@@ -13,7 +13,6 @@
         connect-src 'self' blob: https:;">
     <title>Musiikki - XXMXLI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://unpkg.com/wavesurfer.js"></script>
     <style>
         :root {
             --background: #000000;
@@ -122,6 +121,123 @@
             border-radius: 8px;
             border: 1px solid var(--accent);
             box-shadow: 0 0 10px var(--accent);
+        }
+
+        .visualizer-container {
+            margin: 20px 0;
+            background: var(--background);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid var(--accent);
+            position: relative;
+            height: 150px;
+        }
+
+        .visualizer-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .visualizer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .visualizer-btn {
+            background: none;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 0.3rem 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .visualizer-btn.active,
+        .visualizer-btn:hover {
+            background: var(--accent);
+            color: var(--background);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .now-playing {
+            text-align: center;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        .track-info-display {
+            font-size: 1.2rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .track-artist {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .progress-container {
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.1s linear;
+            border-radius: 3px;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 1rem 0;
+            justify-content: center;
+        }
+
+        .volume-slider {
+            width: 100px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
         }
 
         #waveform {
@@ -240,11 +356,21 @@
             <a href="/" class="logo">XXMXLI</a>
             <nav>
                 <ul class="nav-menu">
-                    <li><a href="/" class="nav-link">Etusivu</a></li>
-                    <li><a href="/photography.html" class="nav-link">Valokuvaus</a></li>
-                    <li><a href="/music.html" class="nav-link active">Musiikki</a></li>
-                    <li><a href="/videos.html" class="nav-link">Videot</a></li>
-                    <li><a href="/security.html" class="nav-link">Tietoturva</a></li>
+                    <li><a href="/" class="nav-link">
+                        <i class="fas fa-home"></i> Etusivu
+                    </a></li>
+                    <li><a href="/photography.html" class="nav-link">
+                        <i class="fas fa-camera"></i> Valokuvaus
+                    </a></li>
+                    <li><a href="/music.html" class="nav-link active">
+                        <i class="fas fa-music"></i> Musiikki
+                    </a></li>
+                    <li><a href="/projects.html" class="nav-link">
+                        <i class="fas fa-project-diagram"></i> Projektit
+                    </a></li>
+                    <li><a href="/security.html" class="nav-link">
+                        <i class="fas fa-shield-alt"></i> Turvallisuus
+                    </a></li>
                 </ul>
             </nav>
         </div>
@@ -257,7 +383,33 @@
         </section>
 
         <section class="music-player">
-            <div id="waveform"></div>
+            <div class="now-playing">
+                <div class="track-info-display" id="currentTrackTitle">Select a track to play</div>
+                <div class="track-artist" id="currentTrackArtist"></div>
+            </div>
+
+            <div class="visualizer-controls">
+                <button class="visualizer-btn active" data-visualizer="bars">Bars</button>
+                <button class="visualizer-btn" data-visualizer="wave">Wave</button>
+                <button class="visualizer-btn" data-visualizer="circle">Circle</button>
+                <button class="visualizer-btn" data-visualizer="particles">Particles</button>
+                <button class="visualizer-btn" data-visualizer="spectrum">Spectrum</button>
+            </div>
+
+            <div class="visualizer-container">
+                <canvas class="visualizer-canvas" id="visualizer"></canvas>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="time-display">
+                    <span id="currentTime">0:00</span>
+                    <span id="totalTime">0:00</span>
+                </div>
+            </div>
+
             <div class="player-controls">
                 <button class="control-btn" id="prevBtn">
                     <i class="fas fa-backward"></i>
@@ -272,134 +424,412 @@
                     <i class="fas fa-forward"></i>
                 </button>
             </div>
+
+            <div class="volume-control">
+                <i class="fas fa-volume-down"></i>
+                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
+                <i class="fas fa-volume-up"></i>
+            </div>
+
             <div class="playlist" id="playlist"></div>
         </section>
     </div>
 
     <script>
-        const tracks = [
-            { id: 1, title: 'Track 1', file: 'assets/audio/track1.flac' },
-            { id: 2, title: 'Track 2', file: 'assets/audio/track2.flac' },
-            { id: 3, title: 'Track 3', file: 'assets/audio/track3.flac' },
-            { id: 4, title: 'Track 4', file: 'assets/audio/track4.flac' },
-            { id: 5, title: 'Track 5', file: 'assets/audio/track5.flac' },
-            { id: 6, title: 'Track 6', file: 'assets/audio/track6.flac' },
-            { id: 7, title: 'Track 7', file: 'assets/audio/track7.flac' },
-            { id: 8, title: 'Track 8', file: 'assets/audio/track8.flac' },
-            { id: 9, title: 'Track 9', file: 'assets/audio/track9.flac' },
-            { id: 10, title: 'Track 10', file: 'assets/audio/track10.flac' }
-        ];
+        class MusicPlayer {
+            constructor() {
+                this.audio = new Audio();
+                this.audioContext = null;
+                this.analyser = null;
+                this.source = null;
+                this.canvas = null;
+                this.canvasContext = null;
+                this.animationId = null;
+                this.currentVisualizerType = 'bars';
+                this.tracks = [];
+                this.currentTrackIndex = 0;
+                this.isPlaying = false;
+                this.isInitialized = false;
+                
+                this.init();
+            }
 
-        let currentTrackIndex = 0;
+            async init() {
+                try {
+                    // Load tracks from JSON
+                    const response = await fetch('assets/audio/tracklist.json');
+                    this.tracks = await response.json();
+                    
+                    this.setupElements();
+                    this.setupEventListeners();
+                    this.renderPlaylist();
+                    
+                    if (this.tracks.length > 0) {
+                        this.loadTrack(0);
+                    }
+                } catch (error) {
+                    console.error('Error initializing player:', error);
+                    // Fallback to basic tracks
+                    this.tracks = [
+                        { file: '10.Frosty.flac', title: '10.Frosty', artist: 'Eemeli' },
+                        { file: 'Rain (1).flac', title: '13.Rain', artist: 'Eemeli' },
+                        { file: 'track1.flac', title: '03.Mellow', artist: 'Eemeli' },
+                        { file: 'track2.flac', title: 'Astrologik', artist: 'Eemeli' },
+                        { file: 'track3.flac', title: '13.Rain', artist: 'Eemeli' },
+                        { file: 'track4.flac', title: '07.Strange', artist: 'Eemeli' }
+                    ];
+                    this.renderPlaylist();
+                }
+            }
 
-        const wavesurfer = WaveSurfer.create({
-            container: '#waveform',
-            waveColor: '#008000',
-            progressColor: '#00ff00',
-            cursorColor: '#00ff00',
-            barWidth: 2,
-            barRadius: 3,
-            cursorWidth: 1,
-            height: 100,
-            barGap: 3,
-            backend: 'MediaElement',
-            mediaType: 'audio',
-            normalize: true,
-            responsive: true,
-            fillParent: true
-        });
+            setupElements() {
+                this.canvas = document.getElementById('visualizer');
+                this.canvasContext = this.canvas.getContext('2d');
+                this.resizeCanvas();
+                
+                // Audio elements
+                this.audio.crossOrigin = 'anonymous';
+                this.audio.preload = 'metadata';
+            }
 
-        wavesurfer.on('error', (err) => {
-            console.error('WaveSurfer error:', err);
-        });
+            resizeCanvas() {
+                const container = this.canvas.parentElement;
+                this.canvas.width = container.clientWidth;
+                this.canvas.height = container.clientHeight;
+            }
 
-        wavesurfer.on('loading', (percent) => {
-            console.log('Loading track:', percent + '%');
-        });
+            async setupAudioContext() {
+                if (this.audioContext) return;
+                
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.analyser = this.audioContext.createAnalyser();
+                    this.analyser.fftSize = 256;
+                    this.analyser.smoothingTimeConstant = 0.8;
+                    
+                    this.source = this.audioContext.createMediaElementSource(this.audio);
+                    this.source.connect(this.analyser);
+                    this.analyser.connect(this.audioContext.destination);
+                    
+                    this.bufferLength = this.analyser.frequencyBinCount;
+                    this.dataArray = new Uint8Array(this.bufferLength);
+                    
+                    this.isInitialized = true;
+                } catch (error) {
+                    console.error('Error setting up audio context:', error);
+                }
+            }
 
-        const playlist = document.getElementById('playlist');
-        tracks.forEach((track, index) => {
-            const trackElement = document.createElement('div');
-            trackElement.className = 'track-item';
-            trackElement.innerHTML = `
-                <div class="track-info">
-                    <span class="track-number">${(index + 1).toString().padStart(2, '0')}</span>
-                    <span class="track-title">${track.title}</span>
-                </div>
-                <span class="track-duration"></span>
-            `;
-            trackElement.addEventListener('click', () => loadTrack(index));
-            playlist.appendChild(trackElement);
-        });
+            setupEventListeners() {
+                // Player controls
+                document.getElementById('playBtn').addEventListener('click', () => this.togglePlay());
+                document.getElementById('stopBtn').addEventListener('click', () => this.stop());
+                document.getElementById('prevBtn').addEventListener('click', () => this.previous());
+                document.getElementById('nextBtn').addEventListener('click', () => this.next());
+                
+                // Volume control
+                document.getElementById('volumeSlider').addEventListener('input', (e) => {
+                    this.audio.volume = e.target.value / 100;
+                });
+                
+                // Progress bar
+                const progressBar = document.getElementById('progressBar');
+                progressBar.addEventListener('click', (e) => {
+                    const rect = progressBar.getBoundingClientRect();
+                    const percent = (e.clientX - rect.left) / rect.width;
+                    this.audio.currentTime = percent * this.audio.duration;
+                });
+                
+                // Audio events
+                this.audio.addEventListener('timeupdate', () => this.updateProgress());
+                this.audio.addEventListener('durationchange', () => this.updateDuration());
+                this.audio.addEventListener('ended', () => this.next());
+                this.audio.addEventListener('play', () => {
+                    this.isPlaying = true;
+                    this.updatePlayButton();
+                    this.startVisualization();
+                });
+                this.audio.addEventListener('pause', () => {
+                    this.isPlaying = false;
+                    this.updatePlayButton();
+                    this.stopVisualization();
+                });
+                
+                // Visualizer controls
+                document.querySelectorAll('.visualizer-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelector('.visualizer-btn.active').classList.remove('active');
+                        e.target.classList.add('active');
+                        this.currentVisualizerType = e.target.dataset.visualizer;
+                    });
+                });
+                
+                // Window resize
+                window.addEventListener('resize', () => this.resizeCanvas());
+            }
 
-        function loadTrack(index) {
-            currentTrackIndex = index;
-            const track = tracks[index];
-            
-            wavesurfer.unAll();
-            
-            wavesurfer.on('ready', () => {
-                console.log('Track ready to play');
-                wavesurfer.play();
-                updatePlayButton();
-            });
+            renderPlaylist() {
+                const playlist = document.getElementById('playlist');
+                playlist.innerHTML = '';
+                
+                this.tracks.forEach((track, index) => {
+                    const trackElement = document.createElement('div');
+                    trackElement.className = 'track-item';
+                    trackElement.innerHTML = `
+                        <div class="track-info">
+                            <span class="track-number">${(index + 1).toString().padStart(2, '0')}</span>
+                            <span class="track-title">${track.title}</span>
+                        </div>
+                        <span class="track-duration">${track.duration || ''}</span>
+                    `;
+                    trackElement.addEventListener('click', () => this.loadTrack(index));
+                    playlist.appendChild(trackElement);
+                });
+            }
 
-            wavesurfer.on('error', (err) => {
-                console.error('Error loading track:', err);
-            });
+            async loadTrack(index) {
+                if (index < 0 || index >= this.tracks.length) return;
+                
+                this.currentTrackIndex = index;
+                const track = this.tracks[index];
+                
+                // Update UI
+                document.getElementById('currentTrackTitle').textContent = track.title;
+                document.getElementById('currentTrackArtist').textContent = track.artist || '';
+                
+                // Update active track in playlist
+                document.querySelectorAll('.track-item').forEach((item, i) => {
+                    item.classList.toggle('active', i === index);
+                });
+                
+                // Load audio
+                this.audio.src = `assets/audio/${track.file}`;
+                
+                if (!this.isInitialized) {
+                    await this.setupAudioContext();
+                }
+            }
 
-            try {
-                console.log('Loading track:', track.file);
-                wavesurfer.load(track.file);
-                updateActiveTrack();
-            } catch (err) {
-                console.error('Error in loadTrack:', err);
+            async togglePlay() {
+                if (!this.isInitialized) {
+                    await this.setupAudioContext();
+                }
+                
+                if (this.audioContext.state === 'suspended') {
+                    await this.audioContext.resume();
+                }
+                
+                if (this.isPlaying) {
+                    this.audio.pause();
+                } else {
+                    try {
+                        await this.audio.play();
+                    } catch (error) {
+                        console.error('Error playing audio:', error);
+                    }
+                }
+            }
+
+            stop() {
+                this.audio.pause();
+                this.audio.currentTime = 0;
+                this.updateProgress();
+            }
+
+            next() {
+                const nextIndex = (this.currentTrackIndex + 1) % this.tracks.length;
+                this.loadTrack(nextIndex);
+                if (this.isPlaying) {
+                    setTimeout(() => this.audio.play(), 100);
+                }
+            }
+
+            previous() {
+                if (this.audio.currentTime > 3) {
+                    this.audio.currentTime = 0;
+                } else {
+                    const prevIndex = this.currentTrackIndex === 0 ? this.tracks.length - 1 : this.currentTrackIndex - 1;
+                    this.loadTrack(prevIndex);
+                    if (this.isPlaying) {
+                        setTimeout(() => this.audio.play(), 100);
+                    }
+                }
+            }
+
+            updateProgress() {
+                if (!this.audio.duration) return;
+                
+                const percent = (this.audio.currentTime / this.audio.duration) * 100;
+                document.getElementById('progressFill').style.width = `${percent}%`;
+                document.getElementById('currentTime').textContent = this.formatTime(this.audio.currentTime);
+            }
+
+            updateDuration() {
+                document.getElementById('totalTime').textContent = this.formatTime(this.audio.duration);
+            }
+
+            updatePlayButton() {
+                const icon = document.querySelector('#playBtn i');
+                icon.className = this.isPlaying ? 'fas fa-pause' : 'fas fa-play';
+            }
+
+            formatTime(seconds) {
+                if (isNaN(seconds)) return '0:00';
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = Math.floor(seconds % 60);
+                return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+            }
+
+            startVisualization() {
+                if (!this.analyser) return;
+                
+                const draw = () => {
+                    if (!this.isPlaying) return;
+                    
+                    this.animationId = requestAnimationFrame(draw);
+                    this.analyser.getByteFrequencyData(this.dataArray);
+                    this.drawVisualization();
+                };
+                
+                draw();
+            }
+
+            stopVisualization() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+                this.clearCanvas();
+            }
+
+            clearCanvas() {
+                this.canvasContext.fillStyle = '#000000';
+                this.canvasContext.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+
+            drawVisualization() {
+                const width = this.canvas.width;
+                const height = this.canvas.height;
+                
+                this.clearCanvas();
+                
+                switch (this.currentVisualizerType) {
+                    case 'bars':
+                        this.drawBars(width, height);
+                        break;
+                    case 'wave':
+                        this.drawWave(width, height);
+                        break;
+                    case 'circle':
+                        this.drawCircle(width, height);
+                        break;
+                    case 'particles':
+                        this.drawParticles(width, height);
+                        break;
+                    case 'spectrum':
+                        this.drawSpectrum(width, height);
+                        break;
+                }
+            }
+
+            drawBars(width, height) {
+                const barWidth = width / this.bufferLength * 2.5;
+                let x = 0;
+                
+                for (let i = 0; i < this.bufferLength; i++) {
+                    const barHeight = (this.dataArray[i] / 255) * height * 0.8;
+                    
+                    const hue = (i / this.bufferLength) * 120;
+                    this.canvasContext.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                    
+                    this.canvasContext.fillRect(x, height - barHeight, barWidth - 2, barHeight);
+                    x += barWidth;
+                }
+            }
+
+            drawWave(width, height) {
+                this.canvasContext.strokeStyle = '#00ff00';
+                this.canvasContext.lineWidth = 2;
+                this.canvasContext.beginPath();
+                
+                const sliceWidth = width / this.bufferLength;
+                let x = 0;
+                
+                for (let i = 0; i < this.bufferLength; i++) {
+                    const v = (this.dataArray[i] / 255) * 2 - 1;
+                    const y = (v * height / 2) + (height / 2);
+                    
+                    if (i === 0) {
+                        this.canvasContext.moveTo(x, y);
+                    } else {
+                        this.canvasContext.lineTo(x, y);
+                    }
+                    
+                    x += sliceWidth;
+                }
+                
+                this.canvasContext.stroke();
+            }
+
+            drawCircle(width, height) {
+                const centerX = width / 2;
+                const centerY = height / 2;
+                const radius = Math.min(width, height) / 4;
+                
+                for (let i = 0; i < this.bufferLength; i++) {
+                    const angle = (i / this.bufferLength) * Math.PI * 2;
+                    const amplitude = (this.dataArray[i] / 255) * radius;
+                    
+                    const x1 = centerX + Math.cos(angle) * radius;
+                    const y1 = centerY + Math.sin(angle) * radius;
+                    const x2 = centerX + Math.cos(angle) * (radius + amplitude);
+                    const y2 = centerY + Math.sin(angle) * (radius + amplitude);
+                    
+                    const hue = (i / this.bufferLength) * 360;
+                    this.canvasContext.strokeStyle = `hsl(${hue}, 100%, 50%)`;
+                    this.canvasContext.lineWidth = 2;
+                    this.canvasContext.beginPath();
+                    this.canvasContext.moveTo(x1, y1);
+                    this.canvasContext.lineTo(x2, y2);
+                    this.canvasContext.stroke();
+                }
+            }
+
+            drawParticles(width, height) {
+                for (let i = 0; i < this.bufferLength; i += 4) {
+                    const x = Math.random() * width;
+                    const y = Math.random() * height;
+                    const size = (this.dataArray[i] / 255) * 8 + 2;
+                    
+                    const hue = (this.dataArray[i] / 255) * 360;
+                    this.canvasContext.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                    this.canvasContext.beginPath();
+                    this.canvasContext.arc(x, y, size, 0, Math.PI * 2);
+                    this.canvasContext.fill();
+                }
+            }
+
+            drawSpectrum(width, height) {
+                const gradient = this.canvasContext.createLinearGradient(0, height, 0, 0);
+                gradient.addColorStop(0, '#00ff00');
+                gradient.addColorStop(0.5, '#ffff00');
+                gradient.addColorStop(1, '#ff0000');
+                
+                this.canvasContext.fillStyle = gradient;
+                
+                for (let i = 0; i < this.bufferLength; i++) {
+                    const barHeight = (this.dataArray[i] / 255) * height;
+                    const barWidth = width / this.bufferLength;
+                    
+                    this.canvasContext.fillRect(i * barWidth, height - barHeight, barWidth - 1, barHeight);
+                }
             }
         }
 
-        function updateActiveTrack() {
-            document.querySelectorAll('.track-item').forEach((item, index) => {
-                item.classList.toggle('active', index === currentTrackIndex);
-            });
-        }
-
-        function updatePlayButton() {
-            const icon = playBtn.querySelector('i');
-            icon.className = wavesurfer.isPlaying() ? 'fas fa-pause' : 'fas fa-play';
-        }
-
-        const playBtn = document.getElementById('playBtn');
-        const stopBtn = document.getElementById('stopBtn');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-
-        playBtn.addEventListener('click', () => {
-            wavesurfer.playPause();
-            updatePlayButton();
+        // Initialize player when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new MusicPlayer();
         });
-
-        stopBtn.addEventListener('click', () => {
-            wavesurfer.stop();
-            updatePlayButton();
-        });
-
-        prevBtn.addEventListener('click', () => {
-            currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
-            loadTrack(currentTrackIndex);
-        });
-
-        nextBtn.addEventListener('click', () => {
-            currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
-            loadTrack(currentTrackIndex);
-        });
-
-        wavesurfer.on('finish', () => {
-            currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
-            loadTrack(currentTrackIndex);
-        });
-
-        loadTrack(0);
-        console.log('WaveSurfer version:', WaveSurfer.VERSION);
     </script>
 </body>
 </html>

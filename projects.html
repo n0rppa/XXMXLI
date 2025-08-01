@@ -169,6 +169,92 @@
             box-shadow: 0 0 10px var(--accent);
         }
 
+        /* Featured Safety Card */
+        .featured-card {
+            grid-column: span 2;
+            background: linear-gradient(135deg, var(--card-bg), #001a00);
+            border: 2px solid var(--accent);
+        }
+
+        .featured-card h2 {
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .safety-tools {
+            margin: 1.5rem 0;
+        }
+
+        .safety-tools h3 {
+            color: var(--accent);
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+        }
+
+        .tools-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .tools-list li {
+            padding: 0.3rem 0;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tools-list i {
+            color: var(--accent);
+            width: 16px;
+        }
+
+        .download-section {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: var(--background);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        .download-section h3 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .download-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+            background: var(--card-bg);
+            font-size: 0.9rem;
+        }
+
+        .download-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+            transform: translateX(5px);
+        }
+
+        .download-btn i {
+            color: var(--accent);
+        }
+
         @media (max-width: 768px) {
             .nav-menu {
                 display: none;
@@ -197,6 +283,10 @@
 
             .project-header h1 {
                 font-size: 2rem;
+            }
+
+            .featured-card {
+                grid-column: span 1;
             }
         }
     </style>
@@ -232,6 +322,44 @@
         </div>
 
         <div class="project-grid">
+            <!-- Internet Safety Section -->
+            <div class="project-card featured-card">
+                <h2><i class="fas fa-shield-alt"></i> Internet Safety & Security</h2>
+                <p>Comprehensive tools and scripts to enhance your online security and protect against digital threats.</p>
+                <div class="tags">
+                    <span class="tag">Security</span>
+                    <span class="tag">Privacy</span>
+                    <span class="tag">Python</span>
+                    <span class="tag">JavaScript</span>
+                </div>
+                <div class="safety-tools">
+                    <h3>Available Tools:</h3>
+                    <ul class="tools-list">
+                        <li><i class="fas fa-ban"></i> IP Blacklist Processor</li>
+                        <li><i class="fas fa-eye-slash"></i> Privacy Protection Scripts</li>
+                        <li><i class="fas fa-lock"></i> Secure Web Configurations</li>
+                        <li><i class="fas fa-bug"></i> Threat Detection Tools</li>
+                    </ul>
+                </div>
+                <div class="download-section">
+                    <h3>Download Safety Scripts:</h3>
+                    <div class="download-buttons">
+                        <a href="assets/security/safety-toolkit.zip" class="download-btn" download>
+                            <i class="fas fa-download"></i> Complete Safety Toolkit
+                        </a>
+                        <a href="process_w_blacklists.py" class="download-btn" download>
+                            <i class="fas fa-python"></i> Blacklist Processor
+                        </a>
+                        <a href="assets/security/blocked_ips.js" class="download-btn" download>
+                            <i class="fas fa-js"></i> IP Block Script
+                        </a>
+                    </div>
+                </div>
+                <a href="security.html" class="project-link">
+                    Learn More <i class="fas fa-shield-alt"></i>
+                </a>
+            </div>
+
             <div class="project-card">
                 <h2>Project One</h2>
                 <p>Kuvaus projektista yksi ja sen toteutuksesta.</p>
