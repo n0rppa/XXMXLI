@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Admin Cyberpunk - XXMXLI</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Material-UI -->
+    <script src="https://unpkg.com/@mui/material@latest/umd/material-ui.development.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* Cyberpunk Theme */
+        :root {
+            --primary-cyber: #00ff00;
+            --dark-cyber: #000000;
+            --card-cyber: #001100;
+            --border-cyber: #003300;
+            --text-cyber: #00ff00;
+            --glow: 0 0 10px #00ff00;
+            --glow-strong: 0 0 20px #00ff00;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace !important;
+            background-color: var(--dark-cyber) !important;
+            color: var(--text-cyber) !important;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 0, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 0, 0.05) 0%, transparent 50%);
+        }
+
+        /* React Admin Overrides */
+        .MuiAppBar-root {
+            background-color: rgba(0, 0, 0, 0.95) !important;
+            border-bottom: 2px solid var(--primary-cyber) !important;
+            box-shadow: var(--glow) !important;
+        }
+
+        .MuiDrawer-paper {
+            background-color: rgba(0, 0, 0, 0.95) !important;
+            border-right: 2px solid var(--primary-cyber) !important;
+            box-shadow: var(--glow) !important;
+        }
+
+        .MuiPaper-root {
+            background-color: var(--card-cyber) !important;
+            border: 1px solid var(--border-cyber) !important;
+            box-shadow: var(--glow) !important;
+        }
+
+        .MuiTypography-root {
+            color: var(--text-cyber) !important;
+            font-family: 'Courier New', monospace !important;
+        }
+
+        .MuiButton-root {
+            font-family: 'Courier New', monospace !important;
+            text-transform: uppercase !important;
+            font-weight: bold !important;
+        }
+
+        .MuiButton-containedPrimary {
+            background-color: var(--primary-cyber) !important;
+            color: var(--dark-cyber) !important;
+            box-shadow: var(--glow) !important;
+        }
+
+        .MuiButton-containedPrimary:hover {
+            background-color: #00cc00 !important;
+            box-shadow: var(--glow-strong) !important;
+        }
+
+        .MuiListItem-root:hover {
+            background-color: rgba(0, 255, 0, 0.1) !important;
+        }
+
+        .MuiListItemIcon-root {
+            color: var(--primary-cyber) !important;
+        }
+
+        .MuiListItemText-primary {
+            color: var(--text-cyber) !important;
+        }
+
+        .MuiTextField-root .MuiOutlinedInput-root {
+            color: var(--text-cyber) !important;
+            font-family: 'Courier New', monospace !important;
+        }
+
+        .MuiTextField-root .MuiOutlinedInput-notchedOutline {
+            border-color: var(--border-cyber) !important;
+        }
+
+        .MuiTextField-root .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+            border-color: var(--primary-cyber) !important;
+        }
+
+        .MuiTextField-root .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+            border-color: var(--primary-cyber) !important;
+            box-shadow: var(--glow) !important;
+        }
+
+        .MuiInputLabel-root {
+            color: var(--text-cyber) !important;
+            font-family: 'Courier New', monospace !important;
+        }
+
+        .MuiTableHead-root {
+            background-color: rgba(0, 17, 0, 0.8) !important;
+        }
+
+        .MuiTableCell-root {
+            color: var(--text-cyber) !important;
+            font-family: 'Courier New', monospace !important;
+            border-bottom-color: var(--border-cyber) !important;
+        }
+
+        .MuiTableRow-root:hover {
+            background-color: rgba(0, 255, 0, 0.05) !important;
+        }
+
+        .MuiCard-root {
+            background-color: var(--card-cyber) !important;
+            border: 1px solid var(--border-cyber) !important;
+            box-shadow: var(--glow) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .MuiCard-root:hover {
+            transform: translateY(-5px) !important;
+            box-shadow: var(--glow-strong) !important;
+        }
+
+        .cyber-glow {
+            animation: cyberGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes cyberGlow {
+            from { text-shadow: 0 0 5px var(--primary-cyber); }
+            to { text-shadow: 0 0 15px var(--primary-cyber), 0 0 25px var(--primary-cyber); }
+        }
+
+        .matrix-text {
+            font-family: 'Courier New', monospace;
+            color: var(--primary-cyber);
+            text-shadow: var(--glow);
+        }
+
+        /* Custom components */
+        .dashboard-container {
+            padding: 2rem;
+            background-color: var(--dark-cyber);
+            min-height: 100vh;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--card-cyber) 0%, rgba(0, 34, 0, 0.9) 100%);
+            border: 1px solid var(--border-cyber);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: var(--glow);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--glow-strong);
+        }
+
+        .stat-icon {
+            color: var(--primary-cyber);
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-cyber);
+            text-shadow: var(--glow);
+        }
+
+        .stat-label {
+            color: var(--text-cyber);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .chart-container {
+            background-color: var(--card-cyber);
+            border: 1px solid var(--border-cyber);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: var(--glow);
+            margin-bottom: 2rem;
+        }
+
+        .activity-feed {
+            background-color: var(--card-cyber);
+            border: 1px solid var(--border-cyber);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: var(--glow);
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-cyber);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            color: var(--primary-cyber);
+            margin-right: 1rem;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            color: var(--text-cyber);
+            font-weight: bold;
+        }
+
+        .activity-time {
+            color: #008000;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark-cyber);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-cyber);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00cc00;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { 
+            useState, 
+            useEffect,
+            createContext,
+            useContext 
+        } = React;
+
+        const { 
+            ThemeProvider, 
+            createTheme,
+            CssBaseline,
+            AppBar,
+            Toolbar,
+            Typography,
+            Drawer,
+            List,
+            ListItem,
+            ListItemIcon,
+            ListItemText,
+            Box,
+            Card,
+            CardContent,
+            Grid,
+            Paper,
+            Button,
+            IconButton,
+            MenuIcon
+        } = MaterialUI;
+
+        // Cyberpunk theme
+        const cyberpunkTheme = createTheme({
+            palette: {
+                mode: 'dark',
+                primary: {
+                    main: '#00ff00',
+                },
+                secondary: {
+                    main: '#00cccc',
+                },
+                background: {
+                    default: '#000000',
+                    paper: '#001100',
+                },
+                text: {
+                    primary: '#00ff00',
+                    secondary: '#008000',
+                },
+            },
+            typography: {
+                fontFamily: '"Courier New", monospace',
+            },
+        });
+
+        // Dashboard Context
+        const DashboardContext = createContext();
+
+        // Stats Component
+        const StatsCard = ({ icon, value, label, trend }) => (
+            <div className="stat-card">
+                <div className="stat-icon">
+                    <i className={`fas ${icon}`}></i>
+                </div>
+                <div className="stat-value">{value}</div>
+                <div className="stat-label">{label}</div>
+                {trend && (
+                    <div style={{ color: trend > 0 ? '#00ff00' : '#ff4444', fontSize: '0.8rem', marginTop: '0.5rem' }}>
+                        {trend > 0 ? '↗' : '↘'} {Math.abs(trend)}%
+                    </div>
+                )}
+            </div>
+        );
+
+        // Activity Feed Component
+        const ActivityFeed = () => {
+            const activities = [
+                { icon: 'fa-server', title: 'System backup completed', time: '2 minutes ago', type: 'success' },
+                { icon: 'fa-shield-alt', title: 'Security update installed', time: '15 minutes ago', type: 'info' },
+                { icon: 'fa-user-plus', title: 'New user registered', time: '1 hour ago', type: 'primary' },
+                { icon: 'fa-exclamation-triangle', title: 'Maintenance scheduled', time: '3 hours ago', type: 'warning' },
+                { icon: 'fa-database', title: 'Database optimized', time: '6 hours ago', type: 'success' }
+            ];
+
+            return (
+                <div className="activity-feed">
+                    <h3 className="matrix-text cyber-glow" style={{ marginBottom: '1rem' }}>
+                        Recent Activity
+                    </h3>
+                    {activities.map((activity, index) => (
+                        <div key={index} className="activity-item">
+                            <div className="activity-icon">
+                                <i className={`fas ${activity.icon}`}></i>
+                            </div>
+                            <div className="activity-content">
+                                <div className="activity-title">{activity.title}</div>
+                                <div className="activity-time">{activity.time}</div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+        };
+
+        // Chart Component (simplified)
+        const SystemChart = () => (
+            <div className="chart-container">
+                <h3 className="matrix-text cyber-glow" style={{ marginBottom: '1rem' }}>
+                    System Performance
+                </h3>
+                <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div className="matrix-text">
+                        [Chart.js integration would go here]
+                        <br />
+                        <small>Real-time system metrics visualization</small>
+                    </div>
+                </div>
+            </div>
+        );
+
+        // Navigation Component
+        const Navigation = ({ open, onClose }) => {
+            const menuItems = [
+                { text: 'Dashboard', icon: 'fa-tachometer-alt', path: '#' },
+                { text: 'Analytics', icon: 'fa-chart-pie', path: '../visitors.html' },
+                { text: 'Photo Gallery', icon: 'fa-images', path: '../photo-gallery.html' },
+                { text: 'Database', icon: 'fa-database', path: '../supabase.html' },
+                { text: 'Content', icon: 'fa-cog', path: '../sanity.html' },
+                { text: 'Security', icon: 'fa-shield-alt', path: '../../security.html' },
+                { text: 'Music', icon: 'fa-music', path: '../../music.html' },
+                { text: 'Photography', icon: 'fa-camera', path: '../../photography.html' }
+            ];
+
+            return (
+                <Drawer
+                    anchor="left"
+                    open={open}
+                    onClose={onClose}
+                    sx={{
+                        '& .MuiDrawer-paper': {
+                            width: 250,
+                            backgroundColor: 'rgba(0, 0, 0, 0.95)',
+                            borderRight: '2px solid #00ff00',
+                            boxShadow: '0 0 10px #00ff00',
+                        },
+                    }}
+                >
+                    <Box sx={{ p: 2 }}>
+                        <Typography variant="h6" className="matrix-text cyber-glow">
+                            XXMXLI React Admin
+                        </Typography>
+                    </Box>
+                    <List>
+                        {menuItems.map((item, index) => (
+                            <ListItem button key={index} onClick={() => window.location.href = item.path}>
+                                <ListItemIcon>
+                                    <i className={`fas ${item.icon}`} style={{ color: '#00ff00' }}></i>
+                                </ListItemIcon>
+                                <ListItemText 
+                                    primary={item.text} 
+                                    sx={{ 
+                                        '& .MuiListItemText-primary': { 
+                                            color: '#00ff00',
+                                            fontFamily: '"Courier New", monospace'
+                                        } 
+                                    }}
+                                />
+                            </ListItem>
+                        ))}
+                    </List>
+                </Drawer>
+            );
+        };
+
+        // Main Dashboard Component
+        const Dashboard = () => {
+            const [drawerOpen, setDrawerOpen] = useState(false);
+            const [stats, setStats] = useState({
+                activeUsers: 132,
+                uptime: 99.2,
+                storage: 2.4,
+                threats: 42
+            });
+
+            useEffect(() => {
+                // Simulate real-time updates
+                const interval = setInterval(() => {
+                    setStats(prev => ({
+                        activeUsers: Math.max(0, prev.activeUsers + Math.floor(Math.random() * 6) - 3),
+                        uptime: Math.min(100, Math.max(95, prev.uptime + (Math.random() * 0.2) - 0.1)),
+                        storage: Math.min(10, Math.max(1, prev.storage + (Math.random() * 0.1) - 0.05)),
+                        threats: Math.max(0, prev.threats + Math.floor(Math.random() * 4) - 2)
+                    }));
+                }, 3000);
+
+                return () => clearInterval(interval);
+            }, []);
+
+            return (
+                <ThemeProvider theme={cyberpunkTheme}>
+                    <CssBaseline />
+                    <Box sx={{ flexGrow: 1 }}>
+                        <AppBar position="static">
+                            <Toolbar>
+                                <IconButton
+                                    edge="start"
+                                    color="inherit"
+                                    onClick={() => setDrawerOpen(true)}
+                                    sx={{ mr: 2 }}
+                                >
+                                    <i className="fas fa-bars"></i>
+                                </IconButton>
+                                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} className="cyber-glow">
+                                    Cyberpunk Dashboard - React Admin
+                                </Typography>
+                                <Button color="inherit" onClick={() => window.location.href = '../../index.html'}>
+                                    <i className="fas fa-home" style={{ marginRight: '0.5rem' }}></i>
+                                    Home
+                                </Button>
+                            </Toolbar>
+                        </AppBar>
+
+                        <Navigation open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+
+                        <div className="dashboard-container">
+                            {/* Stats Grid */}
+                            <div className="stats-grid">
+                                <StatsCard 
+                                    icon="fa-users" 
+                                    value={stats.activeUsers} 
+                                    label="Active Users"
+                                    trend={5}
+                                />
+                                <StatsCard 
+                                    icon="fa-server" 
+                                    value={`${stats.uptime.toFixed(1)}%`} 
+                                    label="System Uptime"
+                                    trend={0.1}
+                                />
+                                <StatsCard 
+                                    icon="fa-database" 
+                                    value={`${stats.storage.toFixed(1)}GB`} 
+                                    label="Storage Used"
+                                    trend={-2}
+                                />
+                                <StatsCard 
+                                    icon="fa-shield-alt" 
+                                    value={stats.threats} 
+                                    label="Threats Blocked"
+                                    trend={8}
+                                />
+                            </div>
+
+                            {/* Charts and Activity */}
+                            <Grid container spacing={3}>
+                                <Grid item xs={12} md={8}>
+                                    <SystemChart />
+                                </Grid>
+                                <Grid item xs={12} md={4}>
+                                    <ActivityFeed />
+                                </Grid>
+                            </Grid>
+
+                            {/* Quick Actions */}
+                            <Card sx={{ mt: 3 }}>
+                                <CardContent>
+                                    <Typography variant="h6" className="matrix-text cyber-glow" gutterBottom>
+                                        Quick Actions
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                                        <Button variant="contained" color="primary">
+                                            <i className="fas fa-sync-alt" style={{ marginRight: '0.5rem' }}></i>
+                                            Refresh Data
+                                        </Button>
+                                        <Button variant="contained" color="primary">
+                                            <i className="fas fa-download" style={{ marginRight: '0.5rem' }}></i>
+                                            Export Logs
+                                        </Button>
+                                        <Button variant="contained" color="primary">
+                                            <i className="fas fa-cog" style={{ marginRight: '0.5rem' }}></i>
+                                            System Settings
+                                        </Button>
+                                        <Button variant="contained" color="primary">
+                                            <i className="fas fa-bell" style={{ marginRight: '0.5rem' }}></i>
+                                            Notifications
+                                        </Button>
+                                    </Box>
+                                </CardContent>
+                            </Card>
+
+                            {/* Integration Info */}
+                            <Card sx={{ mt: 3 }}>
+                                <CardContent>
+                                    <Typography variant="h6" className="matrix-text cyber-glow" gutterBottom>
+                                        React Admin Features
+                                    </Typography>
+                                    <Typography variant="body2" className="matrix-text">
+                                        This React Admin dashboard demonstrates:
+                                    </Typography>
+                                    <ul style={{ color: '#00ff00', fontFamily: 'Courier New', marginTop: '1rem' }}>
+                                        <li>Real-time data updates with React hooks</li>
+                                        <li>Material-UI components with cyberpunk theming</li>
+                                        <li>Responsive design with Grid system</li>
+                                        <li>Supabase integration ready (configure in useEffect)</li>
+                                        <li>Chart.js integration points</li>
+                                        <li>Professional admin interface structure</li>
+                                    </ul>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </Box>
+                </ThemeProvider>
+            );
+        };
+
+        // Render the app
+        ReactDOM.render(<Dashboard />, document.getElementById('root'));
+    </script>
+</body>
+</html>

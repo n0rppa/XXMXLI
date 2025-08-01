@@ -341,6 +341,19 @@ python process_w_blacklists.py
             </div>
 
             <div class="safety-card">
+                <h2><i class="fab fa-windows"></i> Windows Protection</h2>
+                <ul>
+                    <li><i class="fas fa-check"></i> PowerShell and Batch scripts</li>
+                    <li><i class="fas fa-check"></i> Windows Firewall integration</li>
+                    <li><i class="fas fa-check"></i> Hosts file modification</li>
+                    <li><i class="fas fa-check"></i> Administrator tools included</li>
+                </ul>
+                <div class="code-block">
+.\process_w_blacklists.ps1 -GenerateFirewallRules
+                </div>
+            </div>
+
+            <div class="safety-card">
                 <h2><i class="fas fa-eye-slash"></i> Privacy Protection</h2>
                 <ul>
                     <li><i class="fas fa-check"></i> Anonymous browsing techniques</li>
@@ -376,11 +389,41 @@ python process_w_blacklists.py
             
             <div class="tool-item">
                 <div class="tool-info">
-                    <h3>IP Blacklist Processor</h3>
-                    <p>Python script that processes multiple IP blacklist sources and generates JavaScript blocklists for web protection.</p>
+                    <h3>IP Blacklist Processor (Python)</h3>
+                    <p>Cross-platform Python script that processes multiple IP blacklist sources and generates JavaScript blocklists for web protection.</p>
                 </div>
                 <a href="process_w_blacklists.py" class="download-btn" download>
                     <i class="fas fa-python"></i> Download
+                </a>
+            </div>
+
+            <div class="tool-item">
+                <div class="tool-info">
+                    <h3>IP Blacklist Processor (Windows PowerShell)</h3>
+                    <p>Windows PowerShell script with firewall integration and hosts file generation for comprehensive Windows protection.</p>
+                </div>
+                <a href="process_w_blacklists.ps1" class="download-btn" download>
+                    <i class="fab fa-windows"></i> Download
+                </a>
+            </div>
+
+            <div class="tool-item">
+                <div class="tool-info">
+                    <h3>IP Blacklist Processor (Windows Batch)</h3>
+                    <p>Windows batch file for legacy systems and command-line users. Generates firewall rules and hosts file entries.</p>
+                </div>
+                <a href="process_w_blacklists.bat" class="download-btn" download>
+                    <i class="fas fa-terminal"></i> Download
+                </a>
+            </div>
+
+            <div class="tool-item">
+                <div class="tool-info">
+                    <h3>Windows Setup Guide</h3>
+                    <p>Complete instructions for Windows users including PowerShell, batch files, firewall configuration, and troubleshooting.</p>
+                </div>
+                <a href="README_Windows.md" class="download-btn" download>
+                    <i class="fas fa-book"></i> Download
                 </a>
             </div>
 
@@ -447,7 +490,67 @@ python process_w_blacklists.py
 
         // Generate safety toolkit function
         function createSafetyToolkit() {
-            alert('Safety toolkit generation feature coming soon! For now, download individual tools above.');
+            // Create a simple HTML page that links to all tools
+            const toolkitContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>XXMXLI Safety Toolkit</title>
+    <style>
+        body { font-family: 'Courier New', monospace; background: #000; color: #00ff00; padding: 20px; }
+        .tool-section { margin: 20px 0; padding: 20px; border: 1px solid #00ff00; }
+        .download-link { color: #00ff00; text-decoration: none; display: block; margin: 5px 0; }
+        .download-link:hover { background: #00ff00; color: #000; padding: 2px; }
+    </style>
+</head>
+<body>
+    <h1>XXMXLI Complete Safety Toolkit</h1>
+    
+    <div class="tool-section">
+        <h2>Cross-Platform Tools</h2>
+        <a href="process_w_blacklists.py" class="download-link" download>📄 IP Blacklist Processor (Python)</a>
+        <a href="assets/security/blocked_ips.js" class="download-link" download>📄 Blocked IPs JavaScript</a>
+        <a href="assets/security/blacklist_stats.json" class="download-link" download>📄 Blacklist Statistics (JSON)</a>
+    </div>
+    
+    <div class="tool-section">
+        <h2>Windows-Specific Tools</h2>
+        <a href="process_w_blacklists.ps1" class="download-link" download>📄 PowerShell IP Processor</a>
+        <a href="process_w_blacklists.bat" class="download-link" download>📄 Batch File Processor</a>
+        <a href="README_Windows.md" class="download-link" download>📄 Windows Setup Guide</a>
+    </div>
+    
+    <div class="tool-section">
+        <h2>Instructions</h2>
+        <p>1. Download all files to a single directory</p>
+        <p>2. Create a 'w' folder and add your blacklist files</p>
+        <p>3. Run the appropriate processor for your platform</p>
+        <p>4. Apply generated rules using provided scripts</p>
+    </div>
+</body>
+</html>`;
+            
+            const blob = new Blob([toolkitContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'XXMXLI_Safety_Toolkit.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            // Show success message
+            const originalText = event.target.innerHTML;
+            event.target.innerHTML = '<i class="fas fa-check"></i> Toolkit Generated!';
+            event.target.style.background = '#00ff00';
+            event.target.style.color = '#000';
+            
+            setTimeout(() => {
+                event.target.innerHTML = originalText;
+                event.target.style.background = '';
+                event.target.style.color = '';
+            }, 2000);
         }
 
         // Add some interactive security tips
