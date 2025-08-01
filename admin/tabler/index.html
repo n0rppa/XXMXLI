@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="fi" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabler Cyberpunk Dashboard - XXMXLI</title>
+    
+    <!-- Tabler CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css">
+    <!-- Tabler Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/icons-sprite.svg">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* Cyberpunk Theme Override */
+        :root {
+            --tblr-primary: #00ff00 !important;
+            --tblr-primary-rgb: 0, 255, 0 !important;
+            --tblr-secondary: #008000 !important;
+            --tblr-success: #00ff00 !important;
+            --tblr-info: #00cccc !important;
+            --tblr-warning: #ffff00 !important;
+            --tblr-danger: #ff4444 !important;
+            --tblr-light: #f8f9fa !important;
+            --tblr-dark: #000000 !important;
+            --tblr-body-bg: #000000 !important;
+            --tblr-body-color: #00ff00 !important;
+            --tblr-border-color: #003300 !important;
+            --cyber-glow: 0 0 10px #00ff00;
+            --cyber-glow-strong: 0 0 20px #00ff00;
+        }
+
+        /* Global Styles */
+        body {
+            background-color: #000000 !important;
+            color: #00ff00 !important;
+            font-family: 'Courier New', monospace !important;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 0, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 0, 0.05) 0%, transparent 50%);
+        }
+
+        /* Header */
+        .navbar {
+            background-color: rgba(0, 0, 0, 0.95) !important;
+            border-bottom: 2px solid #00ff00;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--cyber-glow);
+        }
+
+        .navbar-brand {
+            color: #00ff00 !important;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            text-shadow: var(--cyber-glow);
+        }
+
+        .navbar-nav .nav-link {
+            color: #00ff00 !important;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #ffffff !important;
+            text-shadow: var(--cyber-glow);
+        }
+
+        /* Sidebar */
+        .navbar-vertical {
+            background-color: rgba(0, 0, 0, 0.95) !important;
+            border-right: 2px solid #00ff00;
+            box-shadow: var(--cyber-glow);
+        }
+
+        .navbar-nav .nav-item .nav-link {
+            color: #00ff00 !important;
+            font-family: 'Courier New', monospace;
+            border-left: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-nav .nav-item .nav-link:hover,
+        .navbar-nav .nav-item .nav-link.active {
+            background-color: rgba(0, 17, 0, 0.8) !important;
+            color: #ffffff !important;
+            border-left: 3px solid #00ff00;
+            box-shadow: inset var(--cyber-glow);
+        }
+
+        /* Cards */
+        .card {
+            background-color: rgba(0, 17, 0, 0.8) !important;
+            border: 1px solid #003300 !important;
+            box-shadow: var(--cyber-glow);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--cyber-glow-strong);
+        }
+
+        .card-header {
+            background-color: rgba(0, 0, 0, 0.8) !important;
+            border-bottom: 1px solid #00ff00 !important;
+            color: #00ff00 !important;
+            font-family: 'Courier New', monospace;
+        }
+
+        .card-title {
+            color: #00ff00 !important;
+            font-family: 'Courier New', monospace;
+            text-shadow: var(--cyber-glow);
+        }
+
+        .card-body {
+            color: #00ff00 !important;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background-color: #00ff00 !important;
+            border-color: #00ff00 !important;
+            color: #000000 !important;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            text-transform: uppercase;
+            box-shadow: var(--cyber-glow);
+        }
+
+        .btn-primary:hover {
+            background-color: #00cc00 !important;
+            border-color: #00cc00 !important;
+            box-shadow: var(--cyber-glow-strong);
+        }
+
+        .btn-outline-primary {
+            color: #00ff00 !important;
+            border-color: #00ff00 !important;
+            font-family: 'Courier New', monospace;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: #00ff00 !important;
+            color: #000000 !important;
+            box-shadow: var(--cyber-glow);
+        }
+
+        /* Stats Cards */
+        .card-sm {
+            background: linear-gradient(135deg, rgba(0, 17, 0, 0.9) 0%, rgba(0, 34, 0, 0.9) 100%);
+            border: 1px solid #003300;
+            box-shadow: var(--cyber-glow);
+        }
+
+        .card-sm:hover {
+            transform: scale(1.05);
+            box-shadow: var(--cyber-glow-strong);
+        }
+
+        /* Progress bars */
+        .progress {
+            background-color: rgba(0, 0, 0, 0.5) !important;
+            border: 1px solid #003300;
+        }
+
+        .progress-bar {
+            background-color: #00ff00 !important;
+            box-shadow: inset var(--cyber-glow);
+        }
+
+        /* Tables */
+        .table {
+            color: #00ff00 !important;
+            font-family: 'Courier New', monospace;
+        }
+
+        .table th {
+            border-color: #003300 !important;
+            background-color: rgba(0, 17, 0, 0.8) !important;
+            color: #00ff00 !important;
+        }
+
+        .table td {
+            border-color: #003300 !important;
+        }
+
+        .table-striped > tbody > tr:nth-of-type(odd) {
+            background-color: rgba(0, 255, 0, 0.05) !important;
+        }
+
+        /* Forms */
+        .form-control {
+            background-color: rgba(0, 17, 0, 0.8) !important;
+            border-color: #003300 !important;
+            color: #00ff00 !important;
+            font-family: 'Courier New', monospace;
+        }
+
+        .form-control:focus {
+            border-color: #00ff00 !important;
+            box-shadow: 0 0 0 0.2rem rgba(0, 255, 0, 0.25) !important;
+        }
+
+        /* Badges */
+        .badge {
+            font-family: 'Courier New', monospace;
+            text-shadow: none;
+        }
+
+        .badge-primary {
+            background-color: #00ff00 !important;
+            color: #000000 !important;
+        }
+
+        /* Dropdowns */
+        .dropdown-menu {
+            background-color: rgba(0, 17, 0, 0.95) !important;
+            border: 1px solid #00ff00 !important;
+            box-shadow: var(--cyber-glow);
+        }
+
+        .dropdown-item {
+            color: #00ff00 !important;
+            font-family: 'Courier New', monospace;
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(0, 255, 0, 0.2) !important;
+            color: #ffffff !important;
+        }
+
+        /* Page wrapper */
+        .page-wrapper {
+            background-color: #000000;
+        }
+
+        .page-header {
+            background-color: transparent;
+            border-bottom: 1px solid #003300;
+        }
+
+        .page-title {
+            color: #00ff00 !important;
+            font-family: 'Courier New', monospace;
+            text-shadow: var(--cyber-glow);
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            background-color: transparent;
+        }
+
+        .breadcrumb-item a {
+            color: #00ff00 !important;
+        }
+
+        .breadcrumb-item.active {
+            color: #ffffff !important;
+        }
+
+        /* Custom Cyber Elements */
+        .cyber-glow {
+            animation: cyberGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes cyberGlow {
+            from { text-shadow: 0 0 5px #00ff00; }
+            to { text-shadow: 0 0 15px #00ff00, 0 0 25px #00ff00; }
+        }
+
+        .matrix-text {
+            font-family: 'Courier New', monospace;
+            color: #00ff00;
+            text-shadow: var(--cyber-glow);
+        }
+
+        /* Status indicators */
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-online {
+            background-color: #00ff00;
+            box-shadow: 0 0 5px #00ff00;
+        }
+
+        .status-offline {
+            background-color: #ff4444;
+            box-shadow: 0 0 5px #ff4444;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #000000;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #00ff00;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00cc00;
+        }
+
+        /* Alert customization */
+        .alert {
+            border: 1px solid;
+            font-family: 'Courier New', monospace;
+        }
+
+        .alert-success {
+            background-color: rgba(0, 255, 0, 0.1);
+            border-color: #00ff00;
+            color: #00ff00;
+        }
+
+        .alert-danger {
+            background-color: rgba(255, 68, 68, 0.1);
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        /* Avatar customization */
+        .avatar {
+            background-color: #00ff00;
+            color: #000000;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <!-- Sidebar -->
+        <aside class="navbar navbar-vertical navbar-expand-lg">
+            <div class="container-fluid">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <h1 class="navbar-brand navbar-brand-autodark">
+                    <a href="." class="matrix-text cyber-glow">
+                        XXMXLI Tabler
+                    </a>
+                </h1>
+                <div class="navbar-nav flex-row d-lg-none">
+                    <div class="nav-item dropdown">
+                        <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown">
+                            <span class="avatar avatar-sm" style="background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIGZpbGw9IiMwMGZmMDAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cGF0aCBkPSJNMTIgMkM2LjQ4IDIgMiA2LjQ4IDIgMTJzNC40OCAxMCAxMCAxMCAxMC00LjQ4IDEwLTEwUzE3LjUyIDIgMTIgMnptMCAxOGMtNC40MSAwLTgtMy41OS04LThzMy41OS04IDgtOCA4IDMuNTkgOCA4LTMuNTkgOC04IDh6Ii8+CiAgPHBhdGggZD0ibTkgMTMgMS41IDEuNUwxNSA5Ii8+Cjwvc3ZnPgo=)"></span>
+                        </a>
+                    </div>
+                </div>
+                <div class="collapse navbar-collapse" id="sidebar-menu">
+                    <ul class="navbar-nav pt-lg-3">
+                        <li class="nav-item">
+                            <a class="nav-link active" href=".">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                </span>
+                                <span class="nav-link-title">Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../visitors.html">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <i class="fas fa-chart-pie"></i>
+                                </span>
+                                <span class="nav-link-title">Analytics</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../photo-gallery.html">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <i class="fas fa-images"></i>
+                                </span>
+                                <span class="nav-link-title">Photo Gallery</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../supabase.html">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <i class="fas fa-database"></i>
+                                </span>
+                                <span class="nav-link-title">Database</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../sanity.html">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <i class="fas fa-cog"></i>
+                                </span>
+                                <span class="nav-link-title">Content Management</span>
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#navbar-help" data-bs-toggle="dropdown" role="button">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <i class="fas fa-shield-alt"></i>
+                                </span>
+                                <span class="nav-link-title">Security</span>
+                            </a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="../../security.html">Security Tools</a>
+                                <a class="dropdown-item" href="#">System Logs</a>
+                                <a class="dropdown-item" href="#">Firewall</a>
+                            </div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../../music.html">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <i class="fas fa-music"></i>
+                                </span>
+                                <span class="nav-link-title">Music Player</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../../photography.html">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <i class="fas fa-camera"></i>
+                                </span>
+                                <span class="nav-link-title">Photography</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Navbar -->
+        <header class="navbar navbar-expand-md d-print-none">
+            <div class="container-xl">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-nav flex-row order-md-last">
+                    <div class="nav-item d-none d-md-flex me-3">
+                        <div class="btn-list">
+                            <a href="../../index.html" class="btn btn-outline-primary">
+                                <i class="fas fa-home"></i>
+                                Home
+                            </a>
+                        </div>
+                    </div>
+                    <div class="nav-item dropdown">
+                        <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown">
+                            <span class="avatar avatar-sm">A</span>
+                            <div class="d-none d-xl-block ps-2">
+                                <div class="matrix-text">Administrator</div>
+                                <div class="mt-1 small text-muted">System Admin</div>
+                            </div>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                            <a href="#" class="dropdown-item">Status</a>
+                            <a href="#" class="dropdown-item">Profile</a>
+                            <a href="#" class="dropdown-item">Feedback</a>
+                            <div class="dropdown-divider"></div>
+                            <a href="#" class="dropdown-item">Settings</a>
+                            <a href="#" class="dropdown-item">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-wrapper">
+            <!-- Page header -->
+            <div class="page-header d-print-none">
+                <div class="container-xl">
+                    <div class="row g-2 align-items-center">
+                        <div class="col">
+                            <div class="page-pretitle matrix-text">
+                                Overview
+                            </div>
+                            <h2 class="page-title cyber-glow">
+                                Cyberpunk Dashboard
+                            </h2>
+                        </div>
+                        <div class="col-auto ms-auto d-print-none">
+                            <div class="btn-list">
+                                <a href="#" class="btn btn-primary d-none d-sm-inline-block">
+                                    <i class="fas fa-plus"></i>
+                                    New Action
+                                </a>
+                                <a href="#" class="btn btn-primary d-sm-none btn-icon">
+                                    <i class="fas fa-plus"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page body -->
+            <div class="page-body">
+                <div class="container-xl">
+                    <div class="row row-deck row-cards">
+                        <!-- Stats Cards -->
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="card card-sm">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-auto">
+                                            <span class="bg-primary text-white avatar">
+                                                <i class="fas fa-users"></i>
+                                            </span>
+                                        </div>
+                                        <div class="col">
+                                            <div class="font-weight-medium matrix-text">
+                                                132 Active Users
+                                            </div>
+                                            <div class="text-muted">
+                                                12% more than yesterday
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="card card-sm">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-auto">
+                                            <span class="bg-success text-white avatar">
+                                                <i class="fas fa-server"></i>
+                                            </span>
+                                        </div>
+                                        <div class="col">
+                                            <div class="font-weight-medium matrix-text">
+                                                99.2% Uptime
+                                            </div>
+                                            <div class="text-muted">
+                                                All systems operational
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="card card-sm">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-auto">
+                                            <span class="bg-warning text-white avatar">
+                                                <i class="fas fa-database"></i>
+                                            </span>
+                                        </div>
+                                        <div class="col">
+                                            <div class="font-weight-medium matrix-text">
+                                                2.4GB Storage
+                                            </div>
+                                            <div class="text-muted">
+                                                28% of capacity used
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="card card-sm">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-auto">
+                                            <span class="bg-info text-white avatar">
+                                                <i class="fas fa-shield-alt"></i>
+                                            </span>
+                                        </div>
+                                        <div class="col">
+                                            <div class="font-weight-medium matrix-text">
+                                                42 Threats Blocked
+                                            </div>
+                                            <div class="text-muted">
+                                                Security systems active
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Charts Row -->
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">System Performance</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div id="chart-system" style="height: 300px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Resource Usage</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <div class="row">
+                                            <div class="col-auto">
+                                                <div class="matrix-text">CPU</div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="progress progress-sm">
+                                                    <div class="progress-bar" style="width: 70%"></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <div class="text-muted">70%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="row">
+                                            <div class="col-auto">
+                                                <div class="matrix-text">Memory</div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="progress progress-sm">
+                                                    <div class="progress-bar" style="width: 45%"></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <div class="text-muted">45%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="row">
+                                            <div class="col-auto">
+                                                <div class="matrix-text">Storage</div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="progress progress-sm">
+                                                    <div class="progress-bar" style="width: 28%"></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <div class="text-muted">28%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="row">
+                                            <div class="col-auto">
+                                                <div class="matrix-text">Network</div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="progress progress-sm">
+                                                    <div class="progress-bar" style="width: 15%"></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <div class="text-muted">15%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Recent Activity</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="divide-y">
+                                        <div class="row">
+                                            <div class="col-auto">
+                                                <span class="status-indicator status-online"></span>
+                                            </div>
+                                            <div class="col">
+                                                <div class="matrix-text">System backup completed successfully</div>
+                                                <div class="text-muted">2 minutes ago</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <div class="badge bg-success">Success</div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-auto">
+                                                <span class="status-indicator status-online"></span>
+                                            </div>
+                                            <div class="col">
+                                                <div class="matrix-text">Security update installed</div>
+                                                <div class="text-muted">15 minutes ago</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <div class="badge bg-info">Update</div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-auto">
+                                                <span class="status-indicator status-online"></span>
+                                            </div>
+                                            <div class="col">
+                                                <div class="matrix-text">New user registered</div>
+                                                <div class="text-muted">1 hour ago</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <div class="badge bg-primary">User</div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-auto">
+                                                <span class="status-indicator status-offline"></span>
+                                            </div>
+                                            <div class="col">
+                                                <div class="matrix-text">Maintenance window scheduled</div>
+                                                <div class="text-muted">3 hours ago</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <div class="badge bg-warning">Maintenance</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabler Core -->
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js"></script>
+    <!-- ApexCharts -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <script>
+        // System Performance Chart
+        const systemChart = new ApexCharts(document.querySelector("#chart-system"), {
+            chart: {
+                type: 'area',
+                height: 300,
+                background: 'transparent',
+                foreColor: '#00ff00',
+                toolbar: {
+                    show: false
+                }
+            },
+            series: [{
+                name: 'CPU Usage',
+                data: [30, 40, 35, 50, 49, 60, 70, 91, 125, 100, 85, 70]
+            }, {
+                name: 'Memory Usage', 
+                data: [20, 35, 25, 40, 35, 45, 50, 70, 80, 75, 60, 45]
+            }],
+            colors: ['#00ff00', '#00cccc'],
+            stroke: {
+                curve: 'smooth',
+                width: 2
+            },
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.3,
+                    opacityTo: 0.1,
+                    stops: [0, 100]
+                }
+            },
+            grid: {
+                borderColor: '#003300',
+                strokeDashArray: 4
+            },
+            xaxis: {
+                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                labels: {
+                    style: {
+                        colors: '#00ff00',
+                        fontFamily: 'Courier New'
+                    }
+                }
+            },
+            yaxis: {
+                labels: {
+                    style: {
+                        colors: '#00ff00',
+                        fontFamily: 'Courier New'
+                    }
+                }
+            },
+            legend: {
+                labels: {
+                    colors: '#00ff00'
+                }
+            },
+            tooltip: {
+                theme: 'dark',
+                style: {
+                    fontSize: '12px',
+                    fontFamily: 'Courier New'
+                }
+            }
+        });
+        
+        systemChart.render();
+
+        // Real-time updates simulation
+        setInterval(() => {
+            // Update progress bars with random values
+            document.querySelectorAll('.progress-bar').forEach(bar => {
+                const currentWidth = parseInt(bar.style.width);
+                const change = Math.floor(Math.random() * 10) - 5;
+                const newWidth = Math.max(5, Math.min(95, currentWidth + change));
+                bar.style.width = newWidth + '%';
+                bar.parentNode.parentNode.querySelector('.text-muted').textContent = newWidth + '%';
+            });
+
+            // Update stats
+            document.querySelectorAll('.font-weight-medium').forEach(stat => {
+                if (stat.textContent.includes('Active Users')) {
+                    const current = parseInt(stat.textContent);
+                    const change = Math.floor(Math.random() * 6) - 3;
+                    stat.textContent = Math.max(0, current + change) + ' Active Users';
+                }
+            });
+        }, 3000);
+
+        // Add glitch effect to title
+        setInterval(() => {
+            const title = document.querySelector('.cyber-glow');
+            if (title) {
+                title.style.animation = 'none';
+                setTimeout(() => {
+                    title.style.animation = 'cyberGlow 2s ease-in-out infinite alternate';
+                }, 50);
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue Admin Cyberpunk - XXMXLI</title>
+    
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Element Plus UI -->
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+    <script src="https://unpkg.com/element-plus"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        /* Cyberpunk Theme */
+        :root {
+            --el-color-primary: #00ff00;
+            --el-color-primary-light-3: #33ff33;
+            --el-color-primary-light-5: #66ff66;
+            --el-color-primary-light-7: #99ff99;
+            --el-color-primary-light-8: #b3ffb3;
+            --el-color-primary-light-9: #e6ffe6;
+            --el-color-primary-dark-2: #00cc00;
+            --el-bg-color: #000000;
+            --el-bg-color-page: #000000;
+            --el-text-color-primary: #00ff00;
+            --el-text-color-regular: #00cc00;
+            --el-text-color-secondary: #008000;
+            --el-text-color-placeholder: #004400;
+            --el-border-color: #003300;
+            --el-border-color-light: #002200;
+            --el-border-color-lighter: #001100;
+            --el-border-color-extra-light: #000800;
+            --cyber-glow: 0 0 10px #00ff00;
+            --cyber-glow-strong: 0 0 20px #00ff00;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace !important;
+            background-color: #000000 !important;
+            color: #00ff00 !important;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 0, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 0, 0.05) 0%, transparent 50%);
+        }
+
+        /* Element Plus Overrides */
+        .el-menu {
+            background-color: rgba(0, 0, 0, 0.95) !important;
+            border-right: 2px solid #00ff00 !important;
+            box-shadow: var(--cyber-glow) !important;
+        }
+
+        .el-menu-item {
+            color: #00ff00 !important;
+            font-family: 'Courier New', monospace !important;
+            border-left: 3px solid transparent !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .el-menu-item:hover,
+        .el-menu-item.is-active {
+            background-color: rgba(0, 17, 0, 0.8) !important;
+            color: #ffffff !important;
+            border-left: 3px solid #00ff00 !important;
+            box-shadow: inset var(--cyber-glow) !important;
+        }
+
+        .el-header {
+            background-color: rgba(0, 0, 0, 0.95) !important;
+            border-bottom: 2px solid #00ff00 !important;
+            box-shadow: var(--cyber-glow) !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+
+        .el-main {
+            background-color: #000000 !important;
+            padding: 2rem !important;
+        }
+
+        .el-card {
+            background-color: rgba(0, 17, 0, 0.8) !important;
+            border: 1px solid #003300 !important;
+            box-shadow: var(--cyber-glow) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .el-card:hover {
+            transform: translateY(-5px) !important;
+            box-shadow: var(--cyber-glow-strong) !important;
+        }
+
+        .el-card__header {
+            background-color: rgba(0, 0, 0, 0.8) !important;
+            border-bottom: 1px solid #00ff00 !important;
+            color: #00ff00 !important;
+            font-family: 'Courier New', monospace !important;
+        }
+
+        .el-card__body {
+            color: #00ff00 !important;
+            font-family: 'Courier New', monospace !important;
+        }
+
+        .el-button--primary {
+            background-color: #00ff00 !important;
+            border-color: #00ff00 !important;
+            color: #000000 !important;
+            font-family: 'Courier New', monospace !important;
+            font-weight: bold !important;
+            text-transform: uppercase !important;
+            box-shadow: var(--cyber-glow) !important;
+        }
+
+        .el-button--primary:hover {
+            background-color: #00cc00 !important;
+            border-color: #00cc00 !important;
+            box-shadow: var(--cyber-glow-strong) !important;
+        }
+
+        .el-table {
+            background-color: transparent !important;
+            color: #00ff00 !important;
+            font-family: 'Courier New', monospace !important;
+        }
+
+        .el-table th {
+            background-color: rgba(0, 17, 0, 0.8) !important;
+            color: #00ff00 !important;
+            border-bottom-color: #003300 !important;
+        }
+
+        .el-table td {
+            color: #00ff00 !important;
+            border-bottom-color: #003300 !important;
+        }
+
+        .el-table__row:hover td {
+            background-color: rgba(0, 255, 0, 0.05) !important;
+        }
+
+        .el-progress-bar__outer {
+            background-color: rgba(0, 0, 0, 0.5) !important;
+            border: 1px solid #003300 !important;
+        }
+
+        .el-progress-bar__inner {
+            background-color: #00ff00 !important;
+            box-shadow: inset var(--cyber-glow) !important;
+        }
+
+        .el-tag {
+            font-family: 'Courier New', monospace !important;
+            background-color: rgba(0, 255, 0, 0.2) !important;
+            border-color: #00ff00 !important;
+            color: #00ff00 !important;
+        }
+
+        .el-statistic {
+            color: #00ff00 !important;
+            font-family: 'Courier New', monospace !important;
+        }
+
+        .el-statistic__content {
+            color: #00ff00 !important;
+            text-shadow: var(--cyber-glow) !important;
+        }
+
+        /* Custom Cyberpunk Elements */
+        .cyber-glow {
+            animation: cyberGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes cyberGlow {
+            from { text-shadow: 0 0 5px #00ff00; }
+            to { text-shadow: 0 0 15px #00ff00, 0 0 25px #00ff00; }
+        }
+
+        .matrix-text {
+            font-family: 'Courier New', monospace;
+            color: #00ff00;
+            text-shadow: var(--cyber-glow);
+        }
+
+        .header-title {
+            color: #00ff00 !important;
+            font-family: 'Courier New', monospace !important;
+            font-size: 1.5rem !important;
+            font-weight: bold !important;
+            text-shadow: var(--cyber-glow) !important;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(0, 17, 0, 0.9) 0%, rgba(0, 34, 0, 0.9) 100%);
+            border: 1px solid #003300;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: var(--cyber-glow);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: var(--cyber-glow-strong);
+        }
+
+        .stat-icon {
+            color: #00ff00;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #00ff00;
+            text-shadow: var(--cyber-glow);
+            font-family: 'Courier New', monospace;
+        }
+
+        .stat-label {
+            color: #00cc00;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #003300;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            color: #00ff00;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            color: #00ff00;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+
+        .activity-time {
+            color: #008000;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #000000;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #00ff00;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00cc00;
+        }
+
+        /* Layout */
+        .layout-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: rgba(0, 0, 0, 0.95);
+            border-right: 2px solid #00ff00;
+            box-shadow: var(--cyber-glow);
+        }
+
+        .content-area {
+            flex: 1;
+            background-color: #000000;
+        }
+
+        .chart-container {
+            background-color: rgba(0, 17, 0, 0.8);
+            border: 1px solid #003300;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: var(--cyber-glow);
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script>
+        // Check authentication
+        if (!sessionStorage.getItem('adminAuth')) {
+            window.location.href = '../login.html';
+        }
+
+        const { createApp, ref, reactive, onMounted, nextTick } = Vue;
+
+        const app = createApp({
+            setup() {
+                const activeIndex = ref('1');
+                const isCollapse = ref(false);
+                
+                const stats = reactive({
+                    activeUsers: 132,
+                    uptime: 99.2,
+                    storage: 2.4,
+                    threats: 42,
+                    trends: {
+                        users: 5,
+                        uptime: 0.1,
+                        storage: -2,
+                        threats: 8
+                    }
+                });
+
+                const activities = ref([
+                    { icon: 'fa-server', title: 'System backup completed successfully', time: '2 minutes ago', type: 'success' },
+                    { icon: 'fa-shield-alt', title: 'Security update installed', time: '15 minutes ago', type: 'info' },
+                    { icon: 'fa-user-plus', title: 'New user registered', time: '1 hour ago', type: 'primary' },
+                    { icon: 'fa-exclamation-triangle', title: 'Maintenance window scheduled', time: '3 hours ago', type: 'warning' },
+                    { icon: 'fa-database', title: 'Database optimization completed', time: '6 hours ago', type: 'success' }
+                ]);
+
+                const chartData = ref({
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'CPU Usage',
+                        data: [65, 59, 80, 81, 56, 55],
+                        borderColor: '#00ff00',
+                        backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                        fill: true
+                    }, {
+                        label: 'Memory Usage',
+                        data: [28, 48, 40, 19, 86, 27],
+                        borderColor: '#00cccc',
+                        backgroundColor: 'rgba(0, 204, 204, 0.1)',
+                        fill: true
+                    }]
+                });
+
+                const handleMenuSelect = (key, keyPath) => {
+                    console.log(key, keyPath);
+                    if (key !== '1') {
+                        const routes = {
+                            '2': '../visitors.html',
+                            '3': '../photo-gallery.html',
+                            '4': '../supabase.html',
+                            '5': '../sanity.html',
+                            '6': '../../security.html',
+                            '7': '../../music.html',
+                            '8': '../../photography.html'
+                        };
+                        if (routes[key]) {
+                            window.location.href = routes[key];
+                        }
+                    }
+                };
+
+                const refreshData = () => {
+                    // Simulate data refresh
+                    stats.activeUsers = Math.max(0, stats.activeUsers + Math.floor(Math.random() * 10) - 5);
+                    stats.uptime = Math.min(100, Math.max(95, stats.uptime + (Math.random() * 0.4) - 0.2));
+                    stats.storage = Math.min(10, Math.max(1, stats.storage + (Math.random() * 0.2) - 0.1));
+                    stats.threats = Math.max(0, stats.threats + Math.floor(Math.random() * 6) - 3);
+                };
+
+                const logout = () => {
+                    sessionStorage.removeItem('adminAuth');
+                    sessionStorage.removeItem('adminUser');
+                    window.location.href = '../login.html';
+                };
+
+                const initChart = () => {
+                    nextTick(() => {
+                        const ctx = document.getElementById('systemChart');
+                        if (ctx) {
+                            new Chart(ctx, {
+                                type: 'line',
+                                data: chartData.value,
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            labels: {
+                                                color: '#00ff00',
+                                                font: {
+                                                    family: 'Courier New'
+                                                }
+                                            }
+                                        }
+                                    },
+                                    scales: {
+                                        x: {
+                                            ticks: {
+                                                color: '#00ff00',
+                                                font: {
+                                                    family: 'Courier New'
+                                                }
+                                            },
+                                            grid: {
+                                                color: '#003300'
+                                            }
+                                        },
+                                        y: {
+                                            ticks: {
+                                                color: '#00ff00',
+                                                font: {
+                                                    family: 'Courier New'
+                                                }
+                                            },
+                                            grid: {
+                                                color: '#003300'
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    });
+                };
+
+                onMounted(() => {
+                    // Initialize chart
+                    initChart();
+                    
+                    // Set up real-time updates
+                    setInterval(refreshData, 5000);
+                });
+
+                return {
+                    activeIndex,
+                    isCollapse,
+                    stats,
+                    activities,
+                    handleMenuSelect,
+                    refreshData,
+                    initChart,
+                    logout
+                };
+            },
+
+            template: `
+                <div class="layout-container">
+                    <el-container>
+                        <el-header height="60px">
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                <h1 class="header-title cyber-glow">
+                                    <i class="fas fa-desktop"></i>
+                                    XXMXLI Vue Admin
+                                </h1>
+                                <el-button type="primary" @click="() => window.location.href = '../../index.html'">
+                                    <i class="fas fa-home"></i>
+                                    Home
+                                </el-button>
+                                <el-button @click="logout" style="margin-left: 1rem; background-color: #ff4444; border-color: #ff4444; color: white;">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    Logout
+                                </el-button>
+                            </div>
+                        </el-header>
+                        
+                        <el-container class="main-content">
+                            <el-aside width="250px" class="sidebar">
+                                <el-menu
+                                    :default-active="activeIndex"
+                                    :collapse="isCollapse"
+                                    @select="handleMenuSelect"
+                                    background-color="rgba(0, 0, 0, 0.95)"
+                                    text-color="#00ff00"
+                                    active-text-color="#ffffff"
+                                >
+                                    <el-menu-item index="1">
+                                        <i class="fas fa-tachometer-alt"></i>
+                                        <template #title>Dashboard</template>
+                                    </el-menu-item>
+                                    <el-menu-item index="2">
+                                        <i class="fas fa-chart-pie"></i>
+                                        <template #title>Analytics</template>
+                                    </el-menu-item>
+                                    <el-menu-item index="3">
+                                        <i class="fas fa-images"></i>
+                                        <template #title>Photo Gallery</template>
+                                    </el-menu-item>
+                                    <el-menu-item index="4">
+                                        <i class="fas fa-database"></i>
+                                        <template #title>Database</template>
+                                    </el-menu-item>
+                                    <el-menu-item index="5">
+                                        <i class="fas fa-cog"></i>
+                                        <template #title>Content</template>
+                                    </el-menu-item>
+                                    <el-menu-item index="6">
+                                        <i class="fas fa-shield-alt"></i>
+                                        <template #title>Security</template>
+                                    </el-menu-item>
+                                    <el-menu-item index="7">
+                                        <i class="fas fa-music"></i>
+                                        <template #title>Music</template>
+                                    </el-menu-item>
+                                    <el-menu-item index="8">
+                                        <i class="fas fa-camera"></i>
+                                        <template #title>Photography</template>
+                                    </el-menu-item>
+                                </el-menu>
+                            </el-aside>
+                            
+                            <el-main class="content-area">
+                                <!-- Page Header -->
+                                <div style="margin-bottom: 2rem;">
+                                    <h2 class="matrix-text cyber-glow" style="font-size: 2rem; margin-bottom: 0.5rem;">
+                                        Cyberpunk Dashboard
+                                    </h2>
+                                    <p class="matrix-text">Vue 3 + Element Plus Admin Interface</p>
+                                </div>
+
+                                <!-- Stats Grid -->
+                                <div class="stats-grid">
+                                    <div class="stat-card">
+                                        <div class="stat-icon">
+                                            <i class="fas fa-users"></i>
+                                        </div>
+                                        <div class="stat-value">{{ stats.activeUsers }}</div>
+                                        <div class="stat-label">Active Users</div>
+                                        <div :style="{ color: stats.trends.users > 0 ? '#00ff00' : '#ff4444', fontSize: '0.8rem', marginTop: '0.5rem' }">
+                                            {{ stats.trends.users > 0 ? '↗' : '↘' }} {{ Math.abs(stats.trends.users) }}%
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="stat-card">
+                                        <div class="stat-icon">
+                                            <i class="fas fa-server"></i>
+                                        </div>
+                                        <div class="stat-value">{{ stats.uptime.toFixed(1) }}%</div>
+                                        <div class="stat-label">System Uptime</div>
+                                        <div :style="{ color: stats.trends.uptime > 0 ? '#00ff00' : '#ff4444', fontSize: '0.8rem', marginTop: '0.5rem' }">
+                                            {{ stats.trends.uptime > 0 ? '↗' : '↘' }} {{ Math.abs(stats.trends.uptime) }}%
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="stat-card">
+                                        <div class="stat-icon">
+                                            <i class="fas fa-database"></i>
+                                        </div>
+                                        <div class="stat-value">{{ stats.storage.toFixed(1) }}GB</div>
+                                        <div class="stat-label">Storage Used</div>
+                                        <div :style="{ color: stats.trends.storage > 0 ? '#ff4444' : '#00ff00', fontSize: '0.8rem', marginTop: '0.5rem' }">
+                                            {{ stats.trends.storage > 0 ? '↗' : '↘' }} {{ Math.abs(stats.trends.storage) }}%
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="stat-card">
+                                        <div class="stat-icon">
+                                            <i class="fas fa-shield-alt"></i>
+                                        </div>
+                                        <div class="stat-value">{{ stats.threats }}</div>
+                                        <div class="stat-label">Threats Blocked</div>
+                                        <div :style="{ color: stats.trends.threats > 0 ? '#00ff00' : '#ff4444', fontSize: '0.8rem', marginTop: '0.5rem' }">
+                                            {{ stats.trends.threats > 0 ? '↗' : '↘' }} {{ Math.abs(stats.trends.threats) }}%
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Charts and Activity -->
+                                <el-row :gutter="20">
+                                    <el-col :span="16">
+                                        <el-card>
+                                            <template #header>
+                                                <div class="matrix-text cyber-glow">
+                                                    <i class="fas fa-chart-line"></i>
+                                                    System Performance
+                                                </div>
+                                            </template>
+                                            <div class="chart-container">
+                                                <canvas id="systemChart" style="height: 300px;"></canvas>
+                                            </div>
+                                        </el-card>
+                                    </el-col>
+                                    
+                                    <el-col :span="8">
+                                        <el-card>
+                                            <template #header>
+                                                <div class="matrix-text cyber-glow">
+                                                    <i class="fas fa-list"></i>
+                                                    Recent Activity
+                                                </div>
+                                            </template>
+                                            <div>
+                                                <div v-for="(activity, index) in activities" :key="index" class="activity-item">
+                                                    <div class="activity-icon">
+                                                        <i :class="'fas ' + activity.icon"></i>
+                                                    </div>
+                                                    <div class="activity-content">
+                                                        <div class="activity-title">{{ activity.title }}</div>
+                                                        <div class="activity-time">{{ activity.time }}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </el-card>
+                                    </el-col>
+                                </el-row>
+
+                                <!-- Quick Actions -->
+                                <el-card style="margin-top: 2rem;">
+                                    <template #header>
+                                        <div class="matrix-text cyber-glow">
+                                            <i class="fas fa-bolt"></i>
+                                            Quick Actions
+                                        </div>
+                                    </template>
+                                    <el-space wrap>
+                                        <el-button type="primary" @click="refreshData">
+                                            <i class="fas fa-sync-alt"></i>
+                                            Refresh Data
+                                        </el-button>
+                                        <el-button type="primary">
+                                            <i class="fas fa-download"></i>
+                                            Export Logs
+                                        </el-button>
+                                        <el-button type="primary">
+                                            <i class="fas fa-cog"></i>
+                                            System Settings
+                                        </el-button>
+                                        <el-button type="primary">
+                                            <i class="fas fa-bell"></i>
+                                            Notifications
+                                        </el-button>
+                                    </el-space>
+                                </el-card>
+
+                                <!-- Vue Admin Features -->
+                                <el-card style="margin-top: 2rem;">
+                                    <template #header>
+                                        <div class="matrix-text cyber-glow">
+                                            <i class="fab fa-vuejs"></i>
+                                            Vue Admin Features
+                                        </div>
+                                    </template>
+                                    <div class="matrix-text">
+                                        <p style="margin-bottom: 1rem;">This Vue 3 + Element Plus dashboard demonstrates:</p>
+                                        <ul style="list-style-type: none; padding-left: 0;">
+                                            <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #00ff00; margin-right: 0.5rem;"></i>Reactive data with Vue 3 Composition API</li>
+                                            <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #00ff00; margin-right: 0.5rem;"></i>Element Plus UI components with cyberpunk theming</li>
+                                            <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #00ff00; margin-right: 0.5rem;"></i>Responsive layout with El-Row and El-Col</li>
+                                            <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #00ff00; margin-right: 0.5rem;"></i>Chart.js integration for data visualization</li>
+                                            <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #00ff00; margin-right: 0.5rem;"></i>Real-time data updates and reactive state</li>
+                                            <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #00ff00; margin-right: 0.5rem;"></i>Professional admin interface structure</li>
+                                        </ul>
+                                    </div>
+                                </el-card>
+                            </el-main>
+                        </el-container>
+                    </el-container>
+                </div>
+            `
+        });
+
+        app.use(ElementPlus);
+        app.mount('#app');
+    </script>
+</body>
+</html>
