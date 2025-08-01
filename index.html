@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://formspree.io; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://formspree.io;">
     <title>XXMXLI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -58,6 +58,15 @@
             color: var(--accent);
             text-decoration: none;
             text-shadow: 0 0 5px var(--accent);
+        }
+
+        .menu-button {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--accent);
+            font-size: 1.5rem;
+            cursor: pointer;
         }
 
         .nav-menu {
@@ -170,6 +179,107 @@
             box-shadow: 0 0 15px var(--accent);
         }
 
+        /* Contact Form Styles */
+        .contact-form {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            max-width: 600px;
+            margin: 3rem auto;
+            border-radius: 8px;
+        }
+
+        .contact-form h2 {
+            text-align: center;
+            color: var(--accent);
+            margin-bottom: 2rem;
+            font-size: 2rem;
+            text-shadow: 0 0 5px var(--accent);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--background);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .submit-btn:hover {
+            background: var(--accent);
+            color: var(--background);
+            box-shadow: 0 0 15px var(--accent);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .form-message {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .form-message.success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .form-message.error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+        }
+
         /* Animations */
         @keyframes pulse {
             0% {
@@ -185,6 +295,10 @@
 
         /* Responsive Design */
         @media (max-width: 768px) {
+            .menu-button {
+                display: block;
+            }
+
             .nav-menu {
                 display: none;
                 position: absolute;
@@ -201,17 +315,18 @@
                 display: flex;
             }
 
-            .menu-button {
-                display: block;
-                background: none;
-                border: none;
-                color: var(--accent);
-                font-size: 1.5rem;
-                cursor: pointer;
-            }
-
             .hero h1 {
                 font-size: 2.5rem;
+            }
+
+            .contact-form {
+                margin: 2rem 1rem;
+                padding: 1.5rem;
+            }
+
+            .grid-container {
+                grid-template-columns: 1fr;
+                padding: 1rem;
             }
         }
     </style>
@@ -268,6 +383,47 @@
                 <a href="projects.html">Lue lisää <i class="fas fa-chevron-right"></i></a>
             </div>
         </div>
+
+        <!-- Contact Form -->
+        <section class="contact-form">
+            <h2><i class="fas fa-envelope"></i> Ota yhteyttä</h2>
+            <form 
+                id="contactForm" 
+                action="https://formspree.io/f/mvgqqyqr" 
+                method="POST"
+            >
+                <div class="form-group">
+                    <label for="name">Nimi *</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Sähköposti *</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="subject">Aihe</label>
+                    <input type="text" id="subject" name="subject" value="Yhteydenotto XXMXLI-sivuilta">
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Viesti *</label>
+                    <textarea id="message" name="message" required placeholder="Kirjoita viestisi tähän..."></textarea>
+                </div>
+
+                <!-- Hidden fields -->
+                <input type="hidden" name="_subject" value="Uusi yhteydenotto XXMXLI-sivuilta">
+                <input type="hidden" name="_cc" value="emiliohurppi@protonmail.com">
+                <input type="hidden" name="_next" value="https://n0rppa.github.io/XXMXLI/">
+
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-paper-plane"></i> Lähetä viesti
+                </button>
+
+                <div id="formMessage" class="form-message" style="display: none;"></div>
+            </form>
+        </section>
     </main>
 
     <script>
@@ -275,8 +431,17 @@
         const menuButton = document.querySelector('.menu-button');
         const navMenu = document.querySelector('.nav-menu');
 
-        menuButton.addEventListener('click', () => {
-            navMenu.classList.toggle('active');
+        if (menuButton) {
+            menuButton.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+            });
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!menuButton.contains(e.target) && !navMenu.contains(e.target)) {
+                navMenu.classList.remove('active');
+            }
         });
 
         // Close menu when clicking a link
@@ -284,6 +449,92 @@
             link.addEventListener('click', () => {
                 navMenu.classList.remove('active');
             });
+        });
+
+        // Form handling
+        const contactForm = document.getElementById('contactForm');
+        const formMessage = document.getElementById('formMessage');
+
+        contactForm.addEventListener('submit', function(e) {
+            const submitBtn = contactForm.querySelector('.submit-btn');
+            const originalText = submitBtn.innerHTML;
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Lähetetään...';
+
+            // Save to localStorage before sending
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value,
+                timestamp: new Date().toLocaleString('fi-FI')
+            };
+
+            saveContactToLocalStorage(formData);
+
+            // Show temporary success message
+            setTimeout(() => {
+                formMessage.className = 'form-message success';
+                formMessage.textContent = 'Viesti lähetetään... Sinut ohjataan pian takaisin.';
+                formMessage.style.display = 'block';
+            }, 1000);
+
+            // Reset button after delay (Formspree will redirect)
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }, 3000);
+        });
+
+        // Save contact to localStorage
+        function saveContactToLocalStorage(formData) {
+            try {
+                const contacts = JSON.parse(localStorage.getItem('xxmxli_contacts') || '[]');
+                contacts.push({
+                    ...formData,
+                    id: Date.now(),
+                    saved_at: new Date().toISOString()
+                });
+                
+                // Keep only last 50 contacts
+                if (contacts.length > 50) {
+                    contacts.splice(0, contacts.length - 50);
+                }
+                
+                localStorage.setItem('xxmxli_contacts', JSON.stringify(contacts));
+                console.log('Contact saved to localStorage:', formData.name);
+            } catch (error) {
+                console.error('Failed to save to localStorage:', error);
+            }
+        }
+
+        // Debug functions
+        window.xxmxli = {
+            getContacts: () => JSON.parse(localStorage.getItem('xxmxli_contacts') || '[]'),
+            clearContacts: () => {
+                localStorage.removeItem('xxmxli_contacts');
+                console.log('Contacts cleared');
+            },
+            exportContacts: () => {
+                const contacts = JSON.parse(localStorage.getItem('xxmxli_contacts') || '[]');
+                if (contacts.length === 0) {
+                    alert('Ei tallennettuja yhteystietoja.');
+                    return;
+                }
+                const dataStr = JSON.stringify(contacts, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `xxmxli_contacts_${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+            }
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('XXMXLI website loaded with Formspree integration');
         });
     </script>
 </body>

@@ -3,151 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com;">
-    <title>XXMXLI - Valokuvaus</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Valokuvaus - XXMXLI</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
-        :root {
-            --background: #000000;
-            --text-primary: #00ff00;
-            --text-secondary: #008000;
-            --accent: #00ff00;
-            --accent-hover: #00cc00;
-            --border: #003300;
-            --card-bg: #001100;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Courier New', monospace;
-            background-color: var(--background);
-            color: var(--text-primary);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        /* Header Styles */
-        .header {
-            background: rgba(0, 17, 0, 0.95);
-            padding: 1rem;
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 1px solid var(--accent);
-            box-shadow: 0 0 10px var(--accent);
-        }
-
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 1rem;
-        }
-
-        .logo {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--accent);
-            text-decoration: none;
-            text-shadow: 0 0 5px var(--accent);
-        }
-
-        .nav-menu {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .nav-link {
-            color: var(--text-primary);
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border: 1px solid transparent;
-            transition: all 0.3s ease;
-            font-size: 1.1rem;
-            text-transform: uppercase;
-        }
-
-        .nav-link:hover, .nav-link.active {
-            border-color: var(--accent);
-            color: var(--accent);
-            box-shadow: 0 0 10px var(--accent);
-            text-shadow: 0 0 5px var(--accent);
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-top: 80px;
-            padding: 2rem;
-        }
-
-        .hero {
-            text-align: center;
-            padding: 4rem 2rem;
-            background: linear-gradient(to bottom, var(--card-bg), var(--background));
-            border-bottom: 1px solid var(--accent);
-        }
-
-        .hero h1 {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            text-shadow: 0 0 10px var(--accent);
-            animation: pulse 2s infinite;
-        }
-
-        .hero p {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        /* Grid Layout */
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            padding: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .grid-item {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            padding: 1rem;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-            aspect-ratio: 1;
-        }
-
-        .grid-item:hover {
-            border-color: var(--accent);
-            box-shadow: 0 0 15px var(--accent);
-            transform: translateY(-5px);
-        }
-
-        .grid-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-
-        .grid-item:hover img {
-            transform: scale(1.05);
-        }
-
         /* Modal Styles */
         .photo-modal {
             display: none;
@@ -183,8 +41,8 @@
             max-height: 100%;
             object-fit: contain;
             border-radius: 8px;
-            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
-            border: 2px solid var(--accent);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+            border: 2px solid #00ffff;
         }
 
         .close-button {
@@ -193,8 +51,8 @@
             right: -15px;
             width: 40px;
             height: 40px;
-            background: var(--accent);
-            color: var(--background);
+            background: #00ffff;
+            color: #000;
             border: none;
             border-radius: 50%;
             font-size: 20px;
@@ -204,187 +62,43 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s;
-            box-shadow: 0 0 10px var(--accent);
+            box-shadow: 0 0 10px #00ffff;
         }
 
         .close-button:hover {
             background: #ffffff;
-            color: var(--background);
+            color: #000;
             transform: scale(1.1);
-            box-shadow: 0 0 15px var(--accent);
+            box-shadow: 0 0 15px #00ffff;
         }
 
-        /* Animations */
-        @keyframes pulse {
-            0% {
-                text-shadow: 0 0 10px var(--accent);
-            }
-            50% {
-                text-shadow: 0 0 20px var(--accent), 0 0 30px var(--accent);
-            }
-            100% {
-                text-shadow: 0 0 10px var(--accent);
-            }
+        /* Gallery item click cursor */
+        .gallery img {
+            cursor: pointer;
+            transition: transform 0.3s;
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .nav-menu {
-                display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: var(--card-bg);
-                flex-direction: column;
-                padding: 1rem;
-                border-bottom: 1px solid var(--accent);
-            }
-
-            .nav-menu.active {
-                display: flex;
-            }
-
-            .menu-button {
-                display: block;
-                background: none;
-                border: none;
-                color: var(--accent);
-                font-size: 1.5rem;
-                cursor: pointer;
-            }
-
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-
-            .grid-container {
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 1rem;
-                padding: 1rem;
-            }
+        .gallery img:hover {
+            transform: scale(1.05);
         }
     </style>
 </head>
 <body>
-    <header class="header">
-        <nav class="nav-container">
-            <a href="index.html" class="logo">XXMXLI</a>
-            <button class="menu-button">
-                <i class="fas fa-bars"></i>
-            </button>
-            <ul class="nav-menu">
-                <li><a href="index.html" class="nav-link">
-                    <i class="fas fa-home"></i> Etusivu
-                </a></li>
-                <li><a href="music.html" class="nav-link">
-                    <i class="fas fa-music"></i> Musiikki
-                </a></li>
-                <li><a href="photography.html" class="nav-link active">
-                    <i class="fas fa-camera"></i> Valokuvaus
-                </a></li>
-                <li><a href="projects.html" class="nav-link">
-                    <i class="fas fa-project-diagram"></i> Projektit
-                </a></li>
-            </ul>
+    <header>
+        <h1>Valokuvaus</h1>
+        <nav>
+            <a href="index.html">Etusivu</a>
+            <a href="photography.html" class="active">Valokuvaus</a>
+            <a href="music.html">Musiikki</a>
+            <a href="projects-final.html">Projektit</a>
         </nav>
     </header>
 
-    <main class="main-content">
-        <section class="hero">
-            <h1>Valokuvaus</h1>
-            <p>Katso viimeisimmät valokuvat ja portfoliot. Klikkaa kuvaa suurentaaksesi.</p>
-        </section>
-
-        <div class="grid-container">
+    <main>
+        <div class="gallery" id="photoGallery">
             <!-- GALLERY_START -->
-            <div class="grid-item" onclick="openModal('assets/images/deow (28).jpg', 'deow (28).jpg')">
-                <img src="assets/images/deow (28).jpg" alt="deow (28).jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/deow (23).jpg', 'deow (23).jpg')">
-                <img src="assets/images/deow (23).jpg" alt="deow (23).jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/deow (35).jpg', 'deow (35).jpg')">
-                <img src="assets/images/deow (35).jpg" alt="deow (35).jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/deow (36).jpg', 'deow (36).jpg')">
-                <img src="assets/images/deow (36).jpg" alt="deow (36).jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/deow (22).jpg', 'deow (22).jpg')">
-                <img src="assets/images/deow (22).jpg" alt="deow (22).jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/13.jpg', '13.jpg')">
-                <img src="assets/images/13.jpg" alt="13.jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/deow (31).jpg', 'deow (31).jpg')">
-                <img src="assets/images/deow (31).jpg" alt="deow (31).jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/deow (33).jpg', 'deow (33).jpg')">
-                <img src="assets/images/deow (33).jpg" alt="deow (33).jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/deow (29).jpg', 'deow (29).jpg')">
-                <img src="assets/images/deow (29).jpg" alt="deow (29).jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/111.jpg', '111.jpg')">
-                <img src="assets/images/111.jpg" alt="111.jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/12.jpg', '12.jpg')">
-                <img src="assets/images/12.jpg" alt="12.jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/deow (25).jpg', 'deow (25).jpg')">
-                <img src="assets/images/deow (25).jpg" alt="deow (25).jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/17.jpg', '17.jpg')">
-                <img src="assets/images/17.jpg" alt="17.jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/112.jpg', '112.jpg')">
-                <img src="assets/images/112.jpg" alt="112.jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/19.jpg', '19.jpg')">
-                <img src="assets/images/19.jpg" alt="19.jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/113.jpg', '113.jpg')">
-                <img src="assets/images/113.jpg" alt="113.jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/deow (27).jpg', 'deow (27).jpg')">
-                <img src="assets/images/deow (27).jpg" alt="deow (27).jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/115.jpg', '115.jpg')">
-                <img src="assets/images/115.jpg" alt="115.jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/16.jpg', '16.jpg')">
-                <img src="assets/images/16.jpg" alt="16.jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/1.jpg', '1.jpg')">
-                <img src="assets/images/1.jpg" alt="1.jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/11.jpg', '11.jpg')">
-                <img src="assets/images/11.jpg" alt="11.jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/deow (12).jpg', 'deow (12).jpg')">
-                <img src="assets/images/deow (12).jpg" alt="deow (12).jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/114.jpg', '114.jpg')">
-                <img src="assets/images/114.jpg" alt="114.jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/deow (32).jpg', 'deow (32).jpg')">
-                <img src="assets/images/deow (32).jpg" alt="deow (32).jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/20.jpg', '20.jpg')">
-                <img src="assets/images/20.jpg" alt="20.jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/deow (34).jpg', 'deow (34).jpg')">
-                <img src="assets/images/deow (34).jpg" alt="deow (34).jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/14.jpg', '14.jpg')">
-                <img src="assets/images/14.jpg" alt="14.jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/18.jpg', '18.jpg')">
-                <img src="assets/images/18.jpg" alt="18.jpg">
-            </div>
-            <div class="grid-item" onclick="openModal('assets/images/15.jpg', '15.jpg')">
-                <img src="assets/images/15.jpg" alt="15.jpg">
-            </div>
+            <!-- Kuvagalleria generoidaan automaattisesti update_gallery.py -skriptillä. -->
+            <!-- Älä muokkaa tätä osiota käsin, vaan aja skripti uudelleen. -->
             <!-- GALLERY_END -->
         </div>
     </main>
@@ -398,23 +112,6 @@
     </div>
 
     <script>
-        // Mobile menu functionality
-        const menuButton = document.querySelector('.menu-button');
-        const navMenu = document.querySelector('.nav-menu');
-
-        if (menuButton) {
-            menuButton.addEventListener('click', () => {
-                navMenu.classList.toggle('active');
-            });
-        }
-
-        // Close menu when clicking a link
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', () => {
-                navMenu.classList.remove('active');
-            });
-        });
-
         // Modal functionality
         const modal = document.getElementById('photoModal');
         const modalImage = document.getElementById('modalImage');
@@ -445,6 +142,177 @@
             if (e.key === 'Escape' && modal.classList.contains('active')) {
                 closeModal();
             }
+        });
+
+        // Add click events to existing gallery images
+        document.addEventListener('DOMContentLoaded', () => {
+            const gallery = document.getElementById('photoGallery');
+            
+            // Use event delegation to handle clicks on gallery images
+            gallery.addEventListener('click', (e) => {
+                if (e.target.tagName === 'IMG') {
+                    openModal(e.target.src, e.target.alt);
+                }
+            });
+        });
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valokuvaus - XXMXLI</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Modal Styles */
+        .photo-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .photo-modal.active {
+            display: flex;
+        }
+
+        .modal-content-wrapper {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+            border: 2px solid #00ffff;
+        }
+
+        .close-button {
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            width: 40px;
+            height: 40px;
+            background: #00ffff;
+            color: #000;
+            border: none;
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        .close-button:hover {
+            background: #ffffff;
+            color: #000;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px #00ffff;
+        }
+
+        /* Gallery item click cursor */
+        .gallery img {
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .gallery img:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Valokuvaus</h1>
+        <nav>
+            <a href="index.html">Etusivu</a>
+            <a href="photography.html" class="active">Valokuvaus</a>
+            <a href="music.html">Musiikki</a>
+            <a href="projects-final.html">Projektit</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="gallery" id="photoGallery">
+            <!-- GALLERY_START -->
+            <!-- Kuvagalleria generoidaan automaattisesti update_gallery.py -skriptillä. -->
+            <!-- Älä muokkaa tätä osiota käsin, vaan aja skripti uudelleen. -->
+            <!-- GALLERY_END -->
+        </div>
+    </main>
+
+    <!-- Photo Modal -->
+    <div id="photoModal" class="photo-modal">
+        <div class="modal-content-wrapper">
+            <img id="modalImage" class="modal-image" src="" alt="">
+            <button id="closeModal" class="close-button">&times;</button>
+        </div>
+    </div>
+
+    <script>
+        // Modal functionality
+        const modal = document.getElementById('photoModal');
+        const modalImage = document.getElementById('modalImage');
+        const closeButton = document.getElementById('closeModal');
+
+        function openModal(src, alt) {
+            modalImage.src = src;
+            modalImage.alt = alt;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Event listeners
+        closeButton.addEventListener('click', closeModal);
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeModal();
+            }
+        });
+
+        // Add click events to existing gallery images
+        document.addEventListener('DOMContentLoaded', () => {
+            const gallery = document.getElementById('photoGallery');
+            
+            // Use event delegation to handle clicks on gallery images
+            gallery.addEventListener('click', (e) => {
+                if (e.target.tagName === 'IMG') {
+                    openModal(e.target.src, e.target.alt);
+                }
+            });
         });
     </script>
 </body>
