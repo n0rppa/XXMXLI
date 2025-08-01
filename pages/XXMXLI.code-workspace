@@ -5,7 +5,17 @@
 		}
 	],
 	"settings": {
-		"bitoAI.codeCompletion.enableAutoCompletion": true,
-		"bitoAI.codeCompletion.enableCommentToCode": true
+		"bitoAI.codeCompletion.enableAutoCompletion": false,
+		"bitoAI.codeCompletion.enableCommentToCode": true,
+		"github.copilot.enable": {
+			"plaintext": true,
+			"markdown": true,
+			"scminput": true
+		}
+	},
+	"extensions": {
+		"recommendations": [
+			"github.copilot-chat"
+		]
 	}
 }
