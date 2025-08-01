@@ -199,6 +199,48 @@
             border-color: var(--accent);
         }
 
+        /* Lightbox Modal Styles */
+        .lightbox-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.85);
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+        .lightbox-modal.active {
+            display: flex;
+        }
+        .lightbox-modal img {
+            max-width: 90vw;
+            max-height: 80vh;
+            border: 4px solid var(--accent);
+            box-shadow: 0 0 40px var(--accent);
+            background: #000;
+        }
+        .lightbox-modal .close-btn {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            font-size: 2.5rem;
+            color: var(--accent);
+            background: none;
+            border: none;
+            cursor: pointer;
+            z-index: 2100;
+            text-shadow: 0 0 10px var(--accent);
+        }
+        body.lightbox-blur {
+            filter: blur(5px);
+            pointer-events: none;
+            user-select: none;
+        }
+
         /* Animations */
         @keyframes pulse {
             0% {
@@ -366,6 +408,11 @@
         </div>
         <!-- GALLERY_END -->
         </div>
+        <!-- Lightbox Modal -->
+        <div class="lightbox-modal" id="lightboxModal">
+            <button class="close-btn" id="lightboxClose" aria-label="Sulje">&times;</button>
+            <img id="lightboxImg" src="" alt="">
+        </div>
     </main>
 
     <script>
@@ -405,6 +452,33 @@
                 // If image is already loaded (cached)
                 if (img.complete) {
                     img.style.opacity = '1';
+                }
+                // Lightbox click event
+                img.style.cursor = 'zoom-in';
+                img.addEventListener('click', function(e) {
+                    const modal = document.getElementById('lightboxModal');
+                    const modalImg = document.getElementById('lightboxImg');
+                    modalImg.src = this.src;
+                    modalImg.alt = this.alt;
+                    modal.classList.add('active');
+                    document.body.classList.add('lightbox-blur');
+                });
+            });
+            // Close modal logic
+            const modal = document.getElementById('lightboxModal');
+            const closeBtn = document.getElementById('lightboxClose');
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal || e.target === closeBtn) {
+                    modal.classList.remove('active');
+                    document.body.classList.remove('lightbox-blur');
+                    document.getElementById('lightboxImg').src = '';
+                }
+            });
+            document.addEventListener('keydown', function(e) {
+                if (modal.classList.contains('active') && (e.key === 'Escape' || e.key === 'Esc')) {
+                    modal.classList.remove('active');
+                    document.body.classList.remove('lightbox-blur');
+                    document.getElementById('lightboxImg').src = '';
                 }
             });
         });
