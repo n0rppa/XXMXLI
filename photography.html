@@ -199,46 +199,78 @@
             border-color: var(--accent);
         }
 
-        /* Lightbox Modal Styles */
-        .lightbox-modal {
+        .gallery-item img {
+            cursor: pointer;
+        }
+
+        /* Modal Styles */
+        .modal {
             display: none;
             position: fixed;
             z-index: 2000;
             left: 0;
             top: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0,0,0,0.85);
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        .modal-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border: 2px solid var(--accent);
+            box-shadow: 0 0 30px var(--accent);
+        }
+
+        .close-button {
+            position: absolute;
+            top: -50px;
+            right: 0;
+            background: var(--accent);
+            color: var(--background);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px var(--accent);
         }
-        .lightbox-modal.active {
-            display: flex;
+
+        .close-button:hover {
+            background: var(--accent-hover);
+            transform: scale(1.1);
+            box-shadow: 0 0 25px var(--accent);
         }
-        .lightbox-modal img {
-            max-width: 90vw;
-            max-height: 80vh;
-            border: 4px solid var(--accent);
-            box-shadow: 0 0 40px var(--accent);
-            background: #000;
-        }
-        .lightbox-modal .close-btn {
-            position: absolute;
-            top: 30px;
-            right: 40px;
-            font-size: 2.5rem;
-            color: var(--accent);
-            background: none;
-            border: none;
-            cursor: pointer;
-            z-index: 2100;
-            text-shadow: 0 0 10px var(--accent);
-        }
-        body.lightbox-blur {
-            filter: blur(5px);
-            pointer-events: none;
-            user-select: none;
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         /* Animations */
@@ -408,12 +440,17 @@
         </div>
         <!-- GALLERY_END -->
         </div>
-        <!-- Lightbox Modal -->
-        <div class="lightbox-modal" id="lightboxModal">
-            <button class="close-btn" id="lightboxClose" aria-label="Sulje">&times;</button>
-            <img id="lightboxImg" src="" alt="">
-        </div>
     </main>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <button class="close-button" id="closeModal">
+                <i class="fas fa-times"></i>
+            </button>
+            <img id="modalImage" class="modal-image" src="" alt="">
+        </div>
+    </div>
 
     <script>
         // Mobile menu functionality
@@ -434,6 +471,9 @@
         // Gallery image loading
         document.addEventListener('DOMContentLoaded', function() {
             const galleryItems = document.querySelectorAll('.gallery-item img');
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const closeButton = document.getElementById('closeModal');
             
             galleryItems.forEach(img => {
                 img.addEventListener('load', function() {
@@ -453,34 +493,38 @@
                 if (img.complete) {
                     img.style.opacity = '1';
                 }
-                // Lightbox click event
-                img.style.cursor = 'zoom-in';
-                img.addEventListener('click', function(e) {
-                    const modal = document.getElementById('lightboxModal');
-                    const modalImg = document.getElementById('lightboxImg');
-                    modalImg.src = this.src;
-                    modalImg.alt = this.alt;
+
+                // Add click event for modal
+                img.addEventListener('click', function() {
                     modal.classList.add('active');
-                    document.body.classList.add('lightbox-blur');
+                    modalImage.src = this.src;
+                    modalImage.alt = this.alt;
+                    document.body.style.overflow = 'hidden'; // Prevent background scrolling
                 });
             });
-            // Close modal logic
-            const modal = document.getElementById('lightboxModal');
-            const closeBtn = document.getElementById('lightboxClose');
+
+            // Close modal functionality
+            closeButton.addEventListener('click', closeModal);
+            
+            // Close modal when clicking outside the image
             modal.addEventListener('click', function(e) {
-                if (e.target === modal || e.target === closeBtn) {
-                    modal.classList.remove('active');
-                    document.body.classList.remove('lightbox-blur');
-                    document.getElementById('lightboxImg').src = '';
+                if (e.target === modal) {
+                    closeModal();
                 }
             });
+
+            // Close modal with Escape key
             document.addEventListener('keydown', function(e) {
-                if (modal.classList.contains('active') && (e.key === 'Escape' || e.key === 'Esc')) {
-                    modal.classList.remove('active');
-                    document.body.classList.remove('lightbox-blur');
-                    document.getElementById('lightboxImg').src = '';
+                if (e.key === 'Escape' && modal.classList.contains('active')) {
+                    closeModal();
                 }
             });
+
+            function closeModal() {
+                modal.classList.remove('active');
+                document.body.style.overflow = ''; // Restore scrolling
+                modalImage.src = '';
+            }
         });
     </script>
 </body>
