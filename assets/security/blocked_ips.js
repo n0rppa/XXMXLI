@@ -1,5 +1,5 @@
 // XXMXLI Comprehensive IP Blacklist - Auto Generated
-// Generated: 2025-08-01T04:45:39.690932
+// Generated: 2025-08-03T10:52:20.219847
 // Total IPs in database: 1,795,104
 // Loaded IPs: 100,000
 // Sources: 240 files
@@ -100009,7 +100009,7 @@ const BLOCKED_IPS = [
 ];
 
 const BLACKLIST_CONFIG = {
-    generated: "2025-08-01T04:45:39.743533",
+    generated: "2025-08-03T10:52:20.274266",
     database_total: 1795104,
     loaded_count: 100000,
     sources_count: 240,
@@ -100024,140 +100024,140 @@ const BLACKLIST_SOURCES = {
     "count": 179,
     "size_bytes": 67117740,
     "modified": "2025-07-27T04:13:26.972436",
-    "processed": "2025-08-01T04:36:35.624148"
+    "processed": "2025-08-03T10:46:27.863055"
   },
   "BlokeD/blklst8.txt": {
     "file_path": "w/BlokeD/blklst8.txt",
     "count": 6294,
     "size_bytes": 207821,
     "modified": "2025-04-25T10:50:58",
-    "processed": "2025-08-01T04:36:36.488475"
+    "processed": "2025-08-03T10:46:28.251962"
   },
   "BlokeD/blklst4.txt": {
     "file_path": "w/BlokeD/blklst4.txt",
     "count": 21669,
     "size_bytes": 333553,
     "modified": "2025-04-25T10:47:35",
-    "processed": "2025-08-01T04:36:39.545001"
+    "processed": "2025-08-03T10:46:30.028645"
   },
   "BlokeD/blklst7.txt": {
     "file_path": "w/BlokeD/blklst7.txt",
     "count": 15000,
     "size_bytes": 229663,
     "modified": "2025-04-25T10:50:20",
-    "processed": "2025-08-01T04:36:41.418261"
+    "processed": "2025-08-03T10:46:31.046677"
   },
   "BlokeD/blklst9.txt": {
     "file_path": "w/BlokeD/blklst9.txt",
     "count": 493,
     "size_bytes": 24617,
     "modified": "2025-04-25T10:51:36",
-    "processed": "2025-08-01T04:36:41.491344"
+    "processed": "2025-08-03T10:46:31.100844"
   },
   "BlokeD/firehol-mirror-main/cleantalk_updated.ipset": {
     "file_path": "w/BlokeD/firehol-mirror-main/cleantalk_updated.ipset",
     "count": 250,
     "size_bytes": 4342,
     "modified": "2025-04-25T10:47:46",
-    "processed": "2025-08-01T04:36:41.523754"
+    "processed": "2025-08-03T10:46:31.126769"
   },
   "BlokeD/firehol-mirror-main/stopforumspam_7d.ipset": {
     "file_path": "w/BlokeD/firehol-mirror-main/stopforumspam_7d.ipset",
     "count": 20140,
     "size_bytes": 290123,
     "modified": "2025-04-25T10:47:46",
-    "processed": "2025-08-01T04:36:43.971620"
+    "processed": "2025-08-03T10:46:32.306207"
   },
   "BlokeD/firehol-mirror-main/botscout.ipset": {
     "file_path": "w/BlokeD/firehol-mirror-main/botscout.ipset",
     "count": 54,
     "size_bytes": 1971,
     "modified": "2025-04-25T10:47:46",
-    "processed": "2025-08-01T04:36:43.987151"
+    "processed": "2025-08-03T10:46:32.317061"
   },
   "BlokeD/firehol-mirror-main/botscout_30d.ipset": {
     "file_path": "w/BlokeD/firehol-mirror-main/botscout_30d.ipset",
     "count": 11598,
     "size_bytes": 168478,
     "modified": "2025-04-25T10:47:46",
-    "processed": "2025-08-01T04:36:45.479833"
+    "processed": "2025-08-03T10:46:32.921473"
   },
   "BlokeD/firehol-mirror-main/blocklist_de_apache.ipset": {
     "file_path": "w/BlokeD/firehol-mirror-main/blocklist_de_apache.ipset",
     "count": 8999,
     "size_bytes": 127940,
     "modified": "2025-04-25T10:47:46",
-    "processed": "2025-08-01T04:36:46.613393"
+    "processed": "2025-08-03T10:46:33.380689"
   },
   "BlokeD/firehol-mirror-main/xroxy_30d.ipset": {
     "file_path": "w/BlokeD/firehol-mirror-main/xroxy_30d.ipset",
     "count": 76,
     "size_bytes": 1873,
     "modified": "2025-04-25T10:47:46",
-    "processed": "2025-08-01T04:36:46.650146"
+    "processed": "2025-08-03T10:46:33.392073"
   },
   "BlokeD/firehol-mirror-main/blocklist_de.ipset": {
     "file_path": "w/BlokeD/firehol-mirror-main/blocklist_de.ipset",
     "count": 22167,
     "size_bytes": 315129,
     "modified": "2025-04-25T10:47:46",
-    "processed": "2025-08-01T04:36:49.376242"
+    "processed": "2025-08-03T10:46:34.565138"
   },
   "BlokeD/firehol-mirror-main/blocklist_de_ssh.ipset": {
     "file_path": "w/BlokeD/firehol-mirror-main/blocklist_de_ssh.ipset",
     "count": 5683,
     "size_bytes": 82246,
     "modified": "2025-04-25T10:47:46",
-    "processed": "2025-08-01T04:36:50.084873"
+    "processed": "2025-08-03T10:46:34.873314"
   },
   "BlokeD/firehol-mirror-main/socks_proxy_30d.ipset": {
     "file_path": "w/BlokeD/firehol-mirror-main/socks_proxy_30d.ipset",
     "count": 8005,
     "size_bytes": 113448,
     "modified": "2025-04-25T10:47:46",
-    "processed": "2025-08-01T04:36:50.978397"
+    "processed": "2025-08-03T10:46:35.310744"
   },
   "BlokeD/firehol-mirror-main/tor_exits_1d.ipset": {
     "file_path": "w/BlokeD/firehol-mirror-main/tor_exits_1d.ipset",
     "count": 1265,
     "size_bytes": 18802,
     "modified": "2025-04-25T10:47:46",
-    "processed": "2025-08-01T04:36:51.128118"
+    "processed": "2025-08-03T10:46:35.393380"
   },
   "BlokeD/firehol-mirror-main/et_tor.ipset": {
     "file_path": "w/BlokeD/firehol-mirror-main/et_tor.ipset",
     "count": 6448,
     "size_bytes": 92114,
     "modified": "2025-04-25T10:47:46",
-    "processed": "2025-08-01T04:36:51.842201"
+    "processed": "2025-08-03T10:46:35.709606"
   },
   "BlokeD/firehol-mirror-main/stopforumspam_90d.ipset": {
     "file_path": "w/BlokeD/firehol-mirror-main/stopforumspam_90d.ipset",
     "count": 178862,
     "size_bytes": 2562906,
     "modified": "2025-04-25T10:47:46",
-    "processed": "2025-08-01T04:37:12.125028"
+    "processed": "2025-08-03T10:46:44.701876"
   },
   "BlokeD/firehol-mirror-main/php_harvesters_30d.ipset": {
     "file_path": "w/BlokeD/firehol-mirror-main/php_harvesters_30d.ipset",
     "count": 562,
     "size_bytes": 9217,
     "modified": "2025-04-25T10:47:46",
-    "processed": "2025-08-01T04:37:12.258873"
+    "processed": "2025-08-03T10:46:44.778920"
   },
   "BlokeD/firehol-mirror-main/blocklist_de_sip.ipset": {
     "file_path": "w/BlokeD/firehol-mirror-main/blocklist_de_sip.ipset",
     "count": 56,
     "size_bytes": 1668,
     "modified": "2025-04-25T10:47:46",
-    "processed": "2025-08-01T04:37:12.266783"
+    "processed": "2025-08-03T10:46:44.783543"
   },
   "BlokeD/firehol-mirror-main/stopforumspam_30d.ipset": {
     "file_path": "w/BlokeD/firehol-mirror-main/stopforumspam_30d.ipset",
     "count": 71736,
     "size_bytes": 1030348,
     "modified": "2025-04-25T10:47:46",
-    "processed": "2025-08-01T04:37:20.546571"
+    "processed": "2025-08-03T10:46:48.412978"
   }
 };
 
