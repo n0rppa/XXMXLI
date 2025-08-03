@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XXMXLI - Visitor Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/visitor-tracker.css">
+    <style>
+        body {
+            margin: 0;
+            background: #000000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .refresh-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            padding: 10px;
+            border-radius: 4px;
+            z-index: 1000;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #008000;
+        }
+        
+        .error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="visitor-dashboard">
+        <div class="refresh-indicator" id="refreshIndicator">
+            <i class="fas fa-sync-alt"></i> Auto-refresh: ON
+        </div>
+        
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">
+                <i class="fas fa-eye"></i> XXMXLI Visitor Dashboard
+            </h1>
+            <p>Real-time visitor analytics and security monitoring</p>
+        </div>
+        
+        <div class="dashboard-controls">
+            <button class="control-button" onclick="refreshData()">
+                <i class="fas fa-refresh"></i> Refresh
+            </button>
+            <button class="control-button" onclick="toggleAutoRefresh()">
+                <i class="fas fa-pause"></i> Toggle Auto-refresh
+            </button>
+            <button class="control-button" onclick="exportData()">
+                <i class="fas fa-download"></i> Export Data
+            </button>
+            <input type="text" class="filter-input" id="ipFilter" placeholder="Filter by IP..." onkeyup="filterVisitors()">
+            <select class="filter-input" id="countryFilter" onchange="filterVisitors()">
+                <option value="">All Countries</option>
+            </select>
+        </div>
+        
+        <div id="dashboard-content">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i> Loading dashboard...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class VisitorDashboard {
+            constructor() {
+                this.autoRefresh = true;
+                this.refreshInterval = null;
+                this.currentFilter = {
+                    ip: '',
+                    country: ''
+                };
+                this.allVisitors = [];
+                this.stats = null;
+            }
+
+            async init() {
+                await this.loadDashboard();
+                this.startAutoRefresh();
+                
+                // Update refresh indicator
+                this.updateRefreshIndicator();
+            }
+
+            async loadDashboard() {
+                try {
+                    // Load overview stats
+                    const statsResponse = await fetch('/api/get-visitor-stats.php?action=overview');
+                    this.stats = await statsResponse.json();
+                    
+                    // Load recent visitors
+                    const visitorsResponse = await fetch('/api/get-visitor-stats.php?action=visitors&limit=100');
+                    const visitorsData = await visitorsResponse.json();
+                    this.allVisitors = visitorsData.visitors || [];
+                    
+                    // Load countries for filter
+                    const countriesResponse = await fetch('/api/get-visitor-stats.php?action=countries');
+                    const countries = await countriesResponse.json();
+                    this.populateCountryFilter(countries);
+                    
+                    this.renderDashboard();
+                    
+                } catch (error) {
+                    console.error('Failed to load dashboard:', error);
+                    this.showError('Failed to load dashboard data');
+                }
+            }
+
+            renderDashboard() {
+                const content = document.getElementById('dashboard-content');
+                
+                content.innerHTML = `
+                    <div class="dashboard-stats">
+                        <div class="stat-card">
+                            <div class="stat-number">${this.stats.overview.totalVisitors.toLocaleString()}</div>
+                            <div class="stat-label">Total Visitors</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${this.stats.overview.uniqueIPs.toLocaleString()}</div>
+                            <div class="stat-label">Unique IPs</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${this.stats.timeframe.today.toLocaleString()}</div>
+                            <div class="stat-label">Today's Visits</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${this.stats.overview.blockedVisitors.toLocaleString()}</div>
+                            <div class="stat-label">Blocked IPs</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${this.stats.overview.botVisitors.toLocaleString()}</div>
+                            <div class="stat-label">Bot Visits</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${this.stats.timeframe.last24h.toLocaleString()}</div>
+                            <div class="stat-label">Last 24h</div>
+                        </div>
+                    </div>
+                    
+                    <div class="visitor-table">
+                        <div class="table-header">
+                            <i class="fas fa-users"></i> Recent Visitors
+                        </div>
+                        <div class="visitor-list" id="visitor-list">
+                            ${this.renderVisitorList(this.getFilteredVisitors())}
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="visitor-table">
+                            <div class="table-header">
+                                <i class="fas fa-globe"></i> Top Countries
+                            </div>
+                            <div class="visitor-list">
+                                ${this.renderTopList(this.stats.topCountries, 'visits')}
+                            </div>
+                        </div>
+                        
+                        <div class="visitor-table">
+                            <div class="table-header">
+                                <i class="fas fa-browser"></i> Top Browsers
+                            </div>
+                            <div class="visitor-list">
+                                ${this.renderTopList(this.stats.topBrowsers, 'visits')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderVisitorList(visitors) {
+                return visitors.map(visitor => {
+                    const location = visitor.location || {};
+                    const isBlocked = visitor.isBlocked;
+                    const isBot = visitor.securityFlags?.botDetected;
+                    
+                    return `
+                        <div class="visitor-item">
+                            <div class="visitor-summary">
+                                <div>
+                                    <div class="visitor-ip">${visitor.ip}</div>
+                                    <div class="visitor-location">
+                                        ${location.city || 'Unknown'}, ${location.country || 'Unknown'}
+                                        ${isBot ? ' 🤖' : ''}
+                                    </div>
+                                </div>
+                                <div class="visitor-time">
+                                    ${new Date(visitor.timestamp).toLocaleString()}
+                                </div>
+                                <div class="visitor-status ${isBlocked ? 'blocked' : 'allowed'}">
+                                    ${isBlocked ? 'BLOCKED' : 'ALLOWED'}
+                                </div>
+                                <div>
+                                    <button class="control-button" onclick="showVisitorDetails('${visitor.sessionId}')">
+                                        Details
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            renderTopList(data, valueKey) {
+                return Object.entries(data).slice(0, 10).map(([key, value]) => `
+                    <div class="visitor-item">
+                        <div class="visitor-summary">
+                            <div>
+                                <div class="visitor-ip">${key}</div>
+                            </div>
+                            <div class="visitor-time">
+                                ${typeof value === 'object' ? value[valueKey] : value} visits
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            populateCountryFilter(countries) {
+                const select = document.getElementById('countryFilter');
+                select.innerHTML = '<option value="">All Countries</option>';
+                
+                countries.forEach(country => {
+                    const option = document.createElement('option');
+                    option.value = country.name;
+                    option.textContent = `${country.name} (${country.visits})`;
+                    select.appendChild(option);
+                });
+            }
+
+            getFilteredVisitors() {
+                return this.allVisitors.filter(visitor => {
+                    const matchesIP = !this.currentFilter.ip || 
+                                    visitor.ip.toLowerCase().includes(this.currentFilter.ip.toLowerCase());
+                    
+                    const matchesCountry = !this.currentFilter.country || 
+                                         (visitor.location?.country || '').toLowerCase() === this.currentFilter.country.toLowerCase();
+                    
+                    return matchesIP && matchesCountry;
+                });
+            }
+
+            filterVisitors() {
+                this.currentFilter.ip = document.getElementById('ipFilter').value;
+                this.currentFilter.country = document.getElementById('countryFilter').value;
+                
+                const filteredVisitors = this.getFilteredVisitors();
+                document.getElementById('visitor-list').innerHTML = this.renderVisitorList(filteredVisitors);
+            }
+
+            startAutoRefresh() {
+                if (this.refreshInterval) {
+                    clearInterval(this.refreshInterval);
+                }
+                
+                if (this.autoRefresh) {
+                    this.refreshInterval = setInterval(() => {
+                        this.loadDashboard();
+                    }, 30000); // Refresh every 30 seconds
+                }
+            }
+
+            toggleAutoRefresh() {
+                this.autoRefresh = !this.autoRefresh;
+                this.updateRefreshIndicator();
+                
+                if (this.autoRefresh) {
+                    this.startAutoRefresh();
+                } else {
+                    clearInterval(this.refreshInterval);
+                }
+            }
+
+            updateRefreshIndicator() {
+                const indicator = document.getElementById('refreshIndicator');
+                indicator.innerHTML = `
+                    <i class="fas fa-sync-alt"></i> 
+                    Auto-refresh: ${this.autoRefresh ? 'ON' : 'OFF'}
+                `;
+            }
+
+            showError(message) {
+                const content = document.getElementById('dashboard-content');
+                content.innerHTML = `
+                    <div class="error">
+                        <i class="fas fa-exclamation-triangle"></i> ${message}
+                    </div>
+                `;
+            }
+
+            exportData() {
+                const dataToExport = {
+                    exportDate: new Date().toISOString(),
+                    stats: this.stats,
+                    visitors: this.allVisitors
+                };
+                
+                const blob = new Blob([JSON.stringify(dataToExport, null, 2)], {
+                    type: 'application/json'
+                });
+                
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `xxmxli-visitors-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        // Global functions
+        function refreshData() {
+            dashboard.loadDashboard();
+        }
+
+        function toggleAutoRefresh() {
+            dashboard.toggleAutoRefresh();
+        }
+
+        function exportData() {
+            dashboard.exportData();
+        }
+
+        function filterVisitors() {
+            dashboard.filterVisitors();
+        }
+
+        function showVisitorDetails(sessionId) {
+            const visitor = dashboard.allVisitors.find(v => v.sessionId === sessionId);
+            if (visitor) {
+                alert(`Visitor Details:\n\n${JSON.stringify(visitor, null, 2)}`);
+            }
+        }
+
+        // Initialize dashboard
+        const dashboard = new VisitorDashboard();
+        dashboard.init();
+    </script>
+</body>
+</html>
