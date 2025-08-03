@@ -396,9 +396,56 @@ class VisitorTracker {
             
             localStorage.setItem('xxmxli_visits', JSON.stringify(visits));
             console.log('📱 Visit logged to localStorage as fallback');
+            
+            // Also show notification to user
+            this.showStorageNotification();
         } catch (error) {
             console.error('Failed to log to localStorage:', error);
         }
+    }
+
+    showStorageNotification() {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            z-index: 10000;
+            animation: fadeInOut 3s ease-in-out;
+        `;
+        notification.innerHTML = '📱 Visitor data stored locally (no server connection)';
+        
+        // Add fade animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInOut {
+                0% { opacity: 0; transform: translateX(-20px); }
+                20% { opacity: 1; transform: translateX(0); }
+                80% { opacity: 1; transform: translateX(0); }
+                100% { opacity: 0; transform: translateX(-20px); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        document.body.appendChild(notification);
+        
+        // Remove after animation
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+            if (style.parentNode) {
+                style.remove();
+            }
+        }, 3000);
     }
 
     // Public methods for external use
@@ -473,4 +520,32 @@ window.showVisitorInfo = function() {
     if (window.xxmxliTracker) {
         window.xxmxliTracker.displayVisitorInfo();
     }
+};
+
+// Add function to view stored visitors
+window.viewStoredVisitors = function() {
+    const visits = JSON.parse(localStorage.getItem('xxmxli_visits') || '[]');
+    console.log('📊 Stored Visitors:', visits);
+    
+    if (visits.length === 0) {
+        console.log('No visitors stored yet. Visit some pages to track data.');
+        return;
+    }
+    
+    // Create summary table
+    console.table(visits.map(v => ({
+        IP: v.ip,
+        Country: v.location?.country || 'Unknown',
+        Browser: v.browser?.name || 'Unknown',
+        Time: new Date(v.timestamp).toLocaleString(),
+        Page: v.page
+    })));
+    
+    alert(`Found ${visits.length} stored visitors. Check console for details.`);
+};
+
+// Add function to open static dashboard
+window.openStaticDashboard = function() {
+    const dashboardUrl = window.location.origin + '/admin/visitor-static.html';
+    window.open(dashboardUrl, '_blank');
 };
