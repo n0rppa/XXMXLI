@@ -193,11 +193,158 @@
             object-fit: cover;
             transition: transform 0.3s ease;
             border: 1px solid var(--border);
+            cursor: pointer;
         }
 
         .gallery-item:hover img {
             transform: scale(1.05);
             border-color: var(--accent);
+        }
+
+        /* Image Modal/Lightbox */
+        .image-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(5px);
+        }
+
+        .image-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            margin: auto;
+            background: var(--card-bg);
+            border: 2px solid var(--accent);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 30px var(--accent);
+            animation: modalZoom 0.3s ease-out;
+        }
+
+        @keyframes modalZoom {
+            from {
+                transform: scale(0.3);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            max-height: 80vh;
+            object-fit: contain;
+        }
+
+        .modal-info {
+            padding: 15px;
+            background: var(--card-bg);
+            border-top: 1px solid var(--accent);
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+        }
+
+        .modal-filename {
+            font-size: 1.1rem;
+            color: var(--accent);
+            margin-bottom: 5px;
+            text-shadow: 0 0 5px var(--accent);
+        }
+
+        .modal-details {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: var(--accent);
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10001;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--accent);
+            transition: all 0.3s ease;
+        }
+
+        .close-modal:hover {
+            background: var(--accent);
+            color: var(--background);
+            box-shadow: 0 0 15px var(--accent);
+            transform: scale(1.1);
+        }
+
+        .modal-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            font-size: 1.5rem;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 50%;
+        }
+
+        .modal-nav:hover {
+            background: var(--accent);
+            color: var(--background);
+            box-shadow: 0 0 15px var(--accent);
+        }
+
+        .modal-prev {
+            left: 20px;
+        }
+
+        .modal-next {
+            right: 20px;
+        }
+
+        /* Loading indicator */
+        .modal-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--accent);
+            font-size: 2rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
         /* Animations */
@@ -369,6 +516,21 @@
         </div>
     </main>
 
+    <!-- Image Modal -->
+    <div id="imageModal" class="image-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-nav modal-prev">&#8249;</div>
+            <div class="modal-nav modal-next">&#8250;</div>
+            <div class="modal-loading">&#8635;</div>
+            <img id="modalImage" class="modal-image" alt="Enlarged photo">
+            <div class="modal-info">
+                <div class="modal-filename" id="modalFilename"></div>
+                <div class="modal-details" id="modalDetails"></div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Mobile menu functionality
         const menuButton = document.querySelector('.menu-button');
@@ -385,11 +547,30 @@
             });
         });
 
-        // Gallery image loading
+        // Gallery image loading and modal functionality
         document.addEventListener('DOMContentLoaded', function() {
             const galleryItems = document.querySelectorAll('.gallery-item img');
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalFilename = document.getElementById('modalFilename');
+            const modalDetails = document.getElementById('modalDetails');
+            const modalLoading = document.querySelector('.modal-loading');
+            const closeModal = document.querySelector('.close-modal');
+            const prevButton = document.querySelector('.modal-prev');
+            const nextButton = document.querySelector('.modal-next');
             
-            galleryItems.forEach(img => {
+            let currentImageIndex = 0;
+            let images = [];
+            
+            // Initialize images array
+            galleryItems.forEach((img, index) => {
+                images.push({
+                    src: img.src,
+                    alt: img.alt,
+                    filename: img.alt
+                });
+                
+                // Set up image loading
                 img.addEventListener('load', function() {
                     this.style.opacity = '1';
                 });
@@ -406,6 +587,90 @@
                 // If image is already loaded (cached)
                 if (img.complete) {
                     img.style.opacity = '1';
+                }
+                
+                // Add click event for modal
+                img.addEventListener('click', function() {
+                    openModal(index);
+                });
+            });
+            
+            function openModal(index) {
+                currentImageIndex = index;
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                loadModalImage();
+            }
+            
+            function closeModalFunc() {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+                modalImage.src = '';
+            }
+            
+            function loadModalImage() {
+                const image = images[currentImageIndex];
+                modalLoading.style.display = 'block';
+                modalImage.style.display = 'none';
+                
+                modalImage.onload = function() {
+                    modalLoading.style.display = 'none';
+                    modalImage.style.display = 'block';
+                    updateModalInfo();
+                };
+                
+                modalImage.onerror = function() {
+                    modalLoading.style.display = 'none';
+                    modalImage.style.display = 'block';
+                    modalImage.alt = 'Kuva ei latautunut';
+                    updateModalInfo();
+                };
+                
+                modalImage.src = image.src;
+            }
+            
+            function updateModalInfo() {
+                const image = images[currentImageIndex];
+                modalFilename.textContent = image.filename;
+                modalDetails.textContent = `Kuva ${currentImageIndex + 1} / ${images.length}`;
+            }
+            
+            function nextImage() {
+                currentImageIndex = (currentImageIndex + 1) % images.length;
+                loadModalImage();
+            }
+            
+            function prevImage() {
+                currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+                loadModalImage();
+            }
+            
+            // Event listeners
+            closeModal.addEventListener('click', closeModalFunc);
+            nextButton.addEventListener('click', nextImage);
+            prevButton.addEventListener('click', prevImage);
+            
+            // Close modal when clicking outside the image
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModalFunc();
+                }
+            });
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (!modal.classList.contains('active')) return;
+                
+                switch(e.key) {
+                    case 'Escape':
+                        closeModalFunc();
+                        break;
+                    case 'ArrowLeft':
+                        prevImage();
+                        break;
+                    case 'ArrowRight':
+                        nextImage();
+                        break;
                 }
             });
         });
