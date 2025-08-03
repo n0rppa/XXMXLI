@@ -5,7 +5,7 @@
 class VisitorTracker {
     constructor(options = {}) {
         this.config = {
-            apiEndpoint: '/api/visitor-logger.php',
+            apiEndpoint: '/api/visitor-logger',  // Updated for Cloudflare Functions
             trackingEnabled: true,
             showVisitorInfo: options.showInfo || false,
             logToConsole: options.debug || false,
@@ -241,7 +241,7 @@ class VisitorTracker {
 
     async checkIfBlocked(ip) {
         try {
-            const response = await fetch('/api/check-blacklist.php', {
+            const response = await fetch('/api/check-blacklist', {  // Updated endpoint
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ip: ip })
@@ -397,8 +397,10 @@ class VisitorTracker {
             localStorage.setItem('xxmxli_visits', JSON.stringify(visits));
             console.log('📱 Visit logged to localStorage as fallback');
             
-            // Also show notification to user
-            this.showStorageNotification();
+            // Only show notification in development mode (localhost)
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                this.showStorageNotification();
+            }
         } catch (error) {
             console.error('Failed to log to localStorage:', error);
         }
