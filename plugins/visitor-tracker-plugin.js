@@ -295,6 +295,7 @@
             const stats = this.calculateStats(stored);
             
             const modal = document.createElement('div');
+            modal.className = 'xxmxli-dashboard-modal';
             modal.innerHTML = `
                 <div style="
                     position: fixed;
@@ -322,7 +323,7 @@
                     ">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                             <h2 style="margin: 0; text-shadow: 0 0 10px #00ff00;">🔍 XXMXLI Visitor Tracker</h2>
-                            <button onclick="this.closest('[style*=\"position: fixed\"]').remove()" style="
+                            <button class="xxmxli-close-btn" style="
                                 background: #ff0040;
                                 border: 1px solid #ff0040;
                                 color: white;
@@ -352,7 +353,7 @@
                         </div>
                         
                         <div style="margin-bottom: 20px;">
-                            <button onclick="window.xxmxliTracker.exportData()" style="
+                            <button class="xxmxli-export-btn" style="
                                 background: #0080ff;
                                 border: 1px solid #0080ff;
                                 color: white;
@@ -362,7 +363,7 @@
                                 cursor: pointer;
                             ">📥 Export Data</button>
                             
-                            <button onclick="window.xxmxliTracker.clearData()" style="
+                            <button class="xxmxli-clear-btn" style="
                                 background: #ff4000;
                                 border: 1px solid #ff4000;
                                 color: white;
@@ -379,6 +380,40 @@
                     </div>
                 </div>
             `;
+            
+            // Add proper event listeners
+            const closeBtn = modal.querySelector('.xxmxli-close-btn');
+            const exportBtn = modal.querySelector('.xxmxli-export-btn');
+            const clearBtn = modal.querySelector('.xxmxli-clear-btn');
+            
+            closeBtn.addEventListener('click', () => {
+                modal.remove();
+            });
+            
+            exportBtn.addEventListener('click', () => {
+                this.exportData();
+            });
+            
+            clearBtn.addEventListener('click', () => {
+                this.clearData();
+                modal.remove();
+            });
+            
+            // Close on background click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal || e.target === modal.firstElementChild) {
+                    modal.remove();
+                }
+            });
+            
+            // Close on Escape key
+            const handleKeydown = (e) => {
+                if (e.key === 'Escape') {
+                    modal.remove();
+                    document.removeEventListener('keydown', handleKeydown);
+                }
+            };
+            document.addEventListener('keydown', handleKeydown);
             
             return modal;
         }
@@ -398,9 +433,19 @@
         }
         
         getMostFrequent(arr) {
+            if (!arr || arr.length === 0) return null;
+            
             const frequency = {};
-            arr.forEach(item => frequency[item] = (frequency[item] || 0) + 1);
-            return Object.keys(frequency).reduce((a, b) => frequency[a] > frequency[b] ? a : b, null);
+            arr.forEach(item => {
+                if (item) { // Only count non-null/undefined items
+                    frequency[item] = (frequency[item] || 0) + 1;
+                }
+            });
+            
+            const keys = Object.keys(frequency);
+            if (keys.length === 0) return null;
+            
+            return keys.reduce((a, b) => frequency[a] > frequency[b] ? a : b);
         }
         
         renderVisitorTable(visitors) {
