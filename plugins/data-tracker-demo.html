@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XXMXLI Data Tracker Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #001122, #002244, #003366);
+            color: #0080ff;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(0, 128, 255, 0.05);
+            border: 1px solid #0080ff;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 128, 255, 0.2);
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px #0080ff;
+        }
+        
+        .header .version {
+            font-size: 1.2em;
+            color: #00ffff;
+            margin-bottom: 15px;
+        }
+        
+        .header .subtitle {
+            font-size: 1.1em;
+            opacity: 0.8;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .feature-card {
+            background: rgba(0, 128, 255, 0.03);
+            border: 1px solid rgba(0, 128, 255, 0.3);
+            border-radius: 8px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            border-color: #0080ff;
+            box-shadow: 0 0 20px rgba(0, 128, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .feature-card h3 {
+            color: #00ffff;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .feature-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .feature-card li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .feature-card li:before {
+            content: '▶';
+            color: #0080ff;
+            position: absolute;
+            left: 0;
+        }
+        
+        .demo-section {
+            background: rgba(0, 128, 255, 0.03);
+            border: 1px solid rgba(0, 128, 255, 0.3);
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .demo-section h2 {
+            color: #00ffff;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #004466, #0066aa);
+            color: #0080ff;
+            border: 1px solid #0080ff;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(135deg, #0066aa, #0088cc);
+            box-shadow: 0 0 15px rgba(0, 128, 255, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #0080ff, #00aaff);
+            color: white;
+            border-color: #0080ff;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #00aaff, #00ccff);
+            box-shadow: 0 0 15px rgba(0, 128, 255, 0.6);
+        }
+        
+        .stats-display {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #0080ff;
+            border-radius: 6px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .code-block {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #0080ff;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        
+        .highlight {
+            color: #00ffff;
+            font-weight: bold;
+        }
+        
+        .info {
+            background: rgba(0, 255, 255, 0.1);
+            border-left: 4px solid #00ffff;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .success {
+            background: rgba(0, 128, 255, 0.1);
+            border-left: 4px solid #0080ff;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .floating-indicator {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: rgba(0, 128, 255, 0.9);
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 1000;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .metric {
+            background: rgba(0, 128, 255, 0.05);
+            border: 1px solid rgba(0, 128, 255, 0.2);
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .metric .value {
+            font-size: 1.5em;
+            color: #00ffff;
+            font-weight: bold;
+        }
+        
+        .metric .label {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        
+        .demo-output {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #0080ff;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 XXMXLI Data Tracker</h1>
+            <div class="version">v1.0 - Data Collection & Analytics</div>
+            <div class="subtitle">Dedicated data tracking system with real-time analytics and comprehensive querying</div>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>📊 Data Collection</h3>
+                <ul>
+                    <li>Custom data schemas</li>
+                    <li>Event tracking system</li>
+                    <li>Performance metrics</li>
+                    <li>User behavior analysis</li>
+                    <li>Metadata support</li>
+                    <li>Real-time processing</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <h3>📈 Real-Time Analytics</h3>
+                <ul>
+                    <li>Live data processing</li>
+                    <li>Category breakdown</li>
+                    <li>Performance trending</li>
+                    <li>Memory monitoring</li>
+                    <li>Error tracking</li>
+                    <li>Data rate calculations</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🔍 Query & Search</h3>
+                <ul>
+                    <li>Advanced filtering</li>
+                    <li>Full-text search</li>
+                    <li>Sorting & pagination</li>
+                    <li>Aggregation functions</li>
+                    <li>Date range queries</li>
+                    <li>Real-time results</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <h3>💾 Data Management</h3>
+                <ul>
+                    <li>JSON/CSV export</li>
+                    <li>Data import tools</li>
+                    <li>Automatic backups</li>
+                    <li>Data compression</li>
+                    <li>Retention policies</li>
+                    <li>Storage optimization</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🎛️ Dashboard Interface</h3>
+                <ul>
+                    <li>Multi-tab dashboard</li>
+                    <li>Real-time visualizations</li>
+                    <li>Performance monitoring</li>
+                    <li>Export/Import interface</li>
+                    <li>Error debugging</li>
+                    <li>System analytics</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <h3>⚡ Performance</h3>
+                <ul>
+                    <li>Optimized processing</li>
+                    <li>Memory management</li>
+                    <li>Error handling</li>
+                    <li>Background operations</li>
+                    <li>Efficient storage</li>
+                    <li>Real-time updates</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🎮 Interactive Demo</h2>
+            <p>The data tracker is now active! Try these demo actions:</p>
+            
+            <div class="buttons">
+                <button class="btn btn-primary" onclick="openDataDashboard()">📊 Open Dashboard</button>
+                <button class="btn" onclick="trackDemoEvent()">📈 Track Event</button>
+                <button class="btn" onclick="trackPerformance()">⚡ Track Performance</button>
+                <button class="btn" onclick="trackUserAction()">👆 Track Action</button>
+                <button class="btn" onclick="queryData()">🔍 Query Data</button>
+                <button class="btn" onclick="exportDemoData()">💾 Export Data</button>
+            </div>
+            
+            <div class="info">
+                <strong>💡 Quick Access:</strong> Press <code>Ctrl+Shift+D</code> to open the data dashboard anytime.
+            </div>
+            
+            <div id="demoOutput" class="demo-output" style="display: none;">
+                <strong>Demo Output:</strong>
+                <div id="outputContent"></div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>📊 Live Metrics</h2>
+            <div class="metrics-grid">
+                <div class="metric">
+                    <div class="value" id="totalDataPoints">-</div>
+                    <div class="label">Total Data Points</div>
+                </div>
+                <div class="metric">
+                    <div class="value" id="dataRate">-</div>
+                    <div class="label">Rate/Minute</div>
+                </div>
+                <div class="metric">
+                    <div class="value" id="memoryUsage">-</div>
+                    <div class="label">Memory Usage</div>
+                </div>
+                <div class="metric">
+                    <div class="value" id="errorCount">-</div>
+                    <div class="label">Errors</div>
+                </div>
+                <div class="metric">
+                    <div class="value" id="schemasCount">-</div>
+                    <div class="label">Schemas</div>
+                </div>
+                <div class="metric">
+                    <div class="value" id="processingTime">-</div>
+                    <div class="label">Avg Processing (ms)</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🔧 API Examples</h2>
+            
+            <div class="code-block">
+<span class="highlight">// Initialize data tracker with custom config</span>
+const tracker = new XXMXLIDataTracker({
+    maxDataPoints: 10000,
+    enableRealTimeAnalytics: true,
+    enableAutoBackup: true,
+    dataRetentionDays: 90
+});
+
+<span class="highlight">// Track events</span>
+tracker.trackEvent('user_interaction', 'button_click', {
+    label: 'demo_button',
+    value: 1,
+    metadata: { page: 'demo' }
+});
+
+<span class="highlight">// Query data</span>
+const results = tracker.query({
+    category: 'user_interaction',
+    limit: 100,
+    sortBy: 'timestamp'
+});
+
+<span class="highlight">// Get analytics</span>
+const analytics = tracker.getAnalytics();
+console.log('Data points:', analytics.total);
+            </div>
+            
+            <div class="buttons">
+                <button class="btn" onclick="runConsoleExample()">🖥️ Run Console Example</button>
+                <button class="btn" onclick="showSchemas()">📋 Show Schemas</button>
+                <button class="btn" onclick="testAggregation()">📊 Test Aggregation</button>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>⚙️ Configuration</h2>
+            
+            <div class="code-block">
+<span class="highlight">// Full configuration options</span>
+{
+    // Core settings
+    apiKey: 'xxmxli-data-tracker',
+    storageKey: 'xxmxli_data_tracker',
+    maxDataPoints: 10000,
+    autoSave: true,
+    enableConsoleLog: true,
+    
+    // Real-time features
+    enableRealTimeAnalytics: true,
+    enableDataVisualization: true,
+    realTimeUpdateInterval: 1000,
+    
+    // Backup and retention
+    enableAutoBackup: true,
+    backupInterval: 300000, // 5 minutes
+    dataRetentionDays: 90,
+    
+    // Performance
+    compressionEnabled: true,
+    encryptionKey: null,
+    
+    // Custom schemas
+    customSchemas: {}
+}
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>📚 Documentation</h2>
+            <p>Complete documentation for data collection and analytics:</p>
+            
+            <div class="buttons">
+                <a href="data-tracker-README.md" class="btn">📖 Full Documentation</a>
+                <button class="btn" onclick="showUseCases()">💡 Use Cases</button>
+                <button class="btn" onclick="showPerformanceStats()">⚡ Performance Stats</button>
+                <button class="btn" onclick="showQueryExamples()">🔍 Query Examples</button>
+            </div>
+            
+            <div class="success">
+                <strong>✅ Production Ready:</strong> This data tracker is optimized for production use with enterprise-level performance, security, and scalability features.
+            </div>
+        </div>
+    </div>
+    
+    <div class="floating-indicator">
+        📊 Data Tracker Active
+    </div>
+    
+    <!-- Include the data tracker -->
+    <script src="data-tracker.js"></script>
+    
+    <script>
+        // Demo functions
+        function openDataDashboard() {
+            if (window.XXMXLIDataTracker) {
+                window.XXMXLIDataTracker.openDashboard();
+            } else {
+                alert('Data tracker not initialized yet. Please wait a moment and try again.');
+            }
+        }
+        
+        function trackDemoEvent() {
+            if (window.XXMXLIDataTracker) {
+                window.XXMXLIDataTracker.trackEvent('demo', 'button_click', {
+                    label: 'track_demo_event',
+                    value: 1,
+                    metadata: { page: 'demo', timestamp: Date.now() }
+                });
+                
+                showOutput('✅ Event tracked successfully!', {
+                    category: 'demo',
+                    action: 'button_click',
+                    timestamp: new Date().toLocaleTimeString()
+                });
+            }
+        }
+        
+        function trackPerformance() {
+            if (window.XXMXLIDataTracker) {
+                const startTime = performance.now();
+                
+                // Simulate some processing
+                setTimeout(() => {
+                    const endTime = performance.now();
+                    const duration = endTime - startTime;
+                    
+                    window.XXMXLIDataTracker.trackPerformance('demo_operation', duration, 'ms', {
+                        operation: 'simulated_task',
+                        page: 'demo'
+                    });
+                    
+                    showOutput('⚡ Performance metric tracked!', {
+                        metric: 'demo_operation',
+                        value: Math.round(duration * 100) / 100,
+                        unit: 'ms'
+                    });
+                }, 50);
+            }
+        }
+        
+        function trackUserAction() {
+            if (window.XXMXLIDataTracker) {
+                window.XXMXLIDataTracker.trackUserAction('demo_click', 'demo_button', { x: 100, y: 200 }, {
+                    duration: 150,
+                    page: 'demo'
+                });
+                
+                showOutput('👆 User action tracked!', {
+                    action: 'demo_click',
+                    element: 'demo_button',
+                    coordinates: { x: 100, y: 200 }
+                });
+            }
+        }
+        
+        function queryData() {
+            if (window.XXMXLIDataTracker) {
+                const results = window.XXMXLIDataTracker.query({
+                    category: 'demo',
+                    limit: 5,
+                    sortBy: 'timestamp',
+                    sortOrder: 'desc'
+                });
+                
+                showOutput('🔍 Query executed!', {
+                    results: results.length,
+                    sample: results.slice(0, 2)
+                });
+            }
+        }
+        
+        function exportDemoData() {
+            if (window.XXMXLIDataTracker) {
+                window.XXMXLIDataTracker.exportData('json', {
+                    category: 'demo'
+                });
+                
+                showOutput('💾 Demo data exported!', {
+                    format: 'json',
+                    filter: 'category: demo'
+                });
+            }
+        }
+        
+        function runConsoleExample() {
+            if (window.XXMXLIDataTracker) {
+                const tracker = window.XXMXLIDataTracker;
+                
+                console.log('📊 XXMXLI Data Tracker - Demo Data:');
+                console.log('Total data points:', tracker.getData().length);
+                console.log('Analytics:', tracker.getAnalytics());
+                console.log('Performance:', tracker.getPerformanceData());
+                
+                showOutput('🖥️ Console output generated!', {
+                    message: 'Check browser console for detailed data'
+                });
+            }
+        }
+        
+        function showSchemas() {
+            if (window.XXMXLIDataTracker) {
+                const schemas = window.XXMXLIDataTracker.getSchemas();
+                
+                showOutput('📋 Available schemas:', {
+                    count: Object.keys(schemas).length,
+                    schemas: Object.keys(schemas)
+                });
+            }
+        }
+        
+        function testAggregation() {
+            if (window.XXMXLIDataTracker) {
+                const totalEvents = window.XXMXLIDataTracker.aggregate('category', 'count');
+                const categoryBreakdown = window.XXMXLIDataTracker.aggregate('category', 'group');
+                
+                showOutput('📊 Aggregation results:', {
+                    totalEvents: totalEvents,
+                    categories: categoryBreakdown
+                });
+            }
+        }
+        
+        function showUseCases() {
+            showOutput('💡 Common use cases:', {
+                ecommerce: 'Product views, purchases, cart abandonment',
+                performance: 'Page load times, API response times',
+                behavior: 'Click tracking, form interactions, navigation',
+                analytics: 'User engagement, conversion rates, trends'
+            });
+        }
+        
+        function showPerformanceStats() {
+            if (window.XXMXLIDataTracker) {
+                const performance = window.XXMXLIDataTracker.getPerformanceData();
+                const memoryUsage = window.XXMXLIDataTracker.estimateMemoryUsage();
+                
+                showOutput('⚡ Performance statistics:', {
+                    collections: performance.collections,
+                    avgProcessingTime: performance.avgProcessingTime || 0,
+                    memoryUsage: memoryUsage.formatted,
+                    errorCount: performance.errors.length
+                });
+            }
+        }
+        
+        function showQueryExamples() {
+            showOutput('🔍 Query examples:', {
+                basic: 'tracker.query({ category: "events", limit: 100 })',
+                filtered: 'tracker.query({ search: "button", sortBy: "timestamp" })',
+                aggregated: 'tracker.aggregate("category", "count")',
+                dateRange: 'tracker.query({ dateRange: { start: startDate, end: endDate } })'
+            });
+        }
+        
+        function showOutput(title, data) {
+            const outputDiv = document.getElementById('demoOutput');
+            const contentDiv = document.getElementById('outputContent');
+            
+            if (outputDiv && contentDiv) {
+                contentDiv.innerHTML = `
+                    <div style="margin-bottom: 10px; color: #00ffff; font-weight: bold;">${title}</div>
+                    <pre style="white-space: pre-wrap; font-size: 11px; opacity: 0.9;">${JSON.stringify(data, null, 2)}</pre>
+                `;
+                outputDiv.style.display = 'block';
+                
+                // Auto-hide after 10 seconds
+                setTimeout(() => {
+                    outputDiv.style.display = 'none';
+                }, 10000);
+            }
+        }
+        
+        function updateMetrics() {
+            if (window.XXMXLIDataTracker) {
+                const tracker = window.XXMXLIDataTracker;
+                const analytics = tracker.getAnalytics();
+                const performance = tracker.getPerformanceData();
+                const memoryUsage = tracker.estimateMemoryUsage();
+                const dataRate = tracker.calculateDataRate();
+                
+                document.getElementById('totalDataPoints').textContent = tracker.getData().length;
+                document.getElementById('dataRate').textContent = dataRate.perMinute || 0;
+                document.getElementById('memoryUsage').textContent = memoryUsage.formatted || '0 KB';
+                document.getElementById('errorCount').textContent = performance.errors.length;
+                document.getElementById('schemasCount').textContent = Object.keys(tracker.getSchemas()).length;
+                document.getElementById('processingTime').textContent = Math.round((performance.avgProcessingTime || 0) * 100) / 100;
+            }
+        }
+        
+        // Initialize demo after page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for tracker to initialize
+            setTimeout(() => {
+                updateMetrics();
+                // Update metrics every 5 seconds
+                setInterval(updateMetrics, 5000);
+                
+                // Track page load
+                if (window.XXMXLIDataTracker) {
+                    window.XXMXLIDataTracker.trackEvent('page', 'load', {
+                        page: 'demo',
+                        timestamp: Date.now()
+                    });
+                }
+            }, 1000);
+            
+            console.log('📊 XXMXLI Data Tracker Demo loaded!');
+            console.log('💡 Try the interactive buttons and press Ctrl+Shift+D for the dashboard.');
+        });
+        
+        // Track all demo interactions
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn') && window.XXMXLIDataTracker) {
+                window.XXMXLIDataTracker.trackEvent('demo_interaction', 'button_click', {
+                    buttonText: e.target.textContent,
+                    timestamp: Date.now()
+                });
+            }
+        });
+    </script>
+</body>
+</html>
