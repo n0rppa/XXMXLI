@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XXMXLI Visitor Tracker Plugin Demo</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            padding: 40px;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            text-shadow: 0 0 10px #00ff00;
+            margin-bottom: 30px;
+        }
+        
+        .feature {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .feature h3 {
+            margin: 0 0 10px 0;
+            color: #00ff40;
+        }
+        
+        .button {
+            background: #0080ff;
+            border: 1px solid #0080ff;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-family: inherit;
+        }
+        
+        .button:hover {
+            background: #0060df;
+            box-shadow: 0 0 10px #0080ff;
+        }
+        
+        .code {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+        
+        .highlight {
+            color: #ff8000;
+        }
+        
+        .status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 XXMXLI Visitor Tracker Plugin</h1>
+        
+        <div class="feature">
+            <h3>✨ Features</h3>
+            <ul>
+                <li>Real-time visitor tracking with IP detection</li>
+                <li>Browser fingerprinting and threat assessment</li>
+                <li>Automatic geolocation and ISP detection</li>
+                <li>Local storage fallback (works without servers!)</li>
+                <li>Built-in admin dashboard (Ctrl+Shift+V)</li>
+                <li>Export/import data functionality</li>
+                <li>Cyberpunk-themed UI</li>
+                <li>Zero dependencies - just one file!</li>
+            </ul>
+        </div>
+        
+        <div class="feature">
+            <h3>🚀 Quick Start</h3>
+            <p>Add this single line to any website:</p>
+            <div class="code">
+                &lt;script src="<span class="highlight">visitor-tracker-plugin.js</span>"&gt;&lt;/script&gt;
+            </div>
+            
+            <p>Or with custom options:</p>
+            <div class="code">
+                &lt;script src="visitor-tracker-plugin.js" 
+        data-enable-notifications="true"
+        data-max-stored-visits="200"
+        data-theme="cyberpunk"&gt;&lt;/script&gt;
+            </div>
+        </div>
+        
+        <div class="feature">
+            <h3>🎮 Try It Now</h3>
+            <p>This page is already tracking you! Try these commands:</p>
+            
+            <button class="button" onclick="openDashboard()">📊 Open Dashboard</button>
+            <button class="button" onclick="showStats()">📈 Show Stats</button>
+            <button class="button" onclick="exportData()">💾 Export Data</button>
+            <button class="button" onclick="trackNewVisit()">🔄 Track New Visit</button>
+            
+            <div id="output" style="margin-top: 15px; padding: 10px; background: #1a1a1a; border-radius: 4px; min-height: 50px;">
+                <em>Click buttons above to see output...</em>
+            </div>
+        </div>
+        
+        <div class="feature">
+            <h3>⚡ JavaScript API</h3>
+            <div class="code">
+// Access the tracker
+const tracker = window.XXMXLITracker;
+
+// Get visitor statistics
+const stats = tracker.getStats();
+console.log('Total visitors:', stats.total);
+
+// Get all visitor data
+const visitors = tracker.getVisitors();
+
+// Open dashboard programmatically
+tracker.openDashboard();
+
+// Export data
+tracker.exportData();
+
+// Track a new visit manually
+tracker.trackVisit();
+            </div>
+        </div>
+        
+        <div class="feature">
+            <h3>🛡️ Privacy & Security</h3>
+            <ul>
+                <li>All data stored locally in browser</li>
+                <li>No external servers required</li>
+                <li>Threat assessment for security monitoring</li>
+                <li>IP detection via public APIs only</li>
+                <li>No personal data collection</li>
+                <li>GDPR-friendly design</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="status" id="status">
+        🔍 Tracker Active - Press <kbd>Ctrl+Shift+V</kbd> for dashboard
+    </div>
+
+    <!-- Include the visitor tracker plugin -->
+    <script src="visitor-tracker-plugin.js" 
+            data-enable-notifications="false"
+            data-enable-console-log="true"></script>
+
+    <script>
+        // Demo functions
+        function openDashboard() {
+            window.XXMXLITracker.openDashboard();
+        }
+        
+        function showStats() {
+            const stats = window.XXMXLITracker.getStats();
+            document.getElementById('output').innerHTML = `
+                <strong>Visitor Statistics:</strong><br>
+                📊 Total Visitors: ${stats.total}<br>
+                🌍 Unique IPs: ${stats.unique}<br>
+                📅 Today: ${stats.today}<br>
+                🏆 Top Country: ${stats.topCountry}
+            `;
+        }
+        
+        function exportData() {
+            window.XXMXLITracker.exportData();
+            document.getElementById('output').innerHTML = '💾 Data exported to downloads folder!';
+        }
+        
+        function trackNewVisit() {
+            window.XXMXLITracker.trackVisit();
+            document.getElementById('output').innerHTML = '🔄 New visit tracked! Check dashboard for updated data.';
+        }
+        
+        // Show some info when page loads
+        setTimeout(() => {
+            const visitors = window.XXMXLITracker.getVisitors();
+            if (visitors.length > 0) {
+                const latest = visitors[visitors.length - 1];
+                document.getElementById('output').innerHTML = `
+                    <strong>Latest Visitor Data:</strong><br>
+                    🕒 ${new Date(latest.timestamp).toLocaleString()}<br>
+                    🌐 IP: ${latest.ip || 'Detecting...'}<br>
+                    📍 Location: ${latest.location?.city || 'Unknown'}, ${latest.location?.country || 'Unknown'}<br>
+                    🖥️ Browser: ${latest.browser?.name || 'Unknown'} ${latest.browser?.version || ''}<br>
+                    ⚠️ Threat Level: ${latest.threatLevel}
+                `;
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
