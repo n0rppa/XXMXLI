@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XXMXLI FULL Visitor Tracker Plugin Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #000011, #001122, #002233);
+            color: #00ff00;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid #00ff00;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.2);
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px #00ff00;
+        }
+        
+        .header .version {
+            font-size: 1.2em;
+            color: #ffff00;
+            margin-bottom: 15px;
+        }
+        
+        .header .subtitle {
+            font-size: 1.1em;
+            opacity: 0.8;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .feature-card {
+            background: rgba(0, 255, 0, 0.03);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 8px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            border-color: #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .feature-card h3 {
+            color: #ffff00;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .feature-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .feature-card li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .feature-card li:before {
+            content: '▶';
+            color: #00ff00;
+            position: absolute;
+            left: 0;
+        }
+        
+        .demo-section {
+            background: rgba(0, 255, 0, 0.03);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .demo-section h2 {
+            color: #ffff00;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #003366, #004488);
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(135deg, #004488, #0066aa);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #ff0040, #ff4080);
+            color: white;
+            border-color: #ff0040;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #ff4080, #ff80c0);
+            box-shadow: 0 0 15px rgba(255, 0, 64, 0.4);
+        }
+        
+        .stats-display {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #00ff00;
+            border-radius: 6px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .code-block {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #00ff00;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        
+        .highlight {
+            color: #ffff00;
+            font-weight: bold;
+        }
+        
+        .warning {
+            background: rgba(255, 64, 0, 0.1);
+            border-left: 4px solid #ff4000;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .info {
+            background: rgba(0, 255, 255, 0.1);
+            border-left: 4px solid #00ffff;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .success {
+            background: rgba(0, 255, 0, 0.1);
+            border-left: 4px solid #00ff00;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .floating-indicator {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: rgba(0, 255, 0, 0.9);
+            color: #000;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 1000;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .metric {
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid rgba(0, 255, 0, 0.2);
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .metric .value {
+            font-size: 1.5em;
+            color: #ffff00;
+            font-weight: bold;
+        }
+        
+        .metric .label {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 XXMXLI FULL Visitor Tracker</h1>
+            <div class="version">v2.0 - Enterprise Edition</div>
+            <div class="subtitle">Advanced visitor analytics with AI-powered insights and behavioral tracking</div>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>🔍 Advanced Analytics</h3>
+                <ul>
+                    <li>Real-time visitor tracking</li>
+                    <li>Behavioral analysis (clicks, scrolls)</li>
+                    <li>Session recording & replay</li>
+                    <li>Heatmap visualization</li>
+                    <li>Performance monitoring</li>
+                    <li>A/B testing framework</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🛡️ Security & Fraud Detection</h3>
+                <ul>
+                    <li>Advanced threat detection</li>
+                    <li>Device fingerprinting</li>
+                    <li>ML fraud scoring</li>
+                    <li>IP reputation checking</li>
+                    <li>VPN/Proxy detection</li>
+                    <li>Geofencing analytics</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🤖 AI & Machine Learning</h3>
+                <ul>
+                    <li>Visitor classification (human vs bot)</li>
+                    <li>Behavioral pattern analysis</li>
+                    <li>Fraud prediction algorithms</li>
+                    <li>Risk assessment scoring</li>
+                    <li>Anomaly detection</li>
+                    <li>Automated decision making</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🎛️ Enterprise Dashboard</h3>
+                <ul>
+                    <li>Multi-tab interface</li>
+                    <li>Real-time data visualization</li>
+                    <li>Export capabilities (JSON/CSV)</li>
+                    <li>Security monitoring</li>
+                    <li>Performance insights</li>
+                    <li>GDPR compliance tools</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🔗 Integrations</h3>
+                <ul>
+                    <li>Google Analytics sync</li>
+                    <li>Webhook notifications</li>
+                    <li>Slack integration</li>
+                    <li>Multi-site tracking</li>
+                    <li>API endpoints</li>
+                    <li>Custom webhooks</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <h3>📱 Cross-Platform</h3>
+                <ul>
+                    <li>Desktop browsers</li>
+                    <li>Mobile devices</li>
+                    <li>Tablet interfaces</li>
+                    <li>Touch navigation</li>
+                    <li>Responsive design</li>
+                    <li>PWA support</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🎮 Interactive Demo</h2>
+            <p>The FULL visitor tracker is now active on this page! Try the following actions:</p>
+            
+            <div class="buttons">
+                <button class="btn btn-primary" onclick="openDashboard()">📊 Open Dashboard</button>
+                <button class="btn" onclick="trackCustomEvent()">📈 Track Custom Event</button>
+                <button class="btn" onclick="showHeatmap()">🔥 Show Heatmap</button>
+                <button class="btn" onclick="downloadReport()">📄 Download Report</button>
+                <button class="btn" onclick="testAbVariant()">🧪 Test A/B Variant</button>
+                <button class="btn" onclick="simulateThreat()">⚠️ Simulate Threat</button>
+            </div>
+            
+            <div class="info">
+                <strong>💡 Quick Access:</strong> Press <code>Ctrl+Shift+V</code> to open the dashboard anytime, or click the floating 📊 button.
+            </div>
+            
+            <div id="statsDisplay" class="stats-display" style="display: none;">
+                <strong>Current Session Stats:</strong>
+                <div id="statsContent"></div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>📊 Live Performance Metrics</h2>
+            <div class="performance-metrics">
+                <div class="metric">
+                    <div class="value" id="visitorsCount">-</div>
+                    <div class="label">Total Visitors</div>
+                </div>
+                <div class="metric">
+                    <div class="value" id="sessionsCount">-</div>
+                    <div class="label">Active Sessions</div>
+                </div>
+                <div class="metric">
+                    <div class="value" id="threatsCount">-</div>
+                    <div class="label">Threats Detected</div>
+                </div>
+                <div class="metric">
+                    <div class="value" id="engagementScore">-</div>
+                    <div class="label">Engagement Score</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🔧 API Examples</h2>
+            
+            <div class="code-block">
+<span class="highlight">// Initialize FULL tracker with custom config</span>
+const tracker = new XXMXLIFullVisitorTracker({
+    enableMLClassification: true,
+    enableFraudDetection: true,
+    enableSessionRecording: true,
+    enableHeatmaps: true,
+    googleAnalyticsId: 'GA_TRACKING_ID',
+    webhookUrl: 'https://your-api.com/webhook',
+    fraudDetectionLevel: 'HIGH'
+});
+
+<span class="highlight">// Access current session data</span>
+const session = tracker.getCurrentSession();
+console.log('Engagement Score:', session.engagementScore);
+
+<span class="highlight">// Track custom events</span>
+tracker.trackCustomEvent('demo_interaction', {
+    feature: 'button_click',
+    timestamp: Date.now()
+});
+
+<span class="highlight">// Get advanced analytics</span>
+const stats = tracker.getAdvancedStats();
+console.log('Total visitors:', stats.total);
+console.log('Threat level:', stats.threats);
+            </div>
+            
+            <div class="buttons">
+                <button class="btn" onclick="showConsoleExample()">🖥️ Run Console Example</button>
+                <button class="btn" onclick="exportSessionData()">💾 Export Session Data</button>
+                <button class="btn" onclick="testMLClassification()">🤖 Test ML Classification</button>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>⚙️ Configuration Options</h2>
+            
+            <div class="warning">
+                <strong>⚠️ Security Note:</strong> This is a demo environment. In production, ensure proper GDPR compliance and data protection measures.
+            </div>
+            
+            <div class="code-block">
+<span class="highlight">// Complete configuration example</span>
+{
+    // Core features
+    enableMLClassification: true,
+    enableFraudDetection: true,
+    enableSessionRecording: true,
+    enableHeatmaps: true,
+    enablePerformanceMonitoring: true,
+    enableABTesting: true,
+    
+    // Security settings
+    fraudDetectionLevel: 'MEDIUM',
+    sessionTimeoutMinutes: 30,
+    recordingMaxDuration: 3600000,
+    
+    // Integrations
+    googleAnalyticsId: 'GA_TRACKING_ID',
+    webhookUrl: 'https://your-api.com/webhook',
+    slackWebhook: 'https://hooks.slack.com/...',
+    
+    // Compliance
+    gdprCompliant: true,
+    cookieConsent: true,
+    dataRetentionDays: 30
+}
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>📚 Documentation</h2>
+            <p>Comprehensive documentation for enterprise deployment:</p>
+            
+            <div class="buttons">
+                <a href="README-FULL.md" class="btn">📖 Full Documentation</a>
+                <a href="#" class="btn" onclick="showFeatureMatrix()">📋 Feature Matrix</a>
+                <a href="#" class="btn" onclick="showAPIReference()">🔧 API Reference</a>
+                <a href="#" class="btn" onclick="showTroubleshooting()">🛠️ Troubleshooting</a>
+            </div>
+            
+            <div class="success">
+                <strong>✅ Enterprise Ready:</strong> This plugin includes all features needed for production enterprise environments with advanced security, compliance, and analytics capabilities.
+            </div>
+        </div>
+    </div>
+    
+    <div class="floating-indicator">
+        🔍 FULL Tracker Active
+    </div>
+    
+    <!-- Include the FULL visitor tracker plugin -->
+    <script src="visitor-tracker-plugin.js"></script>
+    
+    <script>
+        // Demo interaction functions
+        function openDashboard() {
+            if (window.XXMXLITracker) {
+                window.XXMXLITracker.openDashboard();
+            } else {
+                alert('Tracker not initialized yet. Please wait a moment and try again.');
+            }
+        }
+        
+        function trackCustomEvent() {
+            if (window.XXMXLITracker) {
+                window.XXMXLITracker.trackCustomEvent('demo_button_click', {
+                    button: 'track_custom_event',
+                    timestamp: Date.now(),
+                    page: 'demo'
+                });
+                
+                showNotification('✅ Custom event tracked!', 'Event data added to analytics.', 3000);
+            }
+        }
+        
+        function showHeatmap() {
+            if (window.XXMXLITracker) {
+                window.XXMXLITracker.generateHeatmapVisualization();
+            }
+        }
+        
+        function downloadReport() {
+            if (window.XXMXLITracker) {
+                window.XXMXLITracker.downloadDebugReport();
+            }
+        }
+        
+        function testAbVariant() {
+            if (window.XXMXLITracker) {
+                const variant = window.XXMXLITracker.abTestVariant || 'control';
+                showNotification('🧪 A/B Test Variant', `Current variant: ${variant}`, 3000);
+            }
+        }
+        
+        function simulateThreat() {
+            if (window.XXMXLITracker) {
+                // Simulate a threat detection for demo purposes
+                window.XXMXLITracker.trackCustomEvent('security_demo', {
+                    type: 'simulated_threat',
+                    level: 'MEDIUM'
+                });
+                
+                showNotification('⚠️ Threat Simulation', 'Demo threat added to security log.', 3000);
+            }
+        }
+        
+        function showConsoleExample() {
+            if (window.XXMXLITracker) {
+                const session = window.XXMXLITracker.getCurrentSession();
+                console.log('🔍 XXMXLI Full Tracker - Session Data:', session);
+                console.log('📊 Engagement Score:', session.engagementScore);
+                console.log('📈 Performance Metrics:', session.performanceMetrics);
+                
+                showNotification('🖥️ Console Output', 'Check browser console for session data.', 3000);
+            }
+        }
+        
+        function exportSessionData() {
+            if (window.XXMXLITracker) {
+                window.XXMXLITracker.exportAdvancedData();
+            }
+        }
+        
+        function testMLClassification() {
+            if (window.XXMXLITracker) {
+                const mlResult = window.XXMXLITracker.mlModel ? 'Active' : 'Disabled';
+                showNotification('🤖 ML Classification', `Status: ${mlResult}`, 3000);
+            }
+        }
+        
+        function showFeatureMatrix() {
+            showNotification('📋 Feature Matrix', 'Check README-FULL.md for complete feature comparison.', 4000);
+        }
+        
+        function showAPIReference() {
+            showNotification('🔧 API Reference', 'Comprehensive API documentation in README-FULL.md', 4000);
+        }
+        
+        function showTroubleshooting() {
+            showNotification('🛠️ Troubleshooting', 'Debug and troubleshooting guide available in documentation.', 4000);
+        }
+        
+        function showNotification(title, message, duration = 3000) {
+            const notification = document.createElement('div');
+            notification.className = 'xxmxli-toast';
+            notification.innerHTML = `
+                <span class="xxmxli-toast-close" onclick="this.parentElement.remove()">×</span>
+                <strong>${title}</strong><br>
+                ${message}
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, duration);
+        }
+        
+        function updateStats() {
+            if (window.XXMXLITracker) {
+                const stats = window.XXMXLITracker.getAdvancedStats();
+                const session = window.XXMXLITracker.getCurrentSession();
+                
+                document.getElementById('visitorsCount').textContent = stats.total || 0;
+                document.getElementById('sessionsCount').textContent = stats.unique || 0;
+                document.getElementById('threatsCount').textContent = stats.threats || 0;
+                document.getElementById('engagementScore').textContent = session.engagementScore || 0;
+                
+                // Show detailed stats
+                const statsDisplay = document.getElementById('statsDisplay');
+                const statsContent = document.getElementById('statsContent');
+                
+                if (statsDisplay && statsContent) {
+                    statsContent.innerHTML = `
+                        <div>Visitors Today: ${stats.today || 0}</div>
+                        <div>Top Country: ${stats.topCountry || 'Unknown'}</div>
+                        <div>Bounce Rate: ${session.bounceRate || 0}%</div>
+                        <div>Session Duration: ${Math.round((Date.now() - window.XXMXLITracker.startTime) / 1000)}s</div>
+                    `;
+                    statsDisplay.style.display = 'block';
+                }
+            }
+        }
+        
+        // Initialize demo after page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for tracker to initialize, then update stats
+            setTimeout(() => {
+                updateStats();
+                // Update stats every 5 seconds
+                setInterval(updateStats, 5000);
+            }, 2000);
+            
+            console.log('🚀 XXMXLI FULL Visitor Tracker Demo loaded!');
+            console.log('💡 Try the interactive buttons and press Ctrl+Shift+V for the dashboard.');
+        });
+        
+        // Track interactions for demo purposes
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn')) {
+                if (window.XXMXLITracker) {
+                    window.XXMXLITracker.trackCustomEvent('demo_interaction', {
+                        element: e.target.textContent,
+                        timestamp: Date.now()
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>
