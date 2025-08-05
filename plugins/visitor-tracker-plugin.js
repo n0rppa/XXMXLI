@@ -1,6 +1,7 @@
 /**
  * XXMXLI FULL Visitor Tracker Plugin v2.0
  * Enterprise-grade visitor tracking solution
+ * Last updated: 2025-08-05 15:30:00 - Cache Buster: v2.1
  * 
  * Features:
  * - Advanced visitor analytics with behavioral tracking
@@ -395,39 +396,61 @@
         async generateAudioFingerprint() {
             return new Promise((resolve) => {
                 try {
+                    // Check if user gesture is available
+                    if (!window.userGestureAvailable) {
+                        resolve('no-gesture');
+                        return;
+                    }
+                    
                     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    const oscillator = audioContext.createOscillator();
-                    const analyser = audioContext.createAnalyser();
-                    const gain = audioContext.createGain();
-                    const scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
                     
-                    gain.gain.value = 0;
-                    oscillator.frequency.value = 1000;
-                    oscillator.type = 'triangle';
-                    
-                    oscillator.connect(analyser);
-                    analyser.connect(scriptProcessor);
-                    scriptProcessor.connect(gain);
-                    gain.connect(audioContext.destination);
-                    
-                    scriptProcessor.onaudioprocess = () => {
-                        const bins = new Float32Array(analyser.frequencyBinCount);
-                        analyser.getFloatFrequencyData(bins);
-                        const fingerprint = this.hashCode(bins.toString());
-                        
-                        audioContext.close();
-                        resolve(fingerprint);
-                    };
-                    
-                    oscillator.start(0);
-                    
-                    setTimeout(() => {
-                        resolve('timeout');
-                    }, 1000);
+                    // Resume context if suspended (required after user gesture)
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume().then(() => {
+                            this.processAudioFingerprint(audioContext, resolve);
+                        });
+                    } else {
+                        this.processAudioFingerprint(audioContext, resolve);
+                    }
                 } catch (e) {
                     resolve('unsupported');
                 }
             });
+        }
+        
+        processAudioFingerprint(audioContext, resolve) {
+            try {
+                const oscillator = audioContext.createOscillator();
+                const analyser = audioContext.createAnalyser();
+                const gain = audioContext.createGain();
+                const scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+                
+                gain.gain.value = 0;
+                oscillator.frequency.value = 1000;
+                oscillator.type = 'triangle';
+                
+                oscillator.connect(analyser);
+                analyser.connect(scriptProcessor);
+                scriptProcessor.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                scriptProcessor.onaudioprocess = () => {
+                    const bins = new Float32Array(analyser.frequencyBinCount);
+                    analyser.getFloatFrequencyData(bins);
+                    const fingerprint = this.hashCode(bins.toString());
+                    
+                    audioContext.close();
+                    resolve(fingerprint);
+                };
+                
+                oscillator.start(0);
+                
+                setTimeout(() => {
+                    resolve('timeout');
+                }, 1000);
+            } catch (e) {
+                resolve('error');
+            }
         }
         
         async generateWebRTCFingerprint() {
@@ -2312,6 +2335,12 @@
     
     // Auto-initialize if not disabled
     if (typeof window !== 'undefined') {
+        // Set up user gesture detection for AudioContext
+        window.userGestureAvailable = false;
+        document.addEventListener('click', () => window.userGestureAvailable = true, { once: true });
+        document.addEventListener('keydown', () => window.userGestureAvailable = true, { once: true });
+        document.addEventListener('touchstart', () => window.userGestureAvailable = true, { once: true });
+        
         // Check for configuration in script tag
         const script = document.querySelector('script[src*="visitor-tracker-plugin"]');
         const config = script?.dataset ? Object.fromEntries(
