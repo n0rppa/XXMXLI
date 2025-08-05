@@ -416,13 +416,13 @@
             });
         });
 
-        // Hidden visitor tracker shortcut: Ctrl+Shift+J
+        // Hidden visitor tracker shortcut: Ctrl+Shift+U
         document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.shiftKey && e.key === 'J') {
+            if (e.ctrlKey && e.shiftKey && e.key === 'U') {
                 e.preventDefault();
                 if (window.XXMXLITracker) {
                     window.XXMXLITracker.openDashboard();
-                    console.log('🔍 Visitor Tracker opened via hidden shortcut (Ctrl+Shift+J)');
+                    console.log('🔍 Visitor Tracker opened via hidden shortcut (Ctrl+Shift+U)');
                 } else {
                     console.log('⚠️ Visitor Tracker not loaded yet');
                 }
