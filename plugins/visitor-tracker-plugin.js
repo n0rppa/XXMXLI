@@ -1482,8 +1482,13 @@
         }
         
         openDashboard() {
-            const dashboard = this.createDashboard();
+            const dashboard = this.createAdvancedDashboard();
             document.body.appendChild(dashboard);
+        }
+        
+        getStats() {
+            const stored = JSON.parse(localStorage.getItem(this.options.storageKey) || '[]');
+            return this.calculateAdvancedStats(stored);
         }
         
         createAdvancedDashboard() {
