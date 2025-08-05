@@ -2314,7 +2314,7 @@
         ) : {};
         
         // Initialize tracker
-        window.XXMXLITracker = new XXMXLIVisitorTracker(config);
+        window.XXMXLITracker = new XXMXLIFullVisitorTracker(config);
         
         // Add CSS for better styling
         const style = document.createElement('style');
@@ -2346,7 +2346,7 @@
     
     // Export for module systems
     if (typeof module !== 'undefined' && module.exports) {
-        module.exports = XXMXLIVisitorTracker;
+        module.exports = XXMXLIFullVisitorTracker;
     }
     
 })();
