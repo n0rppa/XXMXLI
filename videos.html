@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; media-src 'self' https: data:;">
+    <title>XXMXLI - Videot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --background: #000000;
+            --text-primary: #00ff00;
+            --text-secondary: #008000;
+            --accent: #00ff00;
+            --accent-hover: #00cc00;
+            --border: #003300;
+            --card-bg: #001100;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Matrix Background Animation */
+        #matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .matrix-column {
+            position: absolute;
+            top: -100px;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            animation: matrix-fall linear infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes matrix-fall {
+            to {
+                transform: translateY(calc(100vh + 100px));
+            }
+        }
+
+        /* Header */
+        header {
+            background: rgba(0, 17, 0, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--border);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0, 255, 0, 0.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--accent);
+            text-decoration: none;
+            text-shadow: 0 0 10px var(--accent);
+            transition: all 0.3s ease;
+        }
+
+        .logo:hover {
+            text-shadow: 0 0 20px var(--accent);
+            transform: scale(1.05);
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link:hover {
+            border-color: var(--accent);
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+        }
+
+        .nav-link.active {
+            background: var(--accent);
+            color: var(--background);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+
+        .menu-button {
+            display: none;
+            background: none;
+            border: 2px solid var(--accent);
+            color: var(--accent);
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .menu-button:hover {
+            background: var(--accent);
+            color: var(--background);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+
+        /* Main Content */
+        main {
+            margin-top: 80px;
+            padding: 2rem;
+            min-height: calc(100vh - 80px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(0, 17, 0, 0.8);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.2);
+        }
+
+        .page-title {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px var(--accent);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px var(--accent); }
+            to { text-shadow: 0 0 30px var(--accent), 0 0 40px var(--accent); }
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .page-description {
+            font-size: 1rem;
+            opacity: 0.8;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Video Grid */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .video-card {
+            background: rgba(0, 17, 0, 0.8);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .video-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .video-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .video-card:hover::before {
+            left: 100%;
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            height: 200px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .video-thumbnail video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .video-placeholder {
+            font-size: 3rem;
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 255, 0, 0.8);
+            color: var(--background);
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .play-button:hover {
+            background: var(--accent);
+            transform: translate(-50%, -50%) scale(1.1);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+
+        .video-title {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+        }
+
+        .video-description {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .video-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border);
+            padding-top: 0.5rem;
+        }
+
+        .video-duration {
+            background: var(--accent);
+            color: var(--background);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            background: rgba(0, 17, 0, 0.8);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .upload-title {
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .upload-form {
+            display: grid;
+            gap: 1rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: bold;
+        }
+
+        .form-input, .form-textarea {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 0.8rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .upload-button {
+            background: var(--accent);
+            color: var(--background);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .upload-button:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Video Modal */
+        .video-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            backdrop-filter: blur(10px);
+        }
+
+        .video-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: rgba(0, 17, 0, 0.95);
+            border: 2px solid var(--accent);
+            border-radius: 10px;
+            padding: 2rem;
+            max-width: 90vw;
+            max-height: 90vh;
+            position: relative;
+        }
+
+        .modal-video {
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--accent);
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--accent-hover);
+            transform: scale(1.2);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-menu {
+                position: fixed;
+                top: 80px;
+                left: -100%;
+                width: 100%;
+                height: calc(100vh - 80px);
+                background: rgba(0, 17, 0, 0.98);
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                padding-top: 2rem;
+                transition: left 0.3s ease;
+                backdrop-filter: blur(20px);
+            }
+
+            .nav-menu.active {
+                left: 0;
+            }
+
+            .menu-button {
+                display: block;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .video-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            nav {
+                padding: 1rem;
+            }
+
+            main {
+                padding: 1rem;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            border-top-color: var(--accent);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Success/Error Messages */
+        .message {
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .message.success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .message.error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix Background -->
+    <div id="matrix-bg"></div>
+
+    <!-- Header -->
+    <header>
+        <nav>
+            <a href="index.html" class="logo">XXMXLI</a>
+            <button class="menu-button">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Koti</a></li>
+                <li><a href="music.html" class="nav-link">Musiikki</a></li>
+                <li><a href="photography.html" class="nav-link">Valokuvaus</a></li>
+                <li><a href="projects.html" class="nav-link">Projektit</a></li>
+                <li><a href="videos.html" class="nav-link active">Videot</a></li>
+                <li><a href="security.html" class="nav-link">Turvallisuus</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">VIDEOT</h1>
+                <p class="page-subtitle">Digitaalinen Luovuus Liikkeessä</p>
+                <p class="page-description">
+                    Tutustu video-projekteihini - elokuvista musiikkivideoihin, dokumentteihin ja kokeellisiin töihin. 
+                    Jokainen video kertoo tarinan teknologian ja taiteen rajapinnalla.
+                </p>
+            </div>
+
+            <!-- Upload Section -->
+            <div class="upload-section">
+                <h2 class="upload-title">
+                    <i class="fas fa-upload"></i> Lataa Uusi Video
+                </h2>
+                <form class="upload-form" id="video-upload-form">
+                    <div class="form-group">
+                        <label class="form-label" for="video-file">Video Tiedosto:</label>
+                        <input type="file" class="form-input" id="video-file" accept="video/*" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="video-title">Otsikko:</label>
+                        <input type="text" class="form-input" id="video-title" placeholder="Anna videolle otsikko..." required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="video-desc">Kuvaus:</label>
+                        <textarea class="form-textarea" id="video-desc" placeholder="Kuvaile videosi..."></textarea>
+                    </div>
+                    <button type="submit" class="upload-button">
+                        <i class="fas fa-cloud-upload-alt"></i> Lataa Video
+                    </button>
+                </form>
+            </div>
+
+            <!-- Video Grid -->
+            <div class="video-grid" id="video-grid">
+                <!-- Sample Videos -->
+                <div class="video-card">
+                    <div class="video-thumbnail">
+                        <div class="video-placeholder">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <button class="play-button" onclick="openVideoModal('sample1')">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+                    <h3 class="video-title">Matrix Vision</h3>
+                    <p class="video-description">Kokeellinen video digitaalisen taiteen ja teknologian yhdistämisestä.</p>
+                    <div class="video-meta">
+                        <span><i class="fas fa-eye"></i> 1,234 katselua</span>
+                        <span class="video-duration">3:45</span>
+                    </div>
+                </div>
+
+                <div class="video-card">
+                    <div class="video-thumbnail">
+                        <div class="video-placeholder">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <button class="play-button" onclick="openVideoModal('sample2')">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+                    <h3 class="video-title">Cyber Soundscape</h3>
+                    <p class="video-description">Musiikkivideo syvyyksille elektronisen musiikin maailmaan.</p>
+                    <div class="video-meta">
+                        <span><i class="fas fa-eye"></i> 2,567 katselua</span>
+                        <span class="video-duration">5:12</span>
+                    </div>
+                </div>
+
+                <div class="video-card">
+                    <div class="video-thumbnail">
+                        <div class="video-placeholder">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <button class="play-button" onclick="openVideoModal('sample3')">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+                    <h3 class="video-title">Digital Dreams</h3>
+                    <p class="video-description">Dokumentti teknologian vaikutuksesta moderniin taiteeseen.</p>
+                    <div class="video-meta">
+                        <span><i class="fas fa-eye"></i> 891 katselua</span>
+                        <span class="video-duration">8:30</span>
+                    </div>
+                </div>
+
+                <div class="video-card">
+                    <div class="video-thumbnail">
+                        <div class="video-placeholder">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <button class="play-button" onclick="openVideoModal('sample4')">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+                    <h3 class="video-title">Code Poetry</h3>
+                    <p class="video-description">Visualisointi koodin kauneudesta ja symmetriasta.</p>
+                    <div class="video-meta">
+                        <span><i class="fas fa-eye"></i> 1,765 katselua</span>
+                        <span class="video-duration">4:22</span>
+                    </div>
+                </div>
+
+                <div class="video-card">
+                    <div class="video-thumbnail">
+                        <div class="video-placeholder">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <button class="play-button" onclick="openVideoModal('sample5')">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+                    <h3 class="video-title">Neural Networks</h3>
+                    <p class="video-description">Sukellus tekoälyn ja neuroverkojen visuaaliseen maailmaan.</p>
+                    <div class="video-meta">
+                        <span><i class="fas fa-eye"></i> 3,421 katselua</span>
+                        <span class="video-duration">6:15</span>
+                    </div>
+                </div>
+
+                <div class="video-card">
+                    <div class="video-thumbnail">
+                        <div class="video-placeholder">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <button class="play-button" onclick="openVideoModal('sample6')">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+                    <h3 class="video-title">Quantum Visual</h3>
+                    <p class="video-description">Abstrakti matka kvanttimekaniikan maailmaan.</p>
+                    <div class="video-meta">
+                        <span><i class="fas fa-eye"></i> 987 katselua</span>
+                        <span class="video-duration">7:45</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Video Modal -->
+    <div class="video-modal" id="video-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeVideoModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <video class="modal-video" id="modal-video" controls>
+                <source src="" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
+
+    <script>
+        // Matrix Background Animation
+        function createMatrixRain() {
+            const matrixBg = document.getElementById('matrix-bg');
+            const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+            
+            for (let i = 0; i < 50; i++) {
+                const column = document.createElement('div');
+                column.className = 'matrix-column';
+                column.style.left = Math.random() * 100 + '%';
+                column.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                column.style.animationDelay = Math.random() * 2 + 's';
+                
+                let text = '';
+                for (let j = 0; j < 20; j++) {
+                    text += chars[Math.floor(Math.random() * chars.length)] + '<br>';
+                }
+                column.innerHTML = text;
+                
+                matrixBg.appendChild(column);
+            }
+        }
+
+        // Mobile Menu Toggle
+        const menuButton = document.querySelector('.menu-button');
+        const navMenu = document.querySelector('.nav-menu');
+
+        menuButton.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+            });
+        });
+
+        // Video Upload Form
+        document.getElementById('video-upload-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('video-file');
+            const titleInput = document.getElementById('video-title');
+            const descInput = document.getElementById('video-desc');
+            
+            if (fileInput.files.length === 0) {
+                showMessage('Valitse video tiedosto!', 'error');
+                return;
+            }
+            
+            // Simulate upload process
+            showMessage('Ladataan videota...', 'info');
+            
+            setTimeout(() => {
+                const newVideoCard = createVideoCard({
+                    title: titleInput.value,
+                    description: descInput.value || 'Ei kuvausta',
+                    duration: '0:00',
+                    views: 0,
+                    file: fileInput.files[0]
+                });
+                
+                document.getElementById('video-grid').insertBefore(newVideoCard, document.getElementById('video-grid').firstChild);
+                showMessage('Video ladattu onnistuneesti!', 'success');
+                
+                // Reset form
+                this.reset();
+            }, 2000);
+        });
+
+        // Create Video Card
+        function createVideoCard(videoData) {
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            
+            const videoId = 'video_' + Date.now();
+            
+            card.innerHTML = `
+                <div class="video-thumbnail">
+                    <div class="video-placeholder">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <button class="play-button" onclick="openVideoModal('${videoId}')">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </div>
+                <h3 class="video-title">${videoData.title}</h3>
+                <p class="video-description">${videoData.description}</p>
+                <div class="video-meta">
+                    <span><i class="fas fa-eye"></i> ${videoData.views} katselua</span>
+                    <span class="video-duration">${videoData.duration}</span>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Video Modal Functions
+        function openVideoModal(videoId) {
+            const modal = document.getElementById('video-modal');
+            const video = document.getElementById('modal-video');
+            
+            // For demo purposes, we'll use a placeholder
+            // In a real implementation, you'd load the actual video file
+            showMessage('Demo: Video would play here', 'info');
+            
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeVideoModal() {
+            const modal = document.getElementById('video-modal');
+            const video = document.getElementById('modal-video');
+            
+            modal.classList.remove('active');
+            video.pause();
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal on background click
+        document.getElementById('video-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeVideoModal();
+            }
+        });
+
+        // Message System
+        function showMessage(text, type = 'info') {
+            const existingMessage = document.querySelector('.message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+            
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            
+            const uploadSection = document.querySelector('.upload-section');
+            uploadSection.appendChild(message);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 5000);
+        }
+
+        // Initialize Matrix Background
+        createMatrixRain();
+
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            // ESC to close modal
+            if (e.key === 'Escape') {
+                closeVideoModal();
+            }
+        });
+
+        // Add some dynamic effects
+        document.querySelectorAll('.video-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-5px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
