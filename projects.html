@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://api.ipify.org https://ipapi.co https://api.my-ip.io https://httpbin.org;">
     <title>Projektit - XXMXLI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -399,6 +399,9 @@
         </div>
     </main>
 
+    <!-- Visitor Tracker -->
+    <script src="plugins/visitor-tracker-plugin.js"></script>
+
     <script>
         const menuButton = document.querySelector('.menu-button');
         const navMenu = document.querySelector('.nav-menu');
@@ -411,6 +414,19 @@
             link.addEventListener('click', () => {
                 navMenu.classList.remove('active');
             });
+        });
+
+        // Hidden visitor tracker shortcut: Ctrl+Shift+J
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.shiftKey && e.key === 'J') {
+                e.preventDefault();
+                if (window.XXMXLITracker) {
+                    window.XXMXLITracker.openDashboard();
+                    console.log('🔍 Visitor Tracker opened via hidden shortcut (Ctrl+Shift+J)');
+                } else {
+                    console.log('⚠️ Visitor Tracker not loaded yet');
+                }
+            }
         });
     </script>
 </body>
