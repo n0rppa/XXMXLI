@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Login</title>
+  <style>
+    body { background: #001122; color: #00ffcc; font-family: monospace; display: flex; align-items: center; justify-content: center; height: 100vh; }
+    .login-box { background: #002244; padding: 2em; border-radius: 10px; box-shadow: 0 0 20px #00ffcc44; }
+    input, button { display: block; width: 100%; margin: 1em 0; padding: 0.7em; border-radius: 5px; border: none; }
+    button { background: #00ffcc; color: #001122; font-weight: bold; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <form class="login-box" onsubmit="return login(event)">
+    <h2>Järjestelmänvalvoja</h2>
+    <input type="text" id="username" placeholder="Käyttäjätunnus" required>
+    <input type="password" id="password" placeholder="Salasana" required>
+    <button type="submit">Kirjaudu sisään</button>
+    <div id="loginError" style="color:#ff4444;"></div>
+  </form>
+  <script>
+    function login(e) {
+      e.preventDefault();
+      // Replace with real authentication!
+      const u = document.getElementById('username').value;
+      const p = document.getElementById('password').value;
+      if (u === 'admin' && p === 'salasana123') {
+        localStorage.setItem('isAdmin', 'true');
+        window.location.href = 'visitor-dashboard.html';
+      } else {
+        document.getElementById('loginError').textContent = 'Väärä tunnus tai salasana!';
+      }
+      return false;
+    }
+  </script>
+</body>
+</html>

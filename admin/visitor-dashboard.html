@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https:;">
     <title>XXMXLI - Visitor Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/visitor-tracker.css">
     <script src="../assets/js/static-visitor-tracker.js"></script>
+    <script src="../assets/js/visitor-tracker.js"></script>
     <style>
         body {
             margin: 0;
@@ -43,7 +45,68 @@
     </style>
 </head>
 <body>
+    <!-- Navigation Dropdown Menu -->
+    <nav style="background:#002244; padding:1em;">
+      <div style="position:relative; display:inline-block;">
+        <button id="navMenuBtn" style="background:#00ffcc; color:#002244; border:none; border-radius:5px; padding:0.5em 1em; font-size:1.2em; cursor:pointer;">
+          <i class="fas fa-bars"></i> Menu
+        </button>
+        <div id="navDropdown" style="display:none; position:absolute; left:0; top:2.5em; background:#003366; border-radius:8px; box-shadow:0 0 10px #00ffcc44; min-width:180px; z-index:100;">
+          <a href="visitor-dashboard.html" style="display:block; color:#00ffcc; padding:1em; text-decoration:none;"><i class="fas fa-eye"></i> Dashboard</a>
+          <a href="photo-gallery.html" style="display:block; color:#00ffcc; padding:1em; text-decoration:none;"><i class="fas fa-image"></i> Galleria</a>
+          <a href="../plugins/data-tracker-demo.html" style="display:block; color:#00ffcc; padding:1em; text-decoration:none;"><i class="fas fa-chart-bar"></i> Data Tracker</a>
+          <!-- Lisää muita linkkejä tähän -->
+          <a href="login.html" style="display:block; color:#ff4444; padding:1em; text-decoration:none;"><i class="fas fa-sign-out-alt"></i> Kirjaudu ulos</a>
+        </div>
+      </div>
+    </nav>
+    <script>
+      document.getElementById('navMenuBtn').onclick = function() {
+        var d = document.getElementById('navDropdown');
+        d.style.display = d.style.display === 'block' ? 'none' : 'block';
+      };
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('#navMenuBtn')) {
+          document.getElementById('navDropdown').style.display = 'none';
+        }
+      });
+    </script>
+
     <div class="visitor-dashboard">
+    <!-- Admin-only Chatbox -->
+    <div id="adminChatbox" style="display:none; position:fixed; bottom:20px; right:20px; width:320px; background:#002244; border:2px solid #00ffcc; border-radius:10px; z-index:9999;">
+      <div style="background:#00ffcc; color:#002244; padding:0.5em; border-radius:8px 8px 0 0;">Admin Chat</div>
+      <div id="chatMessages" style="height:180px; overflow-y:auto; padding:1em; background:#001122;"></div>
+      <form onsubmit="sendChatMsg(event)" style="display:flex;">
+        <input id="chatInput" style="flex:1; border:none; border-radius:0 0 0 8px; padding:0.5em;">
+        <button style="background:#00ffcc; color:#002244; border:none; border-radius:0 0 8px 0; padding:0.5em 1em;">Lähetä</button>
+      </form>
+    </div>
+    <script>
+      // Show chatbox only for logged-in admins
+      if (localStorage.getItem('isAdmin') === 'true') {
+        document.getElementById('adminChatbox').style.display = 'block';
+      }
+      // Simple local chat (for demo, replace with backend for real use)
+      function sendChatMsg(e) {
+        e.preventDefault();
+        const msg = document.getElementById('chatInput').value;
+        if (!msg) return;
+        const chat = JSON.parse(localStorage.getItem('adminChat') || '[]');
+        chat.push({ user: 'admin', msg, time: new Date().toLocaleTimeString() });
+        localStorage.setItem('adminChat', JSON.stringify(chat));
+        document.getElementById('chatInput').value = '';
+        renderChat();
+      }
+      function renderChat() {
+        const chat = JSON.parse(localStorage.getItem('adminChat') || '[]');
+        document.getElementById('chatMessages').innerHTML = chat.map(c =>
+          `<div><b>${c.user}</b> <span style="color:#00ffcc;">[${c.time}]</span>: ${c.msg}</div>`
+        ).join('');
+      }
+      setInterval(renderChat, 1000);
+      renderChat();
+    </script>
         <div class="refresh-indicator" id="refreshIndicator">
             <i class="fas fa-sync-alt"></i> Auto-refresh: ON
         </div>
@@ -65,8 +128,8 @@
             <button class="control-button" onclick="exportData()">
                 <i class="fas fa-download"></i> Export Data
             </button>
-            <input type="text" class="filter-input" id="ipFilter" placeholder="Filter by IP..." onkeyup="applyFilters()">
-            <select class="filter-input" id="countryFilter" onchange="applyFilters()">
+            <input type="text" class="filter-input" id="ipFilter" placeholder="Filter by IP..." onkeyup="filterVisitors()">
+            <select class="filter-input" id="countryFilter" onchange="filterVisitors()">
                 <option value="">All Countries</option>
             </select>
         </div>
@@ -564,17 +627,8 @@
             dashboard.exportData();
         }
 
-        function applyFilters() {
-            const ipFilter = document.getElementById('ipFilter').value.toLowerCase();
-            const countryFilter = document.getElementById('countryFilter').value.toLowerCase();
-
-            const filteredVisitors = dashboard.allVisitors.filter(visitor => {
-                const matchesIP = !ipFilter || visitor.ip.toLowerCase().includes(ipFilter);
-                const matchesCountry = !countryFilter || (visitor.country || 'Unknown').toLowerCase() === countryFilter;
-                return matchesIP && matchesCountry;
-            });
-
-            document.getElementById('visitor-list').innerHTML = dashboard.renderVisitorList(filteredVisitors);
+        function filterVisitors() {
+            dashboard.filterVisitors();
         }
 
         function showVisitorDetails(sessionId) {
@@ -588,6 +642,10 @@
         const dashboard = new VisitorDashboard();
         dashboard.init();
 
+        // Initialize Visitor Tracker
+        const tracker = new VisitorTracker();
+        tracker.init();
+
         // Function to handle clipboard paste
         document.getElementById('pasteButton').addEventListener('click', async () => {
             try {
@@ -598,15 +656,6 @@
                 console.error('Error reading clipboard:', err);
             }
         });
-
-        // Add real-time updates
-        function startRealTimeUpdates() {
-            setInterval(() => {
-                dashboard.loadDashboard();
-            }, 30000); // Refresh every 30 seconds
-        }
-
-        startRealTimeUpdates();
     </script>
 </body>
 </html>
