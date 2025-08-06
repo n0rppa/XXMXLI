@@ -6,6 +6,7 @@
     <title>XXMXLI - Visitor Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/visitor-tracker.css">
+    <script src="../assets/js/static-visitor-tracker.js"></script>
     <style>
         body {
             margin: 0;
@@ -105,17 +106,41 @@
 
             async loadDashboard() {
                 try {
+                    // Detect if we're running on GitHub Pages or locally
+                    const isGitHubPages = window.location.hostname.includes('github.io') || 
+                                        window.location.hostname.includes('xxmxli.com');
+                    
+                    let apiBase;
+                    if (isGitHubPages) {
+                        // For GitHub Pages/production, use static data or alternative API
+                        apiBase = '../data/';
+                        await this.loadStaticData();
+                        return;
+                    } else {
+                        // For local development
+                        apiBase = '/api/';
+                    }
+                    
                     // Load overview stats
-                    const statsResponse = await fetch('/api/get-visitor-stats.php?action=overview');
+                    const statsResponse = await fetch(`${apiBase}get-visitor-stats.php?action=overview`);
+                    if (!statsResponse.ok) {
+                        throw new Error(`HTTP ${statsResponse.status}: ${statsResponse.statusText}`);
+                    }
                     this.stats = await statsResponse.json();
                     
                     // Load recent visitors
-                    const visitorsResponse = await fetch('/api/get-visitor-stats.php?action=visitors&limit=100');
+                    const visitorsResponse = await fetch(`${apiBase}get-visitor-stats.php?action=visitors&limit=100`);
+                    if (!visitorsResponse.ok) {
+                        throw new Error(`HTTP ${visitorsResponse.status}: ${visitorsResponse.statusText}`);
+                    }
                     const visitorsData = await visitorsResponse.json();
                     this.allVisitors = visitorsData.visitors || [];
                     
                     // Load countries for filter
-                    const countriesResponse = await fetch('/api/get-visitor-stats.php?action=countries');
+                    const countriesResponse = await fetch(`${apiBase}get-visitor-stats.php?action=countries`);
+                    if (!countriesResponse.ok) {
+                        throw new Error(`HTTP ${countriesResponse.status}: ${countriesResponse.statusText}`);
+                    }
                     const countries = await countriesResponse.json();
                     this.populateCountryFilter(countries);
                     
@@ -123,8 +148,137 @@
                     
                 } catch (error) {
                     console.error('Failed to load dashboard:', error);
-                    this.showError('Failed to load dashboard data');
+                    this.showError(`Failed to load dashboard data: ${error.message}`);
+                    
+                    // Fallback to static demo data
+                    await this.loadStaticData();
                 }
+            }
+
+            async loadStaticData() {
+                // Fallback static data for GitHub Pages
+                try {
+                    // First try to load from localStorage (client-side tracking)
+                    if (typeof StaticVisitorTracker !== 'undefined') {
+                        const visitors = StaticVisitorTracker.getStoredVisits();
+                        const dailyStats = StaticVisitorTracker.getDailyStats();
+                        
+                        if (visitors.length > 0) {
+                            this.stats = this.calculateStatsLocal(visitors, dailyStats);
+                            this.allVisitors = visitors.slice().reverse().slice(0, 100);
+                            
+                            // Extract countries for filter
+                            const countries = [...new Set(visitors.map(v => v.location?.country || 'Unknown'))]
+                                .map(country => ({ name: country, visits: visitors.filter(v => (v.location?.country || 'Unknown') === country).length }))
+                                .sort((a, b) => b.visits - a.visits);
+                            
+                            this.populateCountryFilter(countries);
+                            this.renderDashboard();
+                            
+                            this.showInfo('Using client-side tracking data');
+                            return;
+                        }
+                    }
+                    
+                    // Fallback to JSON files
+                    const visitorsResponse = await fetch('../data/visitors.json');
+                    const visitorsData = await visitorsResponse.json();
+                    const visitors = visitorsData.visitors || visitorsData;
+                    
+                    const dailyStatsResponse = await fetch('../data/daily_stats.json');
+                    const dailyStats = await dailyStatsResponse.json();
+                    
+                    // Calculate stats locally
+                    this.stats = this.calculateStatsLocal(visitors, dailyStats);
+                    this.allVisitors = visitors.slice().reverse().slice(0, 100);
+                    
+                    // Extract countries for filter
+                    const countries = [...new Set(visitors.map(v => v.country || v.location?.country || 'Unknown'))]
+                        .map(country => ({ name: country, visits: visitors.filter(v => (v.country || v.location?.country || 'Unknown') === country).length }))
+                        .sort((a, b) => b.visits - a.visits);
+                    
+                    this.populateCountryFilter(countries);
+                    this.renderDashboard();
+                    
+                    // Show notification that we're using static data
+                    this.showInfo('Running in static mode - using sample data');
+                    
+                } catch (error) {
+                    console.error('Failed to load static data:', error);
+                    this.showError('Failed to load any data. Please check if data files exist.');
+                }
+            }
+
+            calculateStatsLocal(visitors, dailyStats) {
+                const now = Date.now();
+                const today = new Date().toISOString().split('T')[0];
+                const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                
+                return {
+                    overview: {
+                        totalVisitors: visitors.length,
+                        uniqueIPs: new Set(visitors.map(v => v.ip)).size,
+                        blockedVisitors: visitors.filter(v => v.blocked || v.isBlocked).length,
+                        botVisitors: visitors.filter(v => 
+                            (v.securityFlags?.botDetected) || 
+                            (v.userAgent && v.userAgent.toLowerCase().includes('bot'))
+                        ).length
+                    },
+                    timeframe: {
+                        today: visitors.filter(v => v.timestamp.startsWith(today)).length,
+                        last24h: visitors.filter(v => new Date(v.timestamp) > new Date(now - 24 * 60 * 60 * 1000)).length,
+                        last7d: visitors.filter(v => new Date(v.timestamp) > new Date(now - 7 * 24 * 60 * 60 * 1000)).length
+                    },
+                    topCountries: this.getTopItems(visitors, v => v.country || v.location?.country || 'Unknown'),
+                    topBrowsers: this.getTopItems(visitors, v => this.extractBrowser(v.userAgent || '')),
+                    recentVisitors: visitors.slice(-10).reverse(),
+                    dailyTrend: this.calculateDailyTrend(dailyStats)
+                };
+            }
+
+            getTopItems(visitors, extractor) {
+                const counts = {};
+                visitors.forEach(v => {
+                    const item = extractor(v);
+                    counts[item] = (counts[item] || 0) + 1;
+                });
+                
+                return Object.entries(counts)
+                    .map(([name, visits]) => ({ name, visits }))
+                    .sort((a, b) => b.visits - a.visits)
+                    .slice(0, 10);
+            }
+
+            extractBrowser(userAgent) {
+                if (userAgent.includes('Chrome')) return 'Chrome';
+                if (userAgent.includes('Firefox')) return 'Firefox';
+                if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) return 'Safari';
+                if (userAgent.includes('Edge')) return 'Edge';
+                if (userAgent.includes('Opera')) return 'Opera';
+                return 'Unknown';
+            }
+
+            calculateDailyTrend(dailyStats) {
+                const trend = [];
+                for (let i = 6; i >= 0; i--) {
+                    const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                    const dayData = dailyStats[date] || {};
+                    trend.push({
+                        date,
+                        visits: dayData.visits || 0,
+                        uniqueIPs: Array.isArray(dayData.uniqueIPs) ? dayData.uniqueIPs.length : (dayData.uniqueIPs || 0),
+                        blocked: dayData.blocked || 0
+                    });
+                }
+                return trend;
+            }
+
+            showInfo(message) {
+                const indicator = document.getElementById('refreshIndicator');
+                indicator.innerHTML = `<i class="fas fa-info-circle"></i> ${message}`;
+                indicator.style.background = 'rgba(0, 100, 255, 0.1)';
+                indicator.style.borderColor = '#0066ff';
+                indicator.style.color = '#0066ff';
             }
 
             renderDashboard() {

@@ -1,0 +1,46 @@
+# GitHub Pages Configuration for XXMXLI
+title: XXMXLI
+description: Cyberpunk portfolio, music, and security tools
+baseurl: ""
+url: "https://n0rppa.github.io"
+
+# GitHub Pages settings
+remote_theme: null
+plugins: []
+
+# Include assets and avoid Jekyll processing for certain files
+include:
+  - assets/
+  - admin/
+  - api/
+  - data/
+  - plugins/
+
+# Exclude unnecessary files
+exclude:
+  - README.md
+  - README_Windows.md
+  - VISITOR_TRACKING_README.md
+  - "*.py"
+  - "*.bat"
+  - "*.ps1"
+  - process_w_blacklists.*
+  - w/
+  - XXMXLI/
+
+# Prevent Jekyll from processing certain file types
+keep_files:
+  - assets/
+  - admin/
+  - api/
+  - data/
+
+# Custom 404 page
+404: /404.html
+
+# Security headers (when possible)
+webrick:
+  headers:
+    X-Frame-Options: DENY
+    X-Content-Type-Options: nosniff
+    X-XSS-Protection: "1; mode=block"
