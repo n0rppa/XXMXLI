@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XXMXLI - Full Data Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #00ff00;
+            --primary-dark: #00cc00;
+            --secondary-color: #008000;
+            --background: #000000;
+            --card-bg: #001100;
+            --border: #003300;
+            --danger: #ff4444;
+            --success: #00ff00;
+            --warning: #ffff00;
+            --info: #00ffff;
+            --border-radius: 8px;
+            --box-shadow: 0 0 10px var(--primary-color);
+            --transition: all 0.3s ease;
+            --glow: 0 0 20px var(--primary-color);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #000000, #001100, #002200);
+            color: var(--primary-color);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(0, 17, 0, 0.95);
+            padding: 1rem 2rem;
+            border-bottom: 2px solid var(--primary-color);
+            box-shadow: var(--glow);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: var(--primary-color);
+            text-shadow: var(--glow);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid var(--primary-color);
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .control-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--box-shadow);
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            background: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            background: var(--primary-color);
+            color: var(--background);
+            box-shadow: var(--glow);
+            transform: translateY(-2px);
+        }
+
+        .btn.danger {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .btn.danger:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .input-field {
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid var(--border);
+            color: var(--primary-color);
+            padding: 0.75rem;
+            border-radius: var(--border-radius);
+            font-family: inherit;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: var(--box-shadow);
+        }
+
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--info));
+        }
+
+        .stat-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--glow);
+            transform: translateY(-3px);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-title {
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-shadow: var(--glow);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .change-positive {
+            color: var(--success);
+        }
+
+        .change-negative {
+            color: var(--danger);
+        }
+
+        .chart-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--box-shadow);
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        .data-table-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--box-shadow);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .table-title {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+        }
+
+        .table-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table th {
+            background: rgba(0, 255, 0, 0.1);
+            color: var(--primary-color);
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        .data-table tr:hover {
+            background: rgba(0, 255, 0, 0.05);
+        }
+
+        .data-table td {
+            font-size: 0.9rem;
+        }
+
+        .error {
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin: 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+        }
+
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid;
+        }
+
+        .tag.safe {
+            background: rgba(0, 255, 0, 0.1);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .tag.blocked {
+            background: rgba(255, 68, 68, 0.1);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .tag.warning {
+            background: rgba(255, 255, 0, 0.1);
+            border-color: var(--warning);
+            color: var(--warning);
+        }
+
+        .real-time-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid var(--primary-color);
+            padding: 0.75rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            backdrop-filter: blur(10px);
+            z-index: 1001;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .chart-section {
+                grid-template-columns: 1fr;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .control-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="real-time-indicator" id="realTimeIndicator">
+        <i class="fas fa-wifi"></i> <span id="connectionStatus">Connecting...</span>
+    </div>
+
+    <header class="header">
+        <div class="header-content">
+            <h1>
+                <i class="fas fa-chart-line"></i>
+                XXMXLI Data Tracker Full
+            </h1>
+            <div class="header-controls">
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>Live Monitoring</span>
+                </div>
+                <button class="btn" onclick="window.location.href='index.html'">
+                    <i class="fas fa-home"></i> Admin Home
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <div class="control-grid">
+                <button class="btn" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i> Refresh Data
+                </button>
+                <button class="btn" onclick="toggleAutoRefresh()">
+                    <i class="fas fa-play-circle"></i> <span id="autoRefreshText">Auto Refresh</span>
+                </button>
+                <button class="btn" onclick="exportData()">
+                    <i class="fas fa-download"></i> Export CSV
+                </button>
+                <button class="btn danger" onclick="clearData()">
+                    <i class="fas fa-trash"></i> Clear Data
+                </button>
+                <input type="text" class="input-field" id="searchInput" placeholder="Search visitors..." onkeyup="filterData()">
+                <select class="input-field" id="timeRangeSelect" onchange="changeTimeRange()">
+                    <option value="24h">Last 24 Hours</option>
+                    <option value="7d">Last 7 Days</option>
+                    <option value="30d">Last 30 Days</option>
+                    <option value="all">All Time</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Statistics Overview -->
+        <div class="stats-overview" id="statsOverview">
+            <div class="loading">
+                <i class="fas fa-spinner"></i>
+                Loading statistics...
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="chart-section">
+            <div class="chart-container">
+                <h3 class="chart-title">Visitor Traffic Over Time</h3>
+                <canvas id="trafficChart" width="400" height="200"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3 class="chart-title">Geographic Distribution</h3>
+                <canvas id="geoChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="data-table-section">
+            <div class="table-header">
+                <h3 class="table-title">Recent Visitors</h3>
+                <div class="table-controls">
+                    <select class="input-field" id="statusFilter" onchange="filterData()">
+                        <option value="">All Status</option>
+                        <option value="safe">Safe</option>
+                        <option value="blocked">Blocked</option>
+                        <option value="warning">Warning</option>
+                    </select>
+                    <button class="btn" onclick="loadMoreVisitors()">
+                        <i class="fas fa-plus"></i> Load More
+                    </button>
+                </div>
+            </div>
+            <div id="tableContainer">
+                <div class="loading">
+                    <i class="fas fa-spinner"></i>
+                    Loading visitor data...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class DataTrackerFull {
+            constructor() {
+                this.autoRefresh = true;
+                this.refreshInterval = null;
+                this.visitors = [];
+                this.stats = {};
+                this.charts = {};
+                this.filters = {
+                    search: '',
+                    timeRange: '24h',
+                    status: ''
+                };
+                this.currentPage = 0;
+                this.pageSize = 50;
+            }
+
+            async init() {
+                console.log('🚀 Initializing XXMXLI Data Tracker Full...');
+                
+                try {
+                    await this.loadData();
+                    this.initCharts();
+                    this.startAutoRefresh();
+                    this.updateConnectionStatus('Connected', true);
+                } catch (error) {
+                    console.error('❌ Initialization failed:', error);
+                    this.showError('Failed to initialize data tracker: ' + error.message);
+                    this.updateConnectionStatus('Connection Failed', false);
+                }
+            }
+
+            async loadData() {
+                try {
+                    console.log('📊 Loading data from API...');
+                    
+                    // Load statistics
+                    const statsResponse = await fetch('../api/get-visitor-stats.php?action=overview');
+                    const statsText = await statsResponse.text();
+                    
+                    console.log('📊 Stats response:', statsText.substring(0, 200));
+                    
+                    // Check if response is HTML (error page)
+                    if (statsText.trim().startsWith('<')) {
+                        throw new Error('API returned HTML instead of JSON. Check server configuration.');
+                    }
+                    
+                    this.stats = JSON.parse(statsText);
+                    
+                    // Load visitors
+                    const visitorsResponse = await fetch('../api/get-visitor-stats.php?action=visitors&limit=1000');
+                    const visitorsText = await visitorsResponse.text();
+                    
+                    console.log('👥 Visitors response:', visitorsText.substring(0, 200));
+                    
+                    if (visitorsText.trim().startsWith('<')) {
+                        throw new Error('Visitors API returned HTML instead of JSON. Check server configuration.');
+                    }
+                    
+                    const visitorsData = JSON.parse(visitorsText);
+                    this.visitors = visitorsData.visitors || [];
+                    
+                    this.renderStats();
+                    this.renderTable();
+                    this.updateCharts();
+                    
+                    console.log('✅ Data loaded successfully');
+                    
+                } catch (error) {
+                    console.error('❌ Failed to load data:', error);
+                    this.showError('Failed to load data: ' + error.message);
+                    throw error;
+                }
+            }
+
+            renderStats() {
+                const statsContainer = document.getElementById('statsOverview');
+                
+                const stats = [
+                    {
+                        title: 'Total Visitors',
+                        value: this.stats.totalVisitors || 0,
+                        icon: 'fas fa-users',
+                        change: '+12%',
+                        positive: true
+                    },
+                    {
+                        title: 'Today\'s Visits',
+                        value: this.stats.todayVisitors || 0,
+                        icon: 'fas fa-eye',
+                        change: '+5%',
+                        positive: true
+                    },
+                    {
+                        title: 'Unique IPs',
+                        value: this.stats.uniqueIPs || 0,
+                        icon: 'fas fa-network-wired',
+                        change: '+8%',
+                        positive: true
+                    },
+                    {
+                        title: 'Blocked Attempts',
+                        value: this.stats.blockedAttempts || 0,
+                        icon: 'fas fa-shield-alt',
+                        change: '-3%',
+                        positive: false
+                    },
+                    {
+                        title: 'Countries',
+                        value: this.stats.uniqueCountries || 0,
+                        icon: 'fas fa-globe',
+                        change: '+2',
+                        positive: true
+                    },
+                    {
+                        title: 'Avg. Session',
+                        value: this.formatDuration(this.stats.avgSessionTime || 0),
+                        icon: 'fas fa-clock',
+                        change: '+15s',
+                        positive: true
+                    }
+                ];
+
+                statsContainer.innerHTML = stats.map(stat => `
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">${stat.title}</span>
+                            <i class="${stat.icon} stat-icon"></i>
+                        </div>
+                        <div class="stat-value">${stat.value}</div>
+                        <div class="stat-change ${stat.positive ? 'change-positive' : 'change-negative'}">
+                            <i class="fas fa-arrow-${stat.positive ? 'up' : 'down'}"></i>
+                            ${stat.change}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            renderTable() {
+                const tableContainer = document.getElementById('tableContainer');
+                
+                if (!this.visitors || this.visitors.length === 0) {
+                    tableContainer.innerHTML = `
+                        <div class="error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            No visitor data available
+                        </div>
+                    `;
+                    return;
+                }
+
+                const filteredVisitors = this.getFilteredVisitors();
+                const paginatedVisitors = filteredVisitors.slice(0, (this.currentPage + 1) * this.pageSize);
+
+                tableContainer.innerHTML = `
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>IP Address</th>
+                                <th>Country</th>
+                                <th>Browser</th>
+                                <th>Page</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${paginatedVisitors.map(visitor => `
+                                <tr>
+                                    <td>${this.formatTimestamp(visitor.timestamp)}</td>
+                                    <td><code>${visitor.ip || 'Unknown'}</code></td>
+                                    <td>${visitor.country || 'Unknown'}</td>
+                                    <td>${this.getBrowserInfo(visitor.userAgent)}</td>
+                                    <td>${visitor.page || '/'}</td>
+                                    <td>${this.getStatusTag(visitor)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            getFilteredVisitors() {
+                return this.visitors.filter(visitor => {
+                    // Search filter
+                    if (this.filters.search) {
+                        const searchTerm = this.filters.search.toLowerCase();
+                        if (!visitor.ip?.toLowerCase().includes(searchTerm) &&
+                            !visitor.country?.toLowerCase().includes(searchTerm) &&
+                            !visitor.userAgent?.toLowerCase().includes(searchTerm)) {
+                            return false;
+                        }
+                    }
+
+                    // Status filter
+                    if (this.filters.status) {
+                        const status = this.getVisitorStatus(visitor);
+                        if (status !== this.filters.status) {
+                            return false;
+                        }
+                    }
+
+                    // Time range filter
+                    if (this.filters.timeRange !== 'all') {
+                        const now = Date.now();
+                        const visitorTime = new Date(visitor.timestamp).getTime();
+                        const timeRanges = {
+                            '24h': 24 * 60 * 60 * 1000,
+                            '7d': 7 * 24 * 60 * 60 * 1000,
+                            '30d': 30 * 24 * 60 * 60 * 1000
+                        };
+                        
+                        if (now - visitorTime > timeRanges[this.filters.timeRange]) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                });
+            }
+
+            getVisitorStatus(visitor) {
+                if (visitor.blocked) return 'blocked';
+                if (visitor.suspicious) return 'warning';
+                return 'safe';
+            }
+
+            getStatusTag(visitor) {
+                const status = this.getVisitorStatus(visitor);
+                const statusLabels = {
+                    'safe': 'Safe',
+                    'blocked': 'Blocked',
+                    'warning': 'Warning'
+                };
+                
+                return `<span class="tag ${status}">${statusLabels[status]}</span>`;
+            }
+
+            formatTimestamp(timestamp) {
+                return new Date(timestamp).toLocaleString('fi-FI', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            formatDuration(seconds) {
+                if (seconds < 60) return `${seconds}s`;
+                const minutes = Math.floor(seconds / 60);
+                if (minutes < 60) return `${minutes}m`;
+                const hours = Math.floor(minutes / 60);
+                return `${hours}h ${minutes % 60}m`;
+            }
+
+            getBrowserInfo(userAgent) {
+                if (!userAgent) return 'Unknown';
+                
+                if (userAgent.includes('Chrome')) return 'Chrome';
+                if (userAgent.includes('Firefox')) return 'Firefox';
+                if (userAgent.includes('Safari')) return 'Safari';
+                if (userAgent.includes('Edge')) return 'Edge';
+                
+                return 'Other';
+            }
+
+            initCharts() {
+                this.initTrafficChart();
+                this.initGeoChart();
+            }
+
+            initTrafficChart() {
+                const ctx = document.getElementById('trafficChart').getContext('2d');
+                
+                this.charts.traffic = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'Visitors',
+                            data: [],
+                            borderColor: '#00ff00',
+                            backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#00ff00'
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: { color: '#008000' },
+                                grid: { color: 'rgba(0, 128, 0, 0.1)' }
+                            },
+                            y: {
+                                ticks: { color: '#008000' },
+                                grid: { color: 'rgba(0, 128, 0, 0.1)' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            initGeoChart() {
+                const ctx = document.getElementById('geoChart').getContext('2d');
+                
+                this.charts.geo = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            data: [],
+                            backgroundColor: [
+                                '#00ff00',
+                                '#00cc00',
+                                '#008000',
+                                '#00ff80',
+                                '#80ff00'
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#000000'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: '#00ff00',
+                                    padding: 20
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            updateCharts() {
+                this.updateTrafficChart();
+                this.updateGeoChart();
+            }
+
+            updateTrafficChart() {
+                // Group visitors by hour for the last 24 hours
+                const hourlyData = this.groupVisitorsByHour();
+                
+                this.charts.traffic.data.labels = hourlyData.labels;
+                this.charts.traffic.data.datasets[0].data = hourlyData.data;
+                this.charts.traffic.update();
+            }
+
+            updateGeoChart() {
+                // Group visitors by country
+                const countryData = this.groupVisitorsByCountry();
+                
+                this.charts.geo.data.labels = countryData.labels;
+                this.charts.geo.data.datasets[0].data = countryData.data;
+                this.charts.geo.update();
+            }
+
+            groupVisitorsByHour() {
+                const hours = [];
+                const data = [];
+                const now = new Date();
+                
+                // Create labels for last 24 hours
+                for (let i = 23; i >= 0; i--) {
+                    const hour = new Date(now.getTime() - i * 60 * 60 * 1000);
+                    hours.push(hour.getHours() + ':00');
+                    data.push(0);
+                }
+                
+                // Count visitors for each hour
+                this.visitors.forEach(visitor => {
+                    const visitorTime = new Date(visitor.timestamp);
+                    const hourDiff = Math.floor((now - visitorTime) / (60 * 60 * 1000));
+                    
+                    if (hourDiff >= 0 && hourDiff < 24) {
+                        data[23 - hourDiff]++;
+                    }
+                });
+                
+                return { labels: hours, data };
+            }
+
+            groupVisitorsByCountry() {
+                const countries = {};
+                
+                this.visitors.forEach(visitor => {
+                    const country = visitor.country || 'Unknown';
+                    countries[country] = (countries[country] || 0) + 1;
+                });
+                
+                // Sort by count and take top 5
+                const sorted = Object.entries(countries)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 5);
+                
+                return {
+                    labels: sorted.map(([country]) => country),
+                    data: sorted.map(([, count]) => count)
+                };
+            }
+
+            startAutoRefresh() {
+                if (this.autoRefresh) {
+                    this.refreshInterval = setInterval(() => {
+                        this.loadData();
+                    }, 30000); // Refresh every 30 seconds
+                }
+            }
+
+            stopAutoRefresh() {
+                if (this.refreshInterval) {
+                    clearInterval(this.refreshInterval);
+                    this.refreshInterval = null;
+                }
+            }
+
+            toggleAutoRefresh() {
+                this.autoRefresh = !this.autoRefresh;
+                const button = document.getElementById('autoRefreshText');
+                
+                if (this.autoRefresh) {
+                    this.startAutoRefresh();
+                    button.textContent = 'Stop Auto Refresh';
+                    this.updateConnectionStatus('Auto Refresh ON', true);
+                } else {
+                    this.stopAutoRefresh();
+                    button.textContent = 'Start Auto Refresh';
+                    this.updateConnectionStatus('Auto Refresh OFF', false);
+                }
+            }
+
+            updateConnectionStatus(status, isConnected) {
+                const statusElement = document.getElementById('connectionStatus');
+                statusElement.textContent = status;
+                statusElement.style.color = isConnected ? '#00ff00' : '#ff4444';
+            }
+
+            showError(message) {
+                const statsContainer = document.getElementById('statsOverview');
+                statsContainer.innerHTML = `
+                    <div class="error">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        ${message}
+                    </div>
+                `;
+            }
+
+            // Event handlers
+            async refreshData() {
+                await this.loadData();
+            }
+
+            filterData() {
+                this.filters.search = document.getElementById('searchInput').value;
+                this.filters.status = document.getElementById('statusFilter').value;
+                this.currentPage = 0;
+                this.renderTable();
+            }
+
+            changeTimeRange() {
+                this.filters.timeRange = document.getElementById('timeRangeSelect').value;
+                this.currentPage = 0;
+                this.renderTable();
+                this.updateCharts();
+            }
+
+            loadMoreVisitors() {
+                this.currentPage++;
+                this.renderTable();
+            }
+
+            exportData() {
+                const csvData = this.convertToCSV(this.getFilteredVisitors());
+                const blob = new Blob([csvData], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `xxmxli-visitors-${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+            }
+
+            convertToCSV(data) {
+                const headers = ['Timestamp', 'IP', 'Country', 'User Agent', 'Page', 'Status'];
+                const rows = data.map(visitor => [
+                    visitor.timestamp,
+                    visitor.ip || '',
+                    visitor.country || '',
+                    visitor.userAgent || '',
+                    visitor.page || '',
+                    this.getVisitorStatus(visitor)
+                ]);
+                
+                return [headers, ...rows]
+                    .map(row => row.map(cell => `"${cell}"`).join(','))
+                    .join('\n');
+            }
+
+            clearData() {
+                if (confirm('Are you sure you want to clear all visitor data? This action cannot be undone.')) {
+                    // This would need to be implemented on the server side
+                    alert('Clear data functionality needs to be implemented on the server side.');
+                }
+            }
+        }
+
+        // Global functions for onclick handlers
+        let tracker;
+
+        function refreshData() {
+            tracker.refreshData();
+        }
+
+        function toggleAutoRefresh() {
+            tracker.toggleAutoRefresh();
+        }
+
+        function exportData() {
+            tracker.exportData();
+        }
+
+        function clearData() {
+            tracker.clearData();
+        }
+
+        function filterData() {
+            tracker.filterData();
+        }
+
+        function changeTimeRange() {
+            tracker.changeTimeRange();
+        }
+
+        function loadMoreVisitors() {
+            tracker.loadMoreVisitors();
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            tracker = new DataTrackerFull();
+            tracker.init();
+        });
+    </script>
+</body>
+</html>

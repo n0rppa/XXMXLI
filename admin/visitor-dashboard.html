@@ -75,6 +75,11 @@
                 <i class="fas fa-spinner fa-spin"></i> Loading dashboard...
             </div>
         </div>
+
+        <button id="pasteButton" class="btn btn-primary" style="margin-top: 1rem;">
+            <i class="fas fa-paste"></i> Paste Clipboard Content
+        </button>
+        <div id="pasteOutput" style="margin-top: 1rem; color: var(--cyber-green);"></div>
     </div>
 
     <script>
@@ -353,6 +358,17 @@
         // Initialize dashboard
         const dashboard = new VisitorDashboard();
         dashboard.init();
+
+        // Function to handle clipboard paste
+        document.getElementById('pasteButton').addEventListener('click', async () => {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('pasteOutput').innerText = text || 'Clipboard is empty';
+            } catch (err) {
+                document.getElementById('pasteOutput').innerText = 'Failed to read clipboard content';
+                console.error('Error reading clipboard:', err);
+            }
+        });
     </script>
 </body>
 </html>
