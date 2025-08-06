@@ -40,6 +40,7 @@
             --accent-hover: #00cc00;
             --border: #003300;
             --card-bg: #001100;
+            --cyber-green: #00ff33;
         }
 
         * {
@@ -490,6 +491,12 @@
                 <div id="formMessage" class="form-message" style="display: none;"></div>
             </form>
         </section>
+
+        <!-- Clipboard Paste Feature -->
+        <button id="pasteButton" class="btn btn-primary" style="margin-top: 1rem;">
+            <i class="fas fa-paste"></i> Paste Clipboard Content
+        </button>
+        <div id="pasteOutput" style="margin-top: 1rem; color: var(--cyber-green);"></div>
     </main>
 
     <script>
@@ -814,6 +821,17 @@
                     console.log('Available commands: xxmxli.security.getStats(), xxmxli.exportContacts(), etc.');
                 }
             });
+        });
+
+        // Function to handle clipboard paste
+        document.getElementById('pasteButton').addEventListener('click', async () => {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('pasteOutput').innerText = text || 'Clipboard is empty';
+            } catch (err) {
+                document.getElementById('pasteOutput').innerText = 'Failed to read clipboard content';
+                console.error('Error reading clipboard:', err);
+            }
         });
     </script>
 </body>

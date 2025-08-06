@@ -4,35 +4,48 @@
  * Returns visitor analytics and statistics
  */
 
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+// Error reporting for debugging - remove in production
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // Don't display errors to browser
+ini_set('log_errors', 1);
 
-// Handle preflight requests
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
+// Capture any output that might interfere with JSON
+ob_start();
 
-// Configuration
-$DATA_DIR = '../data/';
-$VISITORS_FILE = $DATA_DIR . 'visitors.json';
-$DAILY_STATS_FILE = $DATA_DIR . 'daily_stats.json';
+try {
+    header('Content-Type: application/json');
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: GET, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type');
 
-// Load visitors data
-$visitors = [];
-if (file_exists($VISITORS_FILE)) {
-    $visitors = json_decode(file_get_contents($VISITORS_FILE), true) ?? [];
-}
+    // Handle preflight requests
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(200);
+        exit;
+    }
 
-// Load daily stats
-$dailyStats = [];
-if (file_exists($DAILY_STATS_FILE)) {
-    $dailyStats = json_decode(file_get_contents($DAILY_STATS_FILE), true) ?? [];
-}
+    // Configuration
+    $DATA_DIR = '../data/';
+    $VISITORS_FILE = $DATA_DIR . 'visitors.json';
+    $DAILY_STATS_FILE = $DATA_DIR . 'daily_stats.json';
 
-// Calculate statistics
+    // Load visitors data
+    $visitors = [];
+    if (file_exists($VISITORS_FILE)) {
+        $visitorsRaw = json_decode(file_get_contents($VISITORS_FILE), true) ?? [];
+        // Handle both array format and object format
+        if (isset($visitorsRaw['visitors'])) {
+            $visitors = $visitorsRaw['visitors'];
+        } else if (is_array($visitorsRaw)) {
+            $visitors = $visitorsRaw;
+        }
+    }
+
+    // Load daily stats
+    $dailyStats = [];
+    if (file_exists($DAILY_STATS_FILE)) {
+        $dailyStats = json_decode(file_get_contents($DAILY_STATS_FILE), true) ?? [];
+    }// Calculate statistics
 $stats = calculateStatistics($visitors, $dailyStats);
 
 // Get query parameters
@@ -241,6 +254,32 @@ function getDailyTrend($dailyStats, $days) {
             'date' => $date,
             'visits' => $dayStats['totalVisits'] ?? 0,
             'uniqueIPs' => count($dayStats['uniqueIPs'] ?? []),
+            'blockedAttempts' => $dayStats['blockedAttempts'] ?? 0
+        ];
+    }
+    
+    return $trend;
+}
+
+} catch (Exception $e) {
+    // Clear any output buffer
+    ob_clean();
+    
+    // Log the error
+    error_log("XXMXLI API Error: " . $e->getMessage());
+    
+    // Return error as JSON
+    http_response_code(500);
+    echo json_encode([
+        'error' => 'Internal server error',
+        'message' => 'Failed to load visitor statistics',
+        'debug' => $e->getMessage() // Remove this in production
+    ]);
+} finally {
+    // Clear output buffer and send response
+    ob_end_flush();
+}
+?>
             'blocked' => $dayStats['blockedVisits'] ?? 0,
             'bots' => $dayStats['botVisits'] ?? 0
         ];
