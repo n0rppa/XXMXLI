@@ -132,6 +132,9 @@
         <button class="nav-tab" onclick="showTab('heatmaps')">
             <i class="fas fa-fire"></i> Heatmaps
         </button>
+        <button class="nav-tab" onclick="showTab('custom-events')">
+            <i class="fas fa-chart-bar"></i> Custom Events
+        </button>
     </nav>
 
     <div class="dashboard-content">
@@ -224,25 +227,19 @@
         <!-- SEO Tab -->
         <div id="seo" class="tab-content">
             <h2><i class="fas fa-search"></i> SEO Analytics</h2>
-            <div class="feature-demo">
-                <h3>SEO Performance</h3>
-                <div class="demo-placeholder">
-                    SEO analytics will be loaded here.<br>
-                    Features: Search traffic, Keywords, Meta optimization
-                </div>
-            </div>
+            <div id="seo-container"></div>
         </div>
 
         <!-- Heatmaps Tab -->
         <div id="heatmaps" class="tab-content">
             <h2><i class="fas fa-fire"></i> User Behavior Heatmaps</h2>
-            <div class="feature-demo">
-                <h3>Heatmap Visualization</h3>
-                <div class="demo-placeholder">
-                    Heatmap system will be loaded here.<br>
-                    Features: Click tracking, Scroll analysis, Mouse patterns
-                </div>
-            </div>
+            <div id="heatmaps-container"></div>
+        </div>
+
+        <!-- Custom Events Tab -->
+        <div id="custom-events" class="tab-content">
+            <h2><i class="fas fa-chart-bar"></i> Custom Event Tracking</h2>
+            <div id="custom-events-container"></div>
         </div>
     </div>
 
@@ -253,6 +250,9 @@
     <script src="../js/analytics/conversion-tracking.js"></script>
     <script src="../js/analytics/ab-testing.js"></script>
     <script src="../js/analytics/performance-monitoring.js"></script>
+    <script src="../js/analytics/seo-analytics.js"></script>
+    <script src="../js/analytics/heatmaps.js"></script>
+    <script src="../js/analytics/custom-events.js"></script>
 
     <script>
         // Tab switching functionality
@@ -306,6 +306,24 @@
                 case 'performance':
                     if (window.xxmxliAnalytics && window.xxmxliAnalytics.modules['performance-monitoring']) {
                         window.xxmxliAnalytics.modules['performance-monitoring'].createPerformanceDashboard('performance-container');
+                    }
+                    break;
+                    
+                case 'seo':
+                    if (window.xxmxliAnalytics && window.xxmxliAnalytics.modules['seo-analytics']) {
+                        window.xxmxliAnalytics.modules['seo-analytics'].createSEODashboard('seo-container');
+                    }
+                    break;
+                    
+                case 'heatmaps':
+                    if (window.xxmxliAnalytics && window.xxmxliAnalytics.modules['heatmaps']) {
+                        window.xxmxliAnalytics.modules['heatmaps'].createHeatmapDashboard('heatmaps-container');
+                    }
+                    break;
+                    
+                case 'custom-events':
+                    if (window.xxmxliAnalytics && window.xxmxliAnalytics.modules['custom-events']) {
+                        window.xxmxliAnalytics.modules['custom-events'].createCustomEventsDashboard('custom-events-container');
                     }
                     break;
             }
