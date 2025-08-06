@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel Showcase - XXMXLI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --cyber-green: #00ff00;
+            --cyber-dark: #000000;
+            --cyber-accent: #003300;
+            --cyber-glow: 0 0 10px #00ff00;
+            --cyber-glow-strong: 0 0 20px #00ff00;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: var(--cyber-dark);
+            color: var(--cyber-green);
+            line-height: 1.6;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 0, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 0, 0.05) 0%, transparent 50%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+            border-bottom: 2px solid var(--cyber-green);
+            box-shadow: 0 2px 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            color: var(--cyber-green);
+            text-shadow: var(--cyber-glow);
+            margin-bottom: 1rem;
+            animation: cyberGlow 2s ease-in-out infinite alternate;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #00cc00;
+            margin-bottom: 1rem;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--cyber-green);
+            color: var(--cyber-dark);
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: var(--cyber-glow);
+        }
+
+        .back-button:hover {
+            background-color: #00cc00;
+            transform: translateY(-2px);
+            box-shadow: var(--cyber-glow-strong);
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .admin-card {
+            background: linear-gradient(135deg, rgba(0, 17, 0, 0.9) 0%, rgba(0, 34, 0, 0.9) 100%);
+            border: 2px solid var(--cyber-accent);
+            border-radius: 12px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .admin-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .admin-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--cyber-green);
+            box-shadow: var(--cyber-glow-strong);
+        }
+
+        .admin-card:hover::before {
+            left: 100%;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            color: var(--cyber-green);
+            margin-right: 1rem;
+            text-shadow: var(--cyber-glow);
+        }
+
+        .card-title {
+            font-size: 1.8rem;
+            color: var(--cyber-green);
+            font-weight: bold;
+            text-shadow: var(--cyber-glow);
+        }
+
+        .card-subtitle {
+            color: #00cc00;
+            font-size: 1rem;
+            margin-top: 0.25rem;
+        }
+
+        .card-description {
+            color: #00aa00;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .features-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .features-list li {
+            color: #00cc00;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .features-list li::before {
+            content: '▶';
+            color: var(--cyber-green);
+            margin-right: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--cyber-green);
+            color: var(--cyber-dark);
+            box-shadow: var(--cyber-glow);
+        }
+
+        .btn-primary:hover {
+            background-color: #00cc00;
+            transform: translateY(-2px);
+            box-shadow: var(--cyber-glow-strong);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--cyber-green);
+            border: 2px solid var(--cyber-green);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--cyber-green);
+            color: var(--cyber-dark);
+            transform: translateY(-2px);
+        }
+
+        .comparison-section {
+            background: linear-gradient(135deg, rgba(0, 17, 0, 0.6) 0%, rgba(0, 34, 0, 0.6) 100%);
+            border: 1px solid var(--cyber-accent);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        .comparison-section h2 {
+            color: var(--cyber-green);
+            text-shadow: var(--cyber-glow);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: var(--cyber-green);
+            font-family: 'Courier New', monospace;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--cyber-accent);
+        }
+
+        .comparison-table th {
+            background-color: rgba(0, 255, 0, 0.1);
+            color: var(--cyber-green);
+            font-weight: bold;
+        }
+
+        .comparison-table td {
+            color: #00cc00;
+        }
+
+        .framework-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background-color: rgba(0, 255, 0, 0.2);
+            border: 1px solid var(--cyber-green);
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: var(--cyber-green);
+            margin: 0.25rem 0.25rem 0.25rem 0;
+        }
+
+        @keyframes cyberGlow {
+            from { text-shadow: 0 0 5px #00ff00; }
+            to { text-shadow: 0 0 15px #00ff00, 0 0 25px #00ff00; }
+        }
+
+        .matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        @media (max-width: 768px) {
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .card-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-rain"></div>
+
+    <div class="header">
+        <h1><i class="fas fa-desktop"></i> Admin Panel Showcase</h1>
+        <p>Cyberpunk-themed admin interfaces for XXMXLI</p>
+        <p>Four different frameworks, one unified aesthetic</p>
+        <a href="../index.html" class="back-button">
+            <i class="fas fa-home"></i> Back to Home
+        </a>
+        <a href="login.html" class="back-button" style="margin-left: 1rem;">
+            <i class="fas fa-sign-in-alt"></i> Admin Login
+        </a>
+    </div>
+
+    <div class="admin-grid">
+        <!-- AdminLTE -->
+        <div class="admin-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-tachometer-alt"></i>
+                </div>
+                <div>
+                    <div class="card-title">AdminLTE</div>
+                    <div class="card-subtitle">Bootstrap-based Admin Template</div>
+                </div>
+            </div>
+            <div class="card-description">
+                The industry-standard admin template built on Bootstrap 4, featuring comprehensive widgets, charts, and UI components with our cyberpunk theme overlay.
+            </div>
+            <ul class="features-list">
+                <li>Bootstrap 4 framework foundation</li>
+                <li>Comprehensive widget library</li>
+                <li>Chart.js donut chart integration</li>
+                <li>jQuery-powered interactions</li>
+                <li>Responsive sidebar navigation</li>
+                <li>Real-time data updates</li>
+            </ul>
+            <div class="card-actions">
+                <a href="adminlte/index.html" class="btn btn-primary">
+                    <i class="fas fa-eye"></i> View Demo
+                </a>
+                <a href="https://adminlte.io/" target="_blank" class="btn btn-secondary">
+                    <i class="fas fa-external-link-alt"></i> Docs
+                </a>
+            </div>
+        </div>
+
+        <!-- Tabler -->
+        <div class="admin-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div>
+                    <div class="card-title">Tabler</div>
+                    <div class="card-subtitle">Modern Admin Framework</div>
+                </div>
+            </div>
+            <div class="card-description">
+                A premium admin template with modern design, built on Bootstrap 5. Features dark theme support and beautiful ApexCharts integration.
+            </div>
+            <ul class="features-list">
+                <li>Bootstrap 5 modern framework</li>
+                <li>Dark theme native support</li>
+                <li>ApexCharts area chart visualization</li>
+                <li>Material Design elements</li>
+                <li>Progressive indicators</li>
+                <li>Activity feed components</li>
+            </ul>
+            <div class="card-actions">
+                <a href="tabler/index.html" class="btn btn-primary">
+                    <i class="fas fa-eye"></i> View Demo
+                </a>
+                <a href="https://tabler.io/" target="_blank" class="btn btn-secondary">
+                    <i class="fas fa-external-link-alt"></i> Docs
+                </a>
+            </div>
+        </div>
+
+        <!-- React Admin -->
+        <div class="admin-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fab fa-react"></i>
+                </div>
+                <div>
+                    <div class="card-title">React Admin</div>
+                    <div class="card-subtitle">Component-based Interface</div>
+                </div>
+            </div>
+            <div class="card-description">
+                A modern React 18 dashboard using Material-UI components with hooks for state management and real-time updates.
+            </div>
+            <ul class="features-list">
+                <li>React 18 with functional components</li>
+                <li>Material-UI component library</li>
+                <li>Hooks for state management</li>
+                <li>Professional theming system</li>
+                <li>Component architecture</li>
+                <li>Real-time data binding</li>
+            </ul>
+            <div class="card-actions">
+                <a href="react-admin/index.html" class="btn btn-primary">
+                    <i class="fas fa-eye"></i> View Demo
+                </a>
+                <a href="https://mui.com/" target="_blank" class="btn btn-secondary">
+                    <i class="fas fa-external-link-alt"></i> Docs
+                </a>
+            </div>
+        </div>
+
+        <!-- Vue Admin -->
+        <div class="admin-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fab fa-vuejs"></i>
+                </div>
+                <div>
+                    <div class="card-title">Vue Admin</div>
+                    <div class="card-subtitle">Reactive Vue 3 Interface</div>
+                </div>
+            </div>
+            <div class="card-description">
+                A Vue 3 dashboard using the Composition API with Element Plus components for a reactive, modern admin experience.
+            </div>
+            <ul class="features-list">
+                <li>Vue 3 Composition API</li>
+                <li>Element Plus UI components</li>
+                <li>Reactive data binding</li>
+                <li>Chart.js integration</li>
+                <li>Professional layout system</li>
+                <li>Real-time state updates</li>
+            </ul>
+            <div class="card-actions">
+                <a href="vue-admin/index.html" class="btn btn-primary">
+                    <i class="fas fa-eye"></i> View Demo
+                </a>
+                <a href="https://element-plus.org/" target="_blank" class="btn btn-secondary">
+                    <i class="fas fa-external-link-alt"></i> Docs
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="comparison-section">
+        <h2><i class="fas fa-balance-scale"></i> Framework Comparison</h2>
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Framework</th>
+                    <th>Technology Stack</th>
+                    <th>Best For</th>
+                    <th>Learning Curve</th>
+                    <th>Performance</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>AdminLTE</strong></td>
+                    <td>
+                        <span class="framework-badge">Bootstrap 4</span>
+                        <span class="framework-badge">jQuery</span>
+                        <span class="framework-badge">CSS</span>
+                    </td>
+                    <td>Traditional admin panels, rapid prototyping</td>
+                    <td>Easy</td>
+                    <td>Good</td>
+                </tr>
+                <tr>
+                    <td><strong>Tabler</strong></td>
+                    <td>
+                        <span class="framework-badge">Bootstrap 5</span>
+                        <span class="framework-badge">Vanilla JS</span>
+                        <span class="framework-badge">CSS3</span>
+                    </td>
+                    <td>Modern design, dark themes</td>
+                    <td>Easy</td>
+                    <td>Excellent</td>
+                </tr>
+                <tr>
+                    <td><strong>React Admin</strong></td>
+                    <td>
+                        <span class="framework-badge">React 18</span>
+                        <span class="framework-badge">Material-UI</span>
+                        <span class="framework-badge">JSX</span>
+                    </td>
+                    <td>Complex applications, component reuse</td>
+                    <td>Moderate</td>
+                    <td>Excellent</td>
+                </tr>
+                <tr>
+                    <td><strong>Vue Admin</strong></td>
+                    <td>
+                        <span class="framework-badge">Vue 3</span>
+                        <span class="framework-badge">Element Plus</span>
+                        <span class="framework-badge">Composition API</span>
+                    </td>
+                    <td>Reactive UIs, progressive enhancement</td>
+                    <td>Moderate</td>
+                    <td>Excellent</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Matrix rain effect
+        function createMatrixRain() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.style.position = 'fixed';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            canvas.style.pointerEvents = 'none';
+            canvas.style.zIndex = '-1';
+            canvas.style.opacity = '0.05';
+            document.querySelector('.matrix-rain').appendChild(canvas);
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const characters = '01';
+            const fontSize = 14;
+            const columns = canvas.width / fontSize;
+            const drops = [];
+
+            for (let i = 0; i < columns; i++) {
+                drops[i] = 1;
+            }
+
+            function draw() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = '#00ff00';
+                ctx.font = fontSize + 'px Courier New';
+
+                for (let i = 0; i < drops.length; i++) {
+                    const text = characters[Math.floor(Math.random() * characters.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+
+            setInterval(draw, 33);
+
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+        }
+
+        // Initialize matrix effect
+        createMatrixRain();
+
+        // Add smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
