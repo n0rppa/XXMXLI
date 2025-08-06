@@ -86,82 +86,126 @@
     <script>
         class VisitorDashboard {
             constructor() {
-                this.autoRefresh = true;
-                this.refreshInterval = null;
-                this.currentFilter = {
-                    ip: '',
-                    country: ''
-                };
+                this.stats = {};
                 this.allVisitors = [];
-                this.stats = null;
+                this.filteredVisitors = [];
+                this.autoRefresh = false;
+                this.refreshInterval = null;
+                this.isGitHubPages = this.detectHostingEnvironment();
+                console.log('Dashboard initialized for:', this.isGitHubPages ? 'GitHub Pages' : 'Local Server');
+            }
+
+            detectHostingEnvironment() {
+                const hostname = window.location.hostname;
+                const protocol = window.location.protocol;
+                
+                // Check for force static mode parameter
+                const urlParams = new URLSearchParams(window.location.search);
+                const forceStatic = urlParams.get('static') === 'true';
+                
+                // More reliable GitHub Pages detection
+                const isGitHubPages = forceStatic ||
+                                    hostname.includes('github.io') || 
+                                    hostname.includes('xxmxli.com') ||
+                                    hostname.includes('pages.dev') ||
+                                    (protocol === 'https:' && !hostname.includes('localhost'));
+                
+                console.log('Environment detection:', {
+                    hostname,
+                    protocol,
+                    forceStatic,
+                    isGitHubPages
+                });
+                
+                return isGitHubPages;
             }
 
             async init() {
+                this.showInfo('Initializing dashboard...');
                 await this.loadDashboard();
                 this.startAutoRefresh();
-                
-                // Update refresh indicator
-                this.updateRefreshIndicator();
             }
 
             async loadDashboard() {
                 try {
-                    // Detect if we're running on GitHub Pages or locally
-                    const isGitHubPages = window.location.hostname.includes('github.io') || 
-                                        window.location.hostname.includes('xxmxli.com');
+                    console.log(`Loading dashboard in ${this.isGitHubPages ? 'static' : 'API'} mode...`);
                     
-                    let apiBase;
-                    if (isGitHubPages) {
-                        // For GitHub Pages/production, use static data or alternative API
-                        apiBase = '../data/';
+                    if (this.isGitHubPages) {
                         await this.loadStaticData();
-                        return;
                     } else {
-                        // For local development
-                        apiBase = '/api/';
+                        await this.loadAPIData();
                     }
-                    
-                    // Load overview stats
-                    const statsResponse = await fetch(`${apiBase}get-visitor-stats.php?action=overview`);
-                    if (!statsResponse.ok) {
-                        throw new Error(`HTTP ${statsResponse.status}: ${statsResponse.statusText}`);
-                    }
-                    this.stats = await statsResponse.json();
-                    
-                    // Load recent visitors
-                    const visitorsResponse = await fetch(`${apiBase}get-visitor-stats.php?action=visitors&limit=100`);
-                    if (!visitorsResponse.ok) {
-                        throw new Error(`HTTP ${visitorsResponse.status}: ${visitorsResponse.statusText}`);
-                    }
-                    const visitorsData = await visitorsResponse.json();
-                    this.allVisitors = visitorsData.visitors || [];
-                    
-                    // Load countries for filter
-                    const countriesResponse = await fetch(`${apiBase}get-visitor-stats.php?action=countries`);
-                    if (!countriesResponse.ok) {
-                        throw new Error(`HTTP ${countriesResponse.status}: ${countriesResponse.statusText}`);
-                    }
-                    const countries = await countriesResponse.json();
-                    this.populateCountryFilter(countries);
                     
                     this.renderDashboard();
+                    this.showInfo(`Dashboard loaded successfully (${this.isGitHubPages ? 'Static' : 'API'} mode)`);
                     
                 } catch (error) {
-                    console.error('Failed to load dashboard:', error);
-                    this.showError(`Failed to load dashboard data: ${error.message}`);
+                    console.error('Dashboard loading error:', error);
+                    this.showError(`Failed to load dashboard: ${error.message}`);
                     
-                    // Fallback to static demo data
-                    await this.loadStaticData();
+                    // Fallback to static data if API fails
+                    if (!this.isGitHubPages) {
+                        console.log('API failed, trying static fallback...');
+                        try {
+                            await this.loadStaticData();
+                            this.renderDashboard();
+                            this.showInfo('Dashboard loaded with static fallback data');
+                        } catch (staticError) {
+                            console.error('Static fallback also failed:', staticError);
+                            this.showError('Unable to load any data. Please check your configuration.');
+                        }
+                    }
                 }
+            }
+
+            async loadAPIData() {
+                const apiBase = '/api/';
+                
+                // Load overview stats
+                const statsResponse = await fetch(`${apiBase}get-visitor-stats.php?action=overview`);
+                if (!statsResponse.ok) {
+                    throw new Error(`API request failed: ${statsResponse.status} ${statsResponse.statusText}`);
+                }
+                
+                const statsText = await statsResponse.text();
+                try {
+                    this.stats = JSON.parse(statsText);
+                } catch (parseError) {
+                    console.error('API response text:', statsText);
+                    throw new Error(`Invalid JSON response from API: ${parseError.message}`);
+                }
+                
+                // Load recent visitors
+                const visitorsResponse = await fetch(`${apiBase}get-visitor-stats.php?action=visitors&limit=100`);
+                if (!visitorsResponse.ok) {
+                    throw new Error(`Visitors API request failed: ${visitorsResponse.status}`);
+                }
+                
+                const visitorsData = await visitorsResponse.json();
+                this.allVisitors = visitorsData.visitors || [];
+                
+                // Load countries for filter
+                const countriesResponse = await fetch(`${apiBase}get-visitor-stats.php?action=countries`);
+                if (!countriesResponse.ok) {
+                    throw new Error(`Countries API request failed: ${countriesResponse.status}`);
+                }
+                
+                const countriesData = await countriesResponse.json();
+                this.populateCountryFilter(countriesData.countries || []);
             }
 
             async loadStaticData() {
                 // Fallback static data for GitHub Pages
+                console.log('Loading static data...');
+                
                 try {
                     // First try to load from localStorage (client-side tracking)
                     if (typeof StaticVisitorTracker !== 'undefined') {
+                        console.log('StaticVisitorTracker available, checking for data...');
                         const visitors = StaticVisitorTracker.getStoredVisits();
                         const dailyStats = StaticVisitorTracker.getDailyStats();
+                        
+                        console.log('Static data found:', { visitors: visitors.length, dailyStats: Object.keys(dailyStats).length });
                         
                         if (visitors.length > 0) {
                             this.stats = this.calculateStatsLocal(visitors, dailyStats);
@@ -178,15 +222,30 @@
                             this.showInfo('Using client-side tracking data');
                             return;
                         }
+                    } else {
+                        console.log('StaticVisitorTracker not available');
                     }
                     
                     // Fallback to JSON files
+                    console.log('Trying to load from JSON files...');
                     const visitorsResponse = await fetch('../data/visitors.json');
+                    
+                    if (!visitorsResponse.ok) {
+                        throw new Error(`Failed to load visitors.json: ${visitorsResponse.status}`);
+                    }
+                    
                     const visitorsData = await visitorsResponse.json();
                     const visitors = visitorsData.visitors || visitorsData;
                     
                     const dailyStatsResponse = await fetch('../data/daily_stats.json');
+                    
+                    if (!dailyStatsResponse.ok) {
+                        throw new Error(`Failed to load daily_stats.json: ${dailyStatsResponse.status}`);
+                    }
+                    
                     const dailyStats = await dailyStatsResponse.json();
+                    
+                    console.log('JSON data loaded:', { visitors: visitors.length, dailyStats: Object.keys(dailyStats).length });
                     
                     // Calculate stats locally
                     this.stats = this.calculateStatsLocal(visitors, dailyStats);
@@ -424,6 +483,13 @@
             }
 
             startAutoRefresh() {
+                // Disable auto-refresh on GitHub Pages to prevent API calls
+                if (this.isGitHubPages) {
+                    console.log('Auto-refresh disabled for GitHub Pages');
+                    document.getElementById('autoRefreshToggle').style.display = 'none';
+                    return;
+                }
+                
                 if (this.refreshInterval) {
                     clearInterval(this.refreshInterval);
                 }
