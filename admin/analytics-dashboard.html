@@ -206,37 +206,19 @@
         <!-- Conversions Tab -->
         <div id="conversions" class="tab-content">
             <h2><i class="fas fa-target"></i> Conversion Tracking</h2>
-            <div class="feature-demo">
-                <h3>Conversion Tracking System</h3>
-                <div class="demo-placeholder">
-                    Conversion tracking module will be loaded here.<br>
-                    Features: Goal tracking, Funnel analysis, ROI calculations
-                </div>
-            </div>
+            <div id="conversions-container"></div>
         </div>
 
         <!-- A/B Testing Tab -->
         <div id="ab-testing" class="tab-content">
             <h2><i class="fas fa-flask"></i> A/B Testing</h2>
-            <div class="feature-demo">
-                <h3>A/B Testing Framework</h3>
-                <div class="demo-placeholder">
-                    A/B testing system will be loaded here.<br>
-                    Features: Split testing, Statistical significance, Performance comparison
-                </div>
-            </div>
+            <div id="ab-testing-container"></div>
         </div>
 
         <!-- Performance Tab -->
         <div id="performance" class="tab-content">
             <h2><i class="fas fa-bolt"></i> Performance Monitoring</h2>
-            <div class="feature-demo">
-                <h3>Performance Analytics</h3>
-                <div class="demo-placeholder">
-                    Performance monitoring will be loaded here.<br>
-                    Features: Page load times, Core Web Vitals, Error tracking
-                </div>
-            </div>
+            <div id="performance-container"></div>
         </div>
 
         <!-- SEO Tab -->
@@ -268,6 +250,9 @@
     <script src="../js/analytics/core.js"></script>
     <script src="../js/analytics/user-analytics.js"></script>
     <script src="../js/analytics/realtime-tracking.js"></script>
+    <script src="../js/analytics/conversion-tracking.js"></script>
+    <script src="../js/analytics/ab-testing.js"></script>
+    <script src="../js/analytics/performance-monitoring.js"></script>
 
     <script>
         // Tab switching functionality
@@ -303,6 +288,24 @@
                 case 'realtime':
                     if (window.xxmxliAnalytics && window.xxmxliAnalytics.modules['realtime-tracking']) {
                         window.xxmxliAnalytics.modules['realtime-tracking'].createRealtimeWidget('realtime-container');
+                    }
+                    break;
+                    
+                case 'conversions':
+                    if (window.xxmxliAnalytics && window.xxmxliAnalytics.modules['conversion-tracking']) {
+                        window.xxmxliAnalytics.modules['conversion-tracking'].createConversionDashboard('conversions-container');
+                    }
+                    break;
+                    
+                case 'ab-testing':
+                    if (window.xxmxliAnalytics && window.xxmxliAnalytics.modules['ab-testing']) {
+                        window.xxmxliAnalytics.modules['ab-testing'].createABTestingDashboard('ab-testing-container');
+                    }
+                    break;
+                    
+                case 'performance':
+                    if (window.xxmxliAnalytics && window.xxmxliAnalytics.modules['performance-monitoring']) {
+                        window.xxmxliAnalytics.modules['performance-monitoring'].createPerformanceDashboard('performance-container');
                     }
                     break;
             }
