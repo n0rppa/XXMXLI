@@ -65,8 +65,8 @@
             <button class="control-button" onclick="exportData()">
                 <i class="fas fa-download"></i> Export Data
             </button>
-            <input type="text" class="filter-input" id="ipFilter" placeholder="Filter by IP..." onkeyup="filterVisitors()">
-            <select class="filter-input" id="countryFilter" onchange="filterVisitors()">
+            <input type="text" class="filter-input" id="ipFilter" placeholder="Filter by IP..." onkeyup="applyFilters()">
+            <select class="filter-input" id="countryFilter" onchange="applyFilters()">
                 <option value="">All Countries</option>
             </select>
         </div>
@@ -564,8 +564,17 @@
             dashboard.exportData();
         }
 
-        function filterVisitors() {
-            dashboard.filterVisitors();
+        function applyFilters() {
+            const ipFilter = document.getElementById('ipFilter').value.toLowerCase();
+            const countryFilter = document.getElementById('countryFilter').value.toLowerCase();
+
+            const filteredVisitors = dashboard.allVisitors.filter(visitor => {
+                const matchesIP = !ipFilter || visitor.ip.toLowerCase().includes(ipFilter);
+                const matchesCountry = !countryFilter || (visitor.country || 'Unknown').toLowerCase() === countryFilter;
+                return matchesIP && matchesCountry;
+            });
+
+            document.getElementById('visitor-list').innerHTML = dashboard.renderVisitorList(filteredVisitors);
         }
 
         function showVisitorDetails(sessionId) {
@@ -589,6 +598,15 @@
                 console.error('Error reading clipboard:', err);
             }
         });
+
+        // Add real-time updates
+        function startRealTimeUpdates() {
+            setInterval(() => {
+                dashboard.loadDashboard();
+            }, 30000); // Refresh every 30 seconds
+        }
+
+        startRealTimeUpdates();
     </script>
 </body>
 </html>
