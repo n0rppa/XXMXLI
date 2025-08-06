@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html lang="fi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XXMXLI - Data Tracker</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Data Tracker - XXMXLI</title>
     <link rel="stylesheet" href="../assets/css/visitor-tracker.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            margin: 0;
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
         }
 
         .dashboard {
@@ -19,124 +19,129 @@
         }
 
         .chart-container {
-            margin: 20px 0;
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
         }
 
-        .filter-section {
-            margin-bottom: 20px;
+        .table-container {
+            margin: 20px auto;
+            width: 90%;
+            overflow-x: auto;
         }
 
-        .filter-section input,
-        .filter-section select {
-            margin-right: 10px;
-            padding: 5px;
-        }
-
-        .data-table {
+        table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
         }
 
-        .data-table th, .data-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-
-        .data-table th {
-            background-color: #f2f2f2;
+        th, td {
+            padding: 10px;
             text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
         }
     </style>
 </head>
 <body>
     <div class="dashboard">
         <h1>Data Tracker</h1>
-
-        <div class="filter-section">
-            <input type="text" id="ipFilter" placeholder="Filter by IP">
-            <select id="countryFilter">
-                <option value="">All Countries</option>
-            </select>
-            <button onclick="applyFilters()">Apply Filters</button>
-        </div>
+        <p>Analyze visitor data and trends.</p>
 
         <div class="chart-container">
             <canvas id="visitorChart"></canvas>
         </div>
 
-        <table class="data-table" id="dataTable">
-            <thead>
-                <tr>
-                    <th>IP Address</th>
-                    <th>Country</th>
-                    <th>Visits</th>
-                    <th>Last Visit</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Data rows will be dynamically inserted here -->
-            </tbody>
-        </table>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Total Visits</th>
+                        <th>Unique IPs</th>
+                        <th>Blocked</th>
+                        <th>Top Country</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTableBody">
+                    <!-- Data will be dynamically inserted here -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
         async function fetchData() {
             try {
-                const response = await fetch('../data/visitors.json');
-                const data = await response.json();
-                return data.visitors || [];
+                const response = await fetch('../data/daily_stats.json');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+                return await response.json();
             } catch (error) {
                 console.error('Error fetching data:', error);
-                return [];
+                return null;
             }
+        }
+
+        function populateTable(data) {
+            const tableBody = document.getElementById('dataTableBody');
+            tableBody.innerHTML = '';
+
+            Object.keys(data).forEach(date => {
+                const row = document.createElement('tr');
+                const dayData = data[date];
+
+                row.innerHTML = `
+                    <td>${date}</td>
+                    <td>${dayData.visits}</td>
+                    <td>${dayData.uniqueIPs}</td>
+                    <td>${dayData.blocked}</td>
+                    <td>${Object.keys(dayData.countries || {})[0] || 'Unknown'}</td>
+                `;
+
+                tableBody.appendChild(row);
+            });
         }
 
         function renderChart(data) {
             const ctx = document.getElementById('visitorChart').getContext('2d');
+            const labels = Object.keys(data);
+            const visits = labels.map(date => data[date].visits);
+
             new Chart(ctx, {
-                type: 'bar',
+                type: 'line',
                 data: {
-                    labels: data.map(item => item.country || 'Unknown'),
+                    labels,
                     datasets: [{
-                        label: 'Visits',
-                        data: data.map(item => item.visits || 0),
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        label: 'Daily Visits',
+                        data: visits,
                         borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        fill: true,
                     }]
                 },
                 options: {
                     responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
+                    plugins: {
+                        legend: {
+                            display: true,
                         }
                     }
                 }
             });
         }
 
-        function renderTable(data) {
-            const tableBody = document.getElementById('dataTable').querySelector('tbody');
-            tableBody.innerHTML = data.map(visitor => `
-                <tr>
-                    <td>${visitor.ip || 'Unknown'}</td>
-                    <td>${visitor.country || 'Unknown'}</td>
-                    <td>${visitor.visits || 0}</td>
-                    <td>${new Date(visitor.timestamp).toLocaleString()}</td>
-                </tr>
-            `).join('');
-        }
-
         async function init() {
             const data = await fetchData();
-            renderChart(data);
-            renderTable(data);
-        }
-
-        function applyFilters() {
-            // Implement filtering logic here
+            if (data) {
+                populateTable(data);
+                renderChart(data);
+            }
         }
 
         init();
