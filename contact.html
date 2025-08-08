@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<<<<<<< HEAD
 <html lang="fi">
 <head>
     <meta charset="UTF-8">
@@ -653,3 +654,311 @@
     </script>
 </body>
 </html>
+=======
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Contact | XXMXLI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Courier New', monospace;
+      background: #000;
+      color: #00ff00;
+    }
+    .header {
+      background: #001100;
+      padding: 1rem;
+    }
+    .nav-container {
+      display: flex;
+      align-items: center;
+      max-width: 1100px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .logo {
+      color: #00ff00;
+      text-decoration: none;
+      font-size: 2rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+      margin-right: 2rem;
+    }
+    .menu-button {
+      display: none;
+      background: none;
+      border: none;
+      color: #00ff00;
+      font-size: 2rem;
+      cursor: pointer;
+      margin-left: auto;
+    }
+    .nav-menu {
+      list-style: none;
+      display: flex;
+      margin: 0;
+      padding: 0;
+      gap: 1rem;
+      align-items: center;
+      position: relative;
+    }
+    .nav-link {
+      color: #00ff00;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+    .nav-link:hover,
+    .nav-link.active {
+      background: rgba(0,255,0,0.2);
+      color: #fff;
+    }
+    .dropdown {
+      position: relative;
+    }
+    .dropdown-toggle:after {
+      content: " \f078";
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      margin-left: 0.3em;
+      font-size: 0.8em;
+    }
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 120%;
+      left: 0;
+      background: #001900;
+      border: 1px solid #00ff00;
+      min-width: 170px;
+      z-index: 10;
+      box-shadow: 0 2px 10px #00330090;
+      border-radius: 6px;
+      padding: 0.5rem 0;
+      flex-direction: column;
+    }
+    .dropdown.active .dropdown-menu {
+      display: flex;
+    }
+    .dropdown-item {
+      color: #00ff00;
+      text-decoration: none;
+      padding: 0.7rem 1.2rem;
+      border: none;
+      background: none;
+      text-align: left;
+      transition: background 0.15s, color 0.15s;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+    }
+    .dropdown-item:hover {
+      background: rgba(0,255,0,0.2);
+      color: #fff;
+    }
+    @media (max-width: 800px) {
+      .nav-container {
+        flex-wrap: wrap;
+      }
+      .menu-button {
+        display: block;
+      }
+      .nav-menu {
+        flex-direction: column;
+        width: 100%;
+        display: none;
+        gap: 0;
+        background: #001100;
+        position: absolute;
+        left: 0;
+        top: 100%;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #00ff00;
+      }
+      .nav-menu.active {
+        display: flex;
+      }
+      .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        border: none;
+        min-width: 0;
+        width: 100%;
+      }
+    }
+    main {
+      max-width: 420px;
+      margin: 2rem auto;
+      background: #001900;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px #00330070;
+      padding: 2rem 1rem;
+      color: #00ff00;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #00ff00;
+      font-size: 2rem;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.3rem;
+    }
+    label {
+      font-weight: bold;
+      margin-bottom: 0.3rem;
+      color: #00ff00;
+    }
+    input, textarea {
+      background: #000;
+      color: #00ff00;
+      border: 1px solid #00ff00;
+      border-radius: 4px;
+      padding: 0.7rem;
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+      transition: border 0.2s;
+      margin-top: 0.3rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    input:focus, textarea:focus {
+      border: 1.5px solid #39ff14;
+    }
+    button[type="submit"] {
+      background: #00ff00;
+      color: #000;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 5px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      width: fit-content;
+      align-self: center;
+      margin-top: 1rem;
+      box-shadow: 0 1px 4px #00330090;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    button[type="submit"]:hover {
+      background: #39ff14;
+      color: #001900;
+    }
+    .form-status {
+      text-align: center;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <nav class="nav-container" id="mainNav">
+      <a href="index.html" class="logo">XXMXLI</a>
+      <button class="menu-button" aria-label="Toggle Menu">
+        <i class="fas fa-bars"></i>
+      </button>
+      <ul class="nav-menu">
+        <li><a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a></li>
+        <li class="dropdown">
+          <a href="#" class="nav-link dropdown-toggle">Services</a>
+          <div class="dropdown-menu">
+            <a href="music.html" class="dropdown-item"><i class="fas fa-music"></i> Musiikki</a>
+            <a href="photo-gallery.html" class="dropdown-item"><i class="fas fa-images"></i> Photo Gallery</a>
+            <a href="supabase.html" class="dropdown-item"><i class="fas fa-database"></i> Database</a>
+            <a href="sanity.html" class="dropdown-item"><i class="fas fa-cog"></i> Content Management</a>
+          </div>
+        </li>
+        <li><a href="security.html" class="nav-link"><i class="fas fa-shield-alt"></i> Security</a></li>
+        <li><a href="music.html" class="nav-link"><i class="fas fa-music"></i> Music</a></li>
+        <li><a href="photography.html" class="nav-link"><i class="fas fa-camera"></i> Photography</a></li>
+        <li><a href="contact.html" class="nav-link active"><i class="fas fa-envelope"></i> Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <h1><i class="fas fa-envelope"></i> Contact</h1>
+    <form id="contact-form" action="https://formspree.io/f/mvgqqyqr" method="POST" autocomplete="on">
+      <label for="email">Your email:
+        <input type="email" id="email" name="email" required placeholder="you@example.com">
+      </label>
+      <label for="message">Your message:
+        <textarea id="message" name="message" rows="6" required placeholder="Type your message here"></textarea>
+      </label>
+      <button type="submit"><i class="fas fa-paper-plane"></i> Send</button>
+      <div class="form-status" id="form-status"></div>
+    </form>
+  </main>
+  <script>
+    // Responsive Nav & Dropdown
+    const menuButton = document.querySelector('.menu-button');
+    const navMenu = document.querySelector('.nav-menu');
+    menuButton.addEventListener('click', () => {
+      navMenu.classList.toggle('active');
+    });
+    document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+      const parent = toggle.closest('.dropdown');
+      toggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.dropdown').forEach(drop => {
+          if (drop !== parent) drop.classList.remove('active');
+        });
+        parent.classList.toggle('active');
+      });
+    });
+    document.addEventListener('click', function(e) {
+      const nav = document.getElementById('mainNav');
+      if (!nav.contains(e.target)) {
+        document.querySelectorAll('.dropdown').forEach(drop => drop.classList.remove('active'));
+        navMenu.classList.remove('active');
+      }
+    });
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        navMenu.classList.remove('active');
+        document.querySelectorAll('.dropdown').forEach(drop => drop.classList.remove('active'));
+      });
+    });
+
+    // AJAX Form handler for Formspree (optional)
+    document.getElementById('contact-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const status = document.getElementById('form-status');
+      status.textContent = 'Sending...';
+      const form = e.target;
+      try {
+        const res = await fetch(form.action, {
+          method: form.method,
+          headers: { 'Accept': 'application/json' },
+          body: new FormData(form)
+        });
+        if (res.ok) {
+          status.textContent = 'Thank you! Your message has been sent.';
+          form.reset();
+        } else {
+          status.textContent = 'Sorry, something went wrong. Please try again.';
+        }
+      } catch {
+        status.textContent = 'Sorry, something went wrong. Please try again.';
+      }
+    });
+  </script>
+</body>
+</html>
+>>>>>>> 2a4c7e0c5535fa482b9c2c1ccaf69c5b035bc66c

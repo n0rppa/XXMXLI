@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="fi">
+<html lang="en">
 <head>
+<<<<<<< HEAD
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://formspree.io https://api.ipify.org http://ip-api.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://formspree.io https://api.ipify.org http://ip-api.com ws://localhost:8080 wss://localhost:8080;">
@@ -982,5 +983,220 @@
             }
         });
     </script>
+=======
+  <meta charset="UTF-8">
+  <title>XXMXLI - Dropdown Menu Example</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Courier New', monospace;
+      background: #000;
+      color: #00ff00;
+    }
+    .header {
+      background: #001100;
+      padding: 1rem;
+    }
+    .nav-container {
+      display: flex;
+      align-items: center;
+      max-width: 1100px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .logo {
+      color: #00ff00;
+      text-decoration: none;
+      font-size: 2rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+      margin-right: 2rem;
+    }
+    .menu-button {
+      display: none;
+      background: none;
+      border: none;
+      color: #00ff00;
+      font-size: 2rem;
+      cursor: pointer;
+      margin-left: auto;
+    }
+    .nav-menu {
+      list-style: none;
+      display: flex;
+      margin: 0;
+      padding: 0;
+      gap: 1rem;
+      align-items: center;
+      position: relative;
+    }
+    .nav-link {
+      color: #00ff00;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+    .nav-link:hover,
+    .nav-link.active {
+      background: rgba(0,255,0,0.2);
+      color: #fff;
+    }
+    /* Dropdown Styles */
+    .dropdown {
+      position: relative;
+    }
+    .dropdown-toggle:after {
+      content: " \f078";
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      margin-left: 0.3em;
+      font-size: 0.8em;
+    }
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 120%;
+      left: 0;
+      background: #001900;
+      border: 1px solid #00ff00;
+      min-width: 170px;
+      z-index: 10;
+      box-shadow: 0 2px 10px #00330090;
+      border-radius: 6px;
+      padding: 0.5rem 0;
+      flex-direction: column;
+    }
+    .dropdown.active .dropdown-menu {
+      display: flex;
+    }
+    .dropdown-item {
+      color: #00ff00;
+      text-decoration: none;
+      padding: 0.7rem 1.2rem;
+      border: none;
+      background: none;
+      text-align: left;
+      transition: background 0.15s, color 0.15s;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+    }
+    .dropdown-item:hover {
+      background: rgba(0,255,0,0.2);
+      color: #fff;
+    }
+    /* Responsive Styles */
+    @media (max-width: 800px) {
+      .nav-container {
+        flex-wrap: wrap;
+      }
+      .menu-button {
+        display: block;
+      }
+      .nav-menu {
+        flex-direction: column;
+        width: 100%;
+        display: none;
+        gap: 0;
+        background: #001100;
+        position: absolute;
+        left: 0;
+        top: 100%;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #00ff00;
+      }
+      .nav-menu.active {
+        display: flex;
+      }
+      .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        border: none;
+        min-width: 0;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <nav class="nav-container" id="mainNav">
+      <a href="index.html" class="logo">XXMXLI</a>
+      <button class="menu-button" aria-label="Toggle Menu">
+        <i class="fas fa-bars"></i>
+      </button>
+      <ul class="nav-menu">
+        <li><a href="index.html" class="nav-link active"><i class="fas fa-home"></i> Home</a></li>
+        <li class="dropdown">
+          <a href="#" class="nav-link dropdown-toggle">Services</a>
+          <div class="dropdown-menu">
+            <a href="music.html" class="dropdown-item"><i class="fas fa-music"></i> Musiikki</a>
+            <a href="photo-gallery.html" class="dropdown-item"><i class="fas fa-images"></i> Photo Gallery</a>
+            <a href="supabase.html" class="dropdown-item"><i class="fas fa-database"></i> Database</a>
+            <a href="sanity.html" class="dropdown-item"><i class="fas fa-cog"></i> Content Management</a>
+          </div>
+        </li>
+        <li><a href="security.html" class="nav-link"><i class="fas fa-shield-alt"></i> Security</a></li>
+        <li><a href="music.html" class="nav-link"><i class="fas fa-music"></i> Music</a></li>
+        <li><a href="photography.html" class="nav-link"><i class="fas fa-camera"></i> Photography</a></li>
+        <li><a href="contact.html" class="nav-link"><i class="fas fa-envelope"></i> Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <section style="padding:2rem;">
+      <h1>Welcome to XXMXLI</h1>
+      <p>This is your homepage with a fully responsive dropdown navigation menu.</p>
+    </section>
+  </main>
+  <script>
+    // Mobile menu toggle
+    const menuButton = document.querySelector('.menu-button');
+    const navMenu = document.querySelector('.nav-menu');
+    menuButton.addEventListener('click', () => {
+      navMenu.classList.toggle('active');
+    });
+
+    // Dropdown functionality
+    document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+      const parent = toggle.closest('.dropdown');
+      toggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Close other dropdowns
+        document.querySelectorAll('.dropdown').forEach(drop => {
+          if (drop !== parent) drop.classList.remove('active');
+        });
+        // Toggle current dropdown
+        parent.classList.toggle('active');
+      });
+    });
+
+    // Close dropdowns and mobile menu when clicking outside
+    document.addEventListener('click', function(e) {
+      const nav = document.getElementById('mainNav');
+      if (!nav.contains(e.target)) {
+        document.querySelectorAll('.dropdown').forEach(drop => drop.classList.remove('active'));
+        navMenu.classList.remove('active');
+      }
+    });
+
+    // Close mobile menu when clicking any nav link
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        navMenu.classList.remove('active');
+        document.querySelectorAll('.dropdown').forEach(drop => drop.classList.remove('active'));
+      });
+    });
+  </script>
+>>>>>>> 2a4c7e0c5535fa482b9c2c1ccaf69c5b035bc66c
 </body>
 </html>
