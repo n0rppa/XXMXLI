@@ -1,0 +1,121 @@
+# ========================================
+# XXMXLI SERVER-SIDE IP BLOCKING SYSTEM
+# ========================================
+# This file contains actual server-side IP blocking rules
+# Place this content in your main .htaccess file for real protection
+
+# Enable rewrite engine
+RewriteEngine On
+
+# ===========================================
+# HIGH-PRIORITY THREAT IPs (Server-Side Block)
+# ===========================================
+# These IPs are blocked at the Apache level before any content loads
+
+# Known malicious IPs from your blacklist (high-risk examples)
+<RequireAll>
+    Require all granted
+    
+    # Block specific high-risk IPs
+    Require not ip 1.0.0.1
+    Require not ip 1.1.1.1
+    Require not ip 8.8.8.8
+    Require not ip 192.168.1.1
+    Require not ip 10.0.0.1
+    
+    # Block known bot/crawler ranges
+    Require not ip 46.229.168.0/24
+    Require not ip 185.220.100.0/24
+    Require not ip 198.98.50.0/24
+    
+    # Block Tor exit nodes (examples)
+    Require not ip 199.87.154.255
+    Require not ip 171.25.193.77
+    Require not ip 171.25.193.78
+    
+    # Block scanning/attack IPs
+    Require not ip 45.227.255.0/24
+    Require not ip 194.147.78.0/24
+</RequireAll>
+
+# ===========================================
+# GEOGRAPHIC BLOCKING (Optional)
+# ===========================================
+# Block entire countries if needed
+# SetEnvIf GEOIP_COUNTRY_CODE CN BlockCountry
+# SetEnvIf GEOIP_COUNTRY_CODE RU BlockCountry
+# SetEnvIf GEOIP_COUNTRY_CODE KP BlockCountry
+# Require env !BlockCountry
+
+# ===========================================
+# SUSPICIOUS BEHAVIOR BLOCKING
+# ===========================================
+# Block based on user agent patterns
+RewriteCond %{HTTP_USER_AGENT} (bot|crawler|spider|scraper|hack) [NC]
+RewriteRule .* /blocked.html [R=403,L]
+
+# Block requests with no user agent
+RewriteCond %{HTTP_USER_AGENT} ^-?$
+RewriteRule .* /blocked.html [R=403,L]
+
+# Block suspicious query strings
+RewriteCond %{QUERY_STRING} (eval|base64|script|iframe) [NC]
+RewriteRule .* /blocked.html [R=403,L]
+
+# ===========================================
+# RATE LIMITING
+# ===========================================
+# Limit requests per IP (requires mod_evasive)
+# <IfModule mod_evasive24.c>
+#     DOSHashTableSize    2048
+#     DOSPageCount        5
+#     DOSPageInterval     1
+#     DOSSiteCount        50
+#     DOSSiteInterval     1
+#     DOSBlockingPeriod   3600
+# </IfModule>
+
+# ===========================================
+# ADMIN AREA EXTRA PROTECTION
+# ===========================================
+# Additional blocking for /admin/ directory
+<Files "admin/*">
+    <RequireAll>
+        Require all granted
+        
+        # Block additional IPs from admin access
+        Require not ip 1.0.0.0/8
+        Require not ip 2.0.0.0/8
+        Require not ip 46.0.0.0/8
+        Require not ip 185.0.0.0/8
+        
+        # Only allow specific trusted IPs to admin (uncomment and add your IPs)
+        # Require ip YOUR.ADMIN.IP.HERE
+        # Require ip ANOTHER.ADMIN.IP
+    </RequireAll>
+</Files>
+
+# ===========================================
+# EMERGENCY LOCKDOWN MODE
+# ===========================================
+# Uncomment these lines to enable emergency lockdown
+# <RequireAll>
+#     Require all denied
+#     Require ip YOUR.ADMIN.IP.HERE
+# </RequireAll>
+
+# ===========================================
+# PERFORMANCE OPTIMIZATIONS
+# ===========================================
+# Cache the block page to reduce server load
+<Files "blocked.html">
+    Header set Cache-Control "public, max-age=3600"
+</Files>
+
+# ===========================================
+# LOGGING BLOCKED ATTEMPTS
+# ===========================================
+# Log blocked IPs for analysis
+RewriteCond %{REMOTE_ADDR} ^(1\.0\.0\.1|1\.1\.1\.1)$
+RewriteRule .* - [E=blocked:1]
+CustomLog logs/blocked_ips.log "%h %t \"%r\" %>s %b" env=blocked

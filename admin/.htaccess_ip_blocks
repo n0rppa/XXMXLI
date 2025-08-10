@@ -1,0 +1,29 @@
+# ========================================
+# XXMXLI ADMIN AREA IP PROTECTION
+# ========================================
+# Extra security for admin directory
+
+AuthType Basic
+AuthName "XXMXLI Admin Access"
+AuthUserFile /path/to/.htpasswd
+
+<RequireAll>
+    Require valid-user
+    
+    # Block broader IP ranges from admin access
+    Require not ip 1.0.0.0/8
+    Require not ip 2.0.0.0/8
+    Require not ip 46.0.0.0/8
+    Require not ip 185.0.0.0/8
+    Require not ip 194.0.0.0/8
+    
+    # Add your trusted admin IPs here:
+    # Require ip YOUR.ADMIN.IP.HERE
+</RequireAll>
+
+# Additional admin security
+<Files "*.php">
+    Require all denied
+    # Require ip YOUR.ADMIN.IP.HERE
+</Files>
+

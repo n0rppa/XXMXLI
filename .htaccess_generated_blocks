@@ -1,0 +1,136 @@
+# ========================================
+# XXMXLI AUTO-GENERATED IP BLOCKING RULES
+# ========================================
+# Generated on: $(date)
+# High-priority IPs that are blocked at server level
+
+RewriteEngine On
+
+# Block high-priority threat IPs
+<RequireAll>
+    Require all granted
+    
+    Require not ip 1.0.0.1
+    Require not ip 1.0.0.2
+    Require not ip 1.0.0.3
+    Require not ip 1.0.0.4
+    Require not ip 1.0.0.104
+    Require not ip 1.0.1.0
+    Require not ip 1.0.1.1
+    Require not ip 1.0.1.4
+    Require not ip 1.0.2.0
+    Require not ip 1.0.4.0
+    Require not ip 1.0.4.4
+    Require not ip 1.0.5.0
+    Require not ip 1.0.5.4
+    Require not ip 1.0.67.249
+    Require not ip 1.0.69.131
+    Require not ip 1.0.80.221
+    Require not ip 1.0.87.120
+    Require not ip 1.0.93.66
+    Require not ip 1.0.104.204
+    Require not ip 1.0.120.168
+    Require not ip 1.0.133.8
+    Require not ip 1.0.136.178
+    Require not ip 1.0.138.70
+    Require not ip 1.0.141.119
+    Require not ip 1.0.141.187
+    Require not ip 1.0.141.243
+    Require not ip 1.0.145.65
+    Require not ip 1.0.147.18
+    Require not ip 1.0.150.190
+    Require not ip 1.0.151.123
+    Require not ip 1.0.151.200
+    Require not ip 1.0.152.14
+    Require not ip 1.0.153.173
+    Require not ip 1.0.153.224
+    Require not ip 1.0.154.247
+    Require not ip 1.0.155.6
+    Require not ip 1.0.156.24
+    Require not ip 1.0.156.186
+    Require not ip 1.0.157.240
+    Require not ip 1.0.160.224
+    Require not ip 1.0.163.115
+    Require not ip 1.0.168.93
+    Require not ip 1.0.169.38
+    Require not ip 1.0.170.30
+    Require not ip 1.0.170.50
+    Require not ip 1.0.171.2
+    Require not ip 1.0.171.117
+    Require not ip 1.0.173.212
+    Require not ip 1.0.174.1
+    Require not ip 1.0.194.20
+    Require not ip 1.0.203.116
+    Require not ip 1.0.210.62
+    Require not ip 1.0.210.126
+    Require not ip 1.0.211.179
+    Require not ip 1.0.211.204
+    Require not ip 1.0.211.233
+    Require not ip 1.0.213.40
+    Require not ip 1.0.215.7
+    Require not ip 1.0.215.176
+    Require not ip 1.0.215.194
+    Require not ip 1.0.218.19
+    Require not ip 1.0.218.175
+    Require not ip 1.0.218.230
+    Require not ip 1.0.219.24
+    Require not ip 1.0.219.131
+    Require not ip 1.0.220.27
+    Require not ip 1.0.220.167
+    Require not ip 1.0.220.170
+    Require not ip 1.0.221.170
+    Require not ip 1.0.224.56
+    Require not ip 1.0.224.61
+    Require not ip 1.0.225.91
+    Require not ip 1.0.227.12
+    Require not ip 1.0.227.155
+    Require not ip 1.0.228.234
+    Require not ip 1.0.229.27
+    Require not ip 1.0.231.193
+    Require not ip 1.0.231.231
+    Require not ip 1.0.232.124
+    Require not ip 1.0.235.106
+    Require not ip 1.0.235.154
+    Require not ip 1.0.235.228
+    Require not ip 1.0.236.167
+    Require not ip 1.0.237.79
+    Require not ip 1.0.238.79
+    Require not ip 1.0.238.154
+    Require not ip 1.0.239.126
+    Require not ip 1.0.240.53
+    Require not ip 1.0.240.63
+    Require not ip 1.0.247.208
+    Require not ip 1.0.248.2
+    Require not ip 1.0.248.3
+    Require not ip 1.0.248.4
+    Require not ip 1.0.248.10
+    Require not ip 1.0.248.11
+    Require not ip 1.0.248.13
+    Require not ip 1.0.248.16
+    Require not ip 1.0.248.23
+    Require not ip 1.0.248.27
+    Require not ip 1.0.248.28
+    
+</RequireAll>
+
+# Block suspicious user agents
+RewriteCond %{HTTP_USER_AGENT} (bot|crawler|spider|scraper|hack|scan|vuln) [NC]
+RewriteRule .* /blocked.html [R=403,L]
+
+# Block empty user agents
+RewriteCond %{HTTP_USER_AGENT} ^-?$
+RewriteRule .* /blocked.html [R=403,L]
+
+# Block IP ranges known for attacks
+RewriteCond %{REMOTE_ADDR} ^1\.0\.248\.
+RewriteRule .* /blocked.html [R=403,L]
+
+RewriteCond %{REMOTE_ADDR} ^185\.220\.
+RewriteRule .* /blocked.html [R=403,L]
+
+# Log blocked attempts
+RewriteCond %{REQUEST_URI} !^/blocked\.html$
+RewriteCond %{REMOTE_ADDR} ^(1\.0\.0\.1|1\.1\.1\.1)$
+RewriteRule .* - [E=blocked_ip:1]
+CustomLog logs/xxmxli_blocked.log "%h %t \"%r\" %>s %b [BLOCKED]" env=blocked_ip
+
