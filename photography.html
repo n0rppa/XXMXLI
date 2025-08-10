@@ -32,16 +32,42 @@
             overflow-x: hidden;
         }
 
+        /* Side Menu Styles */
+        .side-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 220px;
+            background: #001100;
+            border-right: 1px solid var(--accent);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 1099;
+            padding-top: 60px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .side-menu a {
+            color: var(--accent);
+            text-decoration: none;
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid #003300;
+            font-family: 'Courier New', monospace;
+        }
+
+        .side-menu a:hover {
+            background: #002200;
+        }
+
+        .side-menu.open {
+            transform: translateX(0);
+        }
+
         /* Header Styles */
         .header {
-            background: rgba(0, 17, 0, 0.95);
-            padding: 1rem;
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 1px solid var(--accent);
-            box-shadow: 0 0 10px var(--accent);
+            display: none !important;
         }
 
         .nav-container {
@@ -411,141 +437,14 @@
     </style>
 </head>
 <body>
-    <!-- Matrix Themed Dropdown Navigation -->
-    <nav class="matrix-nav">
-      <div class="matrix-nav-container">
-        <button id="matrixMenuBtn" class="matrix-menu-btn">
-          <span class="matrix-bars">&#9608;&#9608;&#9608;</span> MENU
-        </button>
-        <div id="matrixDropdown" class="matrix-dropdown">
-          <a href="index.html"><i class="fas fa-home"></i> Dashboard</a>
-          <a href="photography.html"><i class="fas fa-image"></i> Valokuvaus</a>
-          <a href="projects.html"><i class="fas fa-project-diagram"></i> Projektit</a>
-          <a href="music.html"><i class="fas fa-music"></i> Musiikki</a>
-          <a href="contact.html"><i class="fas fa-envelope"></i> Ota yhteyttä</a>
-          <a href="admin/visitor-dashboard.html"><i class="fas fa-chart-bar"></i> Data Tracker</a>
-          <a href="login.html"><i class="fas fa-user-lock"></i> Kirjaudu sisään</a>
-          <a href="admin/login.html"><i class="fas fa-user-shield"></i> Admin Login</a>
-          <a href="admin/visitor-dashboard.html"><i class="fas fa-cogs"></i> Admin Panel</a>
-        </div>
-      </div>
+    <!-- Hamburger Menu and Side Navigation -->
+    <button id="menuToggle" class="hamburger" aria-label="Menu">☰</button>
+    <nav id="sideMenu" class="side-menu" aria-label="Site">
+        <a href="index.html">Etusivu</a>
+        <a href="music.html">Musiikki</a>
+        <a href="photography.html">Valokuvaus</a>
+        <a href="projects.html">Projektit</a>
     </nav>
-    <style>
-      .matrix-nav {
-        background: linear-gradient(90deg, #000 60%, #003300 100%);
-        padding: 1.2em 0 1.2em 0;
-        box-shadow: 0 0 30px #00ff00aa;
-        border-bottom: 2px solid #00ff00;
-        position: relative;
-        z-index: 1001;
-      }
-      .matrix-nav-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        position: relative;
-      }
-      .matrix-menu-btn {
-        background: #000;
-        color: #00ff00;
-        border: 2px solid #00ff00;
-        border-radius: 8px;
-        padding: 0.7em 2em;
-        font-size: 1.3em;
-        font-family: 'Courier New', monospace;
-        letter-spacing: 2px;
-        cursor: pointer;
-        box-shadow: 0 0 10px #00ff00cc;
-        transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-        position: relative;
-        overflow: hidden;
-        text-shadow: 0 0 8px #00ff00;
-      }
-      .matrix-menu-btn:hover {
-        background: #003300;
-        color: #fff;
-        box-shadow: 0 0 20px #00ff00;
-      }
-      .matrix-bars {
-        font-size: 1.2em;
-        margin-right: 0.7em;
-        color: #00ff00;
-        text-shadow: 0 0 8px #00ff00;
-      }
-      .matrix-dropdown {
-        display: none;
-        position: absolute;
-        left: 0;
-        top: 3.2em;
-        background: rgba(0, 0, 0, 0.98);
-        border: 2px solid #00ff00;
-        border-radius: 0 0 12px 12px;
-        min-width: 260px;
-        box-shadow: 0 0 30px #00ff00cc;
-        animation: matrixDrop 0.3s cubic-bezier(.4,2,.6,1) forwards;
-        font-family: 'Courier New', monospace;
-        z-index: 1002;
-      }
-      .matrix-dropdown.active {
-        display: block;
-      }
-      .matrix-dropdown a {
-        display: block;
-        color: #00ff00;
-        padding: 1em 2em;
-        text-decoration: none;
-        font-size: 1.1em;
-        border-bottom: 1px solid #003300;
-        transition: background 0.2s, color 0.2s, padding-left 0.2s;
-        text-shadow: 0 0 8px #00ff00;
-      }
-      .matrix-dropdown a:last-child {
-        border-bottom: none;
-      }
-      .matrix-dropdown a:hover {
-        background: #003300;
-        color: #fff;
-        padding-left: 2.5em;
-        box-shadow: 0 0 10px #00ff00;
-      }
-      @keyframes matrixDrop {
-        0% { opacity: 0; transform: translateY(-20px) scaleY(0.8); }
-        100% { opacity: 1; transform: translateY(0) scaleY(1); }
-      }
-      @media (max-width: 768px) {
-        .matrix-nav-container {
-          padding: 0 1em;
-        }
-        .matrix-menu-btn {
-          width: 100%;
-          font-size: 1.1em;
-        }
-        .matrix-dropdown {
-          min-width: 100%;
-        }
-      }
-    </style>
-    <script>
-      const matrixBtn = document.getElementById('matrixMenuBtn');
-      const matrixDropdown = document.getElementById('matrixDropdown');
-      
-      if (matrixBtn && matrixDropdown) {
-        matrixBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          matrixDropdown.classList.toggle('active');
-          console.log('Matrix dropdown toggled:', matrixDropdown.classList.contains('active'));
-        });
-      }
-      
-      document.addEventListener('click', function(e) {
-        if (matrixDropdown && matrixBtn && 
-            !matrixBtn.contains(e.target) && 
-            !matrixDropdown.contains(e.target)) {
-          matrixDropdown.classList.remove('active');
-          console.log('Matrix dropdown closed by outside click');
-        }
-      });
-    </script>
 
     <main class="main-content">
         <section class="hero">
@@ -792,6 +691,16 @@
                 }
             });
         });
+
+        (function(){
+          const btn=document.getElementById('menuToggle');
+          const menu=document.getElementById('sideMenu');
+          if(btn && menu){
+            btn.addEventListener('click', ()=> menu.classList.toggle('open'));
+            menu.querySelectorAll('a').forEach(a=> a.addEventListener('click', ()=> menu.classList.remove('open')));
+            document.addEventListener('keydown', e=> { if(e.key==='Escape') menu.classList.remove('open'); });
+          }
+        })();
     </script>
     <script src="assets/js/visitor-tracker.js"></script>
 </body>
