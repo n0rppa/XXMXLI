@@ -1,0 +1,37 @@
+========================================
+XXMXLI SERVER-SIDE IP BLOCKING SETUP
+========================================
+
+🚀 INSTALLATION STEPS:
+
+1. BACKUP YOUR CURRENT .htaccess:
+   cp .htaccess .htaccess.backup
+
+2. ADD BLOCKING RULES TO YOUR MAIN .htaccess:
+   cat .htaccess_generated_blocks >> .htaccess
+
+3. INSTALL ADMIN PROTECTION:
+   cp admin/.htaccess_ip_blocks admin/.htaccess
+
+4. CREATE BLOCKED PAGE:
+   Create a file called 'blocked.html' in your root directory
+
+5. TEST THE SETUP:
+   - Check that your site still loads normally
+   - Verify blocked IPs get 403 errors
+   - Test admin access works
+
+⚠️  IMPORTANT NOTES:
+- This blocks 100 of your highest-priority IPs at server level
+- Remaining IPs are still handled by your client-side system
+- Monitor your server logs for blocked attempts
+- Adjust IP ranges based on your legitimate user base
+
+📊 MONITORING:
+- Blocked attempts logged to: logs/xxmxli_blocked.log
+- Check regularly: tail -f logs/xxmxli_blocked.log
+
+🆘 EMERGENCY DISABLE:
+If you get locked out, remove the blocking rules from .htaccess
+or add your IP to the trusted list.
+

@@ -1,0 +1,31 @@
+# XXMXLI Server-Side IP Blocking Example
+# Add this to your main .htaccess file for actual IP blocking
+
+# Enable rewrite engine
+RewriteEngine On
+
+# Block specific high-risk IPs (add more as needed)
+# Format: RewriteCond %{REMOTE_ADDR} ^IP\.ADDRESS\.HERE$
+# Replace dots with \. for regex escaping
+
+RewriteCond %{REMOTE_ADDR} ^1\.0\.0\.1$
+RewriteRule .* - [F,L]
+
+RewriteCond %{REMOTE_ADDR} ^1\.1\.1\.1$
+RewriteRule .* - [F,L]
+
+# Block IP ranges (example for 192.168.x.x)
+RewriteCond %{REMOTE_ADDR} ^192\.168\.
+RewriteRule .* - [F,L]
+
+# Alternative: Redirect blocked IPs to blocked page
+RewriteCond %{REMOTE_ADDR} ^203\.0\.113\.45$
+RewriteRule .* /blocked.html [R=403,L]
+
+# You can also use Deny from syntax (Apache 2.2 style)
+<RequireAll>
+    Require all granted
+    Require not ip 1.0.0.1
+    Require not ip 1.1.1.1
+    Require not ip 203.0.113.45
+</RequireAll>
