@@ -185,17 +185,51 @@
             margin: 0 auto;
         }
 
-        /* Grid Layout */
+        /* Grid Layout for general content */
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
             padding: 2rem;
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
-        .grid-item {
+        /* Photo Gallery specific styles */
+        .grid-container .grid-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .grid-container .grid-item:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent);
+            transform: translateY(-5px);
+        }
+
+        .grid-container .grid-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .grid-container .grid-item:hover img {
+            transform: scale(1.05);
+            border-color: var(--accent);
+        }
+
+        /* General grid item styles (for non-photo content) */
+        .grid-item:not(.grid-container .grid-item) {
             background: var(--card-bg);
             border: 1px solid var(--border);
             padding: 2rem;
@@ -263,7 +297,7 @@
         }
 
         /* Gallery Styles */
-        .gallery-item {
+        .grid-item {
             background: var(--card-bg);
             border: 1px solid var(--border);
             padding: 1rem;
@@ -272,13 +306,13 @@
             position: relative;
         }
 
-        .gallery-item:hover {
+        .grid-item:hover {
             border-color: var(--accent);
             box-shadow: 0 0 15px var(--accent);
             transform: translateY(-5px);
         }
 
-        .gallery-item img {
+        .grid-item img {
             width: 100%;
             height: 200px;
             object-fit: cover;
@@ -287,7 +321,7 @@
             cursor: pointer;
         }
 
-        .gallery-item:hover img {
+        .grid-item:hover img {
             transform: scale(1.05);
             border-color: var(--accent);
         }
@@ -615,7 +649,9 @@
 
         // Gallery image loading and modal functionality
         document.addEventListener('DOMContentLoaded', function() {
-            const galleryItems = document.querySelectorAll('.gallery-item img');
+            console.log('DOM loaded, initializing gallery...');
+            
+            const galleryItems = document.querySelectorAll('.grid-item img');
             const modal = document.getElementById('imageModal');
             const modalImage = document.getElementById('modalImage');
             const modalFilename = document.getElementById('modalFilename');
@@ -627,6 +663,14 @@
             
             let currentImageIndex = 0;
             let images = [];
+
+            console.log('Gallery items found:', galleryItems.length);
+            console.log('Modal element:', modal);
+            
+            if (!modal) {
+                console.error('Modal element #imageModal not found!');
+                return;
+            }
             
             // Initialize images array
             galleryItems.forEach((img, index) => {
@@ -656,22 +700,45 @@
                 }
                 
                 // Add click event for modal
-                img.addEventListener('click', function() {
+                img.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Image clicked:', index, img.src);
                     openModal(index);
                 });
+
+                // Add pointer cursor
+                img.style.cursor = 'pointer';
             });
+
+            if (images.length === 0) {
+                console.error('No images found in gallery');
+                return;
+            }
             
             function openModal(index) {
+                console.log('Opening modal for image:', index);
+                if (!modal) {
+                    console.error('Modal element not found');
+                    return;
+                }
+                
                 currentImageIndex = index;
                 modal.classList.add('active');
+                modal.style.display = 'flex';
                 document.body.style.overflow = 'hidden';
                 loadModalImage();
             }
             
             function closeModalFunc() {
-                modal.classList.remove('active');
+                console.log('Closing modal');
+                if (modal) {
+                    modal.classList.remove('active');
+                    modal.style.display = 'none';
+                }
                 document.body.style.overflow = '';
-                modalImage.src = '';
+                if (modalImage) {
+                    modalImage.src = '';
+                }
             }
             
             function loadModalImage() {
@@ -712,14 +779,47 @@
             }
             
             // Event listeners
-            closeModal.addEventListener('click', closeModalFunc);
-            nextButton.addEventListener('click', nextImage);
-            prevButton.addEventListener('click', prevImage);
+            if (closeModal) {
+                closeModal.addEventListener('click', closeModalFunc);
+            } else {
+                console.error('Close modal button not found');
+            }
+            
+            if (nextButton) {
+                nextButton.addEventListener('click', nextImage);
+            } else {
+                console.error('Next button not found');
+            }
+            
+            if (prevButton) {
+                prevButton.addEventListener('click', prevImage);
+            } else {
+                console.error('Previous button not found');
+            }
             
             // Close modal when clicking outside the image
-            modal.addEventListener('click', function(e) {
-                if (e.target === modal) {
-                    closeModalFunc();
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        closeModalFunc();
+                    }
+                });
+            }
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (modal && modal.classList.contains('active')) {
+                    switch(e.key) {
+                        case 'Escape':
+                            closeModalFunc();
+                            break;
+                        case 'ArrowLeft':
+                            prevImage();
+                            break;
+                        case 'ArrowRight':
+                            nextImage();
+                            break;
+                    }
                 }
             });
             

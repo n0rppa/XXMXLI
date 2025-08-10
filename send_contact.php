@@ -36,8 +36,7 @@ $message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
 
 // Email settings
 $to_emails = [
-    'eemelipitkanen55@gmail.com',
-    'emiliohurppi@protonmail.com'
+    'eemelipitkanen55@gmail.com'
 ];
 
 $email_subject = 'XXMXLI - ' . $subject;

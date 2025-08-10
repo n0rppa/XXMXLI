@@ -24,9 +24,9 @@
       // Replace with real authentication!
       const u = document.getElementById('username').value;
       const p = document.getElementById('password').value;
-      if (u === 'admin' && p === 'salasana123') {
+      if ((u === 'admin' && p === 'salasana123') || (u === 'xxmxli' && p === 'jamsy')) {
         localStorage.setItem('isAdmin', 'true');
-        window.location.href = 'visitor-dashboard.html';
+        window.location.href = 'admin/visitor-dashboard.html';
       } else {
         document.getElementById('loginError').textContent = 'Väärä tunnus tai salasana!';
       }
