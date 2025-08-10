@@ -1,7 +1,7 @@
 import { supabase } from './supabase-config.js';
 
-// Admin access flag (set to false to enable). For emergency shutdown set true.
-const ADMIN_ACCESS_DISABLED = false;
+// Admin access flag (set to true to disable for emergency). For emergency shutdown set true.
+const ADMIN_ACCESS_DISABLED = true;
 
 export const adminAuth = {
   // Check if user is authenticated and has admin role

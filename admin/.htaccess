@@ -7,6 +7,27 @@ Require valid-user
 # Block directory listing
 Options -Indexes
 
+# Security Headers
+<IfModule mod_headers.c>
+    # Prevent clickjacking
+    Header always append X-Frame-Options DENY
+    
+    # Prevent MIME type sniffing
+    Header always set X-Content-Type-Options nosniff
+    
+    # Enable XSS protection
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # Enforce HTTPS
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    
+    # Prevent referrer leakage
+    Header always set Referrer-Policy "no-referrer"
+    
+    # Content Security Policy
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data:; font-src 'self' https://cdnjs.cloudflare.com;"
+</IfModule>
+
 # Protect .htaccess and .htpasswd files
 <Files ~ "^\.ht">
     Order allow,deny
@@ -16,5 +37,16 @@ Options -Indexes
 # Protect the changelog from direct access
 <Files ~ "changelog.md">
     Order allow,deny
+    Deny from all
+</Files>
+
+# Protect sensitive files
+<Files "*.txt">
+    Order Deny,Allow
+    Deny from all
+</Files>
+
+<Files "*.log">
+    Order Deny,Allow
     Deny from all
 </Files>
