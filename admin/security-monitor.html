@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Monitor - XXMXLI Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --cyber-green: #00ff00;
+            --cyber-dark: #000000;
+            --cyber-accent: #003300;
+            --cyber-glow: 0 0 10px #00ff00;
+            --cyber-red: #ff0000;
+            --cyber-orange: #ff8800;
+            --cyber-blue: #0088ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: var(--cyber-dark);
+            color: var(--cyber-green);
+            line-height: 1.6;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 0, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 0, 0.05) 0%, transparent 50%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .security-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem 0;
+            border-bottom: 2px solid var(--cyber-green);
+        }
+
+        .security-title {
+            font-size: 2.5rem;
+            color: var(--cyber-green);
+            text-shadow: 0 0 10px #00ff00;
+            margin-bottom: 1rem;
+        }
+
+        .threat-level {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .threat-low {
+            background-color: var(--cyber-green);
+            color: var(--cyber-dark);
+        }
+
+        .threat-medium {
+            background-color: var(--cyber-orange);
+            color: var(--cyber-dark);
+        }
+
+        .threat-high {
+            background-color: var(--cyber-red);
+            color: white;
+        }
+
+        .security-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .security-card {
+            background: linear-gradient(135deg, rgba(0, 17, 0, 0.9) 0%, rgba(0, 34, 0, 0.9) 100%);
+            border: 2px solid var(--cyber-accent);
+            border-radius: 12px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .security-card:hover {
+            border-color: var(--cyber-green);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .card-title {
+            color: var(--cyber-green);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: auto;
+        }
+
+        .status-online {
+            background-color: var(--cyber-green);
+            box-shadow: 0 0 10px var(--cyber-green);
+        }
+
+        .status-warning {
+            background-color: var(--cyber-orange);
+            box-shadow: 0 0 10px var(--cyber-orange);
+        }
+
+        .status-offline {
+            background-color: var(--cyber-red);
+            box-shadow: 0 0 10px var(--cyber-red);
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--cyber-green);
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .metric-label {
+            color: #00cc00;
+            margin-top: 0.5rem;
+        }
+
+        .log-container {
+            background: linear-gradient(135deg, rgba(0, 17, 0, 0.9) 0%, rgba(0, 34, 0, 0.9) 100%);
+            border: 2px solid var(--cyber-accent);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--cyber-accent);
+            font-size: 0.9rem;
+        }
+
+        .log-time {
+            color: #00cc00;
+            width: 80px;
+            flex-shrink: 0;
+        }
+
+        .log-level {
+            width: 60px;
+            text-align: center;
+            font-weight: bold;
+            padding: 0.25rem;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .log-info {
+            background-color: rgba(0, 136, 255, 0.2);
+            color: var(--cyber-blue);
+        }
+
+        .log-warning {
+            background-color: rgba(255, 136, 0, 0.2);
+            color: var(--cyber-orange);
+        }
+
+        .log-error {
+            background-color: rgba(255, 0, 0, 0.2);
+            color: var(--cyber-red);
+        }
+
+        .log-success {
+            background-color: rgba(0, 255, 0, 0.2);
+            color: var(--cyber-green);
+        }
+
+        .log-message {
+            flex: 1;
+            color: #00cc00;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 0.75rem 1.5rem;
+            background-color: var(--cyber-green);
+            color: var(--cyber-dark);
+            border: none;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .action-btn:hover {
+            background-color: #00cc00;
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+
+        .action-btn.danger {
+            background-color: var(--cyber-red);
+            color: white;
+        }
+
+        .action-btn.danger:hover {
+            background-color: #cc0000;
+        }
+
+        .firewall-rules {
+            background: linear-gradient(135deg, rgba(0, 17, 0, 0.9) 0%, rgba(0, 34, 0, 0.9) 100%);
+            border: 2px solid var(--cyber-accent);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .rule-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--cyber-accent);
+            transition: all 0.3s ease;
+        }
+
+        .rule-item:hover {
+            background-color: rgba(0, 255, 0, 0.05);
+        }
+
+        .rule-info {
+            flex: 1;
+        }
+
+        .rule-ip {
+            color: var(--cyber-green);
+            font-weight: bold;
+        }
+
+        .rule-reason {
+            color: #00cc00;
+            font-size: 0.9rem;
+        }
+
+        .rule-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-unblock {
+            background-color: var(--cyber-green);
+            color: var(--cyber-dark);
+        }
+
+        .btn-details {
+            background-color: var(--cyber-blue);
+            color: white;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .alert-indicator {
+            animation: pulse 2s infinite;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            color: var(--cyber-green);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            text-shadow: 0 0 10px #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <a href="dashboard.html" class="back-link">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+
+    <div class="security-header">
+        <h1 class="security-title">
+            <i class="fas fa-shield-alt"></i> Security Monitor
+        </h1>
+        <div class="threat-level threat-low">
+            Threat Level: LOW
+        </div>
+    </div>
+
+    <div class="security-grid">
+        <div class="security-card">
+            <div class="card-title">
+                <i class="fas fa-ban"></i>
+                Blocked IPs
+                <div class="status-indicator status-online"></div>
+            </div>
+            <div class="metric-value">247</div>
+            <div class="metric-label">Active blocks</div>
+        </div>
+
+        <div class="security-card">
+            <div class="card-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                Failed Logins
+                <div class="status-indicator status-warning"></div>
+            </div>
+            <div class="metric-value">12</div>
+            <div class="metric-label">Last 24 hours</div>
+        </div>
+
+        <div class="security-card">
+            <div class="card-title">
+                <i class="fas fa-shield-virus"></i>
+                Malware Detected
+                <div class="status-indicator status-online"></div>
+            </div>
+            <div class="metric-value">0</div>
+            <div class="metric-label">Current threats</div>
+        </div>
+
+        <div class="security-card">
+            <div class="card-title">
+                <i class="fas fa-lock"></i>
+                SSL Status
+                <div class="status-indicator status-online"></div>
+            </div>
+            <div class="metric-value">SECURE</div>
+            <div class="metric-label">Certificate valid</div>
+        </div>
+
+        <div class="security-card">
+            <div class="card-title">
+                <i class="fas fa-server"></i>
+                Server Load
+                <div class="status-indicator status-online"></div>
+            </div>
+            <div class="metric-value">23%</div>
+            <div class="metric-label">CPU Usage</div>
+        </div>
+
+        <div class="security-card">
+            <div class="card-title">
+                <i class="fas fa-database"></i>
+                Database Status
+                <div class="status-indicator status-online"></div>
+            </div>
+            <div class="metric-value">ONLINE</div>
+            <div class="metric-label">All connections healthy</div>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="action-btn" onclick="runSecurityScan()">
+            <i class="fas fa-search"></i> Run Security Scan
+        </button>
+        <button class="action-btn" onclick="updateFirewall()">
+            <i class="fas fa-shield-alt"></i> Update Firewall
+        </button>
+        <button class="action-btn" onclick="exportLogs()">
+            <i class="fas fa-download"></i> Export Logs
+        </button>
+        <button class="action-btn danger" onclick="emergencyLockdown()">
+            <i class="fas fa-exclamation-triangle"></i> Emergency Lockdown
+        </button>
+    </div>
+
+    <div class="firewall-rules">
+        <h3 class="card-title">
+            <i class="fas fa-ban"></i> Recent Blocked IPs
+        </h3>
+        <div class="rule-item">
+            <div class="rule-info">
+                <div class="rule-ip">192.168.1.100</div>
+                <div class="rule-reason">Multiple failed login attempts</div>
+            </div>
+            <div class="rule-actions">
+                <button class="btn-small btn-unblock" onclick="unblockIP('192.168.1.100')">Unblock</button>
+                <button class="btn-small btn-details" onclick="showDetails('192.168.1.100')">Details</button>
+            </div>
+        </div>
+        <div class="rule-item">
+            <div class="rule-info">
+                <div class="rule-ip">203.0.113.45</div>
+                <div class="rule-reason">SQL injection attempt detected</div>
+            </div>
+            <div class="rule-actions">
+                <button class="btn-small btn-unblock" onclick="unblockIP('203.0.113.45')">Unblock</button>
+                <button class="btn-small btn-details" onclick="showDetails('203.0.113.45')">Details</button>
+            </div>
+        </div>
+        <div class="rule-item">
+            <div class="rule-info">
+                <div class="rule-ip">198.51.100.78</div>
+                <div class="rule-reason">Suspicious bot activity</div>
+            </div>
+            <div class="rule-actions">
+                <button class="btn-small btn-unblock" onclick="unblockIP('198.51.100.78')">Unblock</button>
+                <button class="btn-small btn-details" onclick="showDetails('198.51.100.78')">Details</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="log-container">
+        <h3 class="card-title">
+            <i class="fas fa-file-alt"></i> Security Log
+        </h3>
+        <div id="security-log">
+            <div class="log-entry">
+                <div class="log-time">14:32:15</div>
+                <div class="log-level log-error">ERROR</div>
+                <div class="log-message">Failed login attempt from 192.168.1.100</div>
+            </div>
+            <div class="log-entry">
+                <div class="log-time">14:31:45</div>
+                <div class="log-level log-warning">WARN</div>
+                <div class="log-message">Unusual traffic pattern detected</div>
+            </div>
+            <div class="log-entry">
+                <div class="log-time">14:30:22</div>
+                <div class="log-level log-info">INFO</div>
+                <div class="log-message">Security scan completed successfully</div>
+            </div>
+            <div class="log-entry">
+                <div class="log-time">14:29:10</div>
+                <div class="log-level log-success">OK</div>
+                <div class="log-message">Firewall rules updated</div>
+            </div>
+            <div class="log-entry">
+                <div class="log-time">14:28:33</div>
+                <div class="log-level log-error">ERROR</div>
+                <div class="log-message">SQL injection attempt blocked from 203.0.113.45</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Security monitoring functions
+        function runSecurityScan() {
+            alert('Security scan initiated. This will take a few minutes to complete.');
+            addLogEntry('INFO', 'Security scan started');
+        }
+
+        function updateFirewall() {
+            alert('Firewall rules updated successfully.');
+            addLogEntry('OK', 'Firewall rules updated');
+        }
+
+        function exportLogs() {
+            const logs = document.getElementById('security-log').innerHTML;
+            const blob = new Blob([logs], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'security-logs-' + new Date().toISOString().split('T')[0] + '.html';
+            a.click();
+            addLogEntry('INFO', 'Security logs exported');
+        }
+
+        function emergencyLockdown() {
+            if (confirm('Are you sure you want to initiate emergency lockdown? This will block all non-admin access.')) {
+                alert('Emergency lockdown activated. All non-admin access has been blocked.');
+                addLogEntry('ERROR', 'Emergency lockdown activated');
+                document.querySelector('.threat-level').className = 'threat-level threat-high';
+                document.querySelector('.threat-level').textContent = 'Threat Level: HIGH - LOCKDOWN ACTIVE';
+            }
+        }
+
+        function unblockIP(ip) {
+            if (confirm(`Are you sure you want to unblock IP ${ip}?`)) {
+                alert(`IP ${ip} has been unblocked.`);
+                addLogEntry('OK', `IP ${ip} unblocked by admin`);
+                // Remove the rule item from the list
+                event.target.closest('.rule-item').style.opacity = '0.5';
+                setTimeout(() => {
+                    event.target.closest('.rule-item').remove();
+                }, 500);
+            }
+        }
+
+        function showDetails(ip) {
+            alert(`Detailed information for IP ${ip}:\n\n` +
+                  `First seen: 2 hours ago\n` +
+                  `Total attempts: 15\n` +
+                  `Last activity: 5 minutes ago\n` +
+                  `Location: Unknown\n` +
+                  `User Agent: Mozilla/5.0...`);
+        }
+
+        function addLogEntry(level, message) {
+            const logContainer = document.getElementById('security-log');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `
+                <div class="log-time">${time}</div>
+                <div class="log-level log-${level.toLowerCase()}">${level}</div>
+                <div class="log-message">${message}</div>
+            `;
+            logContainer.insertBefore(entry, logContainer.firstChild);
+            
+            // Keep only last 50 entries
+            while (logContainer.children.length > 50) {
+                logContainer.removeChild(logContainer.lastChild);
+            }
+        }
+
+        // Simulate real-time updates
+        function simulateActivity() {
+            const activities = [
+                { level: 'INFO', message: 'Routine security check completed' },
+                { level: 'WARN', message: 'High CPU usage detected' },
+                { level: 'OK', message: 'Database backup completed' },
+                { level: 'ERROR', message: 'Suspicious file upload attempt blocked' }
+            ];
+
+            setInterval(() => {
+                if (Math.random() > 0.8) {
+                    const activity = activities[Math.floor(Math.random() * activities.length)];
+                    addLogEntry(activity.level, activity.message);
+                }
+            }, 30000); // Every 30 seconds
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            simulateActivity();
+            
+            // Update metrics periodically
+            setInterval(() => {
+                const metrics = document.querySelectorAll('.metric-value');
+                metrics.forEach(metric => {
+                    if (metric.textContent.includes('%') && Math.random() > 0.7) {
+                        const current = parseInt(metric.textContent);
+                        const change = Math.floor(Math.random() * 10) - 5;
+                        metric.textContent = Math.max(0, Math.min(100, current + change)) + '%';
+                    }
+                });
+            }, 15000);
+        });
+    </script>
+</body>
+</html>

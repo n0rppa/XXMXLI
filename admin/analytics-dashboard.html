@@ -99,6 +99,137 @@
             color: #008000;
             font-style: italic;
         }
+        
+        /* Visitor IP Tracking Styles */
+        .visitor-controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-refresh, .btn-export, .btn-clear {
+            background: transparent;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-refresh:hover, .btn-export:hover {
+            background: #00ff00;
+            color: #000000;
+        }
+        
+        .btn-clear {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+        
+        .btn-clear:hover {
+            background: #ff4444;
+            color: #000000;
+        }
+        
+        .analytics-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .analytics-table th,
+        .analytics-table td {
+            border: 1px solid #004400;
+            padding: 12px 8px;
+            text-align: left;
+            font-size: 11px;
+        }
+        
+        .analytics-table th {
+            background: rgba(0, 255, 0, 0.1);
+            color: #00ff00;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+        
+        .analytics-table td {
+            color: #00cc00;
+        }
+        
+        .analytics-table tr:hover {
+            background: rgba(0, 255, 0, 0.05);
+        }
+        
+        .loading-state {
+            text-align: center;
+            color: #008000;
+            font-style: italic;
+        }
+        
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .pagination-controls button {
+            background: transparent;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s ease;
+        }
+        
+        .pagination-controls button:hover:not(:disabled) {
+            background: #00ff00;
+            color: #000000;
+        }
+        
+        .pagination-controls button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        #page-info {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .ip-action-btn {
+            background: transparent;
+            border: 1px solid #ff8800;
+            color: #ff8800;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 10px;
+            margin: 0 2px;
+        }
+        
+        .ip-action-btn:hover {
+            background: #ff8800;
+            color: #000000;
+        }
+        
+        .blocked-ip {
+            color: #ff4444 !important;
+            text-decoration: line-through;
+        }
+        
+        .geo-chart-container {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 4px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -197,6 +328,71 @@
         <!-- User Analytics Tab -->
         <div id="user-analytics" class="tab-content">
             <h2><i class="fas fa-users"></i> User Analytics Dashboard</h2>
+            
+            <!-- Visitor IP Tracking Section -->
+            <div class="feature-demo">
+                <h3><i class="fas fa-globe"></i> Visitor IP Tracking</h3>
+                <div class="visitor-controls">
+                    <button onclick="loadVisitorIPs()" class="btn-refresh">
+                        <i class="fas fa-sync"></i> Refresh Data
+                    </button>
+                    <button onclick="exportVisitorData()" class="btn-export">
+                        <i class="fas fa-download"></i> Export CSV
+                    </button>
+                    <button onclick="clearOldVisitors()" class="btn-clear">
+                        <i class="fas fa-trash"></i> Clear Old Data
+                    </button>
+                </div>
+                
+                <div id="visitor-ip-table">
+                    <table class="analytics-table">
+                        <thead>
+                            <tr>
+                                <th>IP Address</th>
+                                <th>Location</th>
+                                <th>First Visit</th>
+                                <th>Last Visit</th>
+                                <th>Visit Count</th>
+                                <th>Pages Viewed</th>
+                                <th>User Agent</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="visitor-table-body">
+                            <tr>
+                                <td colspan="8" class="loading-state">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading visitor data...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="pagination-controls">
+                    <button onclick="previousPage()" id="prev-btn" disabled>
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+                    <span id="page-info">Page 1 of 1</span>
+                    <button onclick="nextPage()" id="next-btn" disabled>
+                        Next <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Geographic Distribution -->
+            <div class="feature-demo">
+                <h3><i class="fas fa-map-marked-alt"></i> Geographic Distribution</h3>
+                <div id="geo-chart-container">
+                    <canvas id="geo-chart" width="400" height="300"></canvas>
+                </div>
+            </div>
+            
+            <!-- Browser & Device Analytics -->
+            <div class="feature-demo">
+                <h3><i class="fas fa-desktop"></i> Browser & Device Analytics</h3>
+                <div id="device-analytics"></div>
+            </div>
+            
             <div id="user-analytics-container"></div>
         </div>
 
@@ -283,6 +479,8 @@
                     if (window.xxmxliAnalytics && window.xxmxliAnalytics.modules['user-analytics']) {
                         window.xxmxliAnalytics.modules['user-analytics'].createDashboard('user-analytics-container');
                     }
+                    // Auto-load visitor IPs when showing user analytics
+                    loadVisitorIPs();
                     break;
                     
                 case 'realtime':
@@ -439,6 +637,218 @@
                 initializeAnalytics();
             }, 1000);
         });
+
+        // Visitor IP Tracking Functions
+        let currentPage = 1;
+        let itemsPerPage = 20;
+        let totalVisitors = 0;
+        let visitorData = [];
+
+        async function loadVisitorIPs() {
+            const tableBody = document.getElementById('visitor-table-body');
+            tableBody.innerHTML = '<tr><td colspan="8" class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading visitor data...</td></tr>';
+
+            try {
+                // First try to load from API
+                const response = await fetch('/api/get-visitor-stats.php');
+                if (response.ok) {
+                    const data = await response.json();
+                    visitorData = data.visitors || [];
+                } else {
+                    // Fallback to local data file
+                    const localResponse = await fetch('/data/visitors.json');
+                    if (localResponse.ok) {
+                        const localData = await localResponse.json();
+                        visitorData = localData.visitors || [];
+                    } else {
+                        // Generate sample data if no data available
+                        visitorData = generateSampleVisitorData();
+                    }
+                }
+
+                totalVisitors = visitorData.length;
+                displayVisitorPage(currentPage);
+                updatePaginationControls();
+                addStatusLog(`📊 Loaded ${totalVisitors} visitor records`);
+
+            } catch (error) {
+                console.error('Error loading visitor data:', error);
+                addStatusLog('❌ Error loading visitor data');
+                
+                // Show sample data
+                visitorData = generateSampleVisitorData();
+                totalVisitors = visitorData.length;
+                displayVisitorPage(currentPage);
+                updatePaginationControls();
+            }
+        }
+
+        function generateSampleVisitorData() {
+            const sampleIPs = [
+                '192.168.1.100', '203.0.113.45', '198.51.100.22', '93.184.216.34',
+                '172.16.254.1', '10.0.0.15', '185.199.108.153', '140.82.112.4'
+            ];
+            
+            const sampleLocations = [
+                'Helsinki, Finland', 'Stockholm, Sweden', 'Oslo, Norway', 'Copenhagen, Denmark',
+                'London, UK', 'Berlin, Germany', 'Paris, France', 'Amsterdam, Netherlands'
+            ];
+            
+            const sampleUserAgents = [
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+                'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
+                'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15'
+            ];
+
+            return Array.from({ length: 50 }, (_, i) => ({
+                ip: sampleIPs[i % sampleIPs.length] + (i > 7 ? `.${100 + i}` : ''),
+                location: sampleLocations[i % sampleLocations.length],
+                firstVisit: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+                lastVisit: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString(),
+                visitCount: Math.floor(Math.random() * 20) + 1,
+                pagesViewed: Math.floor(Math.random() * 50) + 1,
+                userAgent: sampleUserAgents[i % sampleUserAgents.length],
+                blocked: Math.random() > 0.9
+            }));
+        }
+
+        function displayVisitorPage(page) {
+            const startIndex = (page - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = visitorData.slice(startIndex, endIndex);
+
+            const tableBody = document.getElementById('visitor-table-body');
+            
+            if (pageData.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="8" class="loading-state">No visitor data available</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = pageData.map(visitor => `
+                <tr class="${visitor.blocked ? 'blocked-ip' : ''}">
+                    <td>${visitor.ip}</td>
+                    <td>${visitor.location || 'Unknown'}</td>
+                    <td>${new Date(visitor.firstVisit).toLocaleString()}</td>
+                    <td>${new Date(visitor.lastVisit).toLocaleString()}</td>
+                    <td>${visitor.visitCount}</td>
+                    <td>${visitor.pagesViewed}</td>
+                    <td title="${visitor.userAgent}">${visitor.userAgent.substring(0, 50)}...</td>
+                    <td>
+                        <button class="ip-action-btn" onclick="viewIPDetails('${visitor.ip}')">
+                            <i class="fas fa-info"></i>
+                        </button>
+                        <button class="ip-action-btn" onclick="${visitor.blocked ? 'unblockIP' : 'blockIP'}('${visitor.ip}')">
+                            <i class="fas fa-${visitor.blocked ? 'unlock' : 'ban'}"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updatePaginationControls() {
+            const totalPages = Math.ceil(totalVisitors / itemsPerPage);
+            document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('prev-btn').disabled = currentPage <= 1;
+            document.getElementById('next-btn').disabled = currentPage >= totalPages;
+        }
+
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                displayVisitorPage(currentPage);
+                updatePaginationControls();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(totalVisitors / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                displayVisitorPage(currentPage);
+                updatePaginationControls();
+            }
+        }
+
+        function viewIPDetails(ip) {
+            const visitor = visitorData.find(v => v.ip === ip);
+            if (visitor) {
+                alert(`IP Details for ${ip}:\n\n` +
+                      `Location: ${visitor.location}\n` +
+                      `First Visit: ${new Date(visitor.firstVisit).toLocaleString()}\n` +
+                      `Last Visit: ${new Date(visitor.lastVisit).toLocaleString()}\n` +
+                      `Total Visits: ${visitor.visitCount}\n` +
+                      `Pages Viewed: ${visitor.pagesViewed}\n` +
+                      `Status: ${visitor.blocked ? 'BLOCKED' : 'Active'}\n` +
+                      `User Agent: ${visitor.userAgent}`);
+            }
+        }
+
+        function blockIP(ip) {
+            if (confirm(`Block IP address ${ip}?`)) {
+                const visitor = visitorData.find(v => v.ip === ip);
+                if (visitor) {
+                    visitor.blocked = true;
+                    displayVisitorPage(currentPage);
+                    addStatusLog(`🚫 Blocked IP: ${ip}`);
+                }
+            }
+        }
+
+        function unblockIP(ip) {
+            if (confirm(`Unblock IP address ${ip}?`)) {
+                const visitor = visitorData.find(v => v.ip === ip);
+                if (visitor) {
+                    visitor.blocked = false;
+                    displayVisitorPage(currentPage);
+                    addStatusLog(`✅ Unblocked IP: ${ip}`);
+                }
+            }
+        }
+
+        function exportVisitorData() {
+            const csvContent = [
+                ['IP Address', 'Location', 'First Visit', 'Last Visit', 'Visit Count', 'Pages Viewed', 'Status', 'User Agent'],
+                ...visitorData.map(visitor => [
+                    visitor.ip,
+                    visitor.location || 'Unknown',
+                    new Date(visitor.firstVisit).toLocaleString(),
+                    new Date(visitor.lastVisit).toLocaleString(),
+                    visitor.visitCount,
+                    visitor.pagesViewed,
+                    visitor.blocked ? 'BLOCKED' : 'Active',
+                    visitor.userAgent
+                ])
+            ].map(row => row.map(field => `"${field}"`).join(',')).join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `visitor-data-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            addStatusLog('📁 Visitor data exported to CSV');
+        }
+
+        function clearOldVisitors() {
+            if (confirm('Clear visitor data older than 30 days?')) {
+                const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+                const initialCount = visitorData.length;
+                visitorData = visitorData.filter(visitor => 
+                    new Date(visitor.lastVisit) > thirtyDaysAgo
+                );
+                const removedCount = initialCount - visitorData.length;
+                totalVisitors = visitorData.length;
+                currentPage = 1;
+                displayVisitorPage(currentPage);
+                updatePaginationControls();
+                addStatusLog(`🗑️ Removed ${removedCount} old visitor records`);
+            }
+        }
     </script>
 </body>
 </html>

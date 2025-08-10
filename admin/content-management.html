@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XXMXLI Content Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.quilljs.com/1.3.6/quill.snow.css">
+    <style>
+        :root {
+            --cyber-green: #00ff00;
+            --cyber-dark: #000000;
+            --cyber-accent: #003300;
+            --cyber-glow: 0 0 10px #00ff00;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: var(--cyber-dark);
+            color: var(--cyber-green);
+            min-height: 100vh;
+        }
+
+        .cms-header {
+            background: rgba(0, 17, 0, 0.95);
+            border-bottom: 2px solid var(--cyber-green);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--cyber-glow);
+        }
+
+        .cms-title {
+            font-size: 1.8rem;
+            color: var(--cyber-green);
+            text-shadow: var(--cyber-glow);
+        }
+
+        .cms-nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid var(--cyber-green);
+            color: var(--cyber-green);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover,
+        .nav-btn.active {
+            background: var(--cyber-green);
+            color: var(--cyber-dark);
+        }
+
+        .cms-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            height: calc(100vh - 80px);
+        }
+
+        .cms-sidebar {
+            background: rgba(0, 17, 0, 0.8);
+            border-right: 1px solid var(--cyber-accent);
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-title {
+            color: var(--cyber-green);
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--cyber-accent);
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+            color: #00cc00;
+        }
+
+        .sidebar-item:hover,
+        .sidebar-item.active {
+            background: rgba(0, 255, 0, 0.1);
+            color: var(--cyber-green);
+        }
+
+        .cms-main {
+            padding: 2rem;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .content-panel {
+            display: none;
+        }
+
+        .content-panel.active {
+            display: block;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--cyber-accent);
+        }
+
+        .panel-title {
+            font-size: 1.5rem;
+            color: var(--cyber-green);
+            text-shadow: var(--cyber-glow);
+        }
+
+        .content-grid {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .content-card {
+            background: rgba(0, 17, 0, 0.3);
+            border: 1px solid var(--cyber-accent);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .content-card:hover {
+            border-color: var(--cyber-green);
+            background: rgba(0, 17, 0, 0.5);
+        }
+
+        .card-title {
+            color: var(--cyber-green);
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-meta {
+            color: #008800;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-content {
+            color: #00cc00;
+            line-height: 1.6;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .action-btn {
+            background: transparent;
+            border: 1px solid var(--cyber-green);
+            color: var(--cyber-green);
+            padding: 0.25rem 0.5rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: var(--cyber-green);
+            color: var(--cyber-dark);
+        }
+
+        .action-btn.danger {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .action-btn.danger:hover {
+            background: #ff4444;
+            color: white;
+        }
+
+        .editor-container {
+            background: rgba(0, 17, 0, 0.3);
+            border: 1px solid var(--cyber-accent);
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--cyber-green);
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--cyber-accent);
+            border-radius: 4px;
+            color: var(--cyber-green);
+            font-family: 'Courier New', monospace;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--cyber-green);
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .btn-primary {
+            background: var(--cyber-green);
+            color: var(--cyber-dark);
+            border: none;
+            padding: 1rem 2rem;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: #00cc00;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--cyber-green);
+            border: 1px solid var(--cyber-green);
+            padding: 1rem 2rem;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            margin-left: 1rem;
+        }
+
+        .btn-secondary:hover {
+            background: var(--cyber-green);
+            color: var(--cyber-dark);
+        }
+
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .media-item {
+            background: rgba(0, 17, 0, 0.3);
+            border: 1px solid var(--cyber-accent);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .media-item:hover {
+            border-color: var(--cyber-green);
+        }
+
+        .media-preview {
+            width: 100%;
+            height: 120px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px dashed var(--cyber-accent);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            color: #008800;
+        }
+
+        .media-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 4px;
+        }
+
+        .upload-zone {
+            border: 2px dashed var(--cyber-accent);
+            border-radius: 8px;
+            padding: 3rem;
+            text-align: center;
+            color: #008800;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--cyber-green);
+            color: var(--cyber-green);
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--cyber-green);
+            background: rgba(0, 255, 0, 0.05);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(0, 17, 0, 0.3);
+            border: 1px solid var(--cyber-accent);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--cyber-green);
+            text-shadow: var(--cyber-glow);
+        }
+
+        .stat-label {
+            color: #00cc00;
+            margin-top: 0.5rem;
+        }
+
+        .activity-feed {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid var(--cyber-accent);
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--cyber-green);
+            color: var(--cyber-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            color: var(--cyber-green);
+            font-weight: bold;
+        }
+
+        .activity-time {
+            color: #008800;
+            font-size: 0.9rem;
+        }
+
+        /* Quill Editor Dark Theme Override */
+        .ql-toolbar {
+            background: rgba(0, 17, 0, 0.8) !important;
+            border-color: var(--cyber-accent) !important;
+        }
+
+        .ql-container {
+            background: rgba(0, 0, 0, 0.5) !important;
+            border-color: var(--cyber-accent) !important;
+            color: var(--cyber-green) !important;
+        }
+
+        .ql-editor {
+            color: var(--cyber-green) !important;
+        }
+
+        .ql-toolbar .ql-stroke {
+            stroke: var(--cyber-green) !important;
+        }
+
+        .ql-toolbar .ql-fill {
+            fill: var(--cyber-green) !important;
+        }
+    </style>
+</head>
+<body>
+    <header class="cms-header">
+        <h1 class="cms-title">
+            <i class="fas fa-edit"></i> XXMXLI CMS
+        </h1>
+        <nav class="cms-nav">
+            <a href="dashboard.html" class="nav-btn">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="#" class="nav-btn" onclick="showCreateModal()">
+                <i class="fas fa-plus"></i> New Content
+            </a>
+            <a href="#" class="nav-btn" onclick="saveAll()">
+                <i class="fas fa-save"></i> Save All
+            </a>
+        </nav>
+    </header>
+
+    <div class="cms-container">
+        <aside class="cms-sidebar">
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Content Types</h3>
+                <div class="sidebar-item active" onclick="showPanel('pages')">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Pages</span>
+                    <span class="count">(5)</span>
+                </div>
+                <div class="sidebar-item" onclick="showPanel('posts')">
+                    <i class="fas fa-newspaper"></i>
+                    <span>Blog Posts</span>
+                    <span class="count">(12)</span>
+                </div>
+                <div class="sidebar-item" onclick="showPanel('projects')">
+                    <i class="fas fa-project-diagram"></i>
+                    <span>Projects</span>
+                    <span class="count">(8)</span>
+                </div>
+                <div class="sidebar-item" onclick="showPanel('gallery')">
+                    <i class="fas fa-images"></i>
+                    <span>Gallery</span>
+                    <span class="count">(24)</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Media</h3>
+                <div class="sidebar-item" onclick="showPanel('media')">
+                    <i class="fas fa-photo-video"></i>
+                    <span>Media Library</span>
+                </div>
+                <div class="sidebar-item" onclick="showPanel('upload')">
+                    <i class="fas fa-upload"></i>
+                    <span>Upload Files</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Settings</h3>
+                <div class="sidebar-item" onclick="showPanel('site-settings')">
+                    <i class="fas fa-cog"></i>
+                    <span>Site Settings</span>
+                </div>
+                <div class="sidebar-item" onclick="showPanel('analytics')">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="cms-main">
+            <!-- Pages Panel -->
+            <div id="pages-panel" class="content-panel active">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <i class="fas fa-file-alt"></i> Pages Management
+                    </h2>
+                    <button class="btn-primary" onclick="createNewPage()">
+                        <i class="fas fa-plus"></i> New Page
+                    </button>
+                </div>
+
+                <div class="content-grid">
+                    <div class="content-card">
+                        <h3 class="card-title">Home Page</h3>
+                        <div class="card-meta">Last modified: 2 hours ago | Status: Published</div>
+                        <div class="card-content">Main landing page with hero section and featured content.</div>
+                        <div class="card-actions">
+                            <button class="action-btn" onclick="editContent('home')">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="action-btn">
+                                <i class="fas fa-eye"></i> Preview
+                            </button>
+                            <button class="action-btn">
+                                <i class="fas fa-copy"></i> Duplicate
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="content-card">
+                        <h3 class="card-title">About Page</h3>
+                        <div class="card-meta">Last modified: 1 day ago | Status: Published</div>
+                        <div class="card-content">Information about XXMXLI and background details.</div>
+                        <div class="card-actions">
+                            <button class="action-btn" onclick="editContent('about')">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="action-btn">
+                                <i class="fas fa-eye"></i> Preview
+                            </button>
+                            <button class="action-btn">
+                                <i class="fas fa-copy"></i> Duplicate
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="content-card">
+                        <h3 class="card-title">Contact Page</h3>
+                        <div class="card-meta">Last modified: 3 days ago | Status: Published</div>
+                        <div class="card-content">Contact form and information for getting in touch.</div>
+                        <div class="card-actions">
+                            <button class="action-btn" onclick="editContent('contact')">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="action-btn">
+                                <i class="fas fa-eye"></i> Preview
+                            </button>
+                            <button class="action-btn">
+                                <i class="fas fa-copy"></i> Duplicate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Posts Panel -->
+            <div id="posts-panel" class="content-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <i class="fas fa-newspaper"></i> Blog Posts
+                    </h2>
+                    <button class="btn-primary" onclick="createNewPost()">
+                        <i class="fas fa-plus"></i> New Post
+                    </button>
+                </div>
+
+                <div class="content-grid">
+                    <div class="content-card">
+                        <h3 class="card-title">Latest Project Updates</h3>
+                        <div class="card-meta">Published: Today | Category: Development</div>
+                        <div class="card-content">Updates on recent development projects and upcoming features...</div>
+                        <div class="card-actions">
+                            <button class="action-btn" onclick="editContent('post1')">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="action-btn">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="action-btn danger">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projects Panel -->
+            <div id="projects-panel" class="content-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <i class="fas fa-project-diagram"></i> Projects
+                    </h2>
+                    <button class="btn-primary" onclick="createNewProject()">
+                        <i class="fas fa-plus"></i> New Project
+                    </button>
+                </div>
+
+                <div class="content-grid">
+                    <div class="content-card">
+                        <h3 class="card-title">XXMXLI Website</h3>
+                        <div class="card-meta">Status: Active | Technology: HTML/CSS/JS</div>
+                        <div class="card-content">Main website project with cyberpunk theme and admin panels.</div>
+                        <div class="card-actions">
+                            <button class="action-btn" onclick="editContent('project1')">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="action-btn">
+                                <i class="fas fa-external-link-alt"></i> Visit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Media Panel -->
+            <div id="media-panel" class="content-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <i class="fas fa-photo-video"></i> Media Library
+                    </h2>
+                    <button class="btn-primary" onclick="showPanel('upload')">
+                        <i class="fas fa-upload"></i> Upload Files
+                    </button>
+                </div>
+
+                <div class="media-grid">
+                    <div class="media-item">
+                        <div class="media-preview">
+                            <img src="../images/gallery/sample1.jpg" alt="Sample Image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div style="display:none;"><i class="fas fa-image"></i></div>
+                        </div>
+                        <div class="card-title">Sample Image</div>
+                        <div class="card-actions">
+                            <button class="action-btn">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="action-btn danger">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Panel -->
+            <div id="upload-panel" class="content-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <i class="fas fa-upload"></i> Upload Files
+                    </h2>
+                </div>
+
+                <div class="upload-zone" id="uploadZone">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <p>Drag and drop files here or click to browse</p>
+                    <p style="font-size: 0.9rem; color: #008800; margin-top: 1rem;">
+                        Supported formats: JPG, PNG, GIF, MP4, PDF (Max: 10MB)
+                    </p>
+                    <input type="file" id="fileInput" multiple accept="image/*,video/*,.pdf" style="display: none;">
+                </div>
+
+                <div id="uploadProgress" style="display: none; margin-top: 2rem;">
+                    <div class="content-card">
+                        <h3 class="card-title">Upload Progress</h3>
+                        <div id="progressList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Panel -->
+            <div id="analytics-panel" class="content-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <i class="fas fa-chart-line"></i> Content Analytics
+                    </h2>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">5,247</div>
+                        <div class="stat-label">Total Page Views</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">25</div>
+                        <div class="stat-label">Total Pages</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">142</div>
+                        <div class="stat-label">Media Files</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">1.2GB</div>
+                        <div class="stat-label">Storage Used</div>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <h3 class="card-title">Recent Activity</h3>
+                    <div class="activity-feed">
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-edit"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">Home page updated</div>
+                                <div class="activity-time">2 hours ago</div>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-upload"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">New image uploaded</div>
+                                <div class="activity-time">4 hours ago</div>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">New blog post created</div>
+                                <div class="activity-time">1 day ago</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Content Editor Modal -->
+    <div id="editorModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
+        <div class="modal-content" style="background: var(--cyber-dark); border: 2px solid var(--cyber-green); margin: 2% auto; padding: 2rem; width: 90%; max-width: 1000px; border-radius: 8px; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--cyber-accent); padding-bottom: 1rem;">
+                <h2 style="color: var(--cyber-green); text-shadow: var(--cyber-glow);">
+                    <i class="fas fa-edit"></i> Content Editor
+                </h2>
+                <button onclick="closeEditor()" style="background: transparent; border: 1px solid #ff4444; color: #ff4444; padding: 0.5rem 1rem; cursor: pointer;">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+
+            <form id="contentForm">
+                <div class="form-group">
+                    <label class="form-label">Title</label>
+                    <input type="text" id="contentTitle" class="form-input" placeholder="Enter content title">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Slug (URL)</label>
+                    <input type="text" id="contentSlug" class="form-input" placeholder="enter-url-slug">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select id="contentStatus" class="form-select">
+                        <option value="draft">Draft</option>
+                        <option value="published">Published</option>
+                        <option value="archived">Archived</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Content</label>
+                    <div id="editor" style="height: 300px;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Meta Description</label>
+                    <textarea id="metaDescription" class="form-textarea" placeholder="SEO meta description"></textarea>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <button type="button" onclick="saveContent()" class="btn-primary">
+                        <i class="fas fa-save"></i> Save Content
+                    </button>
+                    <button type="button" onclick="closeEditor()" class="btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script>
+        // Global variables
+        let currentPanel = 'pages';
+        let quillEditor = null;
+
+        // Initialize CMS
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeUpload();
+            initializeEditor();
+        });
+
+        // Panel management
+        function showPanel(panelName) {
+            // Hide all panels
+            document.querySelectorAll('.content-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+
+            // Show selected panel
+            document.getElementById(panelName + '-panel').classList.add('active');
+
+            // Update sidebar
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.sidebar-item').classList.add('active');
+
+            currentPanel = panelName;
+        }
+
+        // Content editing
+        function editContent(contentId) {
+            document.getElementById('editorModal').style.display = 'block';
+            
+            // Load content data (simulate)
+            const mockContent = {
+                title: 'Sample Content Title',
+                slug: 'sample-content',
+                status: 'published',
+                content: '<p>This is sample content that would be loaded from your CMS database.</p>',
+                metaDescription: 'Sample meta description for SEO'
+            };
+
+            // Populate form
+            document.getElementById('contentTitle').value = mockContent.title;
+            document.getElementById('contentSlug').value = mockContent.slug;
+            document.getElementById('contentStatus').value = mockContent.status;
+            document.getElementById('metaDescription').value = mockContent.metaDescription;
+
+            // Set editor content
+            if (quillEditor) {
+                quillEditor.root.innerHTML = mockContent.content;
+            }
+        }
+
+        function closeEditor() {
+            document.getElementById('editorModal').style.display = 'none';
+        }
+
+        function saveContent() {
+            const formData = {
+                title: document.getElementById('contentTitle').value,
+                slug: document.getElementById('contentSlug').value,
+                status: document.getElementById('contentStatus').value,
+                content: quillEditor ? quillEditor.root.innerHTML : '',
+                metaDescription: document.getElementById('metaDescription').value
+            };
+
+            console.log('Saving content:', formData);
+            
+            // Here you would send the data to your backend
+            alert('Content saved successfully!');
+            closeEditor();
+        }
+
+        function createNewPage() {
+            document.getElementById('editorModal').style.display = 'block';
+            
+            // Clear form
+            document.getElementById('contentTitle').value = '';
+            document.getElementById('contentSlug').value = '';
+            document.getElementById('contentStatus').value = 'draft';
+            document.getElementById('metaDescription').value = '';
+            
+            if (quillEditor) {
+                quillEditor.root.innerHTML = '';
+            }
+        }
+
+        function createNewPost() {
+            createNewPage(); // Same modal, different context
+        }
+
+        function createNewProject() {
+            createNewPage(); // Same modal, different context
+        }
+
+        // Initialize Quill editor
+        function initializeEditor() {
+            if (document.getElementById('editor')) {
+                quillEditor = new Quill('#editor', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            ['bold', 'italic', 'underline', 'strike'],
+                            ['blockquote', 'code-block'],
+                            [{ 'header': 1 }, { 'header': 2 }],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            [{ 'script': 'sub'}, { 'script': 'super' }],
+                            [{ 'indent': '-1'}, { 'indent': '+1' }],
+                            [{ 'direction': 'rtl' }],
+                            [{ 'size': ['small', false, 'large', 'huge'] }],
+                            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                            [{ 'color': [] }, { 'background': [] }],
+                            [{ 'font': [] }],
+                            [{ 'align': [] }],
+                            ['clean'],
+                            ['link', 'image', 'video']
+                        ]
+                    }
+                });
+            }
+        }
+
+        // Upload functionality
+        function initializeUpload() {
+            const uploadZone = document.getElementById('uploadZone');
+            const fileInput = document.getElementById('fileInput');
+
+            uploadZone.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            uploadZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            });
+
+            uploadZone.addEventListener('dragleave', () => {
+                uploadZone.classList.remove('dragover');
+            });
+
+            uploadZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+            });
+        }
+
+        function handleFiles(files) {
+            const progressContainer = document.getElementById('uploadProgress');
+            const progressList = document.getElementById('progressList');
+            
+            progressContainer.style.display = 'block';
+            progressList.innerHTML = '';
+
+            Array.from(files).forEach((file, index) => {
+                const progressItem = document.createElement('div');
+                progressItem.style.marginBottom = '1rem';
+                progressItem.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--cyber-green);">${file.name}</span>
+                        <span style="color: #00cc00;">${(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.5); height: 20px; border-radius: 10px; margin-top: 0.5rem; overflow: hidden;">
+                        <div id="progress-${index}" style="background: var(--cyber-green); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                    </div>
+                `;
+                progressList.appendChild(progressItem);
+
+                // Simulate upload progress
+                simulateUpload(index);
+            });
+        }
+
+        function simulateUpload(index) {
+            let progress = 0;
+            const progressBar = document.getElementById(`progress-${index}`);
+            
+            const interval = setInterval(() => {
+                progress += Math.random() * 20;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                }
+                progressBar.style.width = progress + '%';
+            }, 200);
+        }
+
+        // Auto-save slug from title
+        document.addEventListener('DOMContentLoaded', function() {
+            const titleInput = document.getElementById('contentTitle');
+            const slugInput = document.getElementById('contentSlug');
+            
+            if (titleInput && slugInput) {
+                titleInput.addEventListener('input', function() {
+                    const slug = this.value
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/^-|-$/g, '');
+                    slugInput.value = slug;
+                });
+            }
+        });
+
+        function showCreateModal() {
+            document.getElementById('editorModal').style.display = 'block';
+        }
+
+        function saveAll() {
+            alert('All changes saved successfully!');
+        }
+    </script>
+</body>
+</html>

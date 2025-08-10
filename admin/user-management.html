@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - XXMXLI Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --cyber-green: #00ff00;
+            --cyber-dark: #000000;
+            --cyber-accent: #003300;
+            --cyber-glow: 0 0 10px #00ff00;
+            --cyber-red: #ff0000;
+            --cyber-orange: #ff8800;
+            --cyber-blue: #0088ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: var(--cyber-dark);
+            color: var(--cyber-green);
+            line-height: 1.6;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 0, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 0, 0.05) 0%, transparent 50%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .user-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem 0;
+            border-bottom: 2px solid var(--cyber-green);
+        }
+
+        .user-title {
+            font-size: 2.5rem;
+            color: var(--cyber-green);
+            text-shadow: 0 0 10px #00ff00;
+            margin-bottom: 1rem;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-input {
+            padding: 0.75rem;
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 2px solid var(--cyber-accent);
+            border-radius: 4px;
+            color: var(--cyber-green);
+            font-family: 'Courier New', monospace;
+            min-width: 300px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--cyber-green);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: var(--cyber-green);
+            color: var(--cyber-dark);
+        }
+
+        .btn-primary:hover {
+            background-color: #00cc00;
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--cyber-green);
+            border: 2px solid var(--cyber-green);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--cyber-green);
+            color: var(--cyber-dark);
+        }
+
+        .btn-danger {
+            background-color: var(--cyber-red);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #cc0000;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        .users-container {
+            background: linear-gradient(135deg, rgba(0, 17, 0, 0.9) 0%, rgba(0, 34, 0, 0.9) 100%);
+            border: 2px solid var(--cyber-accent);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .users-table th,
+        .users-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--cyber-accent);
+        }
+
+        .users-table th {
+            background-color: rgba(0, 255, 0, 0.1);
+            color: var(--cyber-green);
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+
+        .users-table tr:hover {
+            background-color: rgba(0, 255, 0, 0.05);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--cyber-green), #00cc00);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--cyber-dark);
+            font-weight: bold;
+            margin-right: 1rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-details {
+            flex: 1;
+        }
+
+        .user-name {
+            color: var(--cyber-green);
+            font-weight: bold;
+        }
+
+        .user-email {
+            color: #00cc00;
+            font-size: 0.9rem;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .role-admin {
+            background-color: rgba(255, 0, 0, 0.2);
+            color: var(--cyber-red);
+        }
+
+        .role-moderator {
+            background-color: rgba(255, 136, 0, 0.2);
+            color: var(--cyber-orange);
+        }
+
+        .role-user {
+            background-color: rgba(0, 255, 0, 0.2);
+            color: var(--cyber-green);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background-color: rgba(0, 255, 0, 0.2);
+            color: var(--cyber-green);
+        }
+
+        .status-inactive {
+            background-color: rgba(255, 136, 0, 0.2);
+            color: var(--cyber-orange);
+        }
+
+        .status-banned {
+            background-color: rgba(255, 0, 0, 0.2);
+            color: var(--cyber-red);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, rgba(0, 17, 0, 0.95) 0%, rgba(0, 34, 0, 0.95) 100%);
+            margin: 5% auto;
+            padding: 2rem;
+            border: 2px solid var(--cyber-green);
+            border-radius: 12px;
+            width: 80%;
+            max-width: 600px;
+            color: var(--cyber-green);
+        }
+
+        .close {
+            color: #ff4444;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #ff6666;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--cyber-green);
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 2px solid var(--cyber-accent);
+            border-radius: 4px;
+            color: var(--cyber-green);
+            font-family: 'Courier New', monospace;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--cyber-green);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            color: var(--cyber-green);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(0, 17, 0, 0.9) 0%, rgba(0, 34, 0, 0.9) 100%);
+            border: 2px solid var(--cyber-accent);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--cyber-green);
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .stat-label {
+            color: #00cc00;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <a href="dashboard.html" class="back-link">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+
+    <div class="user-header">
+        <h1 class="user-title">
+            <i class="fas fa-users"></i> User Management
+        </h1>
+    </div>
+
+    <div class="stats-overview">
+        <div class="stat-card">
+            <div class="stat-value">1,247</div>
+            <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">892</div>
+            <div class="stat-label">Active Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">5</div>
+            <div class="stat-label">Administrators</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">23</div>
+            <div class="stat-label">New This Week</div>
+        </div>
+    </div>
+
+    <div class="action-bar">
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search users..." id="searchInput">
+            <button class="btn btn-secondary" onclick="searchUsers()">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </div>
+        <div>
+            <button class="btn btn-primary" onclick="openModal('add-user-modal')">
+                <i class="fas fa-plus"></i> Add User
+            </button>
+            <button class="btn btn-secondary" onclick="exportUsers()">
+                <i class="fas fa-download"></i> Export
+            </button>
+        </div>
+    </div>
+
+    <div class="users-container">
+        <h3 style="color: var(--cyber-green); margin-bottom: 1rem;">
+            <i class="fas fa-list"></i> User List
+        </h3>
+        
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Last Login</th>
+                    <th>Registration</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="usersTableBody">
+                <tr>
+                    <td>
+                        <div class="user-info">
+                            <div class="user-avatar">XX</div>
+                            <div class="user-details">
+                                <div class="user-name">xxmxli</div>
+                                <div class="user-email">admin@xxmxli.com</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="role-badge role-admin">Admin</span></td>
+                    <td><span class="status-badge status-active">Active</span></td>
+                    <td>2 minutes ago</td>
+                    <td>Jan 1, 2024</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-small btn-secondary" onclick="editUser('xxmxli')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-small btn-danger" onclick="deleteUser('xxmxli')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="user-info">
+                            <div class="user-avatar">NB</div>
+                            <div class="user-details">
+                                <div class="user-name">nikob</div>
+                                <div class="user-email">niko@xxmxli.com</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="role-badge role-moderator">Moderator</span></td>
+                    <td><span class="status-badge status-active">Active</span></td>
+                    <td>1 hour ago</td>
+                    <td>Feb 15, 2024</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-small btn-secondary" onclick="editUser('nikob')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-small btn-danger" onclick="deleteUser('nikob')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="user-info">
+                            <div class="user-avatar">JS</div>
+                            <div class="user-details">
+                                <div class="user-name">john_smith</div>
+                                <div class="user-email">john@example.com</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="role-badge role-user">User</span></td>
+                    <td><span class="status-badge status-active">Active</span></td>
+                    <td>3 days ago</td>
+                    <td>Mar 10, 2024</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-small btn-secondary" onclick="editUser('john_smith')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-small btn-danger" onclick="deleteUser('john_smith')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="user-info">
+                            <div class="user-avatar">AD</div>
+                            <div class="user-details">
+                                <div class="user-name">admin</div>
+                                <div class="user-email">backup@xxmxli.com</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="role-badge role-admin">Admin</span></td>
+                    <td><span class="status-badge status-inactive">Inactive</span></td>
+                    <td>Never</td>
+                    <td>Today</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-small btn-secondary" onclick="editUser('admin')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-small btn-danger" onclick="deleteUser('admin')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add User Modal -->
+    <div id="add-user-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('add-user-modal')">&times;</span>
+            <h2><i class="fas fa-plus"></i> Add New User</h2>
+            <form id="addUserForm">
+                <div class="form-group">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" id="username" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" id="email" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="role" class="form-label">Role</label>
+                    <select id="role" class="form-select" required>
+                        <option value="user">User</option>
+                        <option value="moderator">Moderator</option>
+                        <option value="admin">Administrator</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create User
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('add-user-modal')">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="edit-user-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('edit-user-modal')">&times;</span>
+            <h2><i class="fas fa-edit"></i> Edit User</h2>
+            <form id="editUserForm">
+                <div class="form-group">
+                    <label for="edit-username" class="form-label">Username</label>
+                    <input type="text" id="edit-username" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-email" class="form-label">Email</label>
+                    <input type="email" id="edit-email" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-role" class="form-label">Role</label>
+                    <select id="edit-role" class="form-select" required>
+                        <option value="user">User</option>
+                        <option value="moderator">Moderator</option>
+                        <option value="admin">Administrator</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-status" class="form-label">Status</label>
+                    <select id="edit-status" class="form-select" required>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="banned">Banned</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('edit-user-modal')">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // User management functions
+        function searchUsers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#usersTableBody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        }
+
+        function editUser(username) {
+            // Populate edit form with user data
+            document.getElementById('edit-username').value = username;
+            // In a real app, you'd fetch user data from the server
+            openModal('edit-user-modal');
+        }
+
+        function deleteUser(username) {
+            if (confirm(`Are you sure you want to delete user "${username}"? This action cannot be undone.`)) {
+                alert(`User "${username}" has been deleted.`);
+                // In a real app, you'd send a delete request to the server
+                // For demo, just hide the row
+                event.target.closest('tr').style.opacity = '0.5';
+                setTimeout(() => {
+                    event.target.closest('tr').remove();
+                }, 500);
+            }
+        }
+
+        function exportUsers() {
+            alert('User data exported successfully!');
+            // In a real app, you'd generate and download a CSV/Excel file
+        }
+
+        // Form submissions
+        document.getElementById('addUserForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const role = document.getElementById('role').value;
+            
+            alert(`User "${username}" created successfully!`);
+            closeModal('add-user-modal');
+            
+            // Clear form
+            this.reset();
+        });
+
+        document.getElementById('editUserForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('edit-username').value;
+            
+            alert(`User "${username}" updated successfully!`);
+            closeModal('edit-user-modal');
+        });
+
+        // Search on Enter key
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchUsers();
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // Real-time search
+        document.getElementById('searchInput').addEventListener('input', searchUsers);
+    </script>
+</body>
+</html>

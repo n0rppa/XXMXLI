@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XXMXLI Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --cyber-green: #00ff00;
+            --cyber-dark: #000000;
+            --cyber-accent: #003300;
+            --cyber-glow: 0 0 10px #00ff00;
+            --cyber-glow-strong: 0 0 20px #00ff00;
+            --cyber-blue: #0088ff;
+            --cyber-purple: #8800ff;
+            --cyber-orange: #ff8800;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: var(--cyber-dark);
+            color: var(--cyber-green);
+            line-height: 1.6;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 0, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 0, 0.05) 0%, transparent 50%);
+            min-height: 100vh;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, rgba(0, 17, 0, 0.9) 0%, rgba(0, 34, 0, 0.9) 100%);
+            border-bottom: 2px solid var(--cyber-green);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .admin-title {
+            font-size: 2rem;
+            color: var(--cyber-green);
+            text-shadow: var(--cyber-glow);
+            animation: cyberGlow 2s ease-in-out infinite alternate;
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-item {
+            padding: 0.5rem 1rem;
+            background-color: transparent;
+            color: var(--cyber-green);
+            border: 2px solid var(--cyber-green);
+            border-radius: 4px;
+            text-decoration: none;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-item:hover {
+            background-color: var(--cyber-green);
+            color: var(--cyber-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--cyber-glow);
+        }
+
+        .logout-btn {
+            background-color: #ff4444;
+            border-color: #ff4444;
+            color: white;
+        }
+
+        .logout-btn:hover {
+            background-color: #ff6666;
+            color: white;
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: calc(100vh - 80px);
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, rgba(0, 17, 0, 0.8) 0%, rgba(0, 34, 0, 0.8) 100%);
+            border-right: 2px solid var(--cyber-accent);
+            padding: 2rem 1rem;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: var(--cyber-green);
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background-color: rgba(0, 255, 0, 0.1);
+            border-color: var(--cyber-green);
+            transform: translateX(5px);
+        }
+
+        .main-content {
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, rgba(0, 17, 0, 0.9) 0%, rgba(0, 34, 0, 0.9) 100%);
+            border: 2px solid var(--cyber-accent);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .stats-card:hover {
+            border-color: var(--cyber-green);
+            box-shadow: var(--cyber-glow);
+            transform: translateY(-5px);
+        }
+
+        .stats-card:hover::before {
+            left: 100%;
+        }
+
+        .stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stats-icon {
+            font-size: 2rem;
+            text-shadow: var(--cyber-glow);
+        }
+
+        .stats-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--cyber-green);
+            text-shadow: var(--cyber-glow);
+        }
+
+        .stats-label {
+            color: #00cc00;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .stats-change {
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        .positive {
+            color: var(--cyber-green);
+        }
+
+        .negative {
+            color: #ff4444;
+        }
+
+        .chart-container {
+            background: linear-gradient(135deg, rgba(0, 17, 0, 0.9) 0%, rgba(0, 34, 0, 0.9) 100%);
+            border: 2px solid var(--cyber-accent);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-title {
+            color: var(--cyber-green);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            text-shadow: var(--cyber-glow);
+        }
+
+        .activity-feed {
+            background: linear-gradient(135deg, rgba(0, 17, 0, 0.9) 0%, rgba(0, 34, 0, 0.9) 100%);
+            border: 2px solid var(--cyber-accent);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid var(--cyber-accent);
+            transition: all 0.3s ease;
+        }
+
+        .activity-item:hover {
+            background-color: rgba(0, 255, 0, 0.05);
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--cyber-green);
+            color: var(--cyber-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            color: var(--cyber-green);
+            font-weight: bold;
+        }
+
+        .activity-time {
+            color: #00cc00;
+            font-size: 0.9rem;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .action-btn {
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--cyber-green) 0%, #00cc00 100%);
+            color: var(--cyber-dark);
+            border: none;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--cyber-glow-strong);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, rgba(0, 17, 0, 0.95) 0%, rgba(0, 34, 0, 0.95) 100%);
+            margin: 5% auto;
+            padding: 2rem;
+            border: 2px solid var(--cyber-green);
+            border-radius: 12px;
+            width: 80%;
+            max-width: 600px;
+            color: var(--cyber-green);
+        }
+
+        .close {
+            color: #ff4444;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #ff6666;
+        }
+
+        @keyframes cyberGlow {
+            from { text-shadow: 0 0 5px #00ff00; }
+            to { text-shadow: 0 0 15px #00ff00, 0 0 25px #00ff00; }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+            
+            .admin-nav {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <h1 class="admin-title">
+            <i class="fas fa-terminal"></i> XXMXLI Admin Console
+        </h1>
+        <nav class="admin-nav">
+            <a href="index.html" class="nav-item">
+                <i class="fas fa-th-large"></i> Frameworks
+            </a>
+            <a href="../index.html" class="nav-item">
+                <i class="fas fa-home"></i> Site
+            </a>
+            <a href="#" class="nav-item logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </nav>
+    </div>
+
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <ul class="sidebar-menu">
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link active" onclick="showSection('overview')">
+                        <i class="fas fa-chart-line"></i>
+                        Overview
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link" onclick="showSection('analytics')">
+                        <i class="fas fa-analytics"></i>
+                        Analytics
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link" onclick="showSection('visitors')">
+                        <i class="fas fa-users"></i>
+                        Visitors
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="user-management.html" class="sidebar-link">
+                        <i class="fas fa-user-cog"></i>
+                        User Management
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link" onclick="showSection('content')">
+                        <i class="fas fa-file-alt"></i>
+                        Content
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link" onclick="showSection('gallery')">
+                        <i class="fas fa-images"></i>
+                        Gallery
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link" onclick="showSection('security')">
+                        <i class="fas fa-shield-alt"></i>
+                        Security
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="security-monitor.html" class="sidebar-link">
+                        <i class="fas fa-eye"></i>
+                        Security Monitor
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="system-status.html" class="sidebar-link">
+                        <i class="fas fa-server"></i>
+                        System Status
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link" onclick="showSection('settings')">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="api-docs.html" class="sidebar-link">
+                        <i class="fas fa-code"></i>
+                        API Docs
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <!-- Overview Section -->
+            <div id="overview-section" class="content-section">
+                <div class="dashboard-grid">
+                    <div class="stats-card">
+                        <div class="stats-header">
+                            <div class="stats-icon">
+                                <i class="fas fa-eye" style="color: var(--cyber-blue);"></i>
+                            </div>
+                        </div>
+                        <div class="stats-value" id="visitors-today">1,247</div>
+                        <div class="stats-label">Visitors Today</div>
+                        <div class="stats-change positive">
+                            <i class="fas fa-arrow-up"></i> +12.5% from yesterday
+                        </div>
+                    </div>
+
+                    <div class="stats-card">
+                        <div class="stats-header">
+                            <div class="stats-icon">
+                                <i class="fas fa-mouse-pointer" style="color: var(--cyber-purple);"></i>
+                            </div>
+                        </div>
+                        <div class="stats-value" id="page-views">3,891</div>
+                        <div class="stats-label">Page Views</div>
+                        <div class="stats-change positive">
+                            <i class="fas fa-arrow-up"></i> +8.3% from yesterday
+                        </div>
+                    </div>
+
+                    <div class="stats-card">
+                        <div class="stats-header">
+                            <div class="stats-icon">
+                                <i class="fas fa-clock" style="color: var(--cyber-orange);"></i>
+                            </div>
+                        </div>
+                        <div class="stats-value" id="avg-session">4:23</div>
+                        <div class="stats-label">Avg Session</div>
+                        <div class="stats-change negative">
+                            <i class="fas fa-arrow-down"></i> -2.1% from yesterday
+                        </div>
+                    </div>
+
+                    <div class="stats-card">
+                        <div class="stats-header">
+                            <div class="stats-icon">
+                                <i class="fas fa-percentage" style="color: var(--cyber-green);"></i>
+                            </div>
+                        </div>
+                        <div class="stats-value" id="bounce-rate">23.4%</div>
+                        <div class="stats-label">Bounce Rate</div>
+                        <div class="stats-change positive">
+                            <i class="fas fa-arrow-down"></i> -5.2% from yesterday
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3 class="chart-title">
+                        <i class="fas fa-chart-area"></i> Traffic Overview (Last 7 Days)
+                    </h3>
+                    <canvas id="trafficChart" width="400" height="200"></canvas>
+                </div>
+
+                <div class="quick-actions">
+                    <a href="photo-gallery.html" class="action-btn">
+                        <i class="fas fa-images"></i> Manage Gallery
+                    </a>
+                    <a href="visitors.html" class="action-btn">
+                        <i class="fas fa-users"></i> View Visitors
+                    </a>
+                    <a href="analytics-dashboard.html" class="action-btn">
+                        <i class="fas fa-chart-bar"></i> Analytics
+                    </a>
+                    <a href="#" class="action-btn" onclick="openModal('backup-modal')">
+                        <i class="fas fa-download"></i> Backup Data
+                    </a>
+                </div>
+
+                <div class="activity-feed">
+                    <h3 class="chart-title">
+                        <i class="fas fa-activity"></i> Recent Activity
+                    </h3>
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">New user registration</div>
+                            <div class="activity-time">2 minutes ago</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Photo uploaded to gallery</div>
+                            <div class="activity-time">15 minutes ago</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-shield"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Security scan completed</div>
+                            <div class="activity-time">1 hour ago</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Other sections will be loaded dynamically -->
+            <div id="analytics-section" class="content-section" style="display: none;">
+                <h2>Analytics Dashboard</h2>
+                <iframe src="analytics-dashboard.html" style="width: 100%; height: 600px; border: 2px solid var(--cyber-green); border-radius: 8px;"></iframe>
+            </div>
+
+            <div id="visitors-section" class="content-section" style="display: none;">
+                <h2>Visitor Management</h2>
+                <iframe src="visitors.html" style="width: 100%; height: 600px; border: 2px solid var(--cyber-green); border-radius: 8px;"></iframe>
+            </div>
+
+            <div id="content-section" class="content-section" style="display: none;">
+                <h2>Content Management</h2>
+                <iframe src="content-management.html" style="width: 100%; height: 600px; border: 2px solid var(--cyber-green); border-radius: 8px;"></iframe>
+            </div>
+
+            <div id="gallery-section" class="content-section" style="display: none;">
+                <h2>Photo Gallery</h2>
+                <iframe src="photo-gallery.html" style="width: 100%; height: 600px; border: 2px solid var(--cyber-green); border-radius: 8px;"></iframe>
+            </div>
+
+            <div id="security-section" class="content-section" style="display: none;">
+                <h2>Security Center</h2>
+                <div class="dashboard-grid">
+                    <div class="stats-card">
+                        <div class="stats-header">
+                            <div class="stats-icon">
+                                <i class="fas fa-shield-alt" style="color: var(--cyber-green);"></i>
+                            </div>
+                        </div>
+                        <div class="stats-value">SECURE</div>
+                        <div class="stats-label">System Status</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-header">
+                            <div class="stats-icon">
+                                <i class="fas fa-ban" style="color: #ff4444;"></i>
+                            </div>
+                        </div>
+                        <div class="stats-value">247</div>
+                        <div class="stats-label">Blocked IPs</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settings-section" class="content-section" style="display: none;">
+                <h2>System Settings</h2>
+                <div class="chart-container">
+                    <h3>Admin Frameworks</h3>
+                    <div class="quick-actions">
+                        <a href="adminlte/index.html" class="action-btn">
+                            <i class="fas fa-tachometer-alt"></i> AdminLTE
+                        </a>
+                        <a href="tabler/index.html" class="action-btn">
+                            <i class="fas fa-layer-group"></i> Tabler
+                        </a>
+                        <a href="react-admin/index.html" class="action-btn">
+                            <i class="fab fa-react"></i> React Admin
+                        </a>
+                        <a href="vue-admin/index.html" class="action-btn">
+                            <i class="fab fa-vuejs"></i> Vue Admin
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Backup Modal -->
+    <div id="backup-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('backup-modal')">&times;</span>
+            <h2><i class="fas fa-download"></i> Backup System Data</h2>
+            <p>Select the data you want to backup:</p>
+            <div style="margin: 1rem 0;">
+                <label><input type="checkbox" checked> Visitor Data</label><br>
+                <label><input type="checkbox" checked> Analytics Data</label><br>
+                <label><input type="checkbox" checked> Photo Gallery</label><br>
+                <label><input type="checkbox" checked> Configuration</label><br>
+            </div>
+            <button class="action-btn" onclick="startBackup()">
+                <i class="fas fa-download"></i> Start Backup
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        function checkAuth() {
+            const isAuthenticated = sessionStorage.getItem('adminAuth') === 'true';
+            if (!isAuthenticated) {
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Logout function
+        function logout() {
+            sessionStorage.removeItem('adminAuth');
+            sessionStorage.removeItem('adminUser');
+            window.location.href = 'login.html';
+        }
+
+        // Show section
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + '-section').style.display = 'block';
+            
+            // Update active sidebar link
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.closest('.sidebar-link').classList.add('active');
+        }
+
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function startBackup() {
+            alert('Backup process started! You will be notified when complete.');
+            closeModal('backup-modal');
+        }
+
+        // Initialize chart
+        function initTrafficChart() {
+            const ctx = document.getElementById('trafficChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Visitors',
+                        data: [1200, 1900, 3000, 5000, 2000, 3000, 1247],
+                        borderColor: '#00ff00',
+                        backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#00ff00'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#00ff00'
+                            },
+                            grid: {
+                                color: 'rgba(0, 255, 0, 0.2)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#00ff00'
+                            },
+                            grid: {
+                                color: 'rgba(0, 255, 0, 0.2)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update stats periodically
+        function updateStats() {
+            // Simulate real-time updates
+            const visitors = document.getElementById('visitors-today');
+            const pageViews = document.getElementById('page-views');
+            
+            setInterval(() => {
+                const currentVisitors = parseInt(visitors.textContent.replace(',', ''));
+                const currentPageViews = parseInt(pageViews.textContent.replace(',', ''));
+                
+                if (Math.random() > 0.7) {
+                    visitors.textContent = (currentVisitors + Math.floor(Math.random() * 3)).toLocaleString();
+                    pageViews.textContent = (currentPageViews + Math.floor(Math.random() * 5)).toLocaleString();
+                }
+            }, 10000);
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!checkAuth()) return;
+            
+            initTrafficChart();
+            updateStats();
+            
+            // Display current user
+            const currentUser = sessionStorage.getItem('adminUser');
+            if (currentUser) {
+                console.log('Logged in as:', currentUser);
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
