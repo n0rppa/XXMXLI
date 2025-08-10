@@ -283,11 +283,7 @@
             </button>
         </form>
 
-        <div class="credentials-hint">
-            Super User: xxmxli | Password: jamautus666<br>
-            User: nikob | Password: narri<br>
-            User: xxmxli | Password: tesoma
-        </div>
+
 
         <div class="back-link">
             <a href="../index.html">
@@ -350,11 +346,11 @@
             const successMessage = document.getElementById('successMessage');
             errorMessage.style.display = 'none';
             successMessage.style.display = 'none';
-            // Supported users
+            // Supported users with new secure passwords
             const users = [
-                { user: 'xxmxli', pass: 'jamautus666' },
-                { user: 'nikob', pass: 'narri' },
-                { user: 'xxmxli', pass: 'tesoma' }
+                { user: 'xxmxli', pass: 'Sec#2025$Admin!7x9' },
+                { user: 'nikob', pass: 'Adm1n@2025#Secure8' },
+                { user: 'admin', pass: 'XXM*2025$Super!9z' }
             ];
             const found = users.find(x => x.user === username && x.pass === password);
             if (found) {
@@ -377,14 +373,6 @@
 
         // Initialize matrix effect
         initMatrixRain();
-
-        // Auto-fill shortcut for demo (Ctrl+Shift+D)
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.shiftKey && e.key === 'D') {
-                document.getElementById('username').value = 'xxmxli';
-                document.getElementById('password').value = 'jamautus666';
-            }
-        });
     </script>
 </body>
 </html>
