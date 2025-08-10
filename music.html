@@ -308,13 +308,15 @@
 <body>
     <button id="menuToggle" class="hamburger" aria-label="Menu">☰</button>
     <nav id="sideMenu" class="side-menu" aria-label="Site">
-        <a href="index.html">Etusivu</a>
-        <a href="music.html">Musiikki</a>
-        <a href="photography.html">Valokuvaus</a>
-        <a href="projects.html">Projektit</a>
+        <a href="index.html"><i class="fas fa-home"></i> Etusivu</a>
+        <a href="music.html"><i class="fas fa-music"></i> Musiikki</a>
+        <a href="photography.html"><i class="fas fa-image"></i> Valokuvaus</a>
+        <a href="projects.html"><i class="fas fa-project-diagram"></i> Projektit</a>
+        <a href="contact.html"><i class="fas fa-envelope"></i> Ota yhteyttä</a>
+        <a href="login.html"><i class="fas fa-user-lock"></i> Kirjaudu sisään</a>
+        <a href="admin/login.html"><i class="fas fa-user-shield"></i> Admin Login</a>
     </nav>
-
-    <div class="main-content">
+    <main class="main-content">
         <section class="hero">
             <h1>Musiikki</h1>
             <p>Tuotantoa ja äänimaisemia eri projekteihin</p>
@@ -371,7 +373,7 @@
 
             <div class="playlist" id="playlist"></div>
         </section>
-    </div>
+    </main>
 
     <!-- Visitor Tracker -->
     <script src="assets/js/static-visitor-tracker.js"></script>
