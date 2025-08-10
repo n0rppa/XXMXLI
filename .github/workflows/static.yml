@@ -2,7 +2,7 @@ name: Deploy static content to Pages
 
 on:
   push:
-    branches: ["main", "copilot/vscode1754463485735"]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
