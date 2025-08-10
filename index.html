@@ -1,14 +1,39 @@
 <!DOCTYPE html>
-<html lang="fi">
+<html lang="en">
 <head>
+<<<<<<< HEAD
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://formspree.io https://api.ipify.org; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://formspree.io https://api.ipify.org;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://formspree.io https://api.ipify.org http://ip-api.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://formspree.io https://api.ipify.org http://ip-api.com ws://localhost:8080 wss://localhost:8080;">
     <title>XXMXLI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <!-- Load Comprehensive IP Blacklist -->
     <script src="assets/security/blocked_ips.js"></script>
+    
+    <!-- Load Advanced Analytics System -->
+    <link rel="stylesheet" href="css/analytics.css">
+    <script>
+        // Configure analytics before loading
+        window.xxmxliAnalyticsConfig = {
+            gdprCompliance: true,
+            debug: false,
+            features: {
+                userAnalytics: true,
+                realtimeTracking: true,
+                conversionTracking: true,
+                abTesting: false, // Disabled on main site to avoid interfering with design
+                performanceMonitoring: true,
+                seoAnalytics: true,
+                heatmaps: true,
+                customEvents: true
+            }
+        };
+    </script>
+    <script src="js/analytics/core.js"></script>
+    
+    <!-- Load Visitor Tracker -->
+    <script src="assets/js/static-visitor-tracker.js"></script>
     
     <style>
         :root {
@@ -19,6 +44,7 @@
             --accent-hover: #00cc00;
             --border: #003300;
             --card-bg: #001100;
+            --cyber-green: #00ff33;
         }
 
         * {
@@ -371,6 +397,101 @@
                 margin: 20px;
             }
         }
+
+        /* Matrix Navigation Styles */
+        .matrix-nav {
+            background: linear-gradient(90deg, #000 60%, #003300 100%);
+            padding: 1.2em 0 1.2em 0;
+            box-shadow: 0 0 30px #00ff00aa;
+            border-bottom: 2px solid #00ff00;
+            position: relative;
+            z-index: 1001;
+        }
+        .matrix-nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            padding: 0 1rem;
+        }
+        .matrix-menu-btn {
+            background: #000;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            padding: 0.7em 2em;
+            font-size: 1.3em;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+            cursor: pointer;
+            box-shadow: 0 0 10px #00ff00cc;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+            text-shadow: 0 0 8px #00ff00;
+        }
+        .matrix-menu-btn:hover {
+            background: #003300;
+            color: #fff;
+            box-shadow: 0 0 20px #00ff00;
+        }
+        .matrix-bars {
+            font-size: 1.2em;
+            margin-right: 0.7em;
+            color: #00ff00;
+            text-shadow: 0 0 8px #00ff00;
+        }
+        .matrix-dropdown {
+            display: none;
+            position: absolute;
+            left: 0;
+            top: 3.2em;
+            background: rgba(0, 0, 0, 0.98);
+            border: 2px solid #00ff00;
+            border-radius: 0 0 12px 12px;
+            min-width: 260px;
+            box-shadow: 0 0 30px #00ff00cc;
+            animation: matrixDrop 0.3s cubic-bezier(.4,2,.6,1) forwards;
+            font-family: 'Courier New', monospace;
+            z-index: 1002;
+        }
+        .matrix-dropdown.active {
+            display: block;
+        }
+        .matrix-dropdown a {
+            display: block;
+            color: #00ff00;
+            padding: 1em 2em;
+            text-decoration: none;
+            font-size: 1.1em;
+            border-bottom: 1px solid #003300;
+            transition: background 0.2s, color 0.2s, padding-left 0.2s;
+            text-shadow: 0 0 8px #00ff00;
+        }
+        .matrix-dropdown a:last-child {
+            border-bottom: none;
+        }
+        .matrix-dropdown a:hover {
+            background: #003300;
+            color: #fff;
+            padding-left: 2.5em;
+            box-shadow: 0 0 10px #00ff00;
+        }
+        @keyframes matrixDrop {
+            0% { opacity: 0; transform: translateY(-20px) scaleY(0.8); }
+            100% { opacity: 1; transform: translateY(0) scaleY(1); }
+        }
+        @media (max-width: 768px) {
+            .matrix-nav-container {
+                padding: 0 1em;
+            }
+            .matrix-menu-btn {
+                width: 100%;
+                font-size: 1.1em;
+            }
+            .matrix-dropdown {
+                min-width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -393,8 +514,14 @@
                 <li><a href="projects.html" class="nav-link">
                     <i class="fas fa-project-diagram"></i> Projektit
                 </a></li>
+                <li><a href="contact.html" class="nav-link">
+                    <i class="fas fa-envelope"></i> Ota yhteyttä
+                </a></li>
                 <li><a href="security.html" class="nav-link">
                     <i class="fas fa-shield-alt"></i> Turvallisuus
+                </a></li>
+                <li><a href="status.html" class="nav-link">
+                    <i class="fas fa-heartbeat"></i> Järjestelmävalvonta
                 </a></li>
             </ul>
         </nav>
@@ -405,6 +532,26 @@
             <h1>XXMXLI</h1>
             <p>// DIGITAALINEN STUDIO //</p>
         </section>
+
+        <!-- Matrix Themed Dropdown Navigation -->
+        <nav class="matrix-nav">
+            <div class="matrix-nav-container">
+                <button id="matrixMenuBtn" class="matrix-menu-btn">
+                    <span class="matrix-bars">&#9608;&#9608;&#9608;</span> MENU
+                </button>
+                <div id="matrixDropdown" class="matrix-dropdown">
+                    <a href="index.html"><i class="fas fa-home"></i> Dashboard</a>
+                    <a href="photography.html"><i class="fas fa-image"></i> Valokuvaus</a>
+                    <a href="projects.html"><i class="fas fa-project-diagram"></i> Projektit</a>
+                    <a href="music.html"><i class="fas fa-music"></i> Musiikki</a>
+                    <a href="contact.html"><i class="fas fa-envelope"></i> Ota yhteyttä</a>
+                    <a href="admin/visitor-dashboard.html"><i class="fas fa-chart-bar"></i> Data Tracker</a>
+                    <a href="login.html"><i class="fas fa-user-lock"></i> Kirjaudu sisään</a>
+                    <a href="admin/login.html"><i class="fas fa-user-shield"></i> Admin Login</a>
+                    <a href="admin/visitor-dashboard.html"><i class="fas fa-cogs"></i> Admin Panel</a>
+                </div>
+            </div>
+        </nav>
 
         <div class="grid-container">
             <div class="grid-item">
@@ -469,6 +616,12 @@
                 <div id="formMessage" class="form-message" style="display: none;"></div>
             </form>
         </section>
+
+        <!-- Clipboard Paste Feature -->
+        <button id="pasteButton" class="btn btn-primary" style="margin-top: 1rem;">
+            <i class="fas fa-paste"></i> Paste Clipboard Content
+        </button>
+        <div id="pasteOutput" style="margin-top: 1rem; color: var(--cyber-green);"></div>
     </main>
 
     <script>
@@ -658,10 +811,34 @@
             });
         }
 
+        // Matrix dropdown menu functionality
+        const matrixBtn = document.getElementById('matrixMenuBtn');
+        const matrixDropdown = document.getElementById('matrixDropdown');
+        
+        if (matrixBtn && matrixDropdown) {
+            matrixBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Toggle dropdown using class instead of style.display
+                matrixDropdown.classList.toggle('active');
+                
+                console.log('Matrix dropdown toggled:', matrixDropdown.classList.contains('active'));
+            });
+        }
+
         // Close menu when clicking outside
         document.addEventListener('click', (e) => {
-            if (!menuButton.contains(e.target) && !navMenu.contains(e.target)) {
+            if (menuButton && navMenu && !menuButton.contains(e.target) && !navMenu.contains(e.target)) {
                 navMenu.classList.remove('active');
+            }
+            
+            // Close matrix dropdown when clicking outside
+            if (matrixDropdown && matrixBtn && 
+                !matrixBtn.contains(e.target) && 
+                !matrixDropdown.contains(e.target)) {
+                matrixDropdown.classList.remove('active');
+                console.log('Matrix dropdown closed by outside click');
             }
         });
 
@@ -794,6 +971,232 @@
                 }
             });
         });
+
+        // Function to handle clipboard paste
+        document.getElementById('pasteButton').addEventListener('click', async () => {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('pasteOutput').innerText = text || 'Clipboard is empty';
+            } catch (err) {
+                document.getElementById('pasteOutput').innerText = 'Failed to read clipboard content';
+                console.error('Error reading clipboard:', err);
+            }
+        });
     </script>
+=======
+  <meta charset="UTF-8">
+  <title>XXMXLI - Dropdown Menu Example</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Courier New', monospace;
+      background: #000;
+      color: #00ff00;
+    }
+    .header {
+      background: #001100;
+      padding: 1rem;
+    }
+    .nav-container {
+      display: flex;
+      align-items: center;
+      max-width: 1100px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .logo {
+      color: #00ff00;
+      text-decoration: none;
+      font-size: 2rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+      margin-right: 2rem;
+    }
+    .menu-button {
+      display: none;
+      background: none;
+      border: none;
+      color: #00ff00;
+      font-size: 2rem;
+      cursor: pointer;
+      margin-left: auto;
+    }
+    .nav-menu {
+      list-style: none;
+      display: flex;
+      margin: 0;
+      padding: 0;
+      gap: 1rem;
+      align-items: center;
+      position: relative;
+    }
+    .nav-link {
+      color: #00ff00;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+    .nav-link:hover,
+    .nav-link.active {
+      background: rgba(0,255,0,0.2);
+      color: #fff;
+    }
+    /* Dropdown Styles */
+    .dropdown {
+      position: relative;
+    }
+    .dropdown-toggle:after {
+      content: " \f078";
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      margin-left: 0.3em;
+      font-size: 0.8em;
+    }
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 120%;
+      left: 0;
+      background: #001900;
+      border: 1px solid #00ff00;
+      min-width: 170px;
+      z-index: 10;
+      box-shadow: 0 2px 10px #00330090;
+      border-radius: 6px;
+      padding: 0.5rem 0;
+      flex-direction: column;
+    }
+    .dropdown.active .dropdown-menu {
+      display: flex;
+    }
+    .dropdown-item {
+      color: #00ff00;
+      text-decoration: none;
+      padding: 0.7rem 1.2rem;
+      border: none;
+      background: none;
+      text-align: left;
+      transition: background 0.15s, color 0.15s;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+    }
+    .dropdown-item:hover {
+      background: rgba(0,255,0,0.2);
+      color: #fff;
+    }
+    /* Responsive Styles */
+    @media (max-width: 800px) {
+      .nav-container {
+        flex-wrap: wrap;
+      }
+      .menu-button {
+        display: block;
+      }
+      .nav-menu {
+        flex-direction: column;
+        width: 100%;
+        display: none;
+        gap: 0;
+        background: #001100;
+        position: absolute;
+        left: 0;
+        top: 100%;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #00ff00;
+      }
+      .nav-menu.active {
+        display: flex;
+      }
+      .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        border: none;
+        min-width: 0;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <nav class="nav-container" id="mainNav">
+      <a href="index.html" class="logo">XXMXLI</a>
+      <button class="menu-button" aria-label="Toggle Menu">
+        <i class="fas fa-bars"></i>
+      </button>
+      <ul class="nav-menu">
+        <li><a href="index.html" class="nav-link active"><i class="fas fa-home"></i> Home</a></li>
+        <li class="dropdown">
+          <a href="#" class="nav-link dropdown-toggle">Services</a>
+          <div class="dropdown-menu">
+            <a href="music.html" class="dropdown-item"><i class="fas fa-music"></i> Musiikki</a>
+            <a href="photo-gallery.html" class="dropdown-item"><i class="fas fa-images"></i> Photo Gallery</a>
+            <a href="supabase.html" class="dropdown-item"><i class="fas fa-database"></i> Database</a>
+            <a href="sanity.html" class="dropdown-item"><i class="fas fa-cog"></i> Content Management</a>
+          </div>
+        </li>
+        <li><a href="security.html" class="nav-link"><i class="fas fa-shield-alt"></i> Security</a></li>
+        <li><a href="music.html" class="nav-link"><i class="fas fa-music"></i> Music</a></li>
+        <li><a href="photography.html" class="nav-link"><i class="fas fa-camera"></i> Photography</a></li>
+        <li><a href="contact.html" class="nav-link"><i class="fas fa-envelope"></i> Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <section style="padding:2rem;">
+      <h1>Welcome to XXMXLI</h1>
+      <p>This is your homepage with a fully responsive dropdown navigation menu.</p>
+    </section>
+  </main>
+  <script>
+    // Mobile menu toggle
+    const menuButton = document.querySelector('.menu-button');
+    const navMenu = document.querySelector('.nav-menu');
+    menuButton.addEventListener('click', () => {
+      navMenu.classList.toggle('active');
+    });
+
+    // Dropdown functionality
+    document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+      const parent = toggle.closest('.dropdown');
+      toggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Close other dropdowns
+        document.querySelectorAll('.dropdown').forEach(drop => {
+          if (drop !== parent) drop.classList.remove('active');
+        });
+        // Toggle current dropdown
+        parent.classList.toggle('active');
+      });
+    });
+
+    // Close dropdowns and mobile menu when clicking outside
+    document.addEventListener('click', function(e) {
+      const nav = document.getElementById('mainNav');
+      if (!nav.contains(e.target)) {
+        document.querySelectorAll('.dropdown').forEach(drop => drop.classList.remove('active'));
+        navMenu.classList.remove('active');
+      }
+    });
+
+    // Close mobile menu when clicking any nav link
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        navMenu.classList.remove('active');
+        document.querySelectorAll('.dropdown').forEach(drop => drop.classList.remove('active'));
+      });
+    });
+  </script>
+>>>>>>> 2a4c7e0c5535fa482b9c2c1ccaf69c5b035bc66c
 </body>
 </html>

@@ -1,5 +1,42 @@
 {
-    "visitors": [],
+    "visitors": [
+        {
+            "timestamp": "2025-08-06T10:30:00Z",
+            "ip": "192.168.1.100",
+            "country": "Finland",
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/119.0.0.0",
+            "page": "/",
+            "blocked": false,
+            "suspicious": false
+        },
+        {
+            "timestamp": "2025-08-06T11:15:00Z",
+            "ip": "203.0.113.45",
+            "country": "United States",
+            "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Safari/537.36",
+            "page": "/music.html",
+            "blocked": false,
+            "suspicious": false
+        },
+        {
+            "timestamp": "2025-08-06T11:45:00Z",
+            "ip": "198.51.100.22",
+            "country": "Germany",
+            "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Firefox/119.0",
+            "page": "/gallery.html",
+            "blocked": false,
+            "suspicious": false
+        },
+        {
+            "timestamp": "2025-08-06T12:00:00Z",
+            "ip": "10.0.0.1",
+            "country": "Unknown",
+            "userAgent": "BadBot/1.0",
+            "page": "/admin/",
+            "blocked": true,
+            "suspicious": true
+        }
+    ],
     "initialized": true,
     "version": "1.0.0",
     "created": "2025-08-03"

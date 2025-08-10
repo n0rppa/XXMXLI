@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XXMXLI Analytics - Test Page</title>
+    <link rel="stylesheet" href="css/analytics.css">
+    <style>
+        body {
+            margin: 0;
+            background: #000000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #00ff00;
+            border-radius: 4px;
+        }
+        .test-button {
+            background: transparent;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        .test-button:hover {
+            background: #00ff00;
+            color: #000000;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 XXMXLI Analytics System Test</h1>
+    
+    <div class="test-section">
+        <h2>📊 Analytics Status</h2>
+        <div id="status">Loading analytics...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Test Conversions</h2>
+        <button class="test-button" id="contact-form" onclick="testConversion('contact_form')">
+            Test Contact Form Conversion
+        </button>
+        <button class="test-button" onclick="testConversion('newsletter_signup')">
+            Test Newsletter Signup
+        </button>
+        <button class="test-button" onclick="testConversion('download')">
+            Test Download Conversion
+        </button>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 Test A/B Variants</h2>
+        <div id="ab-test-status">Checking A/B test assignments...</div>
+        <div id="variant-display"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>⚡ Performance Test</h2>
+        <button class="test-button" onclick="runPerformanceTest()">
+            Run Performance Test
+        </button>
+        <div id="performance-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📈 Real-time Analytics</h2>
+        <div id="realtime-demo"></div>
+    </div>
+
+    <!-- Analytics Integration -->
+    <script>
+        window.xxmxliAnalyticsConfig = {
+            debug: true,
+            gdprCompliance: false, // Disabled for testing
+            features: {
+                userAnalytics: true,
+                realtimeTracking: true,
+                conversionTracking: true,
+                abTesting: true,
+                performanceMonitoring: true,
+                seoAnalytics: true,
+                heatmaps: true,
+                customEvents: true
+            }
+        };
+    </script>
+    <script src="js/analytics/core.js"></script>
+
+    <script>
+        // Test functions
+        function testConversion(goalId) {
+            if (window.xxmxliAnalytics) {
+                window.xxmxliAnalytics.track('conversion', {
+                    goal: goalId,
+                    value: Math.floor(Math.random() * 10) + 1,
+                    testMode: true
+                });
+                
+                updateStatus(`✅ Conversion tracked: ${goalId}`);
+            } else {
+                updateStatus('❌ Analytics not loaded');
+            }
+        }
+
+        function runPerformanceTest() {
+            if (window.xxmxliAnalytics && window.xxmxliAnalytics.modules['performance-monitoring']) {
+                const perfModule = window.xxmxliAnalytics.modules['performance-monitoring'];
+                const webVitals = perfModule.getWebVitals();
+                const performanceData = perfModule.getPerformanceData();
+                
+                document.getElementById('performance-results').innerHTML = `
+                    <h4>Core Web Vitals:</h4>
+                    <ul>
+                        <li>LCP: ${webVitals.LCP || 'N/A'}ms</li>
+                        <li>FID: ${webVitals.FID || 'N/A'}ms</li>
+                        <li>CLS: ${webVitals.CLS || 'N/A'}</li>
+                    </ul>
+                    <h4>Navigation Timing:</h4>
+                    <ul>
+                        <li>Total Load: ${performanceData.navigation?.total || 'N/A'}ms</li>
+                        <li>TTFB: ${performanceData.navigation?.TTFB || 'N/A'}ms</li>
+                        <li>DOM Ready: ${performanceData.navigation?.DOM || 'N/A'}ms</li>
+                    </ul>
+                `;
+            } else {
+                updateStatus('❌ Performance monitoring not available');
+            }
+        }
+
+        function updateStatus(message) {
+            const status = document.getElementById('status');
+            const timestamp = new Date().toLocaleTimeString();
+            status.innerHTML = `${timestamp}: ${message}`;
+        }
+
+        // Initialize when analytics is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStatus('🚀 Initializing analytics...');
+            
+            // Check analytics initialization
+            const checkAnalytics = setInterval(() => {
+                if (window.xxmxliAnalytics && window.xxmxliAnalytics.isInitialized) {
+                    clearInterval(checkAnalytics);
+                    updateStatus('✅ Analytics system ready!');
+                    
+                    // Set up event listeners
+                    window.xxmxliAnalytics.on('initialized', () => {
+                        updateStatus('📊 All modules loaded successfully');
+                        checkABTests();
+                        setupRealtimeDemo();
+                    });
+                    
+                    window.xxmxliAnalytics.on('conversion', (data) => {
+                        updateStatus(`🎯 Conversion: ${data.goalId} (value: ${data.value})`);
+                    });
+                }
+            }, 500);
+            
+            // Timeout after 10 seconds
+            setTimeout(() => {
+                clearInterval(checkAnalytics);
+                if (!window.xxmxliAnalytics?.isInitialized) {
+                    updateStatus('❌ Analytics initialization timeout');
+                }
+            }, 10000);
+        });
+
+        function checkABTests() {
+            if (window.xxmxliAnalytics && window.xxmxliAnalytics.modules['ab-testing']) {
+                const abModule = window.xxmxliAnalytics.modules['ab-testing'];
+                const activeTests = abModule.getActiveTests();
+                const variantDisplay = document.getElementById('variant-display');
+                
+                if (activeTests.length > 0) {
+                    document.getElementById('ab-test-status').textContent = 
+                        `✅ You are in ${activeTests.length} active A/B test(s)`;
+                    
+                    variantDisplay.innerHTML = activeTests.map(testId => {
+                        const variant = abModule.getUserVariant(testId);
+                        return `<div>Test: ${testId} → Variant: ${variant}</div>`;
+                    }).join('');
+                } else {
+                    document.getElementById('ab-test-status').textContent = 
+                        '📝 No active A/B tests';
+                }
+            }
+        }
+
+        function setupRealtimeDemo() {
+            if (window.xxmxliAnalytics && window.xxmxliAnalytics.modules['realtime-tracking']) {
+                const realtimeModule = window.xxmxliAnalytics.modules['realtime-tracking'];
+                realtimeModule.createRealtimeWidget('realtime-demo');
+            }
+        }
+
+        // Test custom events
+        setInterval(() => {
+            if (window.xxmxliAnalytics) {
+                window.xxmxliAnalytics.track('test_heartbeat', {
+                    page: 'test',
+                    timestamp: Date.now()
+                });
+            }
+        }, 30000); // Every 30 seconds
+    </script>
+</body>
+</html>

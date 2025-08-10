@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https:;">
     <title>XXMXLI - Visitor Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/visitor-tracker.css">
+    <script src="../assets/js/static-visitor-tracker.js"></script>
+    <script src="../assets/js/visitor-tracker.js"></script>
     <style>
         body {
             margin: 0;
@@ -42,7 +45,71 @@
     </style>
 </head>
 <body>
+    <!-- Matrix Themed Dropdown Navigation -->
+    <nav class="matrix-nav">
+      <div class="matrix-nav-container">
+        <button id="matrixMenuBtn" class="matrix-menu-btn">
+          <span class="matrix-bars">&#9608;&#9608;&#9608;</span> MENU
+        </button>
+        <div id="matrixDropdown" class="matrix-dropdown">
+          <a href="visitor-dashboard.html"><i class="fas fa-eye"></i> Dashboard</a>
+          <a href="../photography.html"><i class="fas fa-image"></i> Valokuvaus</a>
+          <a href="../projects.html"><i class="fas fa-project-diagram"></i> Projektit</a>
+          <a href="../music.html"><i class="fas fa-music"></i> Musiikki</a>
+          <a href="../plugins/data-tracker-demo.html"><i class="fas fa-chart-bar"></i> Data Tracker</a>
+          <a href="../login.html"><i class="fas fa-user-lock"></i> Kirjaudu sisään</a>
+          <a href="../admin/login.html"><i class="fas fa-user-shield"></i> Admin Login</a>
+          <a href="../admin/index.html"><i class="fas fa-tools"></i> Admin Panel</a>
+        </div>
+      </div>
+    </nav>
+    <style>
+      /* (Duplicate matrix-nav styles removed) */
+    </style>
+    <script>
+      // (Duplicate dropdown JS removed)
+    </script>
+    <style>
+      /* (Duplicate matrix-nav styles removed) */
+    <script>
+      // (Duplicate dropdown JS removed)
+    </script>
+
     <div class="visitor-dashboard">
+    <!-- Admin-only Chatbox -->
+    <div id="adminChatbox" style="display:none; position:fixed; bottom:20px; right:20px; width:320px; background:#002244; border:2px solid #00ffcc; border-radius:10px; z-index:9999;">
+      <div style="background:#00ffcc; color:#002244; padding:0.5em; border-radius:8px 8px 0 0;">Admin Chat</div>
+      <div id="chatMessages" style="height:180px; overflow-y:auto; padding:1em; background:#001122;"></div>
+      <form onsubmit="sendChatMsg(event)" style="display:flex;">
+        <input id="chatInput" style="flex:1; border:none; border-radius:0 0 0 8px; padding:0.5em;">
+        <button style="background:#00ffcc; color:#002244; border:none; border-radius:0 0 8px 0; padding:0.5em 1em;">Lähetä</button>
+      </form>
+    </div>
+    <script>
+      // Show chatbox only for logged-in admins
+      if (localStorage.getItem('isAdmin') === 'true') {
+        document.getElementById('adminChatbox').style.display = 'block';
+      }
+      // Simple local chat (for demo, replace with backend for real use)
+      function sendChatMsg(e) {
+        e.preventDefault();
+        const msg = document.getElementById('chatInput').value;
+        if (!msg) return;
+        const chat = JSON.parse(localStorage.getItem('adminChat') || '[]');
+        chat.push({ user: 'admin', msg, time: new Date().toLocaleTimeString() });
+        localStorage.setItem('adminChat', JSON.stringify(chat));
+        document.getElementById('chatInput').value = '';
+        renderChat();
+      }
+      function renderChat() {
+        const chat = JSON.parse(localStorage.getItem('adminChat') || '[]');
+        document.getElementById('chatMessages').innerHTML = chat.map(c =>
+          `<div><b>${c.user}</b> <span style="color:#00ffcc;">[${c.time}]</span>: ${c.msg}</div>`
+        ).join('');
+      }
+      setInterval(renderChat, 1000);
+      renderChat();
+    </script>
         <div class="refresh-indicator" id="refreshIndicator">
             <i class="fas fa-sync-alt"></i> Auto-refresh: ON
         </div>
@@ -75,51 +142,268 @@
                 <i class="fas fa-spinner fa-spin"></i> Loading dashboard...
             </div>
         </div>
+
+        <button id="pasteButton" class="btn btn-primary" style="margin-top: 1rem;">
+            <i class="fas fa-paste"></i> Paste Clipboard Content
+        </button>
+        <div id="pasteOutput" style="margin-top: 1rem; color: var(--cyber-green);"></div>
     </div>
 
     <script>
         class VisitorDashboard {
             constructor() {
-                this.autoRefresh = true;
-                this.refreshInterval = null;
-                this.currentFilter = {
-                    ip: '',
-                    country: ''
-                };
+                this.stats = {};
                 this.allVisitors = [];
-                this.stats = null;
+                this.filteredVisitors = [];
+                this.autoRefresh = false;
+                this.refreshInterval = null;
+                this.isGitHubPages = this.detectHostingEnvironment();
+                console.log('Dashboard initialized for:', this.isGitHubPages ? 'GitHub Pages' : 'Local Server');
+            }
+
+            detectHostingEnvironment() {
+                const hostname = window.location.hostname;
+                const protocol = window.location.protocol;
+                
+                // Check for force static mode parameter
+                const urlParams = new URLSearchParams(window.location.search);
+                const forceStatic = urlParams.get('static') === 'true';
+                
+                // More reliable GitHub Pages detection
+                const isGitHubPages = forceStatic ||
+                                    hostname.includes('github.io') || 
+                                    hostname.includes('xxmxli.com') ||
+                                    hostname.includes('pages.dev') ||
+                                    (protocol === 'https:' && !hostname.includes('localhost'));
+                
+                console.log('Environment detection:', {
+                    hostname,
+                    protocol,
+                    forceStatic,
+                    isGitHubPages
+                });
+                
+                return isGitHubPages;
             }
 
             async init() {
+                this.showInfo('Initializing dashboard...');
                 await this.loadDashboard();
                 this.startAutoRefresh();
-                
-                // Update refresh indicator
-                this.updateRefreshIndicator();
             }
 
             async loadDashboard() {
                 try {
-                    // Load overview stats
-                    const statsResponse = await fetch('/api/get-visitor-stats.php?action=overview');
-                    this.stats = await statsResponse.json();
+                    console.log(`Loading dashboard in ${this.isGitHubPages ? 'static' : 'API'} mode...`);
                     
-                    // Load recent visitors
-                    const visitorsResponse = await fetch('/api/get-visitor-stats.php?action=visitors&limit=100');
-                    const visitorsData = await visitorsResponse.json();
-                    this.allVisitors = visitorsData.visitors || [];
-                    
-                    // Load countries for filter
-                    const countriesResponse = await fetch('/api/get-visitor-stats.php?action=countries');
-                    const countries = await countriesResponse.json();
-                    this.populateCountryFilter(countries);
+                    if (this.isGitHubPages) {
+                        await this.loadStaticData();
+                    } else {
+                        await this.loadAPIData();
+                    }
                     
                     this.renderDashboard();
+                    this.showInfo(`Dashboard loaded successfully (${this.isGitHubPages ? 'Static' : 'API'} mode)`);
                     
                 } catch (error) {
-                    console.error('Failed to load dashboard:', error);
-                    this.showError('Failed to load dashboard data');
+                    console.error('Dashboard loading error:', error);
+                    this.showError(`Failed to load dashboard: ${error.message}`);
+                    
+                    // Fallback to static data if API fails
+                    if (!this.isGitHubPages) {
+                        console.log('API failed, trying static fallback...');
+                        try {
+                            await this.loadStaticData();
+                            this.renderDashboard();
+                            this.showInfo('Dashboard loaded with static fallback data');
+                        } catch (staticError) {
+                            console.error('Static fallback also failed:', staticError);
+                            this.showError('Unable to load any data. Please check your configuration.');
+                        }
+                    }
                 }
+            }
+
+            async loadAPIData() {
+                const apiBase = '/api/';
+                
+                // Load overview stats
+                const statsResponse = await fetch(`${apiBase}get-visitor-stats.php?action=overview`);
+                if (!statsResponse.ok) {
+                    throw new Error(`API request failed: ${statsResponse.status} ${statsResponse.statusText}`);
+                }
+                
+                const statsText = await statsResponse.text();
+                try {
+                    this.stats = JSON.parse(statsText);
+                } catch (parseError) {
+                    console.error('API response text:', statsText);
+                    throw new Error(`Invalid JSON response from API: ${parseError.message}`);
+                }
+                
+                // Load recent visitors
+                const visitorsResponse = await fetch(`${apiBase}get-visitor-stats.php?action=visitors&limit=100`);
+                if (!visitorsResponse.ok) {
+                    throw new Error(`Visitors API request failed: ${visitorsResponse.status}`);
+                }
+                
+                const visitorsData = await visitorsResponse.json();
+                this.allVisitors = visitorsData.visitors || [];
+                
+                // Load countries for filter
+                const countriesResponse = await fetch(`${apiBase}get-visitor-stats.php?action=countries`);
+                if (!countriesResponse.ok) {
+                    throw new Error(`Countries API request failed: ${countriesResponse.status}`);
+                }
+                
+                const countriesData = await countriesResponse.json();
+                this.populateCountryFilter(countriesData.countries || []);
+            }
+
+            async loadStaticData() {
+                // Fallback static data for GitHub Pages
+                console.log('Loading static data...');
+                
+                try {
+                    // First try to load from localStorage (client-side tracking)
+                    if (typeof StaticVisitorTracker !== 'undefined') {
+                        console.log('StaticVisitorTracker available, checking for data...');
+                        const visitors = StaticVisitorTracker.getStoredVisits();
+                        const dailyStats = StaticVisitorTracker.getDailyStats();
+                        
+                        console.log('Static data found:', { visitors: visitors.length, dailyStats: Object.keys(dailyStats).length });
+                        
+                        if (visitors.length > 0) {
+                            this.stats = this.calculateStatsLocal(visitors, dailyStats);
+                            this.allVisitors = visitors.slice().reverse().slice(0, 100);
+                            
+                            // Extract countries for filter
+                            const countries = [...new Set(visitors.map(v => v.location?.country || 'Unknown'))]
+                                .map(country => ({ name: country, visits: visitors.filter(v => (v.location?.country || 'Unknown') === country).length }))
+                                .sort((a, b) => b.visits - a.visits);
+                            
+                            this.populateCountryFilter(countries);
+                            this.renderDashboard();
+                            
+                            this.showInfo('Using client-side tracking data');
+                            return;
+                        }
+                    } else {
+                        console.log('StaticVisitorTracker not available');
+                    }
+                    
+                    // Fallback to JSON files
+                    console.log('Trying to load from JSON files...');
+                    const visitorsResponse = await fetch('../data/visitors.json');
+                    
+                    if (!visitorsResponse.ok) {
+                        throw new Error(`Failed to load visitors.json: ${visitorsResponse.status}`);
+                    }
+                    
+                    const visitorsData = await visitorsResponse.json();
+                    const visitors = visitorsData.visitors || visitorsData;
+                    
+                    const dailyStatsResponse = await fetch('../data/daily_stats.json');
+                    
+                    if (!dailyStatsResponse.ok) {
+                        throw new Error(`Failed to load daily_stats.json: ${dailyStatsResponse.status}`);
+                    }
+                    
+                    const dailyStats = await dailyStatsResponse.json();
+                    
+                    console.log('JSON data loaded:', { visitors: visitors.length, dailyStats: Object.keys(dailyStats).length });
+                    
+                    // Calculate stats locally
+                    this.stats = this.calculateStatsLocal(visitors, dailyStats);
+                    this.allVisitors = visitors.slice().reverse().slice(0, 100);
+                    
+                    // Extract countries for filter
+                    const countries = [...new Set(visitors.map(v => v.country || v.location?.country || 'Unknown'))]
+                        .map(country => ({ name: country, visits: visitors.filter(v => (v.country || v.location?.country || 'Unknown') === country).length }))
+                        .sort((a, b) => b.visits - a.visits);
+                    
+                    this.populateCountryFilter(countries);
+                    this.renderDashboard();
+                    
+                    // Show notification that we're using static data
+                    this.showInfo('Running in static mode - using sample data');
+                    
+                } catch (error) {
+                    console.error('Failed to load static data:', error);
+                    this.showError('Failed to load any data. Please check if data files exist.');
+                }
+            }
+
+            calculateStatsLocal(visitors, dailyStats) {
+                const now = Date.now();
+                const today = new Date().toISOString().split('T')[0];
+                const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                
+                return {
+                    overview: {
+                        totalVisitors: visitors.length,
+                        uniqueIPs: new Set(visitors.map(v => v.ip)).size,
+                        blockedVisitors: visitors.filter(v => v.blocked || v.isBlocked).length,
+                        botVisitors: visitors.filter(v => 
+                            (v.securityFlags?.botDetected) || 
+                            (v.userAgent && v.userAgent.toLowerCase().includes('bot'))
+                        ).length
+                    },
+                    timeframe: {
+                        today: visitors.filter(v => v.timestamp.startsWith(today)).length,
+                        last24h: visitors.filter(v => new Date(v.timestamp) > new Date(now - 24 * 60 * 60 * 1000)).length,
+                        last7d: visitors.filter(v => new Date(v.timestamp) > new Date(now - 7 * 24 * 60 * 60 * 1000)).length
+                    },
+                    topCountries: this.getTopItems(visitors, v => v.country || v.location?.country || 'Unknown'),
+                    topBrowsers: this.getTopItems(visitors, v => this.extractBrowser(v.userAgent || '')),
+                    recentVisitors: visitors.slice(-10).reverse(),
+                    dailyTrend: this.calculateDailyTrend(dailyStats)
+                };
+            }
+
+            getTopItems(visitors, extractor) {
+                const counts = {};
+                visitors.forEach(v => {
+                    const item = extractor(v);
+                    counts[item] = (counts[item] || 0) + 1;
+                });
+                
+                return Object.entries(counts)
+                    .map(([name, visits]) => ({ name, visits }))
+                    .sort((a, b) => b.visits - a.visits)
+                    .slice(0, 10);
+            }
+
+            extractBrowser(userAgent) {
+                if (userAgent.includes('Chrome')) return 'Chrome';
+                if (userAgent.includes('Firefox')) return 'Firefox';
+                if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) return 'Safari';
+                if (userAgent.includes('Edge')) return 'Edge';
+                if (userAgent.includes('Opera')) return 'Opera';
+                return 'Unknown';
+            }
+
+            calculateDailyTrend(dailyStats) {
+                const trend = [];
+                for (let i = 6; i >= 0; i--) {
+                    const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                    const dayData = dailyStats[date] || {};
+                    trend.push({
+                        date,
+                        visits: dayData.visits || 0,
+                        uniqueIPs: Array.isArray(dayData.uniqueIPs) ? dayData.uniqueIPs.length : (dayData.uniqueIPs || 0),
+                        blocked: dayData.blocked || 0
+                    });
+                }
+                return trend;
+            }
+
+            showInfo(message) {
+                const indicator = document.getElementById('refreshIndicator');
+                indicator.innerHTML = `<i class="fas fa-info-circle"></i> ${message}`;
+                indicator.style.background = 'rgba(0, 100, 255, 0.1)';
+                indicator.style.borderColor = '#0066ff';
+                indicator.style.color = '#0066ff';
             }
 
             renderDashboard() {
@@ -265,6 +549,13 @@
             }
 
             startAutoRefresh() {
+                // Disable auto-refresh on GitHub Pages to prevent API calls
+                if (this.isGitHubPages) {
+                    console.log('Auto-refresh disabled for GitHub Pages');
+                    document.getElementById('autoRefreshToggle').style.display = 'none';
+                    return;
+                }
+                
                 if (this.refreshInterval) {
                     clearInterval(this.refreshInterval);
                 }
@@ -353,6 +644,21 @@
         // Initialize dashboard
         const dashboard = new VisitorDashboard();
         dashboard.init();
+
+        // Initialize Visitor Tracker
+        const tracker = new VisitorTracker();
+        tracker.init();
+
+        // Function to handle clipboard paste
+        document.getElementById('pasteButton').addEventListener('click', async () => {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('pasteOutput').innerText = text || 'Clipboard is empty';
+            } catch (err) {
+                document.getElementById('pasteOutput').innerText = 'Failed to read clipboard content';
+                console.error('Error reading clipboard:', err);
+            }
+        });
     </script>
 </body>
 </html>

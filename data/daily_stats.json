@@ -1,1 +1,53 @@
-{}
+{
+    "2025-08-06": {
+        "visits": 4,
+        "uniqueIPs": 4,
+        "blocked": 1,
+        "countries": {
+            "Finland": 1,
+            "United States": 1,
+            "Germany": 1,
+            "Unknown": 1
+        },
+        "pages": {
+            "/": 1,
+            "/music.html": 1,
+            "/gallery.html": 1,
+            "/admin/": 1
+        }
+    },
+    "2025-08-05": {
+        "visits": 12,
+        "uniqueIPs": 8,
+        "blocked": 2,
+        "countries": {
+            "Finland": 5,
+            "United States": 3,
+            "Germany": 2,
+            "Unknown": 2
+        },
+        "pages": {
+            "/": 5,
+            "/music.html": 3,
+            "/gallery.html": 2,
+            "/projects.html": 2
+        }
+    },
+    "2025-08-04": {
+        "visits": 8,
+        "uniqueIPs": 6,
+        "blocked": 1,
+        "countries": {
+            "Finland": 3,
+            "United States": 2,
+            "Sweden": 2,
+            "Unknown": 1
+        },
+        "pages": {
+            "/": 3,
+            "/music.html": 2,
+            "/gallery.html": 2,
+            "/photography.html": 1
+        }
+    }
+}

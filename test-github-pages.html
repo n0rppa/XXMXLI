@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Pages Test - XXMXLI</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            padding: 2rem;
+        }
+        .test-result {
+            margin: 1rem 0;
+            padding: 1rem;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+        }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        .info { color: #ffff00; }
+    </style>
+</head>
+<body>
+    <h1>GitHub Pages Environment Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        function runTests() {
+            const results = document.getElementById('results');
+            
+            // Test 1: Environment Detection
+            const hostname = window.location.hostname;
+            const protocol = window.location.protocol;
+            const isGitHubPages = hostname.includes('github.io') || 
+                                hostname.includes('xxmxli.com') ||
+                                hostname.includes('pages.dev') ||
+                                (protocol === 'https:' && !hostname.includes('localhost'));
+            
+            results.innerHTML += `
+                <div class="test-result">
+                    <h3>Environment Detection</h3>
+                    <p class="info">Hostname: ${hostname}</p>
+                    <p class="info">Protocol: ${protocol}</p>
+                    <p class="${isGitHubPages ? 'pass' : 'fail'}">
+                        GitHub Pages Detected: ${isGitHubPages ? 'YES' : 'NO'}
+                    </p>
+                </div>
+            `;
+            
+            // Test 2: Static Tracker Availability
+            const hasStaticTracker = typeof StaticVisitorTracker !== 'undefined';
+            results.innerHTML += `
+                <div class="test-result">
+                    <h3>Static Tracker</h3>
+                    <p class="${hasStaticTracker ? 'pass' : 'fail'}">
+                        StaticVisitorTracker Available: ${hasStaticTracker ? 'YES' : 'NO'}
+                    </p>
+                </div>
+            `;
+            
+            // Test 3: Data Files Accessibility
+            testDataFiles();
+            
+            // Test 4: Dashboard Mode Simulation
+            testDashboardMode(isGitHubPages);
+        }
+        
+        async function testDataFiles() {
+            const results = document.getElementById('results');
+            const files = [
+                '../data/visitors.json',
+                '../data/daily_stats.json'
+            ];
+            
+            for (const file of files) {
+                try {
+                    const response = await fetch(file);
+                    const success = response.ok;
+                    results.innerHTML += `
+                        <div class="test-result">
+                            <h3>Data File: ${file}</h3>
+                            <p class="${success ? 'pass' : 'fail'}">
+                                Status: ${success ? 'ACCESSIBLE' : 'NOT FOUND'}
+                            </p>
+                        </div>
+                    `;
+                } catch (error) {
+                    results.innerHTML += `
+                        <div class="test-result">
+                            <h3>Data File: ${file}</h3>
+                            <p class="fail">Status: ERROR - ${error.message}</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        function testDashboardMode(isGitHubPages) {
+            const results = document.getElementById('results');
+            const expectedMode = isGitHubPages ? 'Static' : 'API';
+            
+            results.innerHTML += `
+                <div class="test-result">
+                    <h3>Dashboard Mode</h3>
+                    <p class="info">Expected Mode: ${expectedMode}</p>
+                    <p class="info">
+                        This means the dashboard should ${isGitHubPages ? 'NOT make API calls' : 'make API calls'}
+                    </p>
+                </div>
+            `;
+        }
+        
+        // Run tests when page loads
+        document.addEventListener('DOMContentLoaded', runTests);
+    </script>
+    
+    <!-- Load static tracker for testing -->
+    <script src="../assets/js/static-visitor-tracker.js"></script>
+</body>
+</html>
