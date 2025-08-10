@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation - XXMXLI Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/autoloader/prism-autoloader.min.js"></script>
+    
+    <style>
+        :root {
+            --cyber-green: #00ff00;
+            --cyber-dark: #000000;
+            --cyber-accent: #003300;
+            --cyber-glow: 0 0 10px #00ff00;
+            --cyber-blue: #0088ff;
+            --cyber-purple: #8800ff;
+            --cyber-orange: #ff8800;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: var(--cyber-dark);
+            color: var(--cyber-green);
+            line-height: 1.6;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 0, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 0, 0.05) 0%, transparent 50%);
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, rgba(0, 17, 0, 0.8) 0%, rgba(0, 34, 0, 0.8) 100%);
+            border-right: 2px solid var(--cyber-accent);
+            padding: 2rem 1rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            color: var(--cyber-green);
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: block;
+            color: #00cc00;
+            text-decoration: none;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background-color: rgba(0, 255, 0, 0.1);
+            color: var(--cyber-green);
+            transform: translateX(5px);
+        }
+
+        .main-content {
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            color: var(--cyber-green);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .api-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+            border-bottom: 2px solid var(--cyber-green);
+        }
+
+        .api-title {
+            font-size: 2.5rem;
+            color: var(--cyber-green);
+            text-shadow: 0 0 10px #00ff00;
+            margin-bottom: 1rem;
+        }
+
+        .api-subtitle {
+            color: #00cc00;
+            font-size: 1.2rem;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, rgba(0, 17, 0, 0.9) 0%, rgba(0, 34, 0, 0.9) 100%);
+            border: 2px solid var(--cyber-accent);
+            border-radius: 12px;
+        }
+
+        .section-title {
+            color: var(--cyber-green);
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px #00ff00;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-description {
+            color: #00cc00;
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+
+        .endpoint {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--cyber-accent);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .http-method {
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .method-get {
+            background-color: var(--cyber-blue);
+            color: white;
+        }
+
+        .method-post {
+            background-color: var(--cyber-green);
+            color: var(--cyber-dark);
+        }
+
+        .method-put {
+            background-color: var(--cyber-orange);
+            color: var(--cyber-dark);
+        }
+
+        .method-delete {
+            background-color: #ff4444;
+            color: white;
+        }
+
+        .endpoint-url {
+            flex: 1;
+            color: var(--cyber-green);
+            font-family: 'Courier New', monospace;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            border: 1px solid var(--cyber-accent);
+        }
+
+        .endpoint-description {
+            color: #00cc00;
+            margin-bottom: 1rem;
+        }
+
+        .parameters {
+            margin-bottom: 1rem;
+        }
+
+        .parameter-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.5rem;
+        }
+
+        .parameter-table th,
+        .parameter-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--cyber-accent);
+        }
+
+        .parameter-table th {
+            background-color: rgba(0, 255, 0, 0.1);
+            color: var(--cyber-green);
+            font-weight: bold;
+        }
+
+        .parameter-table td {
+            color: #00cc00;
+        }
+
+        .param-type {
+            color: var(--cyber-blue);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .param-required {
+            color: #ff4444;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .code-block {
+            background-color: rgba(0, 0, 0, 0.9);
+            border: 1px solid var(--cyber-accent);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+
+        .code-title {
+            color: var(--cyber-green);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .response-status {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-200 {
+            background-color: rgba(0, 255, 0, 0.2);
+            color: var(--cyber-green);
+        }
+
+        .status-400 {
+            background-color: rgba(255, 136, 0, 0.2);
+            color: var(--cyber-orange);
+        }
+
+        .status-401 {
+            background-color: rgba(255, 0, 0, 0.2);
+            color: #ff4444;
+        }
+
+        .status-500 {
+            background-color: rgba(255, 0, 0, 0.3);
+            color: #ff4444;
+        }
+
+        .auth-info {
+            background: rgba(255, 136, 0, 0.1);
+            border: 1px solid var(--cyber-orange);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .auth-title {
+            color: var(--cyber-orange);
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .try-button {
+            background-color: var(--cyber-green);
+            color: var(--cyber-dark);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .try-button:hover {
+            background-color: #00cc00;
+            transform: translateY(-2px);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="sidebar">
+            <h3><i class="fas fa-code"></i> API Reference</h3>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#overview" class="nav-link active">Overview</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#authentication" class="nav-link">Authentication</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#users" class="nav-link">Users</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#analytics" class="nav-link">Analytics</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#gallery" class="nav-link">Gallery</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#security" class="nav-link">Security</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#system" class="nav-link">System</a>
+                </li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <a href="dashboard.html" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+
+            <div class="api-header">
+                <h1 class="api-title">
+                    <i class="fas fa-code"></i> XXMXLI API Documentation
+                </h1>
+                <p class="api-subtitle">
+                    Complete REST API reference for XXMXLI admin system
+                </p>
+            </div>
+
+            <!-- Overview Section -->
+            <section id="overview" class="section">
+                <h2 class="section-title">
+                    <i class="fas fa-info-circle"></i> Overview
+                </h2>
+                <div class="section-description">
+                    <p>The XXMXLI API provides programmatic access to all admin panel functionality. This RESTful API uses JSON for data exchange and supports standard HTTP methods.</p>
+                    
+                    <h4 style="color: var(--cyber-green); margin: 1rem 0;">Base URL:</h4>
+                    <div class="code-block">
+                        <code>https://api.xxmxli.com/v1/</code>
+                    </div>
+
+                    <h4 style="color: var(--cyber-green); margin: 1rem 0;">Content Type:</h4>
+                    <div class="code-block">
+                        <code>application/json</code>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Authentication Section -->
+            <section id="authentication" class="section">
+                <h2 class="section-title">
+                    <i class="fas fa-key"></i> Authentication
+                </h2>
+                <div class="section-description">
+                    <p>All API requests require authentication using Bearer tokens. Include your token in the Authorization header.</p>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-post">POST</span>
+                        <span class="endpoint-url">/auth/login</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Authenticate and receive an access token.
+                    </div>
+
+                    <div class="parameters">
+                        <h4 style="color: var(--cyber-green);">Request Body:</h4>
+                        <table class="parameter-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Type</th>
+                                    <th>Required</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>username</td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-required">Required</span></td>
+                                    <td>Admin username</td>
+                                </tr>
+                                <tr>
+                                    <td>password</td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td><span class="param-required">Required</span></td>
+                                    <td>Admin password</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="code-block">
+                        <div class="code-title">
+                            <i class="fas fa-code"></i> Example Request
+                        </div>
+                        <pre><code class="language-json">{
+  "username": "xxmxli",
+  "password": "your-secure-password"
+}</code></pre>
+                    </div>
+
+                    <div class="code-block">
+                        <div class="code-title">
+                            <i class="fas fa-check-circle"></i> Example Response <span class="response-status status-200">200 OK</span>
+                        </div>
+                        <pre><code class="language-json">{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "expires_in": 3600,
+  "user": {
+    "username": "xxmxli",
+    "role": "admin"
+  }
+}</code></pre>
+                    </div>
+
+                    <div class="auth-info">
+                        <div class="auth-title">Authentication Header</div>
+                        <p>Include the token in subsequent requests:</p>
+                        <div class="code-block">
+                            <code>Authorization: Bearer {token}</code>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Users Section -->
+            <section id="users" class="section">
+                <h2 class="section-title">
+                    <i class="fas fa-users"></i> User Management
+                </h2>
+                <div class="section-description">
+                    <p>Manage user accounts, roles, and permissions.</p>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-get">GET</span>
+                        <span class="endpoint-url">/users</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Retrieve a list of all users with pagination support.
+                    </div>
+
+                    <div class="parameters">
+                        <h4 style="color: var(--cyber-green);">Query Parameters:</h4>
+                        <table class="parameter-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Type</th>
+                                    <th>Required</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>page</td>
+                                    <td><span class="param-type">integer</span></td>
+                                    <td>Optional</td>
+                                    <td>Page number (default: 1)</td>
+                                </tr>
+                                <tr>
+                                    <td>limit</td>
+                                    <td><span class="param-type">integer</span></td>
+                                    <td>Optional</td>
+                                    <td>Items per page (default: 50, max: 100)</td>
+                                </tr>
+                                <tr>
+                                    <td>role</td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td>Optional</td>
+                                    <td>Filter by role (admin, moderator, user)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="code-block">
+                        <div class="code-title">
+                            <i class="fas fa-check-circle"></i> Example Response <span class="response-status status-200">200 OK</span>
+                        </div>
+                        <pre><code class="language-json">{
+  "users": [
+    {
+      "id": 1,
+      "username": "xxmxli",
+      "email": "admin@xxmxli.com",
+      "role": "admin",
+      "status": "active",
+      "created_at": "2024-01-01T00:00:00Z",
+      "last_login": "2024-08-10T14:30:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 50,
+    "total": 1247,
+    "pages": 25
+  }
+}</code></pre>
+                    </div>
+
+                    <button class="try-button" onclick="tryEndpoint('/users')">
+                        <i class="fas fa-play"></i> Try It
+                    </button>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-post">POST</span>
+                        <span class="endpoint-url">/users</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Create a new user account.
+                    </div>
+
+                    <div class="code-block">
+                        <div class="code-title">
+                            <i class="fas fa-code"></i> Example Request
+                        </div>
+                        <pre><code class="language-json">{
+  "username": "newuser",
+  "email": "newuser@example.com",
+  "password": "secure-password",
+  "role": "user"
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analytics Section -->
+            <section id="analytics" class="section">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-line"></i> Analytics
+                </h2>
+                <div class="section-description">
+                    <p>Access visitor statistics, page views, and performance metrics.</p>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-get">GET</span>
+                        <span class="endpoint-url">/analytics/stats</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Get current analytics overview including visitors, page views, and performance metrics.
+                    </div>
+
+                    <div class="code-block">
+                        <div class="code-title">
+                            <i class="fas fa-check-circle"></i> Example Response <span class="response-status status-200">200 OK</span>
+                        </div>
+                        <pre><code class="language-json">{
+  "visitors": {
+    "today": 1247,
+    "yesterday": 1112,
+    "change_percent": 12.1
+  },
+  "page_views": {
+    "today": 3891,
+    "yesterday": 3594,
+    "change_percent": 8.3
+  },
+  "bounce_rate": 23.4,
+  "avg_session_duration": "04:23"
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Gallery Section -->
+            <section id="gallery" class="section">
+                <h2 class="section-title">
+                    <i class="fas fa-images"></i> Gallery Management
+                </h2>
+                <div class="section-description">
+                    <p>Upload, manage, and organize gallery images.</p>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-post">POST</span>
+                        <span class="endpoint-url">/gallery/upload</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Upload a new image to the gallery.
+                    </div>
+
+                    <div class="parameters">
+                        <h4 style="color: var(--cyber-green);">Form Data:</h4>
+                        <table class="parameter-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Type</th>
+                                    <th>Required</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>image</td>
+                                    <td><span class="param-type">file</span></td>
+                                    <td><span class="param-required">Required</span></td>
+                                    <td>Image file (JPG, PNG, GIF)</td>
+                                </tr>
+                                <tr>
+                                    <td>title</td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td>Optional</td>
+                                    <td>Image title</td>
+                                </tr>
+                                <tr>
+                                    <td>description</td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td>Optional</td>
+                                    <td>Image description</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Security Section -->
+            <section id="security" class="section">
+                <h2 class="section-title">
+                    <i class="fas fa-shield-alt"></i> Security
+                </h2>
+                <div class="section-description">
+                    <p>Monitor security status, blocked IPs, and security events.</p>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-get">GET</span>
+                        <span class="endpoint-url">/security/status</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Get current security status and metrics.
+                    </div>
+
+                    <div class="code-block">
+                        <div class="code-title">
+                            <i class="fas fa-check-circle"></i> Example Response <span class="response-status status-200">200 OK</span>
+                        </div>
+                        <pre><code class="language-json">{
+  "status": "secure",
+  "blocked_ips": 247,
+  "failed_logins_24h": 12,
+  "malware_detected": 0,
+  "ssl_status": "valid",
+  "last_scan": "2024-08-10T14:00:00Z"
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- System Section -->
+            <section id="system" class="section">
+                <h2 class="section-title">
+                    <i class="fas fa-server"></i> System Status
+                </h2>
+                <div class="section-description">
+                    <p>Monitor system health, performance, and uptime metrics.</p>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-get">GET</span>
+                        <span class="endpoint-url">/system/health</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Get system health status and performance metrics.
+                    </div>
+
+                    <div class="code-block">
+                        <div class="code-title">
+                            <i class="fas fa-check-circle"></i> Example Response <span class="response-status status-200">200 OK</span>
+                        </div>
+                        <pre><code class="language-json">{
+  "status": "operational",
+  "uptime": "99.97%",
+  "services": {
+    "website": {
+      "status": "online",
+      "response_time": "23ms",
+      "uptime": "99.9%"
+    },
+    "database": {
+      "status": "online",
+      "query_time": "2.1ms",
+      "connections": 234
+    }
+  },
+  "server": {
+    "cpu_usage": "23%",
+    "memory_usage": "67%",
+    "disk_usage": "45%"
+  }
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Navigation functionality
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all links
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                
+                // Add active class to clicked link
+                this.classList.add('active');
+                
+                // Scroll to target section
+                const target = this.getAttribute('href');
+                document.querySelector(target).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Try endpoint functionality
+        function tryEndpoint(endpoint) {
+            // In a real implementation, this would make an actual API call
+            alert(`Trying endpoint: ${endpoint}\n\nThis would normally execute the API call and show the response.`);
+        }
+
+        // Scroll spy functionality
+        function updateActiveNav() {
+            const sections = document.querySelectorAll('.section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= sectionTop - 60) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').substring(1) === current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', updateActiveNav);
+    </script>
+</body>
+</html>
