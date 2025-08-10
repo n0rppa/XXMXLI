@@ -7,41 +7,16 @@
     <title>XXMXLI - Visitor Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/visitor-tracker.css">
+    <script src="../assets/security/blocked_ips.js"></script>
+    <script>window.XX_BLACKLIST=(window.BLOCKED_IPS||[]).map(ip=>ip.trim()).filter(Boolean);</script>
     <script src="../assets/js/static-visitor-tracker.js"></script>
     <script src="../assets/js/visitor-tracker.js"></script>
     <style>
-        body {
-            margin: 0;
-            background: #000000;
-            color: #00ff00;
-            font-family: 'Courier New', monospace;
-        }
-        
-        .refresh-indicator {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 255, 0, 0.1);
-            border: 1px solid #00ff00;
-            padding: 10px;
-            border-radius: 4px;
-            z-index: 1000;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 50px;
-            color: #008000;
-        }
-        
-        .error {
-            background: rgba(255, 0, 0, 0.1);
-            border: 1px solid #ff0000;
-            color: #ff0000;
-            padding: 15px;
-            margin: 20px;
-            border-radius: 4px;
-        }
+        body { margin:0; background:#000; color:#00ff00; font-family:'Courier New', monospace; }
+        .refresh-indicator { position:fixed; top:20px; right:20px; background:rgba(0,255,0,0.1); border:1px solid #00ff00; padding:10px; border-radius:4px; z-index:1000; }
+        .loading { text-align:center; padding:50px; color:#008000; }
+        .error { background:rgba(255,0,0,0.1); border:1px solid #ff0000; color:#ff0000; padding:15px; margin:20px; border-radius:4px; }
+        .visitor-item.blacklisted { background:rgba(255,0,0,0.08); border-left:4px solid #ff4444; }
     </style>
 </head>
 <body>
@@ -63,18 +38,6 @@
         </div>
       </div>
     </nav>
-    <style>
-      /* (Duplicate matrix-nav styles removed) */
-    </style>
-    <script>
-      // (Duplicate dropdown JS removed)
-    </script>
-    <style>
-      /* (Duplicate matrix-nav styles removed) */
-    <script>
-      // (Duplicate dropdown JS removed)
-    </script>
-
     <div class="visitor-dashboard">
     <!-- Admin-only Chatbox -->
     <div id="adminChatbox" style="display:none; position:fixed; bottom:20px; right:20px; width:320px; background:#002244; border:2px solid #00ffcc; border-radius:10px; z-index:9999;">
@@ -616,6 +579,28 @@
                 URL.revokeObjectURL(url);
             }
         }
+
+        // Extend VisitorDashboard prototype after class definition
+        (function(){
+          if(!window.XX_BLACKLIST) return;
+          const origRender = VisitorDashboard.prototype.renderDashboard;
+          VisitorDashboard.prototype.isBlacklistedIP = function(ip){ return !!ip && XX_BLACKLIST.includes(ip); };
+          VisitorDashboard.prototype.renderDashboard = function(){
+            origRender.call(this);
+            document.querySelectorAll('.visitor-item').forEach(item=>{
+              const ipEl=item.querySelector('.visitor-ip');
+              if(ipEl){
+                const ip=ipEl.textContent.trim();
+                if(this.isBlacklistedIP(ip)){
+                  item.classList.add('blacklisted');
+                  if(!/BLACKLISTED/.test(ipEl.innerHTML)){
+                    ipEl.innerHTML = ip + ' <span style="color:#ff4444;font-weight:bold;">[BLACKLISTED]</span>';
+                  }
+                }
+              }
+            });
+          };
+        })();
 
         // Global functions
         function refreshData() {
