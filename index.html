@@ -1,531 +1,547 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<<<<<<< HEAD
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://formspree.io https://api.ipify.org http://ip-api.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://formspree.io https://api.ipify.org http://ip-api.com ws://localhost:8080 wss://localhost:8080;">
-    <title>XXMXLI</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <meta charset="UTF-8">
+  <title>XXMXLI - Dropdown Menu Example</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --background: #000000;
+      --text-primary: #00ff00;
+      --text-secondary: #008000;
+      --accent: #00ff00;
+      --accent-hover: #00cc00;
+      --border: #003300;
+      --card-bg: #001100;
+      --cyber-green: #00ff33;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background-color: var(--background);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Header Styles */
+    .header {
+      display:none !important;
+    }
+
+    .nav-container {
+      display: flex;
+      align-items: center;
+      max-width: 1100px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .logo {
+      color: #00ff00;
+      text-decoration: none;
+      font-size: 2rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+      margin-right: 2rem;
+    }
+    .menu-button {
+      display: none;
+      background: none;
+      border: none;
+      color: #00ff00;
+      font-size: 2rem;
+      cursor: pointer;
+      margin-left: auto;
+    }
+    .nav-menu {
+      list-style: none;
+      display: flex;
+      margin: 0;
+      padding: 0;
+      gap: 1rem;
+      align-items: center;
+      position: relative;
+    }
+    .nav-link {
+      color: #00ff00;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+    .nav-link:hover,
+    .nav-link.active {
+      background: rgba(0,255,0,0.2);
+      color: #fff;
+    }
+    /* Dropdown Styles */
+    .dropdown {
+      position: relative;
+    }
+    .dropdown-toggle:after {
+      content: " \f078";
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      margin-left: 0.3em;
+      font-size: 0.8em;
+    }
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 120%;
+      left: 0;
+      background: #001900;
+      border: 1px solid #00ff00;
+      min-width: 170px;
+      z-index: 10;
+      box-shadow: 0 2px 10px #00330090;
+      border-radius: 6px;
+      padding: 0.5rem 0;
+      flex-direction: column;
+    }
+    .dropdown.active .dropdown-menu {
+      display: flex;
+    }
+    .dropdown-item {
+      color: #00ff00;
+      text-decoration: none;
+      padding: 0.7rem 1.2rem;
+      border: none;
+      background: none;
+      text-align: left;
+      transition: background 0.15s, color 0.15s;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+    }
+    .dropdown-item:hover {
+      background: rgba(0,255,0,0.2);
+      color: #fff;
+    }
+
+    /* Side Menu Styles */
+    .side-menu {
+      position:fixed;
+      top:0;
+      left:0;
+      height:100%;
+      width:220px;
+      background:#001100;
+      border-right:1px solid var(--accent);
+      transform:translateX(-100%);
+      transition:transform .3s ease;
+      z-index:1099;
+      padding-top:60px;
+      display:flex;
+      flex-direction:column;
+    }
+    .side-menu a {
+      color:var(--accent);
+      text-decoration:none;
+      padding:1rem 1.2rem;
+      border-bottom:1px solid #003300;
+      font-family:'Courier New', monospace;
+    }
+    .side-menu a:hover {
+      background:#002200;
+    }
+    .side-menu.open {
+      transform:translateX(0);
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-top: 80px;
+      padding: 2rem;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: linear-gradient(to bottom, var(--card-bg), var(--background));
+      border-bottom: 1px solid var(--accent);
+    }
+
+    .hero h1 {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+      text-shadow: 0 0 10px var(--accent);
+      animation: pulse 2s infinite;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Grid Layout */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .grid-item {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .grid-item:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 15px var(--accent);
+      transform: translateY(-5px);
+    }
+
+    .grid-item i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: var(--accent);
+    }
+
+    .grid-item h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .grid-item p {
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+    }
+
+    .grid-item a {
+      display: inline-block;
+      padding: 0.8rem 1.5rem;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid var(--accent);
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .grid-item a:hover {
+      background: var(--accent);
+      color: var(--background);
+      box-shadow: 0 0 15px var(--accent);
+    }
+
+    /* Contact Form Styles */
+    .contact-form {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 2rem;
+      max-width: 600px;
+      margin: 3rem auto;
+      border-radius: 8px;
+    }
+
+    .contact-form h2 {
+      text-align: center;
+      color: var(--accent);
+      margin-bottom: 2rem;
+      font-size: 2rem;
+      text-shadow: 0 0 5px var(--accent);
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+      font-weight: bold;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.8rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      font-family: 'Courier New', monospace;
+      font-size: 1rem;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 1rem;
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-family: 'Courier New', monospace;
+      font-size: 1.1rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-radius: 4px;
+    }
+
+    .submit-btn:hover {
+      background: var(--accent);
+      color: var(--background);
+      box-shadow: 0 0 15px var(--accent);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .form-message {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 4px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .form-message.success {
+      background: rgba(0, 255, 0, 0.1);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+    }
+
+    .form-message.error {
+      background: rgba(255, 0, 0, 0.1);
+      border: 1px solid #ff0000;
+      color: #ff0000;
+    }
+
+    /* Security Alert Styles */
+    .security-alert {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, #000000, #110000, #000000);
+      z-index: 999999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #ff0000;
+      font-family: 'Courier New', monospace;
+    }
     
-    <!-- Load Comprehensive IP Blacklist -->
-    <script src="assets/security/blocked_ips.js"></script>
+    .security-content {
+      text-align: center;
+      border: 3px solid #ff0000;
+      padding: 60px;
+      border-radius: 15px;
+      background: rgba(0, 0, 0, 0.95);
+      box-shadow: 0 0 50px #ff0000;
+      animation: securityPulse 2s infinite;
+      max-width: 700px;
+    }
     
-    <!-- Load Advanced Analytics System -->
-    <link rel="stylesheet" href="css/analytics.css">
-    <script>
-        // Configure analytics before loading
-        window.xxmxliAnalyticsConfig = {
-            gdprCompliance: true,
-            debug: false,
-            features: {
-                userAnalytics: true,
-                realtimeTracking: true,
-                conversionTracking: true,
-                abTesting: false, // Disabled on main site to avoid interfering with design
-                performanceMonitoring: true,
-                seoAnalytics: true,
-                heatmaps: true,
-                customEvents: true
-            }
-        };
-    </script>
-    <script src="js/analytics/core.js"></script>
-    
-    <!-- Load Visitor Tracker -->
-    <script src="assets/js/static-visitor-tracker.js"></script>
-    
-    <style>
-        :root {
-            --background: #000000;
-            --text-primary: #00ff00;
-            --text-secondary: #008000;
-            --accent: #00ff00;
-            --accent-hover: #00cc00;
-            --border: #003300;
-            --card-bg: #001100;
-            --cyber-green: #00ff33;
-        }
+    @keyframes securityPulse {
+      0% { box-shadow: 0 0 50px #ff0000; }
+      50% { box-shadow: 0 0 80px #ff0000, 0 0 100px #ff0000; }
+      100% { box-shadow: 0 0 50px #ff0000; }
+    }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    /* Animations */
+    @keyframes pulse {
+      0% {
+        text-shadow: 0 0 10px var(--accent);
+      }
+      50% {
+        text-shadow: 0 0 20px var(--accent), 0 0 30px var(--accent);
+      }
+      100% {
+        text-shadow: 0 0 10px var(--accent);
+      }
+    }
 
-        body {
-            font-family: 'Courier New', monospace;
-            background-color: var(--background);
-            color: var(--text-primary);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .menu-button {
+        display: block;
+      }
 
-        /* Header Styles */
-        .header {
-            background: rgba(0, 17, 0, 0.95);
-            padding: 1rem;
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 1px solid var(--accent);
-            box-shadow: 0 0 10px var(--accent);
-        }
+      .nav-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--card-bg);
+        flex-direction: column;
+        padding: 1rem;
+        border-bottom: 1px solid var(--accent);
+      }
 
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 1rem;
-        }
+      .nav-menu.active {
+        display: flex;
+      }
 
-        .logo {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--accent);
-            text-decoration: none;
-            text-shadow: 0 0 5px var(--accent);
-        }
+      .hero h1 {
+        font-size: 2.5rem;
+      }
 
-        .menu-button {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--accent);
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
+      .contact-form {
+        margin: 2rem 1rem;
+        padding: 1.5rem;
+      }
 
-        .nav-menu {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
+      .grid-container {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+      }
 
-        .nav-link {
-            color: var(--text-primary);
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border: 1px solid transparent;
-            transition: all 0.3s ease;
-            font-size: 1.1rem;
-            text-transform: uppercase;
-        }
+      .security-content {
+        padding: 30px;
+        margin: 20px;
+      }
+    }
 
-        .nav-link:hover, .nav-link.active {
-            border-color: var(--accent);
-            color: var(--accent);
-            box-shadow: 0 0 10px var(--accent);
-            text-shadow: 0 0 5px var(--accent);
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-top: 80px;
-            padding: 2rem;
-        }
-
-        .hero {
-            text-align: center;
-            padding: 4rem 2rem;
-            background: linear-gradient(to bottom, var(--card-bg), var(--background));
-            border-bottom: 1px solid var(--accent);
-        }
-
-        .hero h1 {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            text-shadow: 0 0 10px var(--accent);
-            animation: pulse 2s infinite;
-        }
-
-        .hero p {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        /* Grid Layout */
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            padding: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .grid-item {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            padding: 2rem;
-            text-align: center;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .grid-item:hover {
-            border-color: var(--accent);
-            box-shadow: 0 0 15px var(--accent);
-            transform: translateY(-5px);
-        }
-
-        .grid-item i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            color: var(--accent);
-        }
-
-        .grid-item h2 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            color: var(--text-primary);
-        }
-
-        .grid-item p {
-            color: var(--text-secondary);
-            margin-bottom: 1.5rem;
-        }
-
-        .grid-item a {
-            display: inline-block;
-            padding: 0.8rem 1.5rem;
-            color: var(--accent);
-            text-decoration: none;
-            border: 1px solid var(--accent);
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .grid-item a:hover {
-            background: var(--accent);
-            color: var(--background);
-            box-shadow: 0 0 15px var(--accent);
-        }
-
-        /* Contact Form Styles */
-        .contact-form {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            padding: 2rem;
-            max-width: 600px;
-            margin: 3rem auto;
-            border-radius: 8px;
-        }
-
-        .contact-form h2 {
-            text-align: center;
-            color: var(--accent);
-            margin-bottom: 2rem;
-            font-size: 2rem;
-            text-shadow: 0 0 5px var(--accent);
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--text-primary);
-            font-weight: bold;
-        }
-
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 0.8rem;
-            background: var(--background);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            font-family: 'Courier New', monospace;
-            font-size: 1rem;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 10px var(--accent);
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 120px;
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 1rem;
-            background: transparent;
-            border: 1px solid var(--accent);
-            color: var(--accent);
-            font-family: 'Courier New', monospace;
-            font-size: 1.1rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-radius: 4px;
-        }
-
-        .submit-btn:hover {
-            background: var(--accent);
-            color: var(--background);
-            box-shadow: 0 0 15px var(--accent);
-        }
-
-        .submit-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .form-message {
-            margin-top: 1rem;
-            padding: 1rem;
-            border-radius: 4px;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .form-message.success {
-            background: rgba(0, 255, 0, 0.1);
-            border: 1px solid var(--accent);
-            color: var(--accent);
-        }
-
-        .form-message.error {
-            background: rgba(255, 0, 0, 0.1);
-            border: 1px solid #ff0000;
-            color: #ff0000;
-        }
-
-        /* Security Alert Styles */
-        .security-alert {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, #000000, #110000, #000000);
-            z-index: 999999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #ff0000;
-            font-family: 'Courier New', monospace;
-        }
-        
-        .security-content {
-            text-align: center;
-            border: 3px solid #ff0000;
-            padding: 60px;
-            border-radius: 15px;
-            background: rgba(0, 0, 0, 0.95);
-            box-shadow: 0 0 50px #ff0000;
-            animation: securityPulse 2s infinite;
-            max-width: 700px;
-        }
-        
-        @keyframes securityPulse {
-            0% { box-shadow: 0 0 50px #ff0000; }
-            50% { box-shadow: 0 0 80px #ff0000, 0 0 100px #ff0000; }
-            100% { box-shadow: 0 0 50px #ff0000; }
-        }
-
-        /* Animations */
-        @keyframes pulse {
-            0% {
-                text-shadow: 0 0 10px var(--accent);
-            }
-            50% {
-                text-shadow: 0 0 20px var(--accent), 0 0 30px var(--accent);
-            }
-            100% {
-                text-shadow: 0 0 10px var(--accent);
-            }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .menu-button {
-                display: block;
-            }
-
-            .nav-menu {
-                display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: var(--card-bg);
-                flex-direction: column;
-                padding: 1rem;
-                border-bottom: 1px solid var(--accent);
-            }
-
-            .nav-menu.active {
-                display: flex;
-            }
-
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-
-            .contact-form {
-                margin: 2rem 1rem;
-                padding: 1.5rem;
-            }
-
-            .grid-container {
-                grid-template-columns: 1fr;
-                padding: 1rem;
-            }
-
-            .security-content {
-                padding: 30px;
-                margin: 20px;
-            }
-        }
-
-        /* Matrix Navigation Styles */
-        .matrix-nav {
-            background: linear-gradient(90deg, #000 60%, #003300 100%);
-            padding: 1.2em 0 1.2em 0;
-            box-shadow: 0 0 30px #00ff00aa;
-            border-bottom: 2px solid #00ff00;
-            position: relative;
-            z-index: 1001;
-        }
-        .matrix-nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            position: relative;
-            padding: 0 1rem;
-        }
-        .matrix-menu-btn {
-            background: #000;
-            color: #00ff00;
-            border: 2px solid #00ff00;
-            border-radius: 8px;
-            padding: 0.7em 2em;
-            font-size: 1.3em;
-            font-family: 'Courier New', monospace;
-            letter-spacing: 2px;
-            cursor: pointer;
-            box-shadow: 0 0 10px #00ff00cc;
-            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-            position: relative;
-            overflow: hidden;
-            text-shadow: 0 0 8px #00ff00;
-        }
-        .matrix-menu-btn:hover {
-            background: #003300;
-            color: #fff;
-            box-shadow: 0 0 20px #00ff00;
-        }
-        .matrix-bars {
-            font-size: 1.2em;
-            margin-right: 0.7em;
-            color: #00ff00;
-            text-shadow: 0 0 8px #00ff00;
-        }
-        .matrix-dropdown {
-            display: none;
-            position: absolute;
-            left: 0;
-            top: 3.2em;
-            background: rgba(0, 0, 0, 0.98);
-            border: 2px solid #00ff00;
-            border-radius: 0 0 12px 12px;
-            min-width: 260px;
-            box-shadow: 0 0 30px #00ff00cc;
-            animation: matrixDrop 0.3s cubic-bezier(.4,2,.6,1) forwards;
-            font-family: 'Courier New', monospace;
-            z-index: 1002;
-        }
-        .matrix-dropdown.active {
-            display: block;
-        }
-        .matrix-dropdown a {
-            display: block;
-            color: #00ff00;
-            padding: 1em 2em;
-            text-decoration: none;
-            font-size: 1.1em;
-            border-bottom: 1px solid #003300;
-            transition: background 0.2s, color 0.2s, padding-left 0.2s;
-            text-shadow: 0 0 8px #00ff00;
-        }
-        .matrix-dropdown a:last-child {
-            border-bottom: none;
-        }
-        .matrix-dropdown a:hover {
-            background: #003300;
-            color: #fff;
-            padding-left: 2.5em;
-            box-shadow: 0 0 10px #00ff00;
-        }
-        @keyframes matrixDrop {
-            0% { opacity: 0; transform: translateY(-20px) scaleY(0.8); }
-            100% { opacity: 1; transform: translateY(0) scaleY(1); }
-        }
-        @media (max-width: 768px) {
-            .matrix-nav-container {
-                padding: 0 1em;
-            }
-            .matrix-menu-btn {
-                width: 100%;
-                font-size: 1.1em;
-            }
-            .matrix-dropdown {
-                min-width: 100%;
-            }
-        }
-    </style>
+    /* Matrix Navigation Styles */
+    .matrix-nav {
+      background: linear-gradient(90deg, #000 60%, #003300 100%);
+      padding: 1.2em 0 1.2em 0;
+      box-shadow: 0 0 30px #00ff00aa;
+      border-bottom: 2px solid #00ff00;
+      position: relative;
+      z-index: 1001;
+    }
+    .matrix-nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      padding: 0 1rem;
+    }
+    .matrix-menu-btn {
+      background: #000;
+      color: #00ff00;
+      border: 2px solid #00ff00;
+      border-radius: 8px;
+      padding: 0.7em 2em;
+      font-size: 1.3em;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 2px;
+      cursor: pointer;
+      box-shadow: 0 0 10px #00ff00cc;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+      text-shadow: 0 0 8px #00ff00;
+    }
+    .matrix-menu-btn:hover {
+      background: #003300;
+      color: #fff;
+      box-shadow: 0 0 20px #00ff00;
+    }
+    .matrix-bars {
+      font-size: 1.2em;
+      margin-right: 0.7em;
+      color: #00ff00;
+      text-shadow: 0 0 8px #00ff00;
+    }
+    .matrix-dropdown {
+      display: none;
+      position: absolute;
+      left: 0;
+      top: 3.2em;
+      background: rgba(0, 0, 0, 0.98);
+      border: 2px solid #00ff00;
+      border-radius: 0 0 12px 12px;
+      min-width: 260px;
+      box-shadow: 0 0 30px #00ff00cc;
+      animation: matrixDrop 0.3s cubic-bezier(.4,2,.6,1) forwards;
+      font-family: 'Courier New', monospace;
+      z-index: 1002;
+    }
+    .matrix-dropdown.active {
+      display: block;
+    }
+    .matrix-dropdown a {
+      display: block;
+      color: #00ff00;
+      padding: 1em 2em;
+      text-decoration: none;
+      font-size: 1.1em;
+      border-bottom: 1px solid #003300;
+      transition: background 0.2s, color 0.2s, padding-left 0.2s;
+      text-shadow: 0 0 8px #00ff00;
+    }
+    .matrix-dropdown a:last-child {
+      border-bottom: none;
+    }
+    .matrix-dropdown a:hover {
+      background: #003300;
+      color: #fff;
+      padding-left: 2.5em;
+      box-shadow: 0 0 10px #00ff00;
+    }
+    @keyframes matrixDrop {
+      0% { opacity: 0; transform: translateY(-20px) scaleY(0.8); }
+      100% { opacity: 1; transform: translateY(0) scaleY(1); }
+    }
+    @media (max-width: 768px) {
+      .matrix-nav-container {
+        padding: 0 1em;
+      }
+      .matrix-menu-btn {
+        width: 100%;
+        font-size: 1.1em;
+      }
+      .matrix-dropdown {
+        min-width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
-    <header class="header">
-        <nav class="nav-container">
-            <a href="index.html" class="logo">XXMXLI</a>
-            <button class="menu-button">
-                <i class="fas fa-bars"></i>
-            </button>
-            <ul class="nav-menu">
-                <li><a href="index.html" class="nav-link active">
-                    <i class="fas fa-home"></i> Etusivu
-                </a></li>
-                <li><a href="music.html" class="nav-link">
-                    <i class="fas fa-music"></i> Musiikki
-                </a></li>
-                <li><a href="photography.html" class="nav-link">
-                    <i class="fas fa-camera"></i> Valokuvaus
-                </a></li>
-                <li><a href="projects.html" class="nav-link">
-                    <i class="fas fa-project-diagram"></i> Projektit
-                </a></li>
-                <li><a href="contact.html" class="nav-link">
-                    <i class="fas fa-envelope"></i> Ota yhteyttä
-                </a></li>
-                <li><a href="security.html" class="nav-link">
-                    <i class="fas fa-shield-alt"></i> Turvallisuus
-                </a></li>
-                <li><a href="status.html" class="nav-link">
-                    <i class="fas fa-heartbeat"></i> Järjestelmävalvonta
-                </a></li>
-            </ul>
-        </nav>
-    </header>
+    <button id="menuToggle" class="hamburger" aria-label="Menu">☰</button>
+    <nav id="sideMenu" class="side-menu" aria-label="Site">
+        <a href="index.html">Etusivu</a>
+        <a href="music.html">Musiikki</a>
+        <a href="photography.html">Valokuvaus</a>
+        <a href="projects.html">Projektit</a>
+    </nav>
 
     <main class="main-content">
         <section class="hero">
@@ -545,10 +561,8 @@
                     <a href="projects.html"><i class="fas fa-project-diagram"></i> Projektit</a>
                     <a href="music.html"><i class="fas fa-music"></i> Musiikki</a>
                     <a href="contact.html"><i class="fas fa-envelope"></i> Ota yhteyttä</a>
-                    <a href="admin/visitor-dashboard.html"><i class="fas fa-chart-bar"></i> Data Tracker</a>
                     <a href="login.html"><i class="fas fa-user-lock"></i> Kirjaudu sisään</a>
                     <a href="admin/login.html"><i class="fas fa-user-shield"></i> Admin Login</a>
-                    <a href="admin/visitor-dashboard.html"><i class="fas fa-cogs"></i> Admin Panel</a>
                 </div>
             </div>
         </nav>
@@ -982,221 +996,16 @@
                 console.error('Error reading clipboard:', err);
             }
         });
+
+        (function(){
+          const btn=document.getElementById('menuToggle');
+          const menu=document.getElementById('sideMenu');
+          if(btn && menu){
+            btn.addEventListener('click', ()=> menu.classList.toggle('open'));
+            menu.querySelectorAll('a').forEach(a=> a.addEventListener('click', ()=> menu.classList.remove('open')));
+            document.addEventListener('keydown', e=> { if(e.key==='Escape') menu.classList.remove('open'); });
+          }
+        })();
     </script>
-=======
-  <meta charset="UTF-8">
-  <title>XXMXLI - Dropdown Menu Example</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Font Awesome for Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Courier New', monospace;
-      background: #000;
-      color: #00ff00;
-    }
-    .header {
-      background: #001100;
-      padding: 1rem;
-    }
-    .nav-container {
-      display: flex;
-      align-items: center;
-      max-width: 1100px;
-      margin: 0 auto;
-      position: relative;
-    }
-    .logo {
-      color: #00ff00;
-      text-decoration: none;
-      font-size: 2rem;
-      font-weight: bold;
-      letter-spacing: 2px;
-      margin-right: 2rem;
-    }
-    .menu-button {
-      display: none;
-      background: none;
-      border: none;
-      color: #00ff00;
-      font-size: 2rem;
-      cursor: pointer;
-      margin-left: auto;
-    }
-    .nav-menu {
-      list-style: none;
-      display: flex;
-      margin: 0;
-      padding: 0;
-      gap: 1rem;
-      align-items: center;
-      position: relative;
-    }
-    .nav-link {
-      color: #00ff00;
-      text-decoration: none;
-      padding: 0.5rem 1rem;
-      border-radius: 5px;
-      transition: background 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 1.1rem;
-      cursor: pointer;
-    }
-    .nav-link:hover,
-    .nav-link.active {
-      background: rgba(0,255,0,0.2);
-      color: #fff;
-    }
-    /* Dropdown Styles */
-    .dropdown {
-      position: relative;
-    }
-    .dropdown-toggle:after {
-      content: " \f078";
-      font-family: "Font Awesome 6 Free";
-      font-weight: 900;
-      margin-left: 0.3em;
-      font-size: 0.8em;
-    }
-    .dropdown-menu {
-      display: none;
-      position: absolute;
-      top: 120%;
-      left: 0;
-      background: #001900;
-      border: 1px solid #00ff00;
-      min-width: 170px;
-      z-index: 10;
-      box-shadow: 0 2px 10px #00330090;
-      border-radius: 6px;
-      padding: 0.5rem 0;
-      flex-direction: column;
-    }
-    .dropdown.active .dropdown-menu {
-      display: flex;
-    }
-    .dropdown-item {
-      color: #00ff00;
-      text-decoration: none;
-      padding: 0.7rem 1.2rem;
-      border: none;
-      background: none;
-      text-align: left;
-      transition: background 0.15s, color 0.15s;
-      font-size: 1rem;
-      cursor: pointer;
-      width: 100%;
-    }
-    .dropdown-item:hover {
-      background: rgba(0,255,0,0.2);
-      color: #fff;
-    }
-    /* Responsive Styles */
-    @media (max-width: 800px) {
-      .nav-container {
-        flex-wrap: wrap;
-      }
-      .menu-button {
-        display: block;
-      }
-      .nav-menu {
-        flex-direction: column;
-        width: 100%;
-        display: none;
-        gap: 0;
-        background: #001100;
-        position: absolute;
-        left: 0;
-        top: 100%;
-        padding: 0.5rem 0;
-        border-bottom: 1px solid #00ff00;
-      }
-      .nav-menu.active {
-        display: flex;
-      }
-      .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        border: none;
-        min-width: 0;
-        width: 100%;
-      }
-    }
-  </style>
-</head>
-<body>
-  <header class="header">
-    <nav class="nav-container" id="mainNav">
-      <a href="index.html" class="logo">XXMXLI</a>
-      <button class="menu-button" aria-label="Toggle Menu">
-        <i class="fas fa-bars"></i>
-      </button>
-      <ul class="nav-menu">
-        <li><a href="index.html" class="nav-link active"><i class="fas fa-home"></i> Home</a></li>
-        <li class="dropdown">
-          <a href="#" class="nav-link dropdown-toggle">Services</a>
-          <div class="dropdown-menu">
-            <a href="music.html" class="dropdown-item"><i class="fas fa-music"></i> Musiikki</a>
-            <a href="photo-gallery.html" class="dropdown-item"><i class="fas fa-images"></i> Photo Gallery</a>
-            <a href="supabase.html" class="dropdown-item"><i class="fas fa-database"></i> Database</a>
-            <a href="sanity.html" class="dropdown-item"><i class="fas fa-cog"></i> Content Management</a>
-          </div>
-        </li>
-        <li><a href="security.html" class="nav-link"><i class="fas fa-shield-alt"></i> Security</a></li>
-        <li><a href="music.html" class="nav-link"><i class="fas fa-music"></i> Music</a></li>
-        <li><a href="photography.html" class="nav-link"><i class="fas fa-camera"></i> Photography</a></li>
-        <li><a href="contact.html" class="nav-link"><i class="fas fa-envelope"></i> Contact</a></li>
-      </ul>
-    </nav>
-  </header>
-  <main>
-    <section style="padding:2rem;">
-      <h1>Welcome to XXMXLI</h1>
-      <p>This is your homepage with a fully responsive dropdown navigation menu.</p>
-    </section>
-  </main>
-  <script>
-    // Mobile menu toggle
-    const menuButton = document.querySelector('.menu-button');
-    const navMenu = document.querySelector('.nav-menu');
-    menuButton.addEventListener('click', () => {
-      navMenu.classList.toggle('active');
-    });
-
-    // Dropdown functionality
-    document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
-      const parent = toggle.closest('.dropdown');
-      toggle.addEventListener('click', function(e) {
-        e.preventDefault();
-        // Close other dropdowns
-        document.querySelectorAll('.dropdown').forEach(drop => {
-          if (drop !== parent) drop.classList.remove('active');
-        });
-        // Toggle current dropdown
-        parent.classList.toggle('active');
-      });
-    });
-
-    // Close dropdowns and mobile menu when clicking outside
-    document.addEventListener('click', function(e) {
-      const nav = document.getElementById('mainNav');
-      if (!nav.contains(e.target)) {
-        document.querySelectorAll('.dropdown').forEach(drop => drop.classList.remove('active'));
-        navMenu.classList.remove('active');
-      }
-    });
-
-    // Close mobile menu when clicking any nav link
-    document.querySelectorAll('.nav-link').forEach(link => {
-      link.addEventListener('click', () => {
-        navMenu.classList.remove('active');
-        document.querySelectorAll('.dropdown').forEach(drop => drop.classList.remove('active'));
-      });
-    });
-  </script>
->>>>>>> 2a4c7e0c5535fa482b9c2c1ccaf69c5b035bc66c
 </body>
 </html>
