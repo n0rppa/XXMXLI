@@ -1,0 +1,58 @@
+apache
+# Audio MIME Types
+AddType audio/flac .flac
+AddType audio/mpeg .mp3
+AddType audio/ogg .ogg
+AddType audio/wav .wav
+AddType audio/mp4 .m4a
+# CORS Headers
+Header set Access-Control-Allow-Origin "*"
+Header set Access-Control-Allow-Methods "GET, HEAD, OPTIONS"
+Header set Access-Control-Allow-Headers "Content-Type, Accept, Range"
+Header set Access-Control-Expose-Headers "Content-Length, Accept-Ranges, Content-Range"
+# Caching Rules
+<FilesMatch "\.(flac|mp3|ogg|wav|m4a)$">
+    Header set Cache-Control "public, max-age=86400"
+    Header set Pragma "public"
+    Header unset ETag
+    FileETag None
+</FilesMatch>
+# Error Handling
+ErrorDocument 404 /404.html
+ErrorDocument 500 /500.html
+# Security Headers
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "SAMEORIGIN"
+Header always set X-XSS-Protection "1; mode=block"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+Header always set Content-Security-Policy "default-src 'self'; media-src 'self'"
+# Enable CORS Pre-flight
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_METHOD} OPTIONS
+    RewriteRule ^(.*)$ $1 [R=200,L]
+</IfModule>
+# Prevent directory listing
+Options -Indexes
+# Handle audio files in chunks for better streaming
+<IfModule mod_headers.c>
+    Header set Accept-Ranges bytes
+</IfModule>
+# Compression for audio files (except FLAC which is already compressed)
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE audio/mpeg audio/mp4
+    SetEnvIfNoCase Request_URI \.flac$ no-gzip dont-vary
+</IfModule>
+# Performance optimizations
+FileETag MTime Size
+RequestHeader unset Range env=dont-range
+# Large file optimizations
+<IfModule mod_php.c>
+    php_value max_execution_time 300
+    php_value memory_limit 256M
+</IfModule>
+# Custom error handling for audio files
+<FilesMatch "\.(flac|mp3|ogg|wav|m4a)$">
+    ErrorDocument 404 "Audio file not found"
+    ErrorDocument 403 "Access denied to audio file"
+</FilesMatch>
