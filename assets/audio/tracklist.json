@@ -1,90 +1,146 @@
 [
   {
     "file": "10.Frosty.flac",
-    "title": "10.Frosty",
-    "artist": "Eemeli",
-    "album": "",
+    "title": "Frosty",
+    "artist": "n0rppa",
+    "album": "XXMXLI Collection",
     "picture": null,
-    "duration": "1:47"
+    "duration": "1:47",
+    "genre": "Ambient"
   },
   {
     "file": "Rain (1).flac",
-    "title": "13.Rain",
-    "artist": "Eemeli",
-    "album": "",
+    "title": "Rain",
+    "artist": "n0rppa",
+    "album": "XXMXLI Collection",
     "picture": null,
-    "duration": "2:01"
+    "duration": "2:01",
+    "genre": "Ambient"
   },
   {
     "file": "track1.flac",
-    "title": "03.Mellow",
-    "artist": "Eemeli",
-    "album": "",
+    "title": "Mellow",
+    "artist": "n0rppa",
+    "album": "XXMXLI Collection",
     "picture": null,
-    "duration": "4:11"
+    "duration": "4:11",
+    "genre": "Chill"
   },
   {
     "file": "track2.flac",
     "title": "Astrologik",
-    "artist": "Eemeli",
-    "album": "",
+    "artist": "n0rppa",
+    "album": "XXMXLI Collection",
     "picture": null,
-    "duration": "2:38"
+    "duration": "2:38",
+    "genre": "Electronic"
   },
   {
     "file": "track3.flac",
-    "title": "13.Rain",
-    "artist": "Eemeli",
-    "album": "",
+    "title": "Rain (Alt Version)",
+    "artist": "n0rppa",
+    "album": "XXMXLI Collection",
     "picture": null,
-    "duration": "2:01"
+    "duration": "2:01",
+    "genre": "Ambient"
   },
   {
     "file": "track4.flac",
-    "title": "07.Strange",
-    "artist": "Eemeli",
-    "album": "",
+    "title": "Strange",
+    "artist": "n0rppa",
+    "album": "XXMXLI Collection",
     "picture": null,
-    "duration": "5:50"
+    "duration": "5:50",
+    "genre": "Experimental"
   },
   {
     "file": "track5.flac",
-    "title": "09.Swishaz",
-    "artist": "Eemeli",
-    "album": "",
+    "title": "Swishaz",
+    "artist": "n0rppa",
+    "album": "XXMXLI Collection",
     "picture": null,
-    "duration": "2:09"
+    "duration": "2:09",
+    "genre": "Electronic"
   },
   {
     "file": "track6.flac",
-    "title": "18.Alley",
-    "artist": "Eemeli",
-    "album": "",
+    "title": "Alley",
+    "artist": "n0rppa",
+    "album": "XXMXLI Collection",
     "picture": null,
-    "duration": "2:13"
+    "duration": "2:13",
+    "genre": "Hip-Hop"
   },
   {
     "file": "track7.flac",
-    "title": "20.Cloudy instrumental",
-    "artist": "Eemeli",
-    "album": "",
+    "title": "Cloudy Instrumental",
+    "artist": "n0rppa",
+    "album": "XXMXLI Collection",
     "picture": null,
-    "duration": "1:07"
+    "duration": "1:07",
+    "genre": "Instrumental"
   },
   {
     "file": "track8.flac",
-    "title": "21.Oldschool hip-hop beat",
-    "artist": "Eemeli",
-    "album": "",
+    "title": "Oldschool Hip-Hop Beat",
+    "artist": "n0rppa",
+    "album": "XXMXLI Collection",
     "picture": null,
-    "duration": "0:59"
+    "duration": "0:59",
+    "genre": "Hip-Hop"
   },
   {
     "file": "track9.flac",
-    "title": "23.Chill oldschool beat",
-    "artist": "Eemeli",
-    "album": "",
+    "title": "Chill Oldschool Beat",
+    "artist": "n0rppa",
+    "album": "XXMXLI Collection",
     "picture": null,
-    "duration": "1:08"
+    "duration": "1:08",
+    "genre": "Hip-Hop"
+  },
+  {
+    "file": "freefall.wav",
+    "title": "Freefall",
+    "artist": "n0rppa",
+    "album": "XXMXLI Collection",
+    "picture": null,
+    "duration": "",
+    "genre": "Electronic"
+  },
+  {
+    "file": "freefall2.wav",
+    "title": "Freefall 2",
+    "artist": "n0rppa",
+    "album": "XXMXLI Collection",
+    "picture": null,
+    "duration": "",
+    "genre": "Electronic"
+  },
+  {
+    "file": "hollatrillzzZ.wav",
+    "title": "Holla Trillz",
+    "artist": "n0rppa",
+    "album": "XXMXLI Collection",
+    "picture": null,
+    "duration": "",
+    "genre": "Hip-Hop"
+  },
+  {
+    "file": "hop to tha clout.wav",
+    "title": "Hop to tha Clout",
+    "artist": "n0rppa",
+    "album": "XXMXLI Collection",
+    "picture": null,
+    "duration": "",
+    "genre": "Hip-Hop"
+  },
+  {
+    "file": "tekknohammer2025.wav",
+    "title": "Tekknohammer 2025",
+    "artist": "n0rppa",
+    "album": "XXMXLI Collection",
+    "picture": null,
+    "duration": "",
+    "genre": "Techno"
   }
 ]
