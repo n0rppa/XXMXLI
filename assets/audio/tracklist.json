@@ -1,106 +1,62 @@
 [
   {
     "file": "10.Frosty.flac",
-    "title": "10.Frosty",
-    "artist": "Eemeli",
-    "album": "",
-    "picture": null,
-    "duration": "1:47"
+    "title": "10.Frosty.flac"
   },
   {
     "file": "Rain (1).flac",
-    "title": "13.Rain",
-    "artist": "Eemeli",
-    "album": "",
-    "picture": null,
-    "duration": "2:01"
+    "title": "Rain (1).flac"
   },
   {
     "file": "freefall.wav",
-    "title": "Freefall",
-    "artist": "Eemeli",
+    "title": "freefall.wav",
+    "artist": "",
     "album": "",
     "picture": null,
     "duration": "3:42"
   },
   {
     "file": "tekknobadger.wav",
-    "title": "Tekknobadger",
-    "artist": "Eemeli",
+    "title": "tekknobadger.wav",
+    "artist": "",
     "album": "",
     "picture": null,
     "duration": "7:16"
   },
   {
     "file": "track1.flac",
-    "title": "03.Mellow",
-    "artist": "Eemeli",
-    "album": "",
-    "picture": null,
-    "duration": "4:11"
+    "title": "track1.flac"
   },
   {
     "file": "track2.flac",
-    "title": "Astrologik",
-    "artist": "Eemeli",
-    "album": "",
-    "picture": null,
-    "duration": "2:38"
+    "title": "track2.flac"
   },
   {
     "file": "track3.flac",
-    "title": "13.Rain",
-    "artist": "Eemeli",
-    "album": "",
-    "picture": null,
-    "duration": "2:01"
+    "title": "track3.flac"
   },
   {
     "file": "track4.flac",
-    "title": "07.Strange",
-    "artist": "Eemeli",
-    "album": "",
-    "picture": null,
-    "duration": "5:50"
+    "title": "track4.flac"
   },
   {
     "file": "track5.flac",
-    "title": "09.Swishaz",
-    "artist": "Eemeli",
-    "album": "",
-    "picture": null,
-    "duration": "2:09"
+    "title": "track5.flac"
   },
   {
     "file": "track6.flac",
-    "title": "17.Mist",
-    "artist": "Eemeli",
-    "album": "",
-    "picture": null,
-    "duration": "2:45"
+    "title": "track6.flac"
   },
   {
     "file": "track7.flac",
-    "title": "Jazz instrumental",
-    "artist": "Eemeli",
-    "album": "",
-    "picture": null,
-    "duration": "1:32"
+    "title": "track7.flac"
   },
   {
     "file": "track8.flac",
-    "title": "4-(2-Fluoroethylthio)-2,5-dimethoxy-PEA",
-    "artist": "Eemeli",
-    "album": "",
-    "picture": null,
-    "duration": "2:17"
+    "title": "track8.flac"
   },
   {
     "file": "track9.flac",
-    "title": "01. Hip-Hop Intro",
-    "artist": "Eemeli",
-    "album": "",
-    "picture": null,
-    "duration": "1:08"
+    "title": "track9.flac"
   }
 ]
