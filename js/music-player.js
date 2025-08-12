@@ -79,8 +79,20 @@ class MusicPlayer {
 
   // Set up event listeners
   setupEventListeners() {
+    // Throttle time updates for better performance
+    let lastTimeUpdate = 0;
+    const timeUpdateThrottle = 100; // Update every 100ms
+    
+    const throttledTimeUpdate = () => {
+      const now = Date.now();
+      if (now - lastTimeUpdate >= timeUpdateThrottle) {
+        this.handleTimeUpdate();
+        lastTimeUpdate = now;
+      }
+    };
+    
     // Audio element events
-    this.audioElement.addEventListener('timeupdate', this.handleTimeUpdate.bind(this));
+    this.audioElement.addEventListener('timeupdate', throttledTimeUpdate);
     this.audioElement.addEventListener('durationchange', this.handleDurationChange.bind(this));
     this.audioElement.addEventListener('play', this.handlePlay.bind(this));
     this.audioElement.addEventListener('pause', this.handlePause.bind(this));
@@ -91,23 +103,40 @@ class MusicPlayer {
     
     // Window events
     window.addEventListener('beforeunload', this.cleanup.bind(this));
+    
+    // Store bound functions for cleanup
+    this._boundHandlers = {
+      timeUpdate: throttledTimeUpdate,
+      durationChange: this.handleDurationChange.bind(this),
+      play: this.handlePlay.bind(this),
+      pause: this.handlePause.bind(this),
+      ended: this.handleEnded.bind(this),
+      error: this.handleAudioError.bind(this),
+      waiting: this.handleWaiting.bind(this),
+      canPlay: this.handleCanPlay.bind(this),
+      beforeUnload: this.cleanup.bind(this)
+    };
   }
 
   // Load playlist
   async loadPlaylist() {
     try {
-      const response = await fetch('../assets/audio/filelist.txt');
-      const text = await response.text();
-      this.state.playlist = text.split('\n')
-        .filter(line => line.trim())
-        .map(filename => ({
-          id: filename,
-          title: filename.replace(/\.[^/.]+$/, '').replace(/^\d+\.\s*/, ''),
-          path: `${this.config.audioPath}${filename}`,
-          duration: 0
-        }));
+      const response = await fetch('../assets/audio/tracklist.json');
+      const tracklist = await response.json();
+      this.state.playlist = tracklist.map(track => ({
+        id: track.file,
+        filename: track.file,
+        title: track.title || track.file.replace(/\.[^/.]+$/, ''),
+        artist: track.artist || 'Unknown Artist',
+        album: track.album || '',
+        duration: this.parseDuration(track.duration) || 0,
+        path: `${this.config.audioPath}${track.file}`
+      }));
+      this.log('Playlist loaded:', this.state.playlist.length, 'tracks');
     } catch (error) {
       console.error('Failed to load playlist:', error);
+      // Fallback to empty playlist
+      this.state.playlist = [];
     }
   }
 
@@ -153,26 +182,56 @@ class MusicPlayer {
 
   // Play the current track
   async play(trackId) {
-    const track = this.state.playlist.find(t => t.id === trackId);
-    if (!track) return;
-
-    if (this.state.currentTrack?.id === trackId) {
-      if (this.state.isPlaying) {
-        this.pause();
-      } else {
-        this.resume();
+    try {
+      // Resume audio context if suspended
+      if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume();
       }
-      return;
-    }
 
-    this.state.currentTrack = track;
-    this.audioElement.src = track.path;
+      if (trackId) {
+        const track = this.state.playlist.find(t => t.id === trackId);
+        if (!track) return;
+
+        if (this.state.currentTrack?.id === trackId) {
+          if (this.state.isPlaying) {
+            this.pause();
+          } else {
+            this.resume();
+          }
+          return;
+        }
+
+        this.state.currentTrack = track;
+        this.audioElement.src = track.path;
+      }
+
+      await this.audioElement.play();
+      this.state.isPlaying = true;
+      
+      // Start visualization
+      this.startVisualization();
+      
+      this.triggerEvent('play', { track: this.state.currentTrack });
+      
+    } catch (error) {
+      console.error('Failed to play track:', error);
+      this.handleError(error);
+    }
+  }
+
+  // Resume playback
+  resume() {
+    if (!this.audioElement.src) return;
+    
     this.audioElement.play()
+      .then(() => {
+        this.state.isPlaying = true;
+        this.startVisualization();
+        this.triggerEvent('play', { track: this.state.currentTrack });
+      })
       .catch(error => {
-        console.error('Failed to play track:', error);
-        // Try fallback to relative path
-        this.audioElement.src = track.path.replace('../', './');
-        return this.audioElement.play();
+        console.error('Failed to resume playback:', error);
+        this.handleError(error);
       });
   }
 
@@ -367,7 +426,7 @@ class MusicPlayer {
     this.triggerEvent('playlistShuffled', { playlist: this.state.playlist });
   }
 
-  // Start visualization
+  // Start visualization with performance optimization
   startVisualization() {
     if (this.animationFrame) {
       cancelAnimationFrame(this.animationFrame);
@@ -387,10 +446,19 @@ class MusicPlayer {
       }
     }
     
-    const draw = () => {
-      if (!this.analyser || !this.canvasContext) return;
+    // Throttle animation to 30fps for better performance
+    let lastTime = 0;
+    const targetFPS = 30;
+    const frameInterval = 1000 / targetFPS;
+    
+    const draw = (currentTime) => {
+      if (!this.analyser || !this.canvasContext || !this.state.isPlaying) return;
       
       this.animationFrame = requestAnimationFrame(draw);
+      
+      // Throttle to target FPS
+      if (currentTime - lastTime < frameInterval) return;
+      lastTime = currentTime;
       
       const width = this.canvas.width;
       const height = this.canvas.height;
@@ -399,27 +467,31 @@ class MusicPlayer {
       
       this.analyser.getByteFrequencyData(this.dataArray);
       
-      this.canvasContext.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      // Clear with fade effect for smoother visualization
+      this.canvasContext.fillStyle = 'rgba(0, 0, 0, 0.3)';
       this.canvasContext.fillRect(0, 0, width, height);
       
-      for (let i = 0; i < this.analyser.frequencyBinCount; i++) {
+      // Draw fewer bars for better performance
+      const step = Math.max(1, Math.floor(this.analyser.frequencyBinCount / 64));
+      
+      for (let i = 0; i < this.analyser.frequencyBinCount; i += step) {
         const barHeight = (this.dataArray[i] / 255) * height;
         
-        const hue = i / this.analyser.frequencyBinCount * 360;
-        this.canvasContext.fillStyle = `hsl(${hue}, 100%, 50%)`;
+        const hue = (i / this.analyser.frequencyBinCount) * 360;
+        this.canvasContext.fillStyle = `hsl(${hue}, 70%, 50%)`;
         
         this.canvasContext.fillRect(
           x, 
-          height - barHeight / 2, 
+          height - barHeight, 
           barWidth - 1, 
-          barHeight / 2
+          barHeight
         );
         
         x += barWidth + 1;
       }
     };
     
-    draw();
+    draw(0);
   }
 
   // Stop visualization
@@ -546,6 +618,20 @@ class MusicPlayer {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   }
 
+  // Parse duration string (e.g., "3:42" or "2:01") to seconds
+  parseDuration(durationStr) {
+    if (!durationStr || typeof durationStr !== 'string') return 0;
+    
+    const parts = durationStr.split(':').map(Number);
+    if (parts.length === 2) {
+      return parts[0] * 60 + parts[1]; // minutes:seconds
+    } else if (parts.length === 3) {
+      return parts[0] * 3600 + parts[1] * 60 + parts[2]; // hours:minutes:seconds
+    }
+    
+    return 0;
+  }
+
   log(...args) {
     if (this.config.debug) {
       console.log('[MusicPlayer]', ...args);
@@ -575,24 +661,30 @@ class MusicPlayer {
       this.audioContext.close();
     }
     
-    // Remove event listeners
-    if (this.audioElement) {
-      this.audioElement.removeEventListener('timeupdate', this.handleTimeUpdate);
-      this.audioElement.removeEventListener('durationchange', this.handleDurationChange);
-      this.audioElement.removeEventListener('play', this.handlePlay);
-      this.audioElement.removeEventListener('pause', this.handlePause);
-      this.audioElement.removeEventListener('ended', this.handleEnded);
-      this.audioElement.removeEventListener('error', this.handleAudioError);
-      this.audioElement.removeEventListener('waiting', this.handleWaiting);
-      this.audioElement.removeEventListener('canplay', this.handleCanPlay);
+    // Remove event listeners using stored bound handlers
+    if (this.audioElement && this._boundHandlers) {
+      this.audioElement.removeEventListener('timeupdate', this._boundHandlers.timeUpdate);
+      this.audioElement.removeEventListener('durationchange', this._boundHandlers.durationChange);
+      this.audioElement.removeEventListener('play', this._boundHandlers.play);
+      this.audioElement.removeEventListener('pause', this._boundHandlers.pause);
+      this.audioElement.removeEventListener('ended', this._boundHandlers.ended);
+      this.audioElement.removeEventListener('error', this._boundHandlers.error);
+      this.audioElement.removeEventListener('waiting', this._boundHandlers.waiting);
+      this.audioElement.removeEventListener('canplay', this._boundHandlers.canPlay);
       
       // Release audio element
       this.audioElement.src = '';
       this.audioElement.load();
     }
     
+    // Remove window event listener
+    if (this._boundHandlers) {
+      window.removeEventListener('beforeunload', this._boundHandlers.beforeUnload);
+    }
+    
     // Clear all event listeners
     this.eventListeners = {};
+    this._boundHandlers = null;
     
     this.log('Music Player cleaned up');
   }
