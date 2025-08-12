@@ -1,101 +1,170 @@
 [
   {
+    "file": "01. Hip-Hop Intro.flac",
+    "title": "Hip Hop Intro",
+    "artist": "n0rppa",
+    "duration": ""
+  },
+  {
+    "file": "03.Mellow(1).flac",
+    "title": "Mellow(1)",
+    "artist": "n0rppa",
+    "duration": ""
+  },
+  {
+    "file": "07.Strange.flac",
+    "title": "Strange",
+    "artist": "n0rppa",
+    "duration": ""
+  },
+  {
+    "file": "09.Swishaz.flac",
+    "title": "Swishaz",
+    "artist": "n0rppa",
+    "duration": ""
+  },
+  {
     "file": "10.Frosty.flac",
     "title": "Frosty",
     "artist": "n0rppa",
-    "album": "XXMXLI Collection",
-    "picture": null,
-    "duration": "1:47",
-    "genre": "Ambient"
+    "duration": ""
+  },
+  {
+    "file": "10.Frosty.flac",
+    "title": "Frosty",
+    "artist": "n0rppa",
+    "duration": ""
+  },
+  {
+    "file": "10.Frosty.flac",
+    "title": "Frosty",
+    "artist": "n0rppa",
+    "duration": ""
+  },
+  {
+    "file": "17.Mist.flac",
+    "title": "Mist",
+    "artist": "n0rppa",
+    "duration": ""
+  },
+  {
+    "file": "18.Alley.flac",
+    "title": "Alley",
+    "artist": "n0rppa",
+    "duration": ""
+  },
+  {
+    "file": "20.Cloudy instrumental.flac",
+    "title": "Cloudy Instrumental",
+    "artist": "n0rppa",
+    "duration": ""
+  },
+  {
+    "file": "21.Oldschool hip-hop beat.flac",
+    "title": "Oldschool Hip Hop Beat",
+    "artist": "n0rppa",
+    "duration": ""
+  },
+  {
+    "file": "23.Chill oldschool beat.flac",
+    "title": "Chill Oldschool Beat",
+    "artist": "n0rppa",
+    "duration": ""
+  },
+  {
+    "file": "4-(2-Fluoroethylthio)-2,5-dimethoxy-PEA.flac",
+    "title": "(2 Fluoroethylthio) 2,5 Dimethoxy Pea",
+    "artist": "n0rppa",
+    "duration": ""
+  },
+  {
+    "file": "Hip-hop Instrumental.flac",
+    "title": "Hip Hop Instrumental",
+    "artist": "n0rppa",
+    "duration": ""
+  },
+  {
+    "file": "Jazz instrumental.flac",
+    "title": "Jazz Instrumental",
+    "artist": "n0rppa",
+    "duration": ""
   },
   {
     "file": "Rain (1).flac",
-    "title": "Rain",
+    "title": "Rain (1)",
     "artist": "n0rppa",
-    "album": "XXMXLI Collection",
-    "picture": null,
-    "duration": "2:01",
-    "genre": "Ambient"
+    "duration": ""
+  },
+  {
+    "file": "Rain (1).flac",
+    "title": "Rain (1)",
+    "artist": "n0rppa",
+    "duration": ""
+  },
+  {
+    "file": "Rain (1).flac",
+    "title": "Rain (1)",
+    "artist": "n0rppa",
+    "duration": ""
+  },
+  {
+    "file": "Rain (2).flac",
+    "title": "Rain (2)",
+    "artist": "n0rppa",
+    "duration": ""
   },
   {
     "file": "track1.flac",
-    "title": "Mellow",
+    "title": "track1.flac",
     "artist": "n0rppa",
-    "album": "XXMXLI Collection",
-    "picture": null,
-    "duration": "4:11",
-    "genre": "Chill"
+    "duration": ""
   },
   {
     "file": "track2.flac",
-    "title": "Astrologik",
+    "title": "track2.flac",
     "artist": "n0rppa",
-    "album": "XXMXLI Collection",
-    "picture": null,
-    "duration": "2:38",
-    "genre": "Electronic"
+    "duration": ""
   },
   {
     "file": "track3.flac",
-    "title": "Rain (Alt Version)",
+    "title": "track3.flac",
     "artist": "n0rppa",
-    "album": "XXMXLI Collection",
-    "picture": null,
-    "duration": "2:01",
-    "genre": "Ambient"
+    "duration": ""
+  },
+  {
+    "file": "track4.flac",
+    "title": "track4.flac",
+    "artist": "n0rppa",
+    "duration": ""
   },
   {
     "file": "track5.flac",
-    "title": "Swishaz",
+    "title": "track5.flac",
     "artist": "n0rppa",
-    "album": "XXMXLI Collection",
-    "picture": null,
-    "duration": "2:09",
-    "genre": "Electronic"
+    "duration": ""
   },
   {
     "file": "track6.flac",
-    "title": "Alley",
+    "title": "track6.flac",
     "artist": "n0rppa",
-    "album": "XXMXLI Collection",
-    "picture": null,
-    "duration": "2:13",
-    "genre": "Hip-Hop"
+    "duration": ""
   },
   {
     "file": "track7.flac",
-    "title": "Cloudy Instrumental",
+    "title": "track7.flac",
     "artist": "n0rppa",
-    "album": "XXMXLI Collection",
-    "picture": null,
-    "duration": "1:07",
-    "genre": "Instrumental"
+    "duration": ""
   },
   {
     "file": "track8.flac",
-    "title": "Oldschool Hip-Hop Beat",
+    "title": "track8.flac",
     "artist": "n0rppa",
-    "album": "XXMXLI Collection",
-    "picture": null,
-    "duration": "0:59",
-    "genre": "Hip-Hop"
+    "duration": ""
   },
   {
     "file": "track9.flac",
-    "title": "Chill Oldschool Beat",
+    "title": "track9.flac",
     "artist": "n0rppa",
-    "album": "XXMXLI Collection",
-    "picture": null,
-    "duration": "1:08",
-    "genre": "Hip-Hop"
-  },
-  {
-    "file": "hop to tha clout.wav",
-    "title": "Hop to tha Clout",
-    "artist": "n0rppa",
-    "album": "XXMXLI Collection",
-    "picture": null,
-    "duration": "",
-    "genre": "Hip-Hop"
+    "duration": ""
   }
 ]

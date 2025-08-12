@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """
-Enhanced Music File Scanner and HTML Generator
-Scans assets/music/ directory for audio files and updates music.html
+Enhanced Music File Scanner and HTML / JSON Generator
+Scans assets/audio/ directory for audio files and updates (optionally) music.html
+Generates assets/audio/tracklist.json consumed by the web music player.
+Usage: python update_music.py [--update-html]
 """
 
 import os
@@ -10,13 +12,15 @@ import re
 from pathlib import Path
 from datetime import datetime
 import mimetypes
+import argparse
 
 # Supported audio formats
 AUDIO_EXTENSIONS = {'.mp3', '.flac', '.wav', '.ogg', '.m4a', '.aac', '.wma', '.opus'}
 
-# Music directory path
-MUSIC_DIR = Path('assets/music')
+# Music (audio) directory path UPDATED to assets/audio
+MUSIC_DIR = Path('assets/audio')
 MUSIC_HTML_FILE = Path('music.html')
+TRACKLIST_JSON = Path('assets/audio/tracklist.json')
 
 def get_file_info(file_path):
     """Extract basic info from audio file"""
@@ -281,44 +285,67 @@ def create_basic_music_html():
 </html>"""
 
 def save_music_data(music_files):
-    """Save music file data to JSON for other scripts"""
+    """Save detailed music file data to JSON (legacy / extended data)."""
     data = {
         'last_updated': datetime.now().isoformat(),
         'total_files': len(music_files),
         'files': music_files
     }
-    
-    json_file = Path('assets/music/music_data.json')
+    json_file = Path('assets/audio/music_data.json')  # moved to assets/audio for consistency
     json_file.parent.mkdir(parents=True, exist_ok=True)
-    
     with open(json_file, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
-    
     print(f"Music data saved to {json_file}")
+
+def save_tracklist_json(music_files, default_artist='n0rppa'):
+    """Generate the simplified tracklist.json expected by the front-end player.
+    Structure: [ {"file": filename, "title": title, "artist": artist, "duration": optional } ]
+    Duration left blank (could be populated by a metadata library if desired).
+    """
+    tracklist = []
+    for info in music_files:
+        tracklist.append({
+            'file': info['filename'],
+            'title': extract_title_from_filename(info['filename']),
+            'artist': default_artist,
+            'duration': ''  # placeholder; computing requires extra dependency
+        })
+    TRACKLIST_JSON.parent.mkdir(parents=True, exist_ok=True)
+    with open(TRACKLIST_JSON, 'w', encoding='utf-8') as f:
+        json.dump(tracklist, f, indent=2, ensure_ascii=False)
+    print(f"Tracklist saved to {TRACKLIST_JSON} ({len(tracklist)} tracks)")
 
 def main():
     """Main function"""
+    parser = argparse.ArgumentParser(description='Scan audio files and update tracklist.json (and optionally music.html).')
+    parser.add_argument('--update-html', action='store_true', help='Also update music.html static playlist section (not needed for dynamic player).')
+    parser.add_argument('--artist', default='n0rppa', help='Default artist name to embed in tracklist.json')
+    args = parser.parse_args()
+
     print("=== Enhanced Music File Scanner ===")
     print(f"Scanning directory: {MUSIC_DIR.absolute()}")
-    
+
     # Scan for music files
     music_files = scan_music_files()
-    
+
     if music_files:
-        # Save data to JSON
+        # Save extended data & tracklist for player
         save_music_data(music_files)
-        
-        # Update HTML file
-        if update_music_html(music_files):
-            print("\n✅ Music page updated successfully!")
-            print(f"Found {len(music_files)} audio files:")
-            for file_info in music_files:
-                print(f"  - {file_info['filename']} ({format_file_size(file_info['size'])})")
+        save_tracklist_json(music_files, default_artist=args.artist)
+
+        # Optionally update static HTML (not required for JS player which reads JSON)
+        if args.update_html:
+            if update_music_html(music_files):
+                print("\n✅ music.html updated successfully (static playlist).")
+            else:
+                print("\n❌ Failed to update music.html.")
         else:
-            print("\n❌ Failed to update music page.")
+            print("(Skipped updating music.html; JSON dynamic playlist in use.)")
+
+        print(f"\n✅ Completed. Found {len(music_files)} audio files.")
     else:
         print(f"\n⚠️  No audio files found in {MUSIC_DIR}")
-        print("Add some audio files (.mp3, .flac, .wav, etc.) to the directory and run again.")
+        print("Add audio files (.mp3, .flac, .wav, etc.) and run again.")
 
 if __name__ == "__main__":
     main()
