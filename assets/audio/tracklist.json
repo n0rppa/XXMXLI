@@ -45,15 +45,6 @@
     "genre": "Ambient"
   },
   {
-    "file": "track4.flac",
-    "title": "Strange",
-    "artist": "n0rppa",
-    "album": "XXMXLI Collection",
-    "picture": null,
-    "duration": "5:50",
-    "genre": "Experimental"
-  },
-  {
     "file": "track5.flac",
     "title": "Swishaz",
     "artist": "n0rppa",
@@ -99,33 +90,6 @@
     "genre": "Hip-Hop"
   },
   {
-    "file": "freefall.wav",
-    "title": "Freefall",
-    "artist": "n0rppa",
-    "album": "XXMXLI Collection",
-    "picture": null,
-    "duration": "",
-    "genre": "Electronic"
-  },
-  {
-    "file": "freefall2.wav",
-    "title": "Freefall 2",
-    "artist": "n0rppa",
-    "album": "XXMXLI Collection",
-    "picture": null,
-    "duration": "",
-    "genre": "Electronic"
-  },
-  {
-    "file": "hollatrillzzZ.wav",
-    "title": "Holla Trillz",
-    "artist": "n0rppa",
-    "album": "XXMXLI Collection",
-    "picture": null,
-    "duration": "",
-    "genre": "Hip-Hop"
-  },
-  {
     "file": "hop to tha clout.wav",
     "title": "Hop to tha Clout",
     "artist": "n0rppa",
@@ -133,14 +97,5 @@
     "picture": null,
     "duration": "",
     "genre": "Hip-Hop"
-  },
-  {
-    "file": "tekknohammer2025.wav",
-    "title": "Tekknohammer 2025",
-    "artist": "n0rppa",
-    "album": "XXMXLI Collection",
-    "picture": null,
-    "duration": "",
-    "genre": "Techno"
   }
 ]
