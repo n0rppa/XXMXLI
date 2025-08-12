@@ -1,170 +1,62 @@
 [
   {
-    "file": "01. Hip-Hop Intro.flac",
-    "title": "Hip Hop Intro",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
-    "file": "03.Mellow(1).flac",
-    "title": "Mellow(1)",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
-    "file": "07.Strange.flac",
-    "title": "Strange",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
-    "file": "09.Swishaz.flac",
-    "title": "Swishaz",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
     "file": "10.Frosty.flac",
-    "title": "Frosty",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
-    "file": "10.Frosty.flac",
-    "title": "Frosty",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
-    "file": "10.Frosty.flac",
-    "title": "Frosty",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
-    "file": "17.Mist.flac",
-    "title": "Mist",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
-    "file": "18.Alley.flac",
-    "title": "Alley",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
-    "file": "20.Cloudy instrumental.flac",
-    "title": "Cloudy Instrumental",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
-    "file": "21.Oldschool hip-hop beat.flac",
-    "title": "Oldschool Hip Hop Beat",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
-    "file": "23.Chill oldschool beat.flac",
-    "title": "Chill Oldschool Beat",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
-    "file": "4-(2-Fluoroethylthio)-2,5-dimethoxy-PEA.flac",
-    "title": "(2 Fluoroethylthio) 2,5 Dimethoxy Pea",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
-    "file": "Hip-hop Instrumental.flac",
-    "title": "Hip Hop Instrumental",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
-    "file": "Jazz instrumental.flac",
-    "title": "Jazz Instrumental",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "10.Frosty.flac"
   },
   {
     "file": "Rain (1).flac",
-    "title": "Rain (1)",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "Rain (1).flac"
   },
   {
-    "file": "Rain (1).flac",
-    "title": "Rain (1)",
-    "artist": "n0rppa",
-    "duration": ""
+    "file": "freefall.wav",
+    "title": "freefall.wav",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": "3:42"
   },
   {
-    "file": "Rain (1).flac",
-    "title": "Rain (1)",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
-    "file": "Rain (2).flac",
-    "title": "Rain (2)",
-    "artist": "n0rppa",
-    "duration": ""
+    "file": "tekknobadger.wav",
+    "title": "tekknobadger.wav",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": "7:16"
   },
   {
     "file": "track1.flac",
-    "title": "track1.flac",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "track1.flac"
   },
   {
     "file": "track2.flac",
-    "title": "track2.flac",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "track2.flac"
   },
   {
     "file": "track3.flac",
-    "title": "track3.flac",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "track3.flac"
   },
   {
     "file": "track4.flac",
-    "title": "track4.flac",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "track4.flac"
   },
   {
     "file": "track5.flac",
-    "title": "track5.flac",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "track5.flac"
   },
   {
     "file": "track6.flac",
-    "title": "track6.flac",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "track6.flac"
   },
   {
     "file": "track7.flac",
-    "title": "track7.flac",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "track7.flac"
   },
   {
     "file": "track8.flac",
-    "title": "track8.flac",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "track8.flac"
   },
   {
     "file": "track9.flac",
-    "title": "track9.flac",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "track9.flac"
   }
 ]
