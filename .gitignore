@@ -23,3 +23,9 @@ build/
 .env
 .env.local
 .env.*.local
+
+# Large audio files (>50MB) - use external hosting
+assets/audio/freefall.wav
+assets/audio/freefall2.wav
+assets/audio/tekknobadger.wav
+assets/audio/track4.flac

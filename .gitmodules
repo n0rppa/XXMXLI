@@ -1,0 +1,6 @@
+[submodule "XXMXLI"]
+    path = XXMXLI
+    url = https://github.com/n0rppa/XXMXLI.git
+[submodule "assets/audio/XXMXLI"]
+    path = assets/audio/XXMXLI
+    url = https://github.com/n0rppa/XXMXLI.git

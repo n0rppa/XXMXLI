@@ -342,7 +342,7 @@
 </head>
 <body>
     <button id="menuToggle" class="hamburger" aria-label="Menu">☰</button>
-    <nav id="sideMenu" class="side-menu" aria-label="Site">
+        <nav id="sideMenu" class="side-menu" aria-label="Site">
         <a href="index.html"><i class="fas fa-home"></i> Etusivu</a>
         <a href="music.html"><i class="fas fa-music"></i> Musiikki</a>
         <a href="photography.html"><i class="fas fa-image"></i> Valokuvaus</a>
@@ -435,8 +435,13 @@
             async init() {
                 try {
                     // Load tracks from JSON
+                    console.log('Loading tracks from tracklist.json...');
                     const response = await fetch('assets/audio/tracklist.json');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
                     this.tracks = await response.json();
+                    console.log(`Loaded ${this.tracks.length} tracks:`, this.tracks);
                     
                     this.setupElements();
                     this.setupEventListeners();
@@ -449,13 +454,24 @@
                     console.error('Error initializing player:', error);
                     // Fallback to basic tracks
                     this.tracks = [
-                        { file: '10.Frosty.flac', title: '10.Frosty', artist: 'Eemeli' },
-                        { file: 'Rain (1).flac', title: '13.Rain', artist: 'Eemeli' },
-                        { file: 'track1.flac', title: '03.Mellow', artist: 'Eemeli' },
-                        { file: 'track2.flac', title: 'Astrologik', artist: 'Eemeli' },
-                        { file: 'track3.flac', title: '13.Rain', artist: 'Eemeli' },
-                        { file: 'track4.flac', title: '07.Strange', artist: 'Eemeli' }
+                        { file: '10.Frosty.flac', title: 'Frosty', artist: 'n0rppa', duration: '1:47' },
+                        { file: 'Rain (1).flac', title: 'Rain', artist: 'n0rppa', duration: '2:01' },
+                        { file: 'track1.flac', title: 'Mellow', artist: 'n0rppa', duration: '4:11' },
+                        { file: 'track2.flac', title: 'Astrologik', artist: 'n0rppa', duration: '2:38' },
+                        { file: 'track3.flac', title: 'Rain (Alt Version)', artist: 'n0rppa', duration: '2:01' },
+                        { file: 'track4.flac', title: 'Strange', artist: 'n0rppa', duration: '5:50' },
+                        { file: 'track5.flac', title: 'Swishaz', artist: 'n0rppa', duration: '2:09' },
+                        { file: 'track6.flac', title: 'Alley', artist: 'n0rppa', duration: '2:13' },
+                        { file: 'track7.flac', title: 'Cloudy Instrumental', artist: 'n0rppa', duration: '1:07' },
+                        { file: 'track8.flac', title: 'Oldschool Hip-Hop Beat', artist: 'n0rppa', duration: '0:59' },
+                        { file: 'track9.flac', title: 'Chill Oldschool Beat', artist: 'n0rppa', duration: '1:08' },
+                        { file: 'freefall.wav', title: 'Freefall', artist: 'n0rppa' },
+                        { file: 'freefall2.wav', title: 'Freefall 2', artist: 'n0rppa' },
+                        { file: 'hollatrillzzZ.wav', title: 'Holla Trillz', artist: 'n0rppa' },
+                        { file: 'hop to tha clout.wav', title: 'Hop to tha Clout', artist: 'n0rppa' },
+                        { file: 'tekknohammer2025.wav', title: 'Tekknohammer 2025', artist: 'n0rppa' }
                     ];
+                    console.log('Using fallback tracks:', this.tracks.length);
                     this.renderPlaylist();
                 }
             }
@@ -547,10 +563,16 @@
             }
 
             renderPlaylist() {
+                console.log('Rendering playlist with', this.tracks.length, 'tracks');
                 const playlist = document.getElementById('playlist');
+                if (!playlist) {
+                    console.error('Playlist element not found!');
+                    return;
+                }
                 playlist.innerHTML = '';
                 
                 this.tracks.forEach((track, index) => {
+                    console.log(`Rendering track ${index + 1}:`, track);
                     const trackElement = document.createElement('div');
                     trackElement.className = 'track-item';
                     trackElement.innerHTML = `
