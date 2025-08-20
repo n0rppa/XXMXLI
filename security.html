@@ -33,56 +33,90 @@
             overflow-x: hidden;
         }
 
+        /* Hamburger Menu Button */
+        .hamburger {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1100;
+            background: var(--accent);
+            color: var(--background);
+            border: 2px solid var(--accent);
+            border-radius: 12px;
+            width: 70px;
+            height: 70px;
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 255, 0, 0.4);
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: none;
+        }
+        
+        .hamburger:hover {
+            background: var(--accent-hover);
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 255, 0, 0.6);
+            border-color: var(--accent-hover);
+        }
+        
+        .hamburger:active {
+            transform: scale(0.95);
+        }
+
+        /* Side Menu Styles */
+        .side-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 280px;
+            background: #001100;
+            border-right: 2px solid var(--accent);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 1099;
+            padding-top: 100px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .side-menu a {
+            color: var(--accent);
+            text-decoration: none;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #003300;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .side-menu a:hover {
+            background: #002200;
+            padding-left: 2.5rem;
+            color: #fff;
+            border-left: 4px solid var(--accent);
+        }
+
+        .side-menu a i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .side-menu.open {
+            transform: translateX(0);
+        }
+
         /* Header Styles */
         .header {
-            background: rgba(0, 17, 0, 0.95);
-            padding: 1rem;
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 1px solid var(--accent);
-            box-shadow: 0 0 10px var(--accent);
-        }
-
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 1rem;
-        }
-
-        .logo {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--accent);
-            text-decoration: none;
-            text-shadow: 0 0 5px var(--accent);
-        }
-
-        .nav-menu {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .nav-link {
-            color: var(--text-primary);
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border: 1px solid transparent;
-            transition: all 0.3s ease;
-            font-size: 1.1rem;
-            text-transform: uppercase;
-        }
-
-        .nav-link:hover, .nav-link.active {
-            border-color: var(--accent);
-            color: var(--accent);
-            box-shadow: 0 0 10px var(--accent);
-            text-shadow: 0 0 5px var(--accent);
+            display: none !important;
         }
 
         /* Main Content */
@@ -286,31 +320,17 @@
     </style>
 </head>
 <body>
-    <header class="header">
-        <nav class="nav-container">
-            <a href="index.html" class="logo">XXMXLI</a>
-            <button class="menu-button">
-                <i class="fas fa-bars"></i>
-            </button>
-            <ul class="nav-menu">
-                <li><a href="index.html" class="nav-link">
-                    <i class="fas fa-home"></i> Etusivu
-                </a></li>
-                <li><a href="music.html" class="nav-link">
-                    <i class="fas fa-music"></i> Musiikki
-                </a></li>
-                <li><a href="photography.html" class="nav-link">
-                    <i class="fas fa-camera"></i> Valokuvaus
-                </a></li>
-                <li><a href="projects.html" class="nav-link">
-                    <i class="fas fa-project-diagram"></i> Projektit
-                </a></li>
-                <li><a href="security.html" class="nav-link active">
-                    <i class="fas fa-shield-alt"></i> Turvallisuus
-                </a></li>
-            </ul>
-        </nav>
-    </header>
+    <button id="menuToggle" class="hamburger" aria-label="Menu">☰</button>
+    <nav id="sideMenu" class="side-menu" aria-label="Site">
+        <a href="index.html"><i class="fas fa-home"></i> Etusivu</a>
+        <a href="music.html"><i class="fas fa-music"></i> Musiikki</a>
+        <a href="photography.html"><i class="fas fa-image"></i> Valokuvaus</a>
+        <a href="projects.html"><i class="fas fa-project-diagram"></i> Projektit</a>
+        <a href="contact.html"><i class="fas fa-envelope"></i> Ota yhteyttä</a>
+        <a href="security.html"><i class="fas fa-shield-alt"></i> Turvallisuus</a>
+        <a href="login.html"><i class="fas fa-user-lock"></i> Kirjaudu sisään</a>
+        <a href="admin/login.html"><i class="fas fa-user-shield"></i> Admin Login</a>
+    </nav>
 
     <main class="main-content">
         <section class="hero">
@@ -565,6 +585,17 @@ python process_w_blacklists.py
                 });
             });
         });
+
+        // Sidebar menu functionality
+        (function(){
+            const btn=document.getElementById('menuToggle');
+            const menu=document.getElementById('sideMenu');
+            if(btn && menu){
+                btn.addEventListener('click', ()=> menu.classList.toggle('open'));
+                menu.querySelectorAll('a').forEach(a=> a.addEventListener('click', ()=> menu.classList.remove('open')));
+                document.addEventListener('keydown', e=> { if(e.key==='Escape') menu.classList.remove('open'); });
+            }
+        })();
     </script>
 </body>
 </html>
