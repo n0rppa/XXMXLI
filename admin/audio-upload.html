@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Upload - XXMXLI Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --cyber-green: #00ff00;
+            --cyber-dark: #000000;
+            --cyber-accent: #003300;
+            --cyber-glow: 0 0 10px #00ff00;
+            --cyber-glow-strong: 0 0 20px #00ff00;
+            --cyber-blue: #0088ff;
+            --cyber-red: #ff4444;
+            --cyber-orange: #ff8800;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: var(--cyber-dark);
+            color: var(--cyber-green);
+            line-height: 1.6;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 0, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 0, 0.05) 0%, transparent 50%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, rgba(0, 17, 0, 0.9) 0%, rgba(0, 34, 0, 0.9) 100%);
+            border: 2px solid var(--cyber-green);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            box-shadow: var(--cyber-glow);
+        }
+
+        .admin-title {
+            font-size: 2.5rem;
+            color: var(--cyber-green);
+            text-shadow: var(--cyber-glow);
+            margin-bottom: 0.5rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: var(--cyber-green);
+            text-decoration: none;
+            margin-bottom: 1rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--cyber-green);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: var(--cyber-green);
+            color: var(--cyber-dark);
+            box-shadow: var(--cyber-glow);
+        }
+
+        .upload-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(0, 17, 0, 0.8);
+            border: 2px solid var(--cyber-green);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: var(--cyber-glow);
+        }
+
+        .upload-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid var(--cyber-accent);
+            border-radius: 6px;
+            background: rgba(0, 34, 0, 0.3);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: var(--cyber-green);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--cyber-green);
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--cyber-dark);
+            border: 1px solid var(--cyber-green);
+            border-radius: 4px;
+            color: var(--cyber-green);
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--cyber-blue);
+            box-shadow: 0 0 5px var(--cyber-blue);
+        }
+
+        .file-upload-area {
+            border: 2px dashed var(--cyber-green);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            background: rgba(0, 34, 0, 0.2);
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--cyber-blue);
+            background: rgba(0, 136, 255, 0.1);
+        }
+
+        .file-upload-area.dragover {
+            border-color: var(--cyber-orange);
+            background: rgba(255, 136, 0, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--cyber-green);
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            font-size: 0.9rem;
+            color: #008000;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: 1px solid var(--cyber-green);
+            color: var(--cyber-green);
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background: var(--cyber-green);
+            color: var(--cyber-dark);
+            box-shadow: var(--cyber-glow);
+        }
+
+        .btn-primary {
+            background: var(--cyber-blue);
+            border-color: var(--cyber-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0066cc;
+            border-color: #0066cc;
+        }
+
+        .btn-danger {
+            border-color: var(--cyber-red);
+            color: var(--cyber-red);
+        }
+
+        .btn-danger:hover {
+            background: var(--cyber-red);
+            color: white;
+        }
+
+        .file-list {
+            margin-top: 1rem;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            padding: 0.75rem;
+            background: rgba(0, 34, 0, 0.5);
+            border: 1px solid var(--cyber-accent);
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .file-name {
+            color: var(--cyber-green);
+            font-weight: bold;
+        }
+
+        .file-size {
+            color: #008000;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--cyber-accent);
+            border-radius: 3px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--cyber-green);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: rgba(68, 255, 68, 0.1);
+            border-color: #44ff44;
+            color: #44ff44;
+        }
+
+        .alert-error {
+            background: rgba(255, 68, 68, 0.1);
+            border-color: var(--cyber-red);
+            color: var(--cyber-red);
+        }
+
+        .alert-info {
+            background: rgba(0, 136, 255, 0.1);
+            border-color: var(--cyber-blue);
+            color: var(--cyber-blue);
+        }
+
+        .current-tracks {
+            margin-top: 2rem;
+        }
+
+        .track-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(0, 34, 0, 0.3);
+            border: 1px solid var(--cyber-accent);
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .track-info h4 {
+            color: var(--cyber-green);
+            margin-bottom: 0.25rem;
+        }
+
+        .track-info p {
+            color: #008000;
+            font-size: 0.9rem;
+        }
+
+        .track-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .upload-container {
+                padding: 1rem;
+            }
+            
+            .file-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <h1 class="admin-title">
+            <i class="fas fa-music"></i>
+            Audio Upload Manager
+        </h1>
+        <a href="dashboard.html" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <div class="upload-container">
+        <div id="alertContainer"></div>
+
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <h2 class="section-title">
+                <i class="fas fa-upload"></i>
+                Upload New Audio Files
+            </h2>
+            
+            <div class="file-upload-area" id="uploadArea">
+                <input type="file" class="file-input" id="fileInput" multiple accept="audio/*">
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <div class="upload-text">Drop audio files here or click to browse</div>
+                <div class="upload-hint">Supported formats: MP3, WAV, FLAC, OGG, M4A (Max 50MB per file)</div>
+            </div>
+
+            <div class="file-list" id="fileList"></div>
+
+            <div class="form-group" style="margin-top: 1.5rem;">
+                <button class="btn btn-primary" id="uploadBtn" disabled>
+                    <i class="fas fa-upload"></i>
+                    Upload Selected Files
+                </button>
+                <button class="btn btn-danger" id="clearBtn">
+                    <i class="fas fa-trash"></i>
+                    Clear All
+                </button>
+            </div>
+        </div>
+
+        <!-- Metadata Section -->
+        <div class="upload-section" id="metadataSection" style="display: none;">
+            <h2 class="section-title">
+                <i class="fas fa-edit"></i>
+                Edit Track Metadata
+            </h2>
+            <div id="metadataForms"></div>
+        </div>
+
+        <!-- Current Tracks Section -->
+        <div class="upload-section">
+            <h2 class="section-title">
+                <i class="fas fa-list"></i>
+                Current Audio Tracks
+            </h2>
+            <div id="currentTracks">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    Loading current tracks...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class AudioUploadManager {
+            constructor() {
+                this.selectedFiles = [];
+                this.currentTracks = [];
+                this.uploadQueue = [];
+                this.maxFileSize = 50 * 1024 * 1024; // 50MB
+                this.supportedFormats = ['mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac'];
+                
+                this.initializeElements();
+                this.setupEventListeners();
+                this.loadCurrentTracks();
+            }
+
+            initializeElements() {
+                this.uploadArea = document.getElementById('uploadArea');
+                this.fileInput = document.getElementById('fileInput');
+                this.fileList = document.getElementById('fileList');
+                this.uploadBtn = document.getElementById('uploadBtn');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.alertContainer = document.getElementById('alertContainer');
+                this.currentTracksContainer = document.getElementById('currentTracks');
+                this.metadataSection = document.getElementById('metadataSection');
+                this.metadataForms = document.getElementById('metadataForms');
+            }
+
+            setupEventListeners() {
+                // File input change
+                this.fileInput.addEventListener('change', (e) => {
+                    this.handleFiles(e.target.files);
+                });
+
+                // Drag and drop
+                this.uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    this.uploadArea.classList.add('dragover');
+                });
+
+                this.uploadArea.addEventListener('dragleave', () => {
+                    this.uploadArea.classList.remove('dragover');
+                });
+
+                this.uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    this.uploadArea.classList.remove('dragover');
+                    this.handleFiles(e.dataTransfer.files);
+                });
+
+                // Buttons
+                this.uploadBtn.addEventListener('click', () => this.uploadFiles());
+                this.clearBtn.addEventListener('click', () => this.clearFiles());
+            }
+
+            handleFiles(files) {
+                const newFiles = Array.from(files).filter(file => {
+                    // Check file size
+                    if (file.size > this.maxFileSize) {
+                        this.showAlert(`File "${file.name}" is too large (max 50MB)`, 'error');
+                        return false;
+                    }
+
+                    // Check file format
+                    const extension = file.name.split('.').pop().toLowerCase();
+                    if (!this.supportedFormats.includes(extension)) {
+                        this.showAlert(`File "${file.name}" has unsupported format`, 'error');
+                        return false;
+                    }
+
+                    // Check if already selected
+                    if (this.selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                        this.showAlert(`File "${file.name}" is already selected`, 'error');
+                        return false;
+                    }
+
+                    return true;
+                });
+
+                this.selectedFiles.push(...newFiles);
+                this.updateFileList();
+                this.updateUploadButton();
+            }
+
+            updateFileList() {
+                if (this.selectedFiles.length === 0) {
+                    this.fileList.innerHTML = '';
+                    return;
+                }
+
+                this.fileList.innerHTML = this.selectedFiles.map((file, index) => `
+                    <div class="file-item" data-index="${index}">
+                        <div class="file-info">
+                            <i class="fas fa-music"></i>
+                            <div>
+                                <div class="file-name">${file.name}</div>
+                                <div class="file-size">${this.formatFileSize(file.size)}</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-danger" onclick="audioUploader.removeFile(${index})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            removeFile(index) {
+                this.selectedFiles.splice(index, 1);
+                this.updateFileList();
+                this.updateUploadButton();
+            }
+
+            clearFiles() {
+                this.selectedFiles = [];
+                this.fileInput.value = '';
+                this.updateFileList();
+                this.updateUploadButton();
+                this.metadataSection.style.display = 'none';
+            }
+
+            updateUploadButton() {
+                this.uploadBtn.disabled = this.selectedFiles.length === 0;
+            }
+
+            async uploadFiles() {
+                if (this.selectedFiles.length === 0) return;
+
+                this.uploadBtn.disabled = true;
+                this.uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+                const formData = new FormData();
+                this.selectedFiles.forEach((file, index) => {
+                    formData.append(`audio_${index}`, file);
+                });
+
+                try {
+                    // First upload the files
+                    const uploadResponse = await fetch('upload-audio.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const uploadResult = await uploadResponse.json();
+
+                    if (uploadResult.success) {
+                        this.showAlert(`Successfully uploaded ${uploadResult.uploaded.length} files`, 'success');
+                        
+                        // Show metadata editing forms
+                        this.showMetadataForms(uploadResult.uploaded);
+                        
+                        // Refresh current tracks
+                        this.loadCurrentTracks();
+                        
+                        // Clear selected files
+                        this.clearFiles();
+                    } else {
+                        this.showAlert(`Upload failed: ${uploadResult.message}`, 'error');
+                    }
+                } catch (error) {
+                    this.showAlert(`Upload error: ${error.message}`, 'error');
+                }
+
+                this.uploadBtn.disabled = false;
+                this.uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Selected Files';
+            }
+
+            showMetadataForms(uploadedFiles) {
+                this.metadataForms.innerHTML = uploadedFiles.map(file => `
+                    <div class="form-group">
+                        <h4>${file.filename}</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                            <div>
+                                <label class="form-label">Title</label>
+                                <input type="text" class="form-input" id="title_${file.id}" value="${file.title || ''}">
+                            </div>
+                            <div>
+                                <label class="form-label">Artist</label>
+                                <input type="text" class="form-input" id="artist_${file.id}" value="${file.artist || 'n0rppa'}">
+                            </div>
+                            <div>
+                                <label class="form-label">Album</label>
+                                <input type="text" class="form-input" id="album_${file.id}" value="${file.album || ''}">
+                            </div>
+                            <div>
+                                <label class="form-label">Duration</label>
+                                <input type="text" class="form-input" id="duration_${file.id}" value="${file.duration || ''}" placeholder="mm:ss">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" style="margin-top: 1rem;" onclick="audioUploader.updateMetadata('${file.id}')">
+                            <i class="fas fa-save"></i> Save Metadata
+                        </button>
+                    </div>
+                `).join('');
+
+                this.metadataSection.style.display = 'block';
+            }
+
+            async updateMetadata(fileId) {
+                const metadata = {
+                    id: fileId,
+                    title: document.getElementById(`title_${fileId}`).value,
+                    artist: document.getElementById(`artist_${fileId}`).value,
+                    album: document.getElementById(`album_${fileId}`).value,
+                    duration: document.getElementById(`duration_${fileId}`).value
+                };
+
+                try {
+                    const response = await fetch('update-audio-metadata.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(metadata)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        this.showAlert('Metadata updated successfully', 'success');
+                        this.loadCurrentTracks();
+                    } else {
+                        this.showAlert(`Failed to update metadata: ${result.message}`, 'error');
+                    }
+                } catch (error) {
+                    this.showAlert(`Error updating metadata: ${error.message}`, 'error');
+                }
+            }
+
+            async loadCurrentTracks() {
+                try {
+                    const response = await fetch('../assets/audio/tracklist.json');
+                    const tracks = await response.json();
+                    
+                    this.currentTracks = tracks;
+                    this.renderCurrentTracks();
+                } catch (error) {
+                    this.currentTracksContainer.innerHTML = `
+                        <div class="alert alert-error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Error loading tracks: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            renderCurrentTracks() {
+                if (this.currentTracks.length === 0) {
+                    this.currentTracksContainer.innerHTML = `
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            No audio tracks found
+                        </div>
+                    `;
+                    return;
+                }
+
+                this.currentTracksContainer.innerHTML = this.currentTracks.map((track, index) => `
+                    <div class="track-item">
+                        <div class="track-info">
+                            <h4>${track.title}</h4>
+                            <p><strong>Artist:</strong> ${track.artist || 'Unknown'}</p>
+                            <p><strong>File:</strong> ${track.file}</p>
+                            <p><strong>Duration:</strong> ${track.duration || 'Unknown'}</p>
+                        </div>
+                        <div class="track-actions">
+                            <button class="btn" onclick="audioUploader.editTrack(${index})">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger" onclick="audioUploader.deleteTrack(${index})">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            async deleteTrack(index) {
+                if (!confirm('Are you sure you want to delete this track?')) return;
+
+                const track = this.currentTracks[index];
+                
+                try {
+                    const response = await fetch('delete-audio.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ file: track.file, index: index })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        this.showAlert('Track deleted successfully', 'success');
+                        this.loadCurrentTracks();
+                    } else {
+                        this.showAlert(`Failed to delete track: ${result.message}`, 'error');
+                    }
+                } catch (error) {
+                    this.showAlert(`Error deleting track: ${error.message}`, 'error');
+                }
+            }
+
+            editTrack(index) {
+                const track = this.currentTracks[index];
+                
+                const newTitle = prompt('Enter new title:', track.title);
+                if (newTitle === null) return;
+                
+                const newArtist = prompt('Enter new artist:', track.artist || 'n0rppa');
+                if (newArtist === null) return;
+                
+                const newAlbum = prompt('Enter new album:', track.album || '');
+                if (newAlbum === null) return;
+                
+                const newDuration = prompt('Enter new duration (mm:ss):', track.duration || '');
+                if (newDuration === null) return;
+
+                this.updateTrackMetadata(index, {
+                    title: newTitle,
+                    artist: newArtist,
+                    album: newAlbum,
+                    duration: newDuration
+                });
+            }
+
+            async updateTrackMetadata(index, metadata) {
+                try {
+                    const response = await fetch('update-track-metadata.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ index: index, metadata: metadata })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        this.showAlert('Track metadata updated successfully', 'success');
+                        this.loadCurrentTracks();
+                    } else {
+                        this.showAlert(`Failed to update track metadata: ${result.message}`, 'error');
+                    }
+                } catch (error) {
+                    this.showAlert(`Error updating track metadata: ${error.message}`, 'error');
+                }
+            }
+
+            showAlert(message, type = 'info') {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type}`;
+                alertDiv.innerHTML = `
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                    ${message}
+                `;
+
+                this.alertContainer.appendChild(alertDiv);
+
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.parentNode.removeChild(alertDiv);
+                    }
+                }, 5000);
+            }
+
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+        }
+
+        // Initialize the upload manager
+        const audioUploader = new AudioUploadManager();
+    </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+# Audio Upload Security Configuration
+
+# Prevent direct access to PHP files
+<FilesMatch "\.(php)$">
+    # Only allow access from admin directory
+    SetEnvIf Request_URI "/admin/" admin_area
+    Order Deny,Allow
+    Deny from all
+    Allow from env=admin_area
+</FilesMatch>
+
+# Set proper MIME types for audio files
+AddType audio/mpeg .mp3
+AddType audio/wav .wav
+AddType audio/flac .flac
+AddType audio/ogg .ogg
+AddType audio/mp4 .m4a
+AddType audio/aac .aac
+
+# Enable file uploads
+php_value upload_max_filesize 50M
+php_value post_max_size 50M
+php_value max_execution_time 300
+php_value max_input_time 300
+
+# Prevent execution of PHP files in upload directory
+<Files "*.php">
+    Order Deny,Allow
+    Deny from all
+</Files>
+
+# Security headers
+Header always set X-Content-Type-Options nosniff
+Header always set X-Frame-Options DENY
+Header always set X-XSS-Protection "1; mode=block"
