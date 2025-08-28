@@ -333,17 +333,15 @@
             z-index: 10000;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(10px);
-            transition: opacity 0.3s ease;
+            align-items: center;
+            justify-content: center;
         }
 
         .image-modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex !important;
         }
 
         .modal-content {
@@ -721,9 +719,13 @@
             const prevButton = document.querySelector('.modal-prev');
             const nextButton = document.querySelector('.modal-next');
             
+            console.log('Modal element found:', !!modal);
+            console.log('Gallery items found:', galleryItems.length);
+            
             let currentImageIndex = 0;
             let images = [];
 
+            console.log('Modal element found:', !!modal);
             console.log('Gallery items found:', galleryItems.length);
             
             if (!modal) {
@@ -731,45 +733,37 @@
                 return;
             }
             
-            // Initialize images array
+            if (galleryItems.length === 0) {
+                console.error('No gallery items found!');
+                return;
+            }
+            
+            // Test: Add simple click listener first
             galleryItems.forEach((img, index) => {
-                images.push({
-                    src: img.src,
-                    alt: img.alt,
-                    filename: img.alt || `Image ${index + 1}`
-                });
+                console.log('Setting up image:', index, img.src);
                 
-                // Set up image loading with better error handling
-                img.addEventListener('load', function() {
-                    this.style.opacity = '1';
-                });
-                
-                img.addEventListener('error', function() {
-                    console.error('Failed to load image:', this.src);
-                    this.alt = 'Kuva ei latautunut';
-                    this.style.opacity = '0.5';
-                    this.style.filter = 'grayscale(100%)';
-                });
-                
-                // Set initial styles for smooth loading
-                img.style.opacity = '0';
-                img.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                // Add visual feedback
                 img.style.cursor = 'pointer';
+                img.style.transition = 'transform 0.3s ease';
                 
-                // If image is already loaded (cached)
-                if (img.complete && img.naturalHeight !== 0) {
-                    img.style.opacity = '1';
-                }
-                
-                // Add click event for modal
                 img.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Image clicked:', index, img.src);
-                    openModal(index);
+                    console.log('Image clicked!', index, this.src);
+                    console.log('Modal element:', modal);
+                    console.log('Modal display before:', getComputedStyle(modal).display);
+                    
+                    // Simple modal open test
+                    modal.classList.add('active');
+                    modalImage.src = this.src;
+                    modalFilename.textContent = this.alt || 'Kuva ' + (index + 1);
+                    modalDetails.textContent = `Kuva ${index + 1} / ${galleryItems.length}`;
+                    
+                    console.log('Modal display after:', getComputedStyle(modal).display);
+                    console.log('Modal has active class:', modal.classList.contains('active'));
                 });
-
-                // Add hover effect
+                
+                // Add hover effect for visual feedback
                 img.addEventListener('mouseenter', function() {
                     this.style.transform = 'scale(1.05)';
                 });
@@ -778,173 +772,56 @@
                     this.style.transform = 'scale(1)';
                 });
             });
-
-            if (images.length === 0) {
-                console.error('No images found in gallery');
-                return;
-            }
+            });
             
-            function openModal(index) {
-                console.log('Opening modal for image:', index);
-                
-                currentImageIndex = index;
-                modal.classList.add('active');
-                modal.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-                
-                // Add fade-in animation
-                modal.style.opacity = '0';
-                setTimeout(() => {
-                    modal.style.opacity = '1';
-                }, 10);
-                
-                loadModalImage();
-            }
-            
-            function closeModalFunc() {
-                console.log('Closing modal');
-                
-                // Add fade-out animation
-                modal.style.opacity = '0';
-                
-                setTimeout(() => {
-                    modal.classList.remove('active');
-                    modal.style.display = 'none';
-                    document.body.style.overflow = '';
-                    if (modalImage) {
-                        modalImage.src = '';
-                    }
-                }, 300);
-            }
-            
-            function loadModalImage() {
-                if (currentImageIndex < 0 || currentImageIndex >= images.length) {
-                    console.error('Invalid image index:', currentImageIndex);
-                    return;
-                }
-                
-                const image = images[currentImageIndex];
-                modalLoading.style.display = 'block';
-                modalImage.style.display = 'none';
-                
-                // Create a new image element to preload
-                const tempImg = new Image();
-                
-                tempImg.onload = function() {
-                    modalImage.src = tempImg.src;
-                    modalLoading.style.display = 'none';
-                    modalImage.style.display = 'block';
-                    updateModalInfo();
-                };
-                
-                tempImg.onerror = function() {
-                    console.error('Failed to load modal image:', image.src);
-                    modalLoading.style.display = 'none';
-                    modalImage.style.display = 'block';
-                    modalImage.alt = 'Kuva ei latautunut';
-                    modalImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPktlbG1hdG9uIGt1dmE8L3RleHQ+Cjwvc3ZnPg==';
-                    updateModalInfo();
-                };
-                
-                tempImg.src = image.src;
-            }
-            
-            function updateModalInfo() {
-                const image = images[currentImageIndex];
-                modalFilename.textContent = image.filename;
-                modalDetails.textContent = `Kuva ${currentImageIndex + 1} / ${images.length}`;
-            }
-            
-            function nextImage() {
-                currentImageIndex = (currentImageIndex + 1) % images.length;
-                loadModalImage();
-            }
-            
-            function prevImage() {
-                currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
-                loadModalImage();
-            }
-            
-            // Event listeners with better error handling
+            // Close modal functionality
             if (closeModal) {
-                closeModal.addEventListener('click', closeModalFunc);
-            }
-            
-            if (nextButton) {
-                nextButton.addEventListener('click', nextImage);
-            }
-            
-            if (prevButton) {
-                prevButton.addEventListener('click', prevImage);
-            }
-            
-            // Close modal when clicking outside the content
-            if (modal) {
-                modal.addEventListener('click', function(e) {
-                    if (e.target === modal) {
-                        closeModalFunc();
-                    }
+                closeModal.addEventListener('click', function() {
+                    console.log('Close modal clicked');
+                    modal.classList.remove('active');
                 });
             }
             
-            // Keyboard navigation
+            // Close modal when clicking outside
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    console.log('Modal background clicked');
+                    modal.classList.remove('active');
+                }
+            });
+            
+            // Keyboard controls
             document.addEventListener('keydown', function(e) {
-                if (modal && modal.classList.contains('active')) {
-                    switch(e.key) {
-                        case 'Escape':
-                            closeModalFunc();
-                            break;
-                        case 'ArrowLeft':
-                            e.preventDefault();
-                            prevImage();
-                            break;
-                        case 'ArrowRight':
-                            e.preventDefault();
-                            nextImage();
-                            break;
-                        case 'Home':
-                            e.preventDefault();
-                            currentImageIndex = 0;
-                            loadModalImage();
-                            break;
-                        case 'End':
-                            e.preventDefault();
-                            currentImageIndex = images.length - 1;
-                            loadModalImage();
-                            break;
-                    }
+                if (modal.classList.contains('active') && e.key === 'Escape') {
+                    modal.classList.remove('active');
                 }
             });
             
-            // Touch/swipe support for mobile
-            let touchStartX = 0;
-            let touchEndX = 0;
-            
-            modal.addEventListener('touchstart', function(e) {
-                touchStartX = e.changedTouches[0].screenX;
-            });
-            
-            modal.addEventListener('touchend', function(e) {
-                touchEndX = e.changedTouches[0].screenX;
-                handleSwipe();
-            });
-            
-            function handleSwipe() {
-                const swipeThreshold = 50;
-                const diff = touchStartX - touchEndX;
-                
-                if (Math.abs(diff) > swipeThreshold) {
-                    if (diff > 0) {
-                        // Swipe left - next image
-                        nextImage();
-                    } else {
-                        // Swipe right - previous image
-                        prevImage();
-                    }
-                }
+            console.log('Gallery initialization complete!');
+        });
+
+        // Add a test button for debugging
+        const testButton = document.createElement('button');
+        testButton.textContent = 'Test Modal';
+        testButton.style.position = 'fixed';
+        testButton.style.top = '100px';
+        testButton.style.right = '20px';
+        testButton.style.zIndex = '9999';
+        testButton.style.padding = '10px';
+        testButton.style.background = '#00ff00';
+        testButton.style.color = '#000';
+        testButton.style.border = 'none';
+        testButton.style.cursor = 'pointer';
+        document.body.appendChild(testButton);
+        
+        testButton.addEventListener('click', function() {
+            console.log('Test button clicked');
+            const modal = document.getElementById('imageModal');
+            console.log('Modal found:', !!modal);
+            if (modal) {
+                modal.classList.add('active');
+                console.log('Added active class to modal');
             }
-            
-            console.log('Gallery initialized with', images.length, 'images');
         });
 
         (function(){
