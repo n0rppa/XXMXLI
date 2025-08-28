@@ -22,15 +22,41 @@ jobs:
       - name: Install music-metadata
         run: npm install music-metadata
 
+      - name: Check audio directory exists
+        run: |
+          if [ ! -d "assets/audio" ]; then
+            echo "Audio directory does not exist, creating empty tracklist"
+            mkdir -p assets/audio
+            echo '[]' > assets/audio/tracklist.json
+            exit 0
+          fi
+
       - name: Generate tracklist.json
         run: |
           node <<'EOF'
           const fs = require('fs');
           const mm = require('music-metadata');
           const path = require('path');
+          
           const audioDir = 'assets/audio';
+          
+          if (!fs.existsSync(audioDir)) {
+            console.log('Audio directory does not exist');
+            process.exit(0);
+          }
+          
           const files = fs.readdirSync(audioDir)
             .filter(f => /\.(mp3|flac|ogg|wav|m4a|aac|oga|opus)$/i.test(f));
+          
+          if (files.length === 0) {
+            console.log('No audio files found');
+            fs.writeFileSync(
+              path.join(audioDir, 'tracklist.json'),
+              JSON.stringify([], null, 2)
+            );
+            process.exit(0);
+          }
+          
           const tasks = files.map(async f => {
             const p = path.join(audioDir, f);
             try {
@@ -55,14 +81,20 @@ jobs:
                 duration
               };
             } catch (err) {
+              console.log(`Error processing ${f}:`, err.message);
               return { file: f, title: f };
             }
           });
+          
           Promise.all(tasks).then(list => {
             fs.writeFileSync(
               path.join(audioDir, 'tracklist.json'),
               JSON.stringify(list, null, 2)
             );
+            console.log(`Generated tracklist with ${list.length} tracks`);
+          }).catch(err => {
+            console.error('Error generating tracklist:', err);
+            process.exit(1);
           });
           EOF
 

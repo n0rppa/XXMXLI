@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XXMXLI - Valokuvaus (FIXED)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --background: #000000;
+            --text-primary: #00ff00;
+            --text-secondary: #008000;
+            --accent: #00ff00;
+            --accent-hover: #00cc00;
+            --border: #003300;
+            --card-bg: #001100;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(to bottom, var(--card-bg), var(--background));
+            border-bottom: 1px solid var(--accent);
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px var(--accent);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { text-shadow: 0 0 10px var(--accent); }
+            50% { text-shadow: 0 0 20px var(--accent), 0 0 30px var(--accent); }
+            100% { text-shadow: 0 0 10px var(--accent); }
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .grid-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .grid-item:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent);
+            transform: translateY(-5px);
+        }
+
+        .grid-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .grid-item:hover img {
+            transform: scale(1.05);
+            border-color: var(--accent);
+        }
+
+        /* MODAL STYLES */
+        .image-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-modal.active {
+            display: flex !important;
+        }
+
+        .modal-content {
+            position: relative;
+            max-width: 95%;
+            max-height: 95%;
+            background: var(--card-bg);
+            border: 2px solid var(--accent);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 40px var(--accent);
+        }
+
+        .modal-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            max-height: 85vh;
+            object-fit: contain;
+            background: var(--background);
+        }
+
+        .modal-info {
+            padding: 20px;
+            background: var(--card-bg);
+            border-top: 1px solid var(--accent);
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .modal-filename {
+            font-size: 1.2rem;
+            color: var(--accent);
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .modal-details {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            color: var(--accent);
+            font-size: 2.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10001;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid var(--accent);
+            transition: all 0.3s ease;
+        }
+
+        .close-modal:hover {
+            background: var(--accent);
+            color: var(--background);
+            transform: scale(1.1);
+        }
+
+        .test-button {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            z-index: 9999;
+            padding: 10px;
+            background: #00ff00;
+            color: #000;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <main class="main-content">
+        <section class="hero">
+            <h1>Valokuvaus</h1>
+            <p>Katso viimeisimmät valokuvat ja portfoliot.</p>
+        </section>
+
+        <div class="grid-container">
+            <div class="grid-item">
+                <img src="assets/images/1.jpg" loading="lazy" alt="1">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/12.jpg" loading="lazy" alt="12">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/13.jpg" loading="lazy" alt="13">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/14.jpg" loading="lazy" alt="14">
+            </div>
+            <div class="grid-item">
+                <img src="assets/images/15.jpg" loading="lazy" alt="15">
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL -->
+    <div id="imageModal" class="image-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <img id="modalImage" class="modal-image" alt="Enlarged photo">
+            <div class="modal-info">
+                <div class="modal-filename" id="modalFilename"></div>
+                <div class="modal-details" id="modalDetails"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TEST BUTTON -->
+    <button class="test-button" onclick="testModal()">Test Modal</button>
+
+    <script>
+        console.log('Script starting...');
+        
+        function testModal() {
+            console.log('Test button clicked');
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalFilename = document.getElementById('modalFilename');
+            const modalDetails = document.getElementById('modalDetails');
+            
+            console.log('Modal found:', !!modal);
+            
+            if (modal) {
+                modal.classList.add('active');
+                modalImage.src = 'assets/images/1.jpg';
+                modalFilename.textContent = 'Test Image';
+                modalDetails.textContent = 'Test 1/1';
+                console.log('Modal should be visible now');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing gallery...');
+            
+            const galleryItems = document.querySelectorAll('.grid-item img');
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalFilename = document.getElementById('modalFilename');
+            const modalDetails = document.getElementById('modalDetails');
+            const closeModal = document.querySelector('.close-modal');
+            
+            console.log('Gallery items found:', galleryItems.length);
+            console.log('Modal found:', !!modal);
+            
+            if (!modal) {
+                console.error('Modal not found!');
+                return;
+            }
+            
+            // Setup image click events
+            galleryItems.forEach((img, index) => {
+                console.log('Setting up image:', index, img.src);
+                
+                img.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Image clicked!', index, this.src);
+                    
+                    // Open modal
+                    modal.classList.add('active');
+                    modalImage.src = this.src;
+                    modalFilename.textContent = this.alt || 'Kuva ' + (index + 1);
+                    modalDetails.textContent = `Kuva ${index + 1} / ${galleryItems.length}`;
+                    
+                    console.log('Modal should be visible');
+                });
+            });
+            
+            // Close modal
+            if (closeModal) {
+                closeModal.addEventListener('click', function() {
+                    console.log('Close button clicked');
+                    modal.classList.remove('active');
+                });
+            }
+            
+            // Close on background click
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    console.log('Background clicked');
+                    modal.classList.remove('active');
+                }
+            });
+            
+            // Close with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.classList.contains('active')) {
+                    console.log('Escape pressed');
+                    modal.classList.remove('active');
+                }
+            });
+            
+            console.log('Gallery initialization complete!');
+        });
+    </script>
+</body>
+</html>
