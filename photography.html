@@ -310,10 +310,13 @@
             -webkit-backdrop-filter: blur(8px);
             align-items: center;
             justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .image-modal.active {
             display: flex !important;
+            opacity: 1 !important;
         }
 
         .modal-content {
@@ -531,6 +534,7 @@
             animation: modalZoom 0.4s ease-out;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
+            z-index: 10001;
         }
 
         /* Add subtle glow effect to modal borders */
@@ -698,16 +702,16 @@
     </main>
 
     <!-- Image Modal -->
-    <div id="imageModal" class="image-modal">
+    <div id="imageModal" class="image-modal" style="display: none;">
         <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <div class="modal-nav modal-prev">&#8249;</div>
-            <div class="modal-nav modal-next">&#8250;</div>
-            <div class="modal-loading">&#8635;</div>
-            <img id="modalImage" class="modal-image" alt="Enlarged photo">
-            <div class="modal-info">
-                <div class="modal-filename" id="modalFilename"></div>
-                <div class="modal-details" id="modalDetails"></div>
+            <span class="close-modal" style="position: absolute; top: 20px; right: 25px; color: #00ff00; font-size: 2.5rem; font-weight: bold; cursor: pointer; z-index: 10001; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(0, 0, 0, 0.8); border: 2px solid #00ff00; transition: all 0.3s ease; user-select: none;">&times;</span>
+            <div class="modal-nav modal-prev" style="position: absolute; top: 50%; left: 30px; transform: translateY(-50%); background: rgba(0, 0, 0, 0.8); border: 2px solid #00ff00; color: #00ff00; font-size: 2rem; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; border-radius: 50%; user-select: none; font-weight: bold;">&#8249;</div>
+            <div class="modal-nav modal-next" style="position: absolute; top: 50%; right: 30px; transform: translateY(-50%); background: rgba(0, 0, 0, 0.8); border: 2px solid #00ff00; color: #00ff00; font-size: 2rem; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; border-radius: 50%; user-select: none; font-weight: bold;">&#8250;</div>
+            <div class="modal-loading" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #00ff00; font-size: 3rem; animation: spin 1s linear infinite; z-index: 10002; display: none;">&#8635;</div>
+            <img id="modalImage" class="modal-image" alt="Enlarged photo" style="width: 100%; height: auto; display: block; max-height: 85vh; object-fit: contain; background: #000000;">
+            <div class="modal-info" style="padding: 20px; background: #001100; border-top: 1px solid #00ff00; color: #00ff00; text-align: center;">
+                <div class="modal-filename" id="modalFilename" style="font-size: 1.2rem; color: #00ff00; margin-bottom: 8px; font-weight: bold;"></div>
+                <div class="modal-details" id="modalDetails" style="font-size: 1rem; color: #008000;"></div>
             </div>
         </div>
     </div>
@@ -731,6 +735,8 @@
         // Enhanced Gallery Modal Functionality
         class PhotoGallery {
             constructor() {
+                console.log('PhotoGallery constructor called');
+                
                 this.modal = document.getElementById('imageModal');
                 this.modalImage = document.getElementById('modalImage');
                 this.modalFilename = document.getElementById('modalFilename');
@@ -739,6 +745,16 @@
                 this.closeModal = document.querySelector('.close-modal');
                 this.prevButton = document.querySelector('.modal-prev');
                 this.nextButton = document.querySelector('.modal-next');
+                
+                console.log('Modal elements found:', {
+                    modal: !!this.modal,
+                    modalImage: !!this.modalImage,
+                    modalFilename: !!this.modalFilename,
+                    modalDetails: !!this.modalDetails,
+                    closeModal: !!this.closeModal,
+                    prevButton: !!this.prevButton,
+                    nextButton: !!this.nextButton
+                });
                 
                 this.currentImageIndex = 0;
                 this.images = [];
@@ -772,12 +788,17 @@
             }
             
             setupImageListeners() {
+                console.log('Setting up image listeners for', this.images.length, 'images');
+                
                 this.images.forEach((img, index) => {
+                    console.log(`Setting up listener for image ${index + 1}:`, img.src);
+                    
                     // Add visual feedback
                     img.style.cursor = 'pointer';
                     img.style.transition = 'transform 0.3s ease';
                     
                     img.addEventListener('click', (e) => {
+                        console.log('Image clicked!', index, img.src);
                         e.preventDefault();
                         e.stopPropagation();
                         this.openModal(index);
@@ -794,6 +815,8 @@
                         this.style.boxShadow = 'none';
                     });
                 });
+                
+                console.log('Image listeners setup complete');
             }
             
             setupModalListeners() {
@@ -838,10 +861,19 @@
             }
             
             openModal(index) {
-                if (index < 0 || index >= this.images.length) return;
+                console.log('openModal called with index:', index);
+                
+                if (index < 0 || index >= this.images.length) {
+                    console.error('Invalid index:', index);
+                    return;
+                }
                 
                 this.currentImageIndex = index;
                 const img = this.images[index];
+                
+                console.log('Opening modal for image:', img.src);
+                console.log('Modal element:', this.modal);
+                console.log('Modal image element:', this.modalImage);
                 
                 // Show loading
                 this.showLoading();
@@ -854,15 +886,20 @@
                 // Show modal
                 this.modal.classList.add('active');
                 
+                console.log('Modal should now be visible');
+                console.log('Modal display:', getComputedStyle(this.modal).display);
+                console.log('Modal classes:', this.modal.className);
+                
                 // Hide loading when image loads
                 this.modalImage.onload = () => {
+                    console.log('Image loaded successfully');
                     this.hideLoading();
                 };
                 
                 // Handle loading errors
                 this.modalImage.onerror = () => {
-                    this.hideLoading();
                     console.error('Failed to load image:', img.src);
+                    this.hideLoading();
                 };
                 
                 console.log(`Opened modal for image ${index + 1}/${this.images.length}`);
@@ -901,6 +938,43 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM loaded, initializing gallery...');
             new PhotoGallery();
+            
+            // Add test button for debugging
+            const testButton = document.createElement('button');
+            testButton.textContent = 'Test Modal';
+            testButton.style.position = 'fixed';
+            testButton.style.top = '20px';
+            testButton.style.right = '20px';
+            testButton.style.zIndex = '9999';
+            testButton.style.padding = '10px 15px';
+            testButton.style.background = '#00ff00';
+            testButton.style.color = '#000';
+            testButton.style.border = '2px solid #00ff00';
+            testButton.style.borderRadius = '5px';
+            testButton.style.cursor = 'pointer';
+            testButton.style.fontFamily = 'Courier New, monospace';
+            testButton.style.fontSize = '12px';
+            document.body.appendChild(testButton);
+            
+            testButton.addEventListener('click', function() {
+                console.log('Test button clicked!');
+                const modal = document.getElementById('imageModal');
+                const modalImage = document.getElementById('modalImage');
+                const modalFilename = document.getElementById('modalFilename');
+                const modalDetails = document.getElementById('modalDetails');
+                
+                console.log('Modal element:', modal);
+                console.log('Modal display before:', getComputedStyle(modal).display);
+                
+                if (modal && modalImage) {
+                    modalImage.src = 'assets/images/1.jpg';
+                    modalFilename.textContent = 'Test Image';
+                    modalDetails.textContent = 'Test modal functionality';
+                    modal.classList.add('active');
+                    console.log('Modal display after:', getComputedStyle(modal).display);
+                    console.log('Modal has active class:', modal.classList.contains('active'));
+                }
+            });
         });
 
         // Hamburger menu functionality
