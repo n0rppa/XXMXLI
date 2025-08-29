@@ -457,15 +457,46 @@
             }
         });
 
-        (function(){
-  const btn=document.getElementById('menuToggle');
-  const menu=document.getElementById('sideMenu');
-  if(btn && menu){
-    btn.addEventListener('click', ()=> menu.classList.toggle('open'));
-    menu.querySelectorAll('a').forEach(a=> a.addEventListener('click', ()=> menu.classList.remove('open')));
-    document.addEventListener('keydown', e=> { if(e.key==='Escape') menu.classList.remove('open'); });
-  }
-})();
+        // Hamburger menu functionality - FIXED
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('menuToggle');
+            const sideMenu = document.getElementById('sideMenu');
+            
+            console.log('Menu elements found:', {
+                menuToggle: !!menuToggle,
+                sideMenu: !!sideMenu
+            });
+            
+            if (menuToggle && sideMenu) {
+                menuToggle.addEventListener('click', function() {
+                    console.log('Menu toggle clicked');
+                    sideMenu.classList.toggle('open');
+                });
+                
+                // Close menu when clicking a link
+                sideMenu.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        sideMenu.classList.remove('open');
+                    });
+                });
+                
+                // Close menu with Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        sideMenu.classList.remove('open');
+                    }
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+                        sideMenu.classList.remove('open');
+                    }
+                });
+            } else {
+                console.error('Menu elements not found!');
+            }
+        });
     </script>
 </body>
 </html>

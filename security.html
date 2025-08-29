@@ -419,6 +419,47 @@
             color: var(--background);
         }
 
+        .privacy-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(0, 51, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        .privacy-info h4 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .privacy-info ul {
+            margin: 0;
+            padding-left: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .privacy-info li {
+            margin-bottom: 0.3rem;
+        }
+
+        .warning-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 165, 0, 0.1);
+            border: 1px solid #ff8c00;
+            border-radius: 4px;
+            color: #ff8c00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+        }
+
+        .warning-box i {
+            margin-right: 0.5rem;
+        }
+
         .status-message {
             padding: 0.5rem;
             margin-top: 0.5rem;
@@ -832,6 +873,103 @@ python process_w_blacklists.py
             </div>
         </section>
 
+        <!-- IPv6 & Geolocation Privacy Tools -->
+        <section class="hero">
+            <h2><i class="fas fa-user-secret"></i> Privacy Protection Tools</h2>
+            <p>Advanced tools to enhance your privacy by disabling IPv6 protocol and geolocation services</p>
+            
+            <div class="network-tools-grid">
+                <!-- IPv6 Disable Tool -->
+                <div class="network-tool-card">
+                    <h3><i class="fas fa-globe-americas"></i> IPv6 Protocol Manager</h3>
+                    <p>Disable IPv6 protocol to enhance privacy and reduce attack surface. IPv6 can leak your real location even when using VPN.</p>
+                    
+                    <div class="tool-buttons">
+                        <div class="dropdown">
+                            <button class="network-btn dropdown-btn">
+                                <i class="fas fa-download"></i> Download IPv6 Disable Script ▼
+                            </button>
+                            <div class="dropdown-content">
+                                <a href="#" onclick="downloadIPv6GeolocationLinux()">🐧 Linux Script</a>
+                                <a href="#" onclick="downloadIPv6GeolocationPowerShell()">🪟 Windows PowerShell</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="privacy-info">
+                        <h4>Why disable IPv6?</h4>
+                        <ul>
+                            <li>Prevents IPv6 DNS leaks when using VPN</li>
+                            <li>Reduces network attack surface</li>
+                            <li>Eliminates IPv6 transition tunneling</li>
+                            <li>Blocks IPv6-based tracking methods</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Geolocation Disable Tool -->
+                <div class="network-tool-card">
+                    <h3><i class="fas fa-map-marker-alt"></i> Geolocation Service Manager</h3>
+                    <p>Disable system-level geolocation services to prevent location tracking by applications and services.</p>
+                    
+                    <div class="tool-buttons">
+                        <div class="dropdown">
+                            <button class="network-btn dropdown-btn">
+                                <i class="fas fa-download"></i> Download Geolocation Script ▼
+                            </button>
+                            <div class="dropdown-content">
+                                <a href="#" onclick="downloadIPv6GeolocationLinux()">🐧 Linux Script</a>
+                                <a href="#" onclick="downloadIPv6GeolocationPowerShell()">🪟 Windows PowerShell</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="privacy-info">
+                        <h4>What gets disabled:</h4>
+                        <ul>
+                            <li>Windows Location Service (lfsvc)</li>
+                            <li>System location consent settings</li>
+                            <li>Location sensors and APIs</li>
+                            <li>Geoclue service (Linux)</li>
+                            <li>GNOME location services</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Privacy Tools Instructions -->
+            <div class="network-instructions">
+                <h3><i class="fas fa-shield-alt"></i> Privacy Tools Usage:</h3>
+                <div class="instruction-steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <span>Download the appropriate script for your OS</span>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <span>Run as administrator/root with elevated privileges</span>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <span>Follow the interactive menu to disable services</span>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <span>Restart your system for full effect</span>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">5</span>
+                        <span>Use backup feature to restore if needed</span>
+                    </div>
+                </div>
+                
+                <div class="warning-box">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Important:</strong> These tools modify system settings. Always create a backup before use. Some applications may require IPv6 or location services to function properly.
+                </div>
+            </div>
+        </section>
+
         <div class="safety-card">
             <h2><i class="fas fa-graduation-cap"></i> Security Best Practices</h2>
             <ul>
@@ -848,20 +986,6 @@ python process_w_blacklists.py
     </main>
 
     <script>
-        // Mobile menu functionality
-        const menuButton = document.querySelector('.menu-button');
-        const navMenu = document.querySelector('.nav-menu');
-
-        menuButton?.addEventListener('click', () => {
-            navMenu.classList.toggle('active');
-        });
-
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', () => {
-                navMenu.classList.remove('active');
-            });
-        });
-
         // Generate safety toolkit function
         function createSafetyToolkit() {
             // Create a simple HTML page that links to all tools
@@ -940,16 +1064,86 @@ python process_w_blacklists.py
             });
         });
 
-        // Sidebar menu functionality
-        (function(){
-            const btn=document.getElementById('menuToggle');
-            const menu=document.getElementById('sideMenu');
-            if(btn && menu){
-                btn.addEventListener('click', ()=> menu.classList.toggle('open'));
-                menu.querySelectorAll('a').forEach(a=> a.addEventListener('click', ()=> menu.classList.remove('open')));
-                document.addEventListener('keydown', e=> { if(e.key==='Escape') menu.classList.remove('open'); });
+        // Performance optimizations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Lazy load images if any
+            const images = document.querySelectorAll('img[data-src]');
+            if ('IntersectionObserver' in window) {
+                const imageObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const img = entry.target;
+                            img.src = img.dataset.src;
+                            img.classList.remove('lazy');
+                            imageObserver.unobserve(img);
+                        }
+                    });
+                });
+                
+                images.forEach(img => imageObserver.observe(img));
             }
-        })();
+            
+            // Preload critical resources
+            const preloadLinks = [
+                { href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css', as: 'style' }
+            ];
+            
+            preloadLinks.forEach(link => {
+                const preloadLink = document.createElement('link');
+                preloadLink.rel = 'preload';
+                preloadLink.href = link.href;
+                preloadLink.as = link.as;
+                document.head.appendChild(preloadLink);
+            });
+            
+            // Optimize console logging in production
+            if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+                console.log = () => {};
+                console.warn = () => {};
+                console.error = () => {};
+            }
+        });
+
+        // Hamburger menu functionality - FIXED
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('menuToggle');
+            const sideMenu = document.getElementById('sideMenu');
+            
+            console.log('Menu elements found:', {
+                menuToggle: !!menuToggle,
+                sideMenu: !!sideMenu
+            });
+            
+            if (menuToggle && sideMenu) {
+                menuToggle.addEventListener('click', function() {
+                    console.log('Menu toggle clicked');
+                    sideMenu.classList.toggle('open');
+                });
+                
+                // Close menu when clicking a link
+                sideMenu.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        sideMenu.classList.remove('open');
+                    });
+                });
+                
+                // Close menu with Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        sideMenu.classList.remove('open');
+                    }
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+                        sideMenu.classList.remove('open');
+                    }
+                });
+            } else {
+                console.error('Menu elements not found!');
+            }
+        });
 
         // Network Tools Functionality
         class NetworkTools {
@@ -1231,6 +1425,26 @@ change_ip() {
                 a.click();
                 document.body.removeChild(a);
             }
+
+            generateIPv6GeolocationPowerShell() {
+                // Download the IPv6/Geolocation PowerShell script
+                const a = document.createElement('a');
+                a.href = 'disable_ipv6_geolocation.ps1';
+                a.download = 'disable_ipv6_geolocation.ps1';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+
+            generateIPv6GeolocationLinux() {
+                // Download the IPv6/Geolocation Linux script
+                const a = document.createElement('a');
+                a.href = 'disable_ipv6_geolocation.sh';
+                a.download = 'disable_ipv6_geolocation.sh';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
         }
 
         // Initialize network tools when page loads
@@ -1298,6 +1512,18 @@ change_ip() {
         function downloadWindowsBatch() {
             if (window.networkTools) {
                 window.networkTools.generateWindowsBatchScript();
+            }
+        }
+
+        function downloadIPv6GeolocationPowerShell() {
+            if (window.networkTools) {
+                window.networkTools.generateIPv6GeolocationPowerShell();
+            }
+        }
+
+        function downloadIPv6GeolocationLinux() {
+            if (window.networkTools) {
+                window.networkTools.generateIPv6GeolocationLinux();
             }
         }
     </script>
