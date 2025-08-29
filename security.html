@@ -684,7 +684,117 @@ python process_w_blacklists.py
         </div>
 
         <section class="tools-section">
-            <h2><i class="fas fa-download"></i> Download Safety Tools</h2>
+            <h2><i class="fas fa-download"></i> Advanced Security Tools</h2>
+            
+            <!-- DNS Security Tools -->
+            <div class="tool-item">
+                <div class="tool-info">
+                    <h3>DNS Security Setup</h3>
+                    <p>Comprehensive DNS security and privacy configuration tool with DNS-over-HTTPS/TLS support, multiple providers, and filtering capabilities.</p>
+                </div>
+                <a href="dns_security_setup.sh" class="download-btn" download>
+                    <i class="fas fa-shield-alt"></i> Download
+                </a>
+            </div>
+
+            <div class="tool-item">
+                <div class="tool-info">
+                    <h3>System Hardening Tool</h3>
+                    <p>Complete Linux system hardening script with SSH security, firewall configuration, kernel protection, and audit logging.</p>
+                </div>
+                <a href="system_hardening.sh" class="download-btn" download>
+                    <i class="fas fa-lock"></i> Download
+                </a>
+            </div>
+
+            <div class="tool-item">
+                <div class="tool-info">
+                    <h3>Network Monitor</h3>
+                    <p>Real-time network traffic monitoring and security analysis tool with packet capture, bandwidth monitoring, and intrusion detection.</p>
+                </div>
+                <a href="network_monitor.sh" class="download-btn" download>
+                    <i class="fas fa-network-wired"></i> Download
+                </a>
+            </div>
+
+            <div class="tool-item">
+                <div class="tool-info">
+                    <h3>Secure Tunneling Tool</h3>
+                    <p>SSH tunnel and VPN management tool with SOCKS proxy, port forwarding, and secure communication setup.</p>
+                </div>
+                <a href="secure_tunnel.sh" class="download-btn" download>
+                    <i class="fas fa-user-secret"></i> Download
+                </a>
+            </div>
+
+            <div class="tool-item">
+                <div class="tool-info">
+                    <h3>Encryption Tools</h3>
+                    <p>File and folder encryption toolkit with AES encryption, GPG operations, secure deletion, and encrypted vault management.</p>
+                </div>
+                <a href="encryption_tools.sh" class="download-btn" download>
+                    <i class="fas fa-key"></i> Download
+                </a>
+            </div>
+        </section>
+
+        <section class="tools-section">
+            <h2><i class="fab fa-windows"></i> Windows PowerShell Security Tools</h2>
+            
+            <!-- Windows PowerShell versions of the security tools -->
+            <div class="tool-item">
+                <div class="tool-info">
+                    <h3>DNS Security Setup (Windows PowerShell)</h3>
+                    <p>Windows DNS security configuration with DNS-over-HTTPS/TLS support, multiple providers (Cloudflare, Quad9, OpenDNS), and comprehensive filtering capabilities.</p>
+                </div>
+                <a href="dns_security_setup.ps1" class="download-btn" download>
+                    <i class="fas fa-shield-alt"></i> Download
+                </a>
+            </div>
+
+            <div class="tool-item">
+                <div class="tool-info">
+                    <h3>System Hardening Tool (Windows PowerShell)</h3>
+                    <p>Complete Windows system hardening with registry security settings, Windows Firewall configuration, service management, and audit policies.</p>
+                </div>
+                <a href="system_hardening.ps1" class="download-btn" download>
+                    <i class="fas fa-lock"></i> Download
+                </a>
+            </div>
+
+            <div class="tool-item">
+                <div class="tool-info">
+                    <h3>Network Monitor (Windows PowerShell)</h3>
+                    <p>Windows network traffic monitoring and analysis with PowerShell cmdlets, connection tracking, bandwidth analysis, and HTML report generation.</p>
+                </div>
+                <a href="network_monitor.ps1" class="download-btn" download>
+                    <i class="fas fa-network-wired"></i> Download
+                </a>
+            </div>
+
+            <div class="tool-item">
+                <div class="tool-info">
+                    <h3>Secure Tunneling Tool (Windows PowerShell)</h3>
+                    <p>Windows SSH tunnel and secure connection management with OpenSSH integration, SOCKS proxy, port forwarding, and tunnel management.</p>
+                </div>
+                <a href="secure_tunnel.ps1" class="download-btn" download>
+                    <i class="fas fa-user-secret"></i> Download
+                </a>
+            </div>
+
+            <div class="tool-item">
+                <div class="tool-info">
+                    <h3>Encryption Tools (Windows PowerShell)</h3>
+                    <p>Windows file and folder encryption toolkit with AES encryption, secure vault management, password generation, and secure deletion using PowerShell and .NET APIs.</p>
+                </div>
+                <a href="encryption_tools.ps1" class="download-btn" download>
+                    <i class="fas fa-key"></i> Download
+                </a>
+            </div>
+        </section>
+
+        <section class="tools-section">
+            <h2><i class="fas fa-download"></i> Legacy Security Tools</h2>
             
             <div class="tool-item">
                 <div class="tool-info">
@@ -988,42 +1098,118 @@ python process_w_blacklists.py
     <script>
         // Generate safety toolkit function
         function createSafetyToolkit() {
-            // Create a simple HTML page that links to all tools
+            // Create a comprehensive HTML page that links to all tools
             const toolkitContent = `
 <!DOCTYPE html>
 <html>
 <head>
-    <title>XXMXLI Safety Toolkit</title>
+    <title>XXMXLI Complete Security Toolkit</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #000; color: #00ff00; padding: 20px; }
+        h1 { text-align: center; border-bottom: 2px solid #00ff00; padding-bottom: 10px; }
         .tool-section { margin: 20px 0; padding: 20px; border: 1px solid #00ff00; }
-        .download-link { color: #00ff00; text-decoration: none; display: block; margin: 5px 0; }
-        .download-link:hover { background: #00ff00; color: #000; padding: 2px; }
+        .tool-section h2 { color: #00cc00; border-bottom: 1px solid #00cc00; }
+        .download-link { color: #00ff00; text-decoration: none; display: block; margin: 5px 0; padding: 5px; }
+        .download-link:hover { background: #00ff00; color: #000; padding: 5px; }
+        .description { color: #008800; font-size: 0.9em; margin-left: 20px; }
+        .warning { background: #330000; border: 1px solid #ff4444; color: #ff4444; padding: 10px; margin: 10px 0; }
     </style>
 </head>
 <body>
-    <h1>XXMXLI Complete Safety Toolkit</h1>
+    <h1>🛡️ XXMXLI Complete Security Toolkit 🛡️</h1>
+    
+    <div class="warning">
+        ⚠️ <strong>LEGAL WARNING:</strong> These tools are for educational and authorized security testing only.
+        Unauthorized use may violate laws and terms of service. Always obtain proper authorization before use.
+    </div>
     
     <div class="tool-section">
-        <h2>Cross-Platform Tools</h2>
-        <a href="process_w_blacklists.py" class="download-link" download>📄 IP Blacklist Processor (Python)</a>
+        <h2>🔧 Advanced Security Tools (NEW)</h2>
+        <a href="dns_security_setup.sh" class="download-link" download>🛡️ DNS Security Setup Tool</a>
+        <div class="description">Comprehensive DNS security with DoH/DoT, multiple providers, and filtering</div>
+        
+        <a href="system_hardening.sh" class="download-link" download>🔒 System Hardening Tool</a>
+        <div class="description">Complete Linux system hardening with SSH, firewall, and kernel protection</div>
+        
+        <a href="network_monitor.sh" class="download-link" download>📊 Network Monitoring Tool</a>
+        <div class="description">Real-time traffic analysis, packet capture, and intrusion detection</div>
+        
+        <a href="secure_tunnel.sh" class="download-link" download>🚇 Secure Tunneling Tool</a>
+        <div class="description">SSH tunnels, SOCKS proxy, and secure communication management</div>
+        
+        <a href="encryption_tools.sh" class="download-link" download>🔐 Encryption Tools Suite</a>
+        <div class="description">File/folder encryption, GPG operations, and secure deletion</div>
+    </div>
+    
+    <div class="tool-section">
+        <h2>📄 Cross-Platform Tools</h2>
+        <a href="process_w_blacklists.py" class="download-link" download>� IP Blacklist Processor (Python)</a>
+        <div class="description">Cross-platform IP blocking with multiple blacklist sources</div>
+        
         <a href="assets/security/blocked_ips.js" class="download-link" download>📄 Blocked IPs JavaScript</a>
-        <a href="assets/security/blacklist_stats.json" class="download-link" download>📄 Blacklist Statistics (JSON)</a>
+        <div class="description">Ready-to-use client-side IP blocking JavaScript</div>
+        
+        <a href="assets/security/blacklist_stats.json" class="download-link" download>� Blacklist Statistics (JSON)</a>
+        <div class="description">Comprehensive blacklist metadata and threat intelligence</div>
     </div>
     
     <div class="tool-section">
-        <h2>Windows-Specific Tools</h2>
-        <a href="process_w_blacklists.ps1" class="download-link" download>📄 PowerShell IP Processor</a>
-        <a href="process_w_blacklists.bat" class="download-link" download>📄 Batch File Processor</a>
-        <a href="README_Windows.md" class="download-link" download>📄 Windows Setup Guide</a>
+        <h2>🪟 Windows-Specific Tools</h2>
+        <a href="process_w_blacklists.ps1" class="download-link" download>⚡ PowerShell IP Processor</a>
+        <div class="description">Windows PowerShell with firewall and hosts file integration</div>
+        
+        <a href="process_w_blacklists.bat" class="download-link" download>� Batch File Processor</a>
+        <div class="description">Legacy Windows batch file for command-line users</div>
+        
+        <a href="README_Windows.md" class="download-link" download>� Windows Setup Guide</a>
+        <div class="description">Complete Windows installation and configuration guide</div>
     </div>
     
     <div class="tool-section">
-        <h2>Instructions</h2>
-        <p>1. Download all files to a single directory</p>
-        <p>2. Create a 'w' folder and add your blacklist files</p>
-        <p>3. Run the appropriate processor for your platform</p>
-        <p>4. Apply generated rules using provided scripts</p>
+        <h2>📋 Installation Instructions</h2>
+        <h3>🔧 Advanced Security Tools Setup:</h3>
+        <ol style="color: #00cc00;">
+            <li>Download desired security tools (.sh files)</li>
+            <li>Make executable: <code>chmod +x *.sh</code></li>
+            <li>Run as root/administrator: <code>sudo ./tool_name.sh</code></li>
+            <li>Follow interactive menus for configuration</li>
+            <li>Create backups before making system changes</li>
+        </ol>
+        
+        <h3>🛡️ Legacy Tools Setup:</h3>
+        <ol style="color: #00cc00;">
+            <li>Download all files to a single directory</li>
+            <li>Create a 'w' folder for blacklist files</li>
+            <li>Run the appropriate processor for your platform</li>
+            <li>Apply generated rules using provided scripts</li>
+        </ol>
+        
+        <h3>🔒 Security Features:</h3>
+        <ul style="color: #008800;">
+            <li>DNS Security: DoH/DoT, multiple providers, ad blocking</li>
+            <li>System Hardening: SSH security, firewall, kernel protection</li>
+            <li>Network Monitoring: Traffic analysis, packet capture</li>
+            <li>Secure Tunneling: SSH tunnels, SOCKS proxy</li>
+            <li>Encryption: AES/GPG encryption, secure deletion</li>
+            <li>IP Blocking: Multiple blacklist sources, real-time protection</li>
+        </ul>
+    </div>
+    
+    <div class="tool-section">
+        <h2>⚠️ Important Notes</h2>
+        <ul style="color: #ff8800;">
+            <li>Always test tools in a safe environment first</li>
+            <li>Create system backups before applying changes</li>
+            <li>Some tools require administrative privileges</li>
+            <li>Network tools may temporarily disrupt connectivity</li>
+            <li>Review scripts before execution for security</li>
+            <li>Use only for legitimate purposes and authorized testing</li>
+        </ul>
+    </div>
+    
+    <div style="text-align: center; margin-top: 30px; border-top: 1px solid #00ff00; padding-top: 20px;">
+        <p style="color: #00cc00;">Generated by XXMXLI Security Toolkit</p>
+        <p style="color: #008800;">For educational and authorized use only</p>
     </div>
 </body>
 </html>`;
@@ -1032,7 +1218,7 @@ python process_w_blacklists.py
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'XXMXLI_Safety_Toolkit.html';
+            a.download = 'XXMXLI_Complete_Security_Toolkit.html';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -1040,7 +1226,7 @@ python process_w_blacklists.py
             
             // Show success message
             const originalText = event.target.innerHTML;
-            event.target.innerHTML = '<i class="fas fa-check"></i> Toolkit Generated!';
+            event.target.innerHTML = '<i class="fas fa-check"></i> Complete Toolkit Generated!';
             event.target.style.background = '#00ff00';
             event.target.style.color = '#000';
             
@@ -1048,7 +1234,7 @@ python process_w_blacklists.py
                 event.target.innerHTML = originalText;
                 event.target.style.background = '';
                 event.target.style.color = '';
-            }, 2000);
+            }, 3000);
         }
 
         // Add some interactive security tips
