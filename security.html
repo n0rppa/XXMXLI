@@ -270,6 +270,165 @@
             box-shadow: 0 0 10px var(--accent);
         }
 
+        /* Network Tools Styles */
+        .network-tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .network-tool-card {
+            background: var(--background);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            border-radius: 4px;
+        }
+
+        .network-tool-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .network-tool-card h3 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tool-input-group {
+            margin-bottom: 1rem;
+        }
+
+        .tool-input-group label {
+            display: block;
+            margin-bottom: 0.3rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .tool-input-group input {
+            width: 100%;
+            padding: 0.5rem;
+            background: var(--background);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            border-radius: 2px;
+        }
+
+        .tool-input-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 5px var(--accent);
+        }
+
+        .tool-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .network-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            background: var(--background);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .network-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 5px var(--accent);
+        }
+
+        .network-btn.primary {
+            background: var(--accent);
+            color: var(--background);
+            border-color: var(--accent);
+        }
+
+        .network-btn.primary:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .status-message {
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            border-radius: 2px;
+            font-size: 0.8rem;
+            min-height: 1.2rem;
+        }
+
+        .status-message.success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .status-message.error {
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+        }
+
+        .status-message.info {
+            background: rgba(0, 204, 255, 0.1);
+            border: 1px solid #00ccff;
+            color: #00ccff;
+        }
+
+        .network-instructions {
+            background: var(--background);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            border-radius: 4px;
+        }
+
+        .network-instructions h3 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .instruction-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.3rem 0;
+        }
+
+        .step-number {
+            background: var(--accent);
+            color: var(--background);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
         .code-block {
             background: var(--background);
             border: 1px solid var(--accent);
@@ -315,6 +474,31 @@
                 flex-direction: column;
                 gap: 1rem;
                 text-align: center;
+            }
+        }
+
+        /* Network Tools Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .network-tools-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .tool-buttons {
+                flex-direction: column;
+            }
+
+            .network-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .instruction-steps {
+                gap: 0.3rem;
+            }
+
+            .step {
+                font-size: 0.9rem;
             }
         }
     </style>
@@ -393,12 +577,12 @@ python process_w_blacklists.py
             </div>
 
             <div class="safety-card">
-                <h2><i class="fas fa-bug"></i> Threat Detection</h2>
+                <h2><i class="fas fa-network-wired"></i> Network Anonymity</h2>
                 <ul>
-                    <li><i class="fas fa-check"></i> Malware scanning</li>
-                    <li><i class="fas fa-check"></i> Vulnerability assessment</li>
-                    <li><i class="fas fa-check"></i> Network monitoring</li>
-                    <li><i class="fas fa-check"></i> Incident response</li>
+                    <li><i class="fas fa-check"></i> MAC address spoofing tools</li>
+                    <li><i class="fas fa-check"></i> IP address changing utilities</li>
+                    <li><i class="fas fa-check"></i> Network identity masking</li>
+                    <li><i class="fas fa-check"></i> Privacy enhancement scripts</li>
                 </ul>
             </div>
         </div>
@@ -474,6 +658,108 @@ python process_w_blacklists.py
                 <a href="#" class="download-btn" onclick="createSafetyToolkit()">
                     <i class="fas fa-archive"></i> Generate Toolkit
                 </a>
+            </div>
+        </section>
+
+        <!-- MAC & IP Address Changer Section -->
+        <section class="tools-section" id="network-tools">
+            <h2><i class="fas fa-network-wired"></i> MAC & IP Address Changer</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.9rem;">
+                <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i>
+                <strong>Legal Warning:</strong> These tools are for educational and legitimate network administration purposes only.
+                Unauthorized use may violate laws and terms of service. Always obtain proper authorization before use.
+            </p>
+
+            <div class="network-tools-grid">
+                <!-- MAC Address Changer -->
+                <div class="network-tool-card">
+                    <h3><i class="fas fa-ethernet"></i> MAC Address Spoofer</h3>
+                    <div class="tool-input-group">
+                        <label for="currentMac">Current MAC Address:</label>
+                        <input type="text" id="currentMac" readonly value="Detecting..." style="background: var(--background); border: 1px solid var(--border); color: var(--text-primary); padding: 0.5rem; font-family: 'Courier New', monospace;">
+                    </div>
+
+                    <div class="tool-input-group">
+                        <label for="newMac">New MAC Address:</label>
+                        <input type="text" id="newMac" placeholder="XX:XX:XX:XX:XX:XX" style="background: var(--background); border: 1px solid var(--border); color: var(--text-primary); padding: 0.5rem; font-family: 'Courier New', monospace;">
+                    </div>
+
+                    <div class="tool-buttons">
+                        <button class="network-btn" onclick="detectCurrentMac()">
+                            <i class="fas fa-search"></i> Detect Current
+                        </button>
+                        <button class="network-btn" onclick="generateRandomMac()">
+                            <i class="fas fa-random"></i> Generate Random
+                        </button>
+                        <button class="network-btn primary" onclick="changeMacAddress()">
+                            <i class="fas fa-exchange-alt"></i> Change MAC
+                        </button>
+                        <button class="network-btn" onclick="downloadMacScript()">
+                            <i class="fas fa-download"></i> Download Script
+                        </button>
+                    </div>
+
+                    <div id="macStatus" class="status-message"></div>
+                </div>
+
+                <!-- IP Address Changer -->
+                <div class="network-tool-card">
+                    <h3><i class="fas fa-globe"></i> IP Address Changer</h3>
+                    <div class="tool-input-group">
+                        <label for="currentIp">Current IP Address:</label>
+                        <input type="text" id="currentIp" readonly value="Detecting..." style="background: var(--background); border: 1px solid var(--border); color: var(--text-primary); padding: 0.5rem; font-family: 'Courier New', monospace;">
+                    </div>
+
+                    <div class="tool-input-group">
+                        <label for="newIp">New IP Address:</label>
+                        <input type="text" id="newIp" placeholder="192.168.1.XXX" style="background: var(--background); border: 1px solid var(--border); color: var(--text-primary); padding: 0.5rem; font-family: 'Courier New', monospace;">
+                    </div>
+
+                    <div class="tool-input-group">
+                        <label for="subnetMask">Subnet Mask:</label>
+                        <input type="text" id="subnetMask" placeholder="255.255.255.0" style="background: var(--background); border: 1px solid var(--border); color: var(--text-primary); padding: 0.5rem; font-family: 'Courier New', monospace;">
+                    </div>
+
+                    <div class="tool-buttons">
+                        <button class="network-btn" onclick="detectCurrentIp()">
+                            <i class="fas fa-search"></i> Detect Current
+                        </button>
+                        <button class="network-btn" onclick="generateRandomIp()">
+                            <i class="fas fa-random"></i> Generate Random
+                        </button>
+                        <button class="network-btn primary" onclick="changeIpAddress()">
+                            <i class="fas fa-exchange-alt"></i> Change IP
+                        </button>
+                        <button class="network-btn" onclick="downloadIpScript()">
+                            <i class="fas fa-download"></i> Download Script
+                        </button>
+                    </div>
+
+                    <div id="ipStatus" class="status-message"></div>
+                </div>
+            </div>
+
+            <!-- Network Tools Instructions -->
+            <div class="network-instructions">
+                <h3><i class="fas fa-book"></i> How to Use:</h3>
+                <div class="instruction-steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <span>Detect your current MAC/IP address</span>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <span>Generate a random address or enter custom one</span>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <span>Apply the changes (requires admin privileges)</span>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <span>Restart network adapter if necessary</span>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -595,6 +881,324 @@ python process_w_blacklists.py
                 document.addEventListener('keydown', e=> { if(e.key==='Escape') menu.classList.remove('open'); });
             }
         })();
+
+        // Network Tools Functionality
+        class NetworkTools {
+            constructor() {
+                this.macStatus = document.getElementById('macStatus');
+                this.ipStatus = document.getElementById('ipStatus');
+                this.currentMacInput = document.getElementById('currentMac');
+                this.newMacInput = document.getElementById('newMac');
+                this.currentIpInput = document.getElementById('currentIp');
+                this.newIpInput = document.getElementById('newIp');
+                this.subnetMaskInput = document.getElementById('subnetMask');
+
+                this.init();
+            }
+
+            init() {
+                console.log('Initializing Network Tools...');
+                this.detectCurrentMac();
+                this.detectCurrentIp();
+            }
+
+            // MAC Address Functions
+            async detectCurrentMac() {
+                try {
+                    this.showStatus('macStatus', 'Detecting MAC address...', 'info');
+
+                    // In a real implementation, this would require native system access
+                    // For demo purposes, we'll simulate detection
+                    const simulatedMac = this.generateRandomMac();
+                    this.currentMacInput.value = simulatedMac;
+
+                    this.showStatus('macStatus', 'MAC address detected (simulated)', 'success');
+                } catch (error) {
+                    console.error('Error detecting MAC:', error);
+                    this.showStatus('macStatus', 'Failed to detect MAC address', 'error');
+                }
+            }
+
+            generateRandomMac() {
+                const hexDigits = '0123456789ABCDEF';
+                let mac = '';
+
+                // Generate 6 pairs of hex digits separated by colons
+                for (let i = 0; i < 6; i++) {
+                    if (i > 0) mac += ':';
+                    mac += hexDigits[Math.floor(Math.random() * 16)];
+                    mac += hexDigits[Math.floor(Math.random() * 16)];
+                }
+
+                return mac;
+            }
+
+            async changeMacAddress() {
+                const newMac = this.newMacInput.value.trim();
+
+                if (!newMac) {
+                    this.showStatus('macStatus', 'Please enter a MAC address', 'error');
+                    return;
+                }
+
+                if (!this.validateMacAddress(newMac)) {
+                    this.showStatus('macStatus', 'Invalid MAC address format (XX:XX:XX:XX:XX:XX)', 'error');
+                    return;
+                }
+
+                try {
+                    this.showStatus('macStatus', 'Changing MAC address...', 'info');
+
+                    // In a real implementation, this would require system-level commands
+                    // For demo purposes, we'll simulate the change
+                    await this.simulateNetworkChange();
+
+                    this.currentMacInput.value = newMac;
+                    this.newMacInput.value = '';
+                    this.showStatus('macStatus', 'MAC address changed successfully (simulated)', 'success');
+
+                } catch (error) {
+                    console.error('Error changing MAC:', error);
+                    this.showStatus('macStatus', 'Failed to change MAC address', 'error');
+                }
+            }
+
+            validateMacAddress(mac) {
+                const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
+                return macRegex.test(mac);
+            }
+
+            // IP Address Functions
+            async detectCurrentIp() {
+                try {
+                    this.showStatus('ipStatus', 'Detecting IP address...', 'info');
+
+                    // Get current IP using a public API
+                    const response = await fetch('https://api.ipify.org?format=json');
+                    const data = await response.json();
+
+                    this.currentIpInput.value = data.ip;
+                    this.showStatus('ipStatus', 'IP address detected', 'success');
+
+                } catch (error) {
+                    console.error('Error detecting IP:', error);
+                    // Fallback to simulated IP
+                    this.currentIpInput.value = '192.168.1.100';
+                    this.showStatus('ipStatus', 'Using simulated IP address', 'info');
+                }
+            }
+
+            generateRandomIp() {
+                // Generate a random private IP address
+                const octets = [
+                    Math.floor(Math.random() * 254) + 1, // 1-254
+                    Math.floor(Math.random() * 254) + 1, // 1-254
+                    Math.floor(Math.random() * 254) + 1, // 1-254
+                    Math.floor(Math.random() * 254) + 1  // 1-254
+                ];
+
+                const ip = octets.join('.');
+                this.newIpInput.value = ip;
+
+                // Suggest common subnet mask
+                if (!this.subnetMaskInput.value) {
+                    this.subnetMaskInput.value = '255.255.255.0';
+                }
+            }
+
+            async changeIpAddress() {
+                const newIp = this.newIpInput.value.trim();
+                const subnetMask = this.subnetMaskInput.value.trim();
+
+                if (!newIp) {
+                    this.showStatus('ipStatus', 'Please enter an IP address', 'error');
+                    return;
+                }
+
+                if (!subnetMask) {
+                    this.showStatus('ipStatus', 'Please enter a subnet mask', 'error');
+                    return;
+                }
+
+                if (!this.validateIpAddress(newIp)) {
+                    this.showStatus('ipStatus', 'Invalid IP address format', 'error');
+                    return;
+                }
+
+                try {
+                    this.showStatus('ipStatus', 'Changing IP address...', 'info');
+
+                    // In a real implementation, this would require system-level commands
+                    // For demo purposes, we'll simulate the change
+                    await this.simulateNetworkChange();
+
+                    this.currentIpInput.value = newIp;
+                    this.newIpInput.value = '';
+                    this.showStatus('ipStatus', 'IP address changed successfully (simulated)', 'success');
+
+                } catch (error) {
+                    console.error('Error changing IP:', error);
+                    this.showStatus('ipStatus', 'Failed to change IP address', 'error');
+                }
+            }
+
+            validateIpAddress(ip) {
+                const ipRegex = /^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/;
+                return ipRegex.test(ip);
+            }
+
+            // Utility Functions
+            showStatus(elementId, message, type = 'info') {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.textContent = message;
+                    element.className = `status-message ${type}`;
+                }
+            }
+
+            async simulateNetworkChange() {
+                // Simulate network operation delay
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        resolve();
+                    }, 2000);
+                });
+            }
+
+            // Generate downloadable scripts
+            generateMacScript() {
+                const script = `# MAC Address Changer Script
+# This script demonstrates MAC address spoofing
+# WARNING: Use only for legitimate purposes
+
+#!/bin/bash
+
+# Function to change MAC address
+change_mac() {
+    local interface=$1
+    local new_mac=$2
+    
+    echo "Changing MAC address for $interface to $new_mac"
+    
+    # Bring interface down
+    sudo ifconfig $interface down
+    
+    # Change MAC address
+    sudo ifconfig $interface hw ether $new_mac
+    
+    # Bring interface up
+    sudo ifconfig $interface up
+    
+    echo "MAC address changed successfully"
+}
+
+# Usage example:
+# change_mac eth0 00:11:22:33:44:55
+`;
+
+                const blob = new Blob([script], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'mac_changer.sh';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            generateIpScript() {
+                const script = `# IP Address Changer Script
+# This script demonstrates IP address changing
+# WARNING: Use only for legitimate purposes
+
+#!/bin/bash
+
+# Function to change IP address
+change_ip() {
+    local interface=$1
+    local new_ip=$2
+    local subnet_mask=$3
+    
+    echo "Changing IP address for $interface to $new_ip/$subnet_mask"
+    
+    # Change IP address
+    sudo ifconfig $interface $new_ip netmask $subnet_mask
+    
+    echo "IP address changed successfully"
+}
+
+# Usage example:
+# change_ip eth0 192.168.1.100 255.255.255.0
+`;
+
+                const blob = new Blob([script], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'ip_changer.sh';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        // Initialize network tools when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initializing Network Tools...');
+            window.networkTools = new NetworkTools();
+        });
+
+        // Global functions for button onclick handlers
+        function detectCurrentMac() {
+            if (window.networkTools) {
+                window.networkTools.detectCurrentMac();
+            }
+        }
+
+        function generateRandomMac() {
+            if (window.networkTools) {
+                const mac = window.networkTools.generateRandomMac();
+                document.getElementById('newMac').value = mac;
+            }
+        }
+
+        function changeMacAddress() {
+            if (window.networkTools) {
+                window.networkTools.changeMacAddress();
+            }
+        }
+
+        function detectCurrentIp() {
+            if (window.networkTools) {
+                window.networkTools.detectCurrentIp();
+            }
+        }
+
+        function generateRandomIp() {
+            if (window.networkTools) {
+                window.networkTools.generateRandomIp();
+            }
+        }
+
+        function changeIpAddress() {
+            if (window.networkTools) {
+                window.networkTools.changeIpAddress();
+            }
+        }
+
+        function downloadMacScript() {
+            if (window.networkTools) {
+                window.networkTools.generateMacScript();
+            }
+        }
+
+        function downloadIpScript() {
+            if (window.networkTools) {
+                window.networkTools.generateIpScript();
+            }
+        }
     </script>
 </body>
 </html>
