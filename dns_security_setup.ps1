@@ -1,4 +1,42 @@
-# DNS Security Setup Tool - Windows P# Banner
+# DNS Security Setup Tool - Windows PowerShell Version
+# Windows DNS Security and Privacy Configuration
+# Author: XXMXLI Security Tools
+# WARNING: Use only for legitimate purposes and with proper authorization
+#
+# SECURITY WARNING: This system is actively monitored and protected.
+# Any unauthorized access attempts, network scanning, intrusion, or abusive activity 
+# will be logged and reported to the appropriate authorities. IP addresses and metadata 
+# may be retained and used for legal enforcement, in compliance with applicable laws.
+# By continuing, you acknowledge that you are authorized to use this system and that 
+# any misuse may result in account suspension, firewall bans, or prosecution under 
+# national and international law. Violators may be subject to civil and/or criminal 
+# penalties. Your access is being monitored.
+
+param(
+    [switch]$Help,
+    [switch]$Status,
+    [string]$Provider
+)
+
+# Configuration
+$ConfigDir = "$env:USERPROFILE\.dns_security"
+$BackupDir = "$ConfigDir\backups"
+$LogFile = "$ConfigDir\dns_security.log"
+
+# Create directories
+if (!(Test-Path $ConfigDir)) { New-Item -ItemType Directory -Path $ConfigDir -Force | Out-Null }
+if (!(Test-Path $BackupDir)) { New-Item -ItemType Directory -Path $BackupDir -Force | Out-Null }
+
+# Logging function
+function Write-Log {
+    param($Message, $Color = "White")
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $logEntry = "$timestamp - $Message"
+    Write-Host $Message -ForegroundColor $Color
+    Add-Content -Path $LogFile -Value $logEntry
+}
+
+# Banner
 function Show-Banner {
     Write-Host ""
     Write-Host " ██████╗ ███╗   ██╗███████╗    ███████╗███████╗ ██████╗" -ForegroundColor Cyan

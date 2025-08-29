@@ -1,4 +1,44 @@
-# Network Monitor - Windows PowerShell # Banner
+# Network Monitor - Windows PowerShell Version
+# Network Traffic Analysis and Monitoring Tool
+# Author: XXMXLI Security Tools
+# WARNING: Use only for legitimate purposes and with proper authorization
+#
+# SECURITY WARNING: This system is actively monitored and protected.
+# Any unauthorized access attempts, network scanning, intrusion, or abusive activity 
+# will be logged and reported to the appropriate authorities. IP addresses and metadata 
+# may be retained and used for legal enforcement, in compliance with applicable laws.
+# By continuing, you acknowledge that you are authorized to use this system and that 
+# any misuse may result in account suspension, firewall bans, or prosecution under 
+# national and international law. Violators may be subject to civil and/or criminal 
+# penalties. Your access is being monitored.
+
+param(
+    [switch]$Help,
+    [switch]$Monitor,
+    [int]$Duration = 60
+)
+
+# Configuration
+$ConfigDir = "$env:USERPROFILE\.network_monitor"
+$LogDir = "$ConfigDir\logs"
+$ReportDir = "$ConfigDir\reports"
+$LogFile = "$ConfigDir\network_monitor.log"
+
+# Create directories
+if (!(Test-Path $ConfigDir)) { New-Item -ItemType Directory -Path $ConfigDir -Force | Out-Null }
+if (!(Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir -Force | Out-Null }
+if (!(Test-Path $ReportDir)) { New-Item -ItemType Directory -Path $ReportDir -Force | Out-Null }
+
+# Logging function
+function Write-Log {
+    param($Message, $Color = "White")
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $logEntry = "$timestamp - $Message"
+    Write-Host $Message -ForegroundColor $Color
+    Add-Content -Path $LogFile -Value $logEntry
+}
+
+# Banner
 function Show-Banner {
     Write-Host ""
     Write-Host " ███╗   ██╗███████╗████████╗██╗    ██╗ ██████╗ ██████╗ ██╗  ██╗" -ForegroundColor Cyan

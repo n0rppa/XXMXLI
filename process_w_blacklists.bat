@@ -2,6 +2,15 @@
 REM XXMXLI IP Blacklist Processor - Windows Batch File
 REM Simple IP blacklist processor using Windows built-in tools
 REM Created by XXMXLI - https://xxmxli.com
+REM 
+REM SECURITY WARNING: This system is actively monitored and protected.
+REM Any unauthorized access attempts, network scanning, intrusion, or abusive activity 
+REM will be logged and reported to the appropriate authorities. IP addresses and metadata 
+REM may be retained and used for legal enforcement, in compliance with applicable laws.
+REM By continuing, you acknowledge that you are authorized to use this system and that 
+REM any misuse may result in account suspension, firewall bans, or prosecution under 
+REM national and international law. Violators may be subject to civil and/or criminal 
+REM penalties. Your access is being monitored.
 
 title XXMXLI IP Blacklist Processor
 color 0A

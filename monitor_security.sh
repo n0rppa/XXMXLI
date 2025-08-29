@@ -4,6 +4,15 @@
 # XXMXLI IP BLOCKING MONITOR
 # ========================================
 # Monitor blocked IPs and security events
+#
+# SECURITY WARNING: This system is actively monitored and protected.
+# Any unauthorized access attempts, network scanning, intrusion, or abusive activity 
+# will be logged and reported to the appropriate authorities. IP addresses and metadata 
+# may be retained and used for legal enforcement, in compliance with applicable laws.
+# By continuing, you acknowledge that you are authorized to use this system and that 
+# any misuse may result in account suspension, firewall bans, or prosecution under 
+# national and international law. Violators may be subject to civil and/or criminal 
+# penalties. Your access is being monitored.
 
 echo "🛡️  XXMXLI IP Blocking Security Monitor"
 echo "======================================"
