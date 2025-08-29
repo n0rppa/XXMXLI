@@ -296,36 +296,6 @@
             transform: scale(1.05);
         }
 
-        /* Gallery Styles */
-        .grid-item {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            padding: 1rem;
-            transition: all 0.3s ease;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .grid-item:hover {
-            border-color: var(--accent);
-            box-shadow: 0 0 15px var(--accent);
-            transform: translateY(-5px);
-        }
-
-        .grid-item img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-            border: 1px solid var(--border);
-            cursor: pointer;
-        }
-
-        .grid-item:hover img {
-            transform: scale(1.05);
-            border-color: var(--accent);
-        }
-
         /* Image Modal/Lightbox */
         .image-modal {
             display: none;
@@ -382,7 +352,6 @@
             background: var(--card-bg);
             border-top: 1px solid var(--accent);
             color: var(--text-primary);
-            font-family: 'Courier New', monospace;
             text-align: center;
         }
 
@@ -390,7 +359,6 @@
             font-size: 1.2rem;
             color: var(--accent);
             margin-bottom: 8px;
-            text-shadow: 0 0 8px var(--accent);
             font-weight: bold;
         }
 
@@ -771,7 +739,6 @@
                 img.addEventListener('mouseleave', function() {
                     this.style.transform = 'scale(1)';
                 });
-            });
             });
             
             // Close modal functionality
