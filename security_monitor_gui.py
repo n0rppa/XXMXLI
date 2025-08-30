@@ -227,21 +227,19 @@ class SecurityMonitorGUI:
     def check_display(self):
         """Check if display is available for GUI"""
         try:
-            # Check if DISPLAY environment variable is set
-            if os.environ.get('DISPLAY'):
-                return True
-            
             # Check if we're on Windows (always has display)
             if platform.system() == 'Windows':
                 return True
-                
-            # Check if we can connect to X server
+            
+            # For Linux/Unix, try to actually create a test Tk instance
             try:
-                import subprocess
-                result = subprocess.run(['xset', 'q'], 
-                                      capture_output=True, timeout=5)
-                return result.returncode == 0
-            except:
+                import tkinter as tk_test
+                test_root = tk_test.Tk()
+                test_root.withdraw()  # Hide the test window
+                test_root.destroy()   # Clean up
+                return True
+            except Exception as e:
+                # If we can't create a Tk instance, display is not available
                 return False
                 
         except Exception:

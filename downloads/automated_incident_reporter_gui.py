@@ -39,17 +39,24 @@ except ImportError:
 
 class IncidentReporterGUI:
     def __init__(self):
-        # Check if display is available
+        # More comprehensive display check
         if not self.check_display():
             print("Error: No display available. Cannot run GUI application.")
             print("This appears to be a headless environment or X server is not running.")
             print("Use the command-line version instead: automated_incident_reporter.sh")
             sys.exit(1)
-            
-        self.root = tk.Tk()
-        self.root.title("XXMXLI Automated Incident Reporter")
-        self.root.geometry("800x600")
-        self.root.configure(bg='#1a1a1a')
+        
+        # Try to create the main window with error handling
+        try:
+            self.root = tk.Tk()
+            self.root.title("XXMXLI Automated Incident Reporter")
+            self.root.geometry("800x600")
+            self.root.configure(bg='#1a1a1a')
+        except Exception as e:
+            print(f"Error: Cannot create GUI window: {e}")
+            print("This appears to be a headless environment or X server is not accessible.")
+            print("Use the command-line version instead: automated_incident_reporter.sh")
+            sys.exit(1)
         
         # Color scheme
         self.colors = {
@@ -79,21 +86,20 @@ class IncidentReporterGUI:
     def check_display(self):
         """Check if display is available for GUI"""
         try:
-            # Check if DISPLAY environment variable is set
-            if os.environ.get('DISPLAY'):
-                return True
-            
             # Check if we're on Windows (always has display)
             if platform.system() == 'Windows':
                 return True
-                
-            # Check if we can connect to X server
+            
+            # For Linux/Unix, try to create and immediately destroy a test window
             try:
-                import subprocess
-                result = subprocess.run(['xset', 'q'], 
-                                      capture_output=True, timeout=5)
-                return result.returncode == 0
-            except:
+                import tkinter as tk_test
+                test_root = tk_test.Tk()
+                test_root.withdraw()  # Hide immediately
+                # Try to update to force any display errors
+                test_root.update_idletasks()
+                test_root.destroy()
+                return True
+            except Exception as e:
                 return False
                 
         except Exception:
