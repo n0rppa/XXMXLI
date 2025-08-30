@@ -15,18 +15,22 @@ include:
   - api/
   - data/
   - plugins/
+  - downloads/
 
-# Exclude unnecessary files
+# Exclude unnecessary files (but allow specific Python files to be downloaded)
 exclude:
   - README.md
   - README_Windows.md
   - VISITOR_TRACKING_README.md
-  - "*.py"
   - "*.bat"
   - "*.ps1"
   - process_w_blacklists.*
   - w/
   - XXMXLI/
+  - server.py
+  - dws.py
+  - update_gallery.py
+  - update_music.py
 
 # Prevent Jekyll from processing certain file types
 keep_files:
