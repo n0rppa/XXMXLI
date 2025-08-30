@@ -32,7 +32,7 @@
 
 set -euo pipefail
 
-# Configuration
+# Initialize variables
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_DIR="/var/log/security"
 REPORT_DIR="/var/log/security/reports"
@@ -40,7 +40,7 @@ CONFIG_FILE="/etc/security/incident_reporter.conf"
 EVIDENCE_DIR="/var/log/security/evidence"
 TEMP_DIR="/tmp/incident_reports"
 
-# Colors for output
+# Color definitions for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -50,8 +50,8 @@ CYAN='\033[0;36m'
 WHITE='\033[1;37m'
 NC='\033[0m' # No Color
 
-# Interactive mode flag
-INTERACTIVE_MODE=true
+# Default mode
+INTERACTIVE_MODE=false
 
 # Display welcome banner
 show_banner() {
@@ -125,11 +125,11 @@ quick_scan_and_report() {
     echo -e "${BLUE}[3/5]${NC} Scanning system logs..."
     sleep 1
     echo -e "${BLUE}[4/5]${NC} Collecting evidence..."
-    collect_evidence "$incident_id" "security_scan"
+    local evidence_file=$(collect_evidence "$incident_id" "security_scan")
     echo -e "${BLUE}[5/5]${NC} Generating report..."
     
     # Submit automatic report
-    submit_to_authorities "$incident_id" "AUTOMATED_SCAN" "Routine security scan detected potential issues" "medium"
+    report_incident "INTRUSION" 5 "Routine security scan detected potential issues" "auto" "$evidence_file"
     
     echo ""
     echo -e "${GREEN}✓ Scan complete! Report submitted to authorities.${NC}"
@@ -198,7 +198,7 @@ report_specific_incident() {
     
     incident_id=$(generate_incident_id)
     collect_evidence "$incident_id" "$incident_desc"
-    submit_to_authorities "$incident_id" "MANUAL_REPORT" "$incident_desc" "$severity"
+    report_incident "$incident_type" "$severity" "$incident_desc" "manual" "user_report"
     
     echo ""
     echo -e "${GREEN}✓ Incident reported successfully!${NC}"
@@ -511,8 +511,8 @@ check_root() {
     if [[ $EUID -ne 0 ]]; then
         echo -e "${YELLOW}This script requires root privileges. Attempting to elevate...${NC}"
         if command -v sudo >/dev/null 2>&1; then
-            echo -e "${BLUE}Re-running with sudo...${NC}"
-            exec sudo "$0" "$@"
+            echo -e "${BLUE}Re-running with sudo and preserving arguments: $*${NC}"
+            exec sudo bash "$0" "$@"
         else
             error_exit "This script must be run as root and sudo is not available"
         fi
@@ -1137,23 +1137,36 @@ batch_process() {
     local current_time=$(date +%s)
     local check_time=$((current_time - BATCH_REPORT_INTERVAL))
     
+    log "${YELLOW}Checking for incidents since $(date -d "@$check_time")${NC}"
+    
     # Check for failed login attempts
-    local failed_logins=$(journalctl --since="@$check_time" | grep -c "Failed password" || echo 0)
+    local failed_logins=$(journalctl --since="@$check_time" 2>/dev/null | grep -c "Failed password" 2>/dev/null || echo 0)
+    failed_logins=$(echo "$failed_logins" | tr -d '\n' | grep -o '[0-9]*' | head -1)
+    failed_logins=${failed_logins:-0}
+    log "${YELLOW}Found $failed_logins failed login attempts${NC}"
     if [[ $failed_logins -gt 10 ]]; then
         report_incident "INTRUSION" 5 "Multiple failed login attempts detected: $failed_logins attempts"
     fi
     
     # Check for port scans
-    local port_scans=$(journalctl --since="@$check_time" | grep -c "kernel.*IN.*OUT.*" || echo 0)
+    local port_scans=$(journalctl --since="@$check_time" 2>/dev/null | grep -c "kernel.*IN.*OUT.*" 2>/dev/null || echo 0)
+    port_scans=$(echo "$port_scans" | tr -d '\n' | grep -o '[0-9]*' | head -1)
+    port_scans=${port_scans:-0}
+    log "${YELLOW}Found $port_scans potential port scan indicators${NC}"
     if [[ $port_scans -gt 50 ]]; then
         report_incident "INTRUSION" 6 "Potential port scan detected: $port_scans blocked connections"
     fi
     
     # Check for DDoS indicators
-    local ddos_indicators=$(journalctl --since="@$check_time" | grep -c "nf_conntrack.*table full" || echo 0)
+    local ddos_indicators=$(journalctl --since="@$check_time" 2>/dev/null | grep -c "nf_conntrack.*table full" 2>/dev/null || echo 0)
+    ddos_indicators=$(echo "$ddos_indicators" | tr -d '\n' | grep -o '[0-9]*' | head -1)
+    ddos_indicators=${ddos_indicators:-0}
+    log "${YELLOW}Found $ddos_indicators DDoS indicators${NC}"
     if [[ $ddos_indicators -gt 0 ]]; then
         report_incident "DDOS" 7 "DDoS attack indicators detected: connection table full"
     fi
+    
+    log "${GREEN}Batch processing completed successfully${NC}"
 }
 
 # Enhanced setup monitoring with better error handling
@@ -1306,6 +1319,27 @@ main() {
             "--status")
                 show_status
                 ;;
+            "--batch")
+                batch_process
+                ;;
+            "--setup")
+                setup_monitoring
+                test_system
+                log "${GREEN}Setup completed successfully${NC}"
+                ;;
+            "--list-types")
+                echo "Available incident types:"
+                for type in "${!INCIDENT_TYPES[@]}"; do
+                    echo "  $type: ${INCIDENT_TYPES[$type]}"
+                done
+                ;;
+            "--daemon")
+                # Daemon mode for systemd
+                while true; do
+                    batch_process
+                    sleep 300
+                done
+                ;;
             "--help")
                 show_help
                 ;;
@@ -1318,48 +1352,6 @@ main() {
         INTERACTIVE_MODE=true
         show_interactive_menu
     fi
-}
-            fi
-            report_incident "$2" "$3" "$4" "${5:-unknown}" "${6:-auto}"
-            ;;
-        "--batch")
-            batch_process
-            ;;
-        "--monitor")
-            log "${BLUE}Starting continuous monitoring...${NC}"
-            while true; do
-                batch_process
-                sleep "$BATCH_REPORT_INTERVAL"
-            done
-            ;;
-        "--setup")
-            setup_monitoring
-            test_system
-            log "${GREEN}Setup completed successfully${NC}"
-            ;;
-        "--test")
-            test_system
-            ;;
-        "--list-types")
-            echo "Available incident types:"
-            for type in "${!INCIDENT_TYPES[@]}"; do
-                echo "  $type: ${INCIDENT_TYPES[$type]}"
-            done
-            ;;
-        "--daemon")
-            # Daemon mode for systemd
-            while true; do
-                batch_process
-                sleep 300
-            done
-            ;;
-        "--help"|"-h"|"")
-            show_usage
-            ;;
-        *)
-            error_exit "Unknown option: $1"
-            ;;
-    esac
 }
 
 # Run main function with all arguments
