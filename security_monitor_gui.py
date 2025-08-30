@@ -463,9 +463,11 @@ class SecurityMonitorGUI:
         config_options = tk.Frame(config_panel, bg=self.colors['panel'])
         config_options.pack(fill='x', padx=10, pady=10)
 
-        # Variables
-        self.monitor_interval_var = tk.StringVar(value='60')
-        self.alert_threshold_var = tk.StringVar(value='10')
+        # Variables (StringVar-backed for Spinbox compatibility on older Tk versions)
+        self.monitor_interval_var = tk.StringVar()
+        self.monitor_interval_var.set('60')
+        self.alert_threshold_var = tk.StringVar()
+        self.alert_threshold_var.set('10')
         self.auto_response = tk.BooleanVar(value=True)
 
         # Monitoring settings

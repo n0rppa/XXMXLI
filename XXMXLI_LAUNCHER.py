@@ -471,18 +471,41 @@ class XXMXLILauncher:
     
     def find_script(self, candidates):
         """Return absolute path to the first existing candidate script.
-        Candidates may be a string or a list of strings. Checked relative to base_dir.
+        Candidates may be a string or a list of strings. Checked in multiple likely locations
+        to avoid launching outdated copies when the launcher is moved.
         """
         if isinstance(candidates, str):
             candidates = [candidates]
+
+        # Build a list of search roots
+        roots = []
+        roots.append(self.base_dir)
+        # Common subdir for packaged downloads
+        roots.append(os.path.join(self.base_dir, 'lataukset'))
+        # If user placed launcher on Desktop, prefer sibling 'kotisivu' repo
+        roots.append(os.path.normpath(os.path.join(self.base_dir, 'kotisivu')))
+        roots.append(os.path.normpath(os.path.join(self.base_dir, '..', 'kotisivu')))
+
+        # De-duplicate while preserving order
+        seen = set()
+        unique_roots = []
+        for r in roots:
+            if r not in seen:
+                seen.add(r)
+                unique_roots.append(r)
+
+        # Absolute candidate provided takes precedence
         for name in candidates:
-            # If absolute path
             if os.path.isabs(name) and os.path.isfile(name):
                 return name
-            # Direct relative path
-            path = os.path.join(self.base_dir, name)
-            if os.path.isfile(path):
-                return path
+
+        # Search through roots for each candidate
+        for root in unique_roots:
+            for name in candidates:
+                path = os.path.join(root, name)
+                if os.path.isfile(path):
+                    return path
+
         return None
 
     def launch_security_monitor(self):
@@ -495,6 +518,11 @@ class XXMXLILauncher:
             self.error("Security monitor script not found in launcher directory")
             input("Press Enter to return to menu...")
             return
+        # Log exact script we will launch for transparency
+        try:
+            print(f"Launching security monitor from: {script}")
+        except Exception:
+            pass
         self.launch_script(script, 'Advanced Security Monitoring System')
     
     def launch_health_check(self):
