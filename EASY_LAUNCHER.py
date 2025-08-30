@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 ================================================================
 XXMXLI INCIDENT REPORTER - DOUBLE-CLICK LAUNCHER (PYTHON)
@@ -12,11 +13,21 @@ import os
 import sys
 import subprocess
 import platform
-import tkinter as tk
-from tkinter import messagebox, simpledialog
+
+# Try to import tkinter, but make it optional
+try:
+    import tkinter as tk
+    from tkinter import messagebox, simpledialog
+    HAS_GUI = True
+except ImportError:
+    HAS_GUI = False
 
 def show_gui_launcher():
     """Show a simple GUI launcher for non-technical users"""
+    
+    if not HAS_GUI:
+        print("GUI not available - tkinter not installed")
+        return False
     
     # Create main window
     root = tk.Tk()
@@ -25,7 +36,7 @@ def show_gui_launcher():
     root.configure(bg='#001100')
     
     # Title
-    title_label = tk.Label(root, text="🚀 XXMXLI Incident Reporter", 
+    title_label = tk.Label(root, text="XXMXLI Incident Reporter", 
                           font=("Arial", 16, "bold"), 
                           fg="#00ff00", bg="#001100")
     title_label.pack(pady=20)
@@ -56,7 +67,7 @@ any suspicious activity to the appropriate authorities."""
                 # Run the Python incident reporter
                 subprocess.run([sys.executable, "automated_incident_reporter.py"], 
                              check=True, cwd=os.path.dirname(__file__))
-                messagebox.showinfo("Success", "✅ Security monitoring has been set up!\n"
+                messagebox.showinfo("Success", "Security monitoring has been set up!\n"
                                               "Your system is now protected.")
             except subprocess.CalledProcessError as e:
                 messagebox.showerror("Error", f"Failed to set up monitoring:\n{e}")
@@ -94,7 +105,7 @@ any suspicious activity to the appropriate authorities."""
             result = subprocess.run(cmd, check=True, capture_output=True, text=True,
                                   cwd=os.path.dirname(__file__))
             
-            messagebox.showinfo("Success", f"✅ Incident reported successfully!\n\n{result.stdout}")
+            messagebox.showinfo("Success", f"Incident reported successfully!\n\n{result.stdout}")
         except subprocess.CalledProcessError as e:
             messagebox.showerror("Error", f"Failed to report incident:\n{e}")
         except FileNotFoundError:
@@ -105,17 +116,17 @@ any suspicious activity to the appropriate authorities."""
     def show_help():
         help_text = """XXMXLI Incident Reporter Help
 
-🛡️ Setup Monitoring: Automatically configures your system to monitor
+Setup Monitoring: Automatically configures your system to monitor
    for security threats and report them to authorities.
 
-📞 Report Incident: Manually report a security incident that you've
+Report Incident: Manually report a security incident that you've
    discovered or experienced.
 
 This tool reports incidents to:
-• FBI Internet Crime Complaint Center (IC3)
-• CISA (Cybersecurity & Infrastructure Security Agency)
-• Europol European Cybercrime Centre (EC3)
-• National Computer Emergency Response Teams
+* FBI Internet Crime Complaint Center (IC3)
+* CISA (Cybersecurity & Infrastructure Security Agency)
+* Europol European Cybercrime Centre (EC3)
+* National Computer Emergency Response Teams
 
 All reports are encrypted and sent through secure channels."""
         
@@ -125,21 +136,21 @@ All reports are encrypted and sent through secure channels."""
     button_frame = tk.Frame(root, bg="#001100")
     button_frame.pack(pady=30)
     
-    setup_btn = tk.Button(button_frame, text="🛡️ Set Up Monitoring", 
+    setup_btn = tk.Button(button_frame, text="Set Up Monitoring", 
                          command=setup_monitoring,
                          font=("Arial", 12, "bold"),
                          bg="#00aa00", fg="white",
                          width=20, height=2)
     setup_btn.pack(pady=10)
     
-    report_btn = tk.Button(button_frame, text="📞 Report Incident", 
+    report_btn = tk.Button(button_frame, text="Report Incident", 
                           command=report_incident,
                           font=("Arial", 12),
                           bg="#aa6600", fg="white",
                           width=20, height=2)
     report_btn.pack(pady=10)
     
-    help_btn = tk.Button(button_frame, text="❓ Help", 
+    help_btn = tk.Button(button_frame, text="Help", 
                         command=show_help,
                         font=("Arial", 10),
                         bg="#666666", fg="white",
@@ -147,49 +158,96 @@ All reports are encrypted and sent through secure channels."""
     help_btn.pack(pady=5)
     
     # Warning label
-    warning_label = tk.Label(root, text="⚠️ This system reports incidents to law enforcement", 
+    warning_label = tk.Label(root, text="WARNING: This system reports incidents to law enforcement", 
                            font=("Arial", 8), 
                            fg="#ffaa00", bg="#001100")
     warning_label.pack(side="bottom", pady=10)
     
     # Start the GUI
     root.mainloop()
+    return True
+
+def show_cli_launcher():
+    """Show command-line launcher for systems without GUI"""
+    print("XXMXLI Incident Reporter - Cross-Platform Launcher")
+    print("====================================================")
+    print()
+    print("Choose an option:")
+    print("1. Set up automatic security monitoring")
+    print("2. Report a security incident")
+    print("3. Show help")
+    print("0. Exit")
+    print()
+    
+    while True:
+        choice = input("Enter choice [0-3]: ").strip()
+        
+        if choice == '0':
+            print("Goodbye!")
+            return
+        elif choice == '1':
+            print("Setting up security monitoring...")
+            try:
+                subprocess.run([sys.executable, "automated_incident_reporter.py"], check=True)
+                print("Security monitoring set up successfully!")
+            except subprocess.CalledProcessError as e:
+                print(f"Error setting up monitoring: {e}")
+            except FileNotFoundError:
+                print("Error: automated_incident_reporter.py not found!")
+            return
+        elif choice == '2':
+            print("Manual incident reporting...")
+            incident_type = input("Incident type (malware/intrusion/ddos/phishing/other): ").strip()
+            severity = input("Severity (1-10): ").strip()
+            description = input("Description: ").strip()
+            
+            try:
+                cmd = [sys.executable, "automated_incident_reporter.py", "report",
+                       "--type", incident_type.upper(),
+                       "--severity", severity,
+                       "--description", description]
+                subprocess.run(cmd, check=True)
+                print("Incident reported successfully!")
+            except subprocess.CalledProcessError as e:
+                print(f"Error reporting incident: {e}")
+            except FileNotFoundError:
+                print("Error: automated_incident_reporter.py not found!")
+            return
+        elif choice == '3':
+            print("\nXXMXLI Incident Reporter Help")
+            print("=============================")
+            print("This tool helps you report security incidents to authorities.")
+            print("It can automatically monitor your system or manually report incidents.")
+            print("Reports are sent to FBI IC3, CISA, Europol EC3, and national CERTs.")
+            print()
+        else:
+            print("Invalid choice. Please enter 0-3.")
 
 def main():
     """Main launcher function"""
     script_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(script_dir)
     
-    print("🚀 XXMXLI Incident Reporter - Cross-Platform Launcher")
+    print("XXMXLI Incident Reporter - Cross-Platform Launcher")
     print("====================================================")
     print()
     
-    # Check if we're in a terminal or GUI environment
-    if len(sys.argv) > 1 and sys.argv[1] == "--gui":
-        # Force GUI mode
+    # Check command line arguments
+    if len(sys.argv) > 1 and sys.argv[1] == "--cli":
+        show_cli_launcher()
+        return
+    
+    # Try GUI first if available
+    if HAS_GUI:
         try:
-            show_gui_launcher()
-        except ImportError:
-            print("GUI mode not available (tkinter not installed)")
+            if show_gui_launcher():
+                return
+        except Exception as e:
+            print(f"GUI failed: {e}")
             print("Falling back to command-line mode...")
-            subprocess.run([sys.executable, "automated_incident_reporter.py"])
-    elif os.environ.get("DISPLAY") and platform.system() != "Windows":
-        # Linux/Unix with GUI
-        try:
-            show_gui_launcher()
-        except Exception:
-            # Fallback to command-line
-            subprocess.run([sys.executable, "automated_incident_reporter.py"])
-    elif platform.system() == "Windows":
-        # Windows - try GUI first
-        try:
-            show_gui_launcher()
-        except Exception:
-            # Fallback to command-line
-            subprocess.run([sys.executable, "automated_incident_reporter.py"])
-    else:
-        # Terminal mode
-        subprocess.run([sys.executable, "automated_incident_reporter.py"])
+    
+    # Fallback to CLI
+    show_cli_launcher()
 
 if __name__ == "__main__":
     main()
