@@ -1,0 +1,70 @@
+{
+  "last_update": "2025-08-03T10:52:21.380716",
+  "total_blocked_ips": 1795104,
+  "source_files": 240,
+  "top_sources": [
+    [
+      "BlokeD/firehol-mirror-main/stopforumspam_365d.ipset",
+      533186
+    ],
+    [
+      "BlokeD/firehol-mirror-main/stopforumspam_180d.ipset",
+      316791
+    ],
+    [
+      "BlokeD/malicious-ip-main/full-300k-ab.txt",
+      300000
+    ],
+    [
+      "BlokeD/malicious-ip-main/full-300k-aa.txt",
+      299999
+    ],
+    [
+      "BlokeD/firehol-mirror-main/stopforumspam_90d.ipset",
+      178862
+    ],
+    [
+      "BlokeD/firehol-mirror-main/stopforumspam.ipset",
+      178798
+    ],
+    [
+      "BlokeD/ipsum-master/ipsum.txt",
+      169183
+    ],
+    [
+      "BlokeD/ipsum-master/levels/1.txt",
+      169183
+    ],
+    [
+      "BlokeD/ThreatFox-IOC-IPs-main/ips.txt",
+      135193
+    ],
+    [
+      "BlokeD/malicious-ip-main/full-ac.txt",
+      131072
+    ]
+  ],
+  "errors_count": 0,
+  "distribution": {
+    "117": 77172,
+    "103": 54451,
+    "45": 51339,
+    "59": 39244,
+    "185": 36836,
+    "42": 20892,
+    "154": 20760,
+    "47": 20732,
+    "1": 20540,
+    "113": 20184,
+    "111": 20039,
+    "49": 19867,
+    "104": 19616,
+    "182": 19473,
+    "114": 19411,
+    "223": 19144,
+    "5": 18625,
+    "61": 18089,
+    "43": 17435,
+    "178": 16744
+  }
+}

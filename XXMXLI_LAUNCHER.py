@@ -30,6 +30,7 @@ import subprocess
 import signal
 import time
 import getpass
+import platform
 from datetime import datetime
 
 import os
@@ -79,10 +80,12 @@ class XXMXLILauncher:
     def __init__(self):
         self.running = True
         self.admin_authenticated = False
+        self.base_dir = os.path.dirname(os.path.abspath(__file__))
+        self.mode = "unknown"
         self.setup_signal_handlers()
         self.check_environment()
         self.check_admin_credentials()
-        
+
     def setup_signal_handlers(self):
         """Setup graceful shutdown on Ctrl+C"""
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -95,25 +98,15 @@ class XXMXLILauncher:
         sys.exit(0)
     
     def check_admin_credentials(self):
-        """Check for admin credentials file and validate access"""
-        admin_file = "ADMIN_CREDENTIALS_SECURE.txt"
-        
-        if not os.path.isfile(admin_file):
+        """Check for admin credentials file presence (no website dependency)"""
+        creds_file = os.path.join(self.base_dir, "ADMIN_CREDENTIALS_SECURE.txt")
+        if not os.path.isfile(creds_file):
             self.warn("Admin features disabled - no credentials file found")
             return
-            
-        # Check if user is in admin directory (basic security check)
-        if os.path.basename(os.getcwd()) == "admin":
-            self.admin_authenticated = True
-            self.success("Admin mode enabled")
-        elif os.path.isfile("admin/.htaccess"):
-            # Check if running from root directory with admin protection
-            self.info("Admin features require proper authentication")
-            choice = input(f"{Colors.YELLOW}Access admin features? [y/N]: {Colors.NC}").strip().lower()
-            if choice == 'y':
-                self.authenticate_admin()
-        else:
-            self.info("Running in public mode - admin features disabled")
+        self.info("Admin features require proper authentication")
+        choice = input(f"{Colors.YELLOW}Access admin features? [y/N]: {Colors.NC}").strip().lower()
+        if choice == 'y':
+            self.authenticate_admin()
     
     def authenticate_admin(self):
         """Enhanced admin authentication with username/password"""
@@ -145,7 +138,7 @@ class XXMXLILauncher:
                     return False
                 
                 # Check credentials against stored file (format: username:password)
-                creds_file = os.path.join(os.path.dirname(__file__), 'ADMIN_CREDENTIALS_SECURE.txt')
+                creds_file = os.path.join(self.base_dir, 'ADMIN_CREDENTIALS_SECURE.txt')
                 if not os.path.exists(creds_file):
                     self.error("Admin credentials file not found - contact system administrator")
                     input("Press Enter to continue...")
@@ -186,8 +179,9 @@ class XXMXLILauncher:
                 admin_key = getpass.getpass(f"{Colors.CYAN}Enter admin access key: {Colors.NC}")
                 
                 # Check against credentials file
-                if os.path.isfile("ADMIN_CREDENTIALS_SECURE.txt"):
-                    with open("ADMIN_CREDENTIALS_SECURE.txt", "r") as f:
+                creds_file = os.path.join(self.base_dir, "ADMIN_CREDENTIALS_SECURE.txt")
+                if os.path.isfile(creds_file):
+                    with open(creds_file, "r") as f:
                         stored_content = f.read().strip()
                         # If it's username:password format, use the password part
                         if ':' in stored_content:
@@ -225,15 +219,14 @@ class XXMXLILauncher:
             return False
     
     def check_environment(self):
-        """Verify we're in the correct XXMXLI directory"""
-        if not os.path.isfile('index.html'):
-            self.error("Please run this launcher from the XXMXLI root directory")
-            print(f"\n{Colors.CYAN}Expected directory structure:{Colors.NC}")
-            print("  - index.html (main website)")
-            print("  - admin/ directory")
-            print("  - assets/ directory")
-            print("  - XXMXLI scripts")
-            sys.exit(1)
+        """Detect environment and set mode; do not require website directory"""
+        # If an index.html is alongside, we are in website mode; otherwise standalone
+        if os.path.isfile(os.path.join(self.base_dir, 'index.html')):
+            self.mode = 'website'
+            self.info("Website mode detected (index.html found)")
+        else:
+            self.mode = 'standalone'
+            self.info("Standalone mode detected (no website directory required)")
     
     def log(self, message):
         """Log message with timestamp"""
@@ -285,7 +278,7 @@ class XXMXLILauncher:
         """Show quick system status"""
         print(f"{Colors.CYAN}{Symbols.ARROW} System Status:{Colors.NC}")
         
-        # Check server status
+        # Check server status (optional)
         try:
             import requests
             response = requests.get('http://localhost:8000', timeout=2)
@@ -293,17 +286,25 @@ class XXMXLILauncher:
                 self.success("Development server: RUNNING")
             else:
                 self.warn("Development server: RESPONDING (HTTP {})".format(response.status_code))
-        except:
+        except Exception:
             self.warn("Development server: NOT RUNNING")
         
-        # Check security status
-        if os.path.isfile('.htaccess'):
-            if 'XXMXLI' in open('.htaccess').read():
-                self.success("Security blocking: ACTIVE")
+        # Security status (best-effort, no website requirement)
+        if self.mode == 'website':
+            htaccess_path = os.path.join(self.base_dir, '.htaccess')
+            if os.path.isfile(htaccess_path):
+                try:
+                    content = open(htaccess_path, 'r', errors='ignore').read()
+                    if 'XXMXLI' in content:
+                        self.success("Security blocking: ACTIVE")
+                    else:
+                        self.warn("Security blocking: BASIC")
+                except Exception:
+                    self.warn("Security blocking: UNKNOWN")
             else:
-                self.warn("Security blocking: BASIC")
+                self.error("Security blocking: INACTIVE")
         else:
-            self.error("Security blocking: INACTIVE")
+            self.info("Security blocking: N/A (standalone mode)")
         
         print()
     
@@ -468,13 +469,44 @@ class XXMXLILauncher:
         print()
         input("Press Enter to return to menu...")
     
+    def find_script(self, candidates):
+        """Return absolute path to the first existing candidate script.
+        Candidates may be a string or a list of strings. Checked relative to base_dir.
+        """
+        if isinstance(candidates, str):
+            candidates = [candidates]
+        for name in candidates:
+            # If absolute path
+            if os.path.isabs(name) and os.path.isfile(name):
+                return name
+            # Direct relative path
+            path = os.path.join(self.base_dir, name)
+            if os.path.isfile(path):
+                return path
+        return None
+
     def launch_security_monitor(self):
         """Launch the security monitoring system"""
-        self.launch_script('./monitor_security.sh', 'Advanced Security Monitoring System')
+        # Prefer GUI if present, otherwise CLI
+        script = self.find_script(['security_monitor_gui.py', 'monitor_security.sh', 'security_monitor.py'])
+        if not script and platform.system() == 'Windows':
+            script = self.find_script(['monitor_security.ps1'])
+        if not script:
+            self.error("Security monitor script not found in launcher directory")
+            input("Press Enter to return to menu...")
+            return
+        self.launch_script(script, 'Advanced Security Monitoring System')
     
     def launch_health_check(self):
         """Launch the health check system"""
-        self.launch_script('./health-check.sh', 'Comprehensive System Health Monitor')
+        script = self.find_script(['health_check_gui.py', 'health-check.sh', 'health_check.py'])
+        if not script and platform.system() == 'Windows':
+            script = self.find_script(['health_check.ps1'])
+        if not script:
+            self.error("Health check script not found in launcher directory")
+            input("Press Enter to return to menu...")
+            return
+        self.launch_script(script, 'Comprehensive System Health Monitor')
     
     def launch_visitor_analytics(self):
         """Launch visitor analytics"""
@@ -509,16 +541,26 @@ class XXMXLILauncher:
     
     def launch_ip_deployment(self):
         """Launch IP blocking deployment"""
-        self.launch_script('./deploy_ip_blocking.sh', 'IP Blocking Deployment System')
+        script = self.find_script(['ip_blocking_gui.py', 'deploy_ip_blocking.sh'])
+        if not script and platform.system() == 'Windows':
+            script = self.find_script(['deploy_ip_blocking.ps1'])
+        if not script:
+            self.error("IP blocking deployment script not found in launcher directory")
+            input("Press Enter to return to menu...")
+            return
+        self.launch_script(script, 'IP Blocking Deployment System')
     
     def launch_incident_reporter(self):
         """Launch the incident reporting system"""
-        script_path = './XXMXLI/automated_incident_reporter.sh'
-        if os.path.isfile(script_path):
-            self.launch_script(script_path, 'Automated Incident Reporter')
-        else:
-            self.error("Incident reporter not found. Please ensure XXMXLI directory exists.")
+        candidates = ['automated_incident_reporter_gui.py', 'automated_incident_reporter.sh', 'automated_incident_reporter.py']
+        if platform.system() == 'Windows':
+            candidates = ['automated_incident_reporter_gui.py', 'automated_incident_reporter.ps1', 'automated_incident_reporter.py']
+        script = self.find_script(candidates)
+        if not script:
+            self.error("Incident reporter not found in launcher directory")
             input("Press Enter to continue...")
+            return
+        self.launch_script(script, 'Automated Incident Reporter')
     
     def launch_server_management(self):
         """Launch server management interface"""
@@ -539,7 +581,8 @@ class XXMXLILauncher:
         if choice == '1':
             self.info("Starting development server on http://localhost:8000")
             try:
-                subprocess.run([sys.executable, 'server.py'], check=False)
+                server_path = os.path.join(self.base_dir, 'server.py')
+                subprocess.run([sys.executable, server_path], check=False)
             except KeyboardInterrupt:
                 self.info("Server stopped by user")
         elif choice == '2':
@@ -560,11 +603,21 @@ class XXMXLILauncher:
     
     def launch_music_manager(self):
         """Launch music library manager"""
-        self.launch_script('./update_music.py', 'Music Library Manager')
+        script = self.find_script(['update_music.py'])
+        if not script:
+            self.error("Music manager script not found in launcher directory")
+            input("Press Enter to return to menu...")
+            return
+        self.launch_script(script, 'Music Library Manager')
     
     def launch_gallery_manager(self):
         """Launch photo gallery manager"""
-        self.launch_script('./update_gallery.py', 'Photo Gallery Manager')
+        script = self.find_script(['update_gallery.py'])
+        if not script:
+            self.error("Photo gallery manager script not found in launcher directory")
+            input("Press Enter to return to menu...")
+            return
+        self.launch_script(script, 'Photo Gallery Manager')
     
     def launch_content_updates(self):
         """Launch content update system"""
@@ -635,9 +688,9 @@ class XXMXLILauncher:
         
         if choice == '1':
             self.info("Checking database status...")
-            if os.path.isfile('data/visitors.json'):
+            if os.path.isfile(os.path.join(self.base_dir, 'data', 'visitors.json')):
                 self.success("Visitor database is available")
-            if os.path.isfile('data/daily_stats.json'):
+            if os.path.isfile(os.path.join(self.base_dir, 'data', 'daily_stats.json')):
                 self.success("Statistics database is available")
         elif choice == '2':
             self.info("Optimizing database...")
@@ -677,7 +730,17 @@ class XXMXLILauncher:
             if confirm == 'EMERGENCY':
                 self.critical("Activating emergency lockdown...")
                 # Launch emergency lockdown
-                subprocess.run(['bash', './monitor_security.sh', '--emergency'], check=False)
+                script = self.find_script(['monitor_security.sh'])
+                if script:
+                    subprocess.run(['bash', script, '--emergency'], check=False)
+                elif platform.system() == 'Windows':
+                    ps_script = self.find_script(['monitor_security.ps1'])
+                    if ps_script:
+                        subprocess.run(['powershell', '-ExecutionPolicy', 'Bypass', '-File', ps_script, '--emergency'], check=False)
+                    else:
+                        self.error("Emergency script not found")
+                else:
+                    self.error("Emergency script not found")
             else:
                 self.warn("Emergency lockdown cancelled")
         elif choice == '2':

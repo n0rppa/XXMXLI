@@ -228,9 +228,9 @@ class IncidentReporterGUI:
         
         # Severity
         ttk.Label(fields_frame, text="Severity (1-10):", style='Info.TLabel').grid(row=1, column=0, sticky='w', pady=5)
-        self.severity = tk.Spinbox(fields_frame, from_=1, to=10, width=20)
+        self.severity_var = tk.StringVar(value='5')
+        self.severity = tk.Spinbox(fields_frame, from_=1, to=10, width=20, textvariable=self.severity_var)
         self.severity.grid(row=1, column=1, sticky='w', padx=10, pady=5)
-        self.severity.set('5')
         
         # Description
         ttk.Label(fields_frame, text="Description:", style='Info.TLabel').grid(row=2, column=0, sticky='nw', pady=5)
@@ -280,15 +280,15 @@ class IncidentReporterGUI:
         
         # Monitoring interval
         ttk.Label(settings_form, text="Monitoring Interval (seconds):", style='Info.TLabel').grid(row=0, column=0, sticky='w', pady=5)
-        self.monitoring_interval = tk.Spinbox(settings_form, from_=30, to=3600, width=20)
+        self.monitoring_interval_var = tk.StringVar(value='300')
+        self.monitoring_interval = tk.Spinbox(settings_form, from_=30, to=3600, width=20, textvariable=self.monitoring_interval_var)
         self.monitoring_interval.grid(row=0, column=1, sticky='w', padx=10, pady=5)
-        self.monitoring_interval.set('300')
         
         # Auto-report threshold
         ttk.Label(settings_form, text="Auto-Report Threshold:", style='Info.TLabel').grid(row=1, column=0, sticky='w', pady=5)
-        self.auto_threshold = tk.Spinbox(settings_form, from_=1, to=10, width=20)
+        self.auto_threshold_var = tk.StringVar(value='7')
+        self.auto_threshold = tk.Spinbox(settings_form, from_=1, to=10, width=20, textvariable=self.auto_threshold_var)
         self.auto_threshold.grid(row=1, column=1, sticky='w', padx=10, pady=5)
-        self.auto_threshold.set('7')
         
         # Notification settings
         ttk.Label(settings_form, text="Enable Notifications:", style='Info.TLabel').grid(row=2, column=0, sticky='w', pady=5)
@@ -383,12 +383,18 @@ class IncidentReporterGUI:
         while self.monitoring_active:
             try:
                 # Run the actual incident reporter script
-                result = subprocess.run([
-                    sys.executable, 
-                    'automated_incident_reporter.py',
-                    'monitor',
-                    '--interval', str(self.monitoring_interval.get())
-                ], capture_output=True, text=True, timeout=30)
+                result = subprocess.run(
+                    [
+                        sys.executable, 
+                        'automated_incident_reporter.py',
+                        'monitor',
+                        '--interval', str(self.monitoring_interval.get())
+                    ],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    universal_newlines=True,
+                    timeout=30
+                )
                 
                 if result.stdout:
                     self.root.after(0, self.update_monitoring_output, result.stdout)
@@ -437,7 +443,12 @@ class IncidentReporterGUI:
                 cmd.extend(['--evidence', file_path])
             
             # Run command
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = subprocess.run(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True
+            )
             
             if result.returncode == 0:
                 messagebox.showinfo("Success", "Incident report submitted successfully!")
@@ -474,11 +485,16 @@ class IncidentReporterGUI:
                               "Report critical security incident immediately?\n\n"
                               "This will trigger high-priority alerts to all agencies."):
             try:
-                result = subprocess.run([
-                    sys.executable,
-                    'automated_incident_reporter.py',
-                    'emergency'
-                ], capture_output=True, text=True)
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        'automated_incident_reporter.py',
+                        'emergency'
+                    ],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    universal_newlines=True
+                )
                 
                 if result.returncode == 0:
                     messagebox.showinfo("Emergency Report Sent",
@@ -491,11 +507,11 @@ class IncidentReporterGUI:
                 
     def clear_form(self):
         """Clear the incident reporting form"""
-        self.incident_type.set('MALWARE')
-        self.severity.set('5')
-        self.description.delete('1.0', 'end')
-        self.evidence_listbox.delete(0, 'end')
-        self.evidence_files.clear()
+    self.incident_type.set('MALWARE')
+    self.severity_var.set('5')
+    self.description.delete('1.0', 'end')
+    self.evidence_listbox.delete(0, 'end')
+    self.evidence_files.clear()
         
     def save_settings(self):
         """Save configuration settings"""

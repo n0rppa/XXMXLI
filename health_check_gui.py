@@ -799,9 +799,13 @@ class HealthCheckGUI:
     def _quick_health_check_worker(self):
         """Background worker for quick health check"""
         try:
-            result = subprocess.run([
-                'bash', 'health-check.sh', '1'
-            ], capture_output=True, text=True, timeout=30)
+            result = subprocess.run(
+                ['bash', 'health-check.sh', '1'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
+                timeout=30
+            )
             
             self.root.after(0, self._health_check_complete, result.stdout)
         except Exception as e:
@@ -831,9 +835,13 @@ class HealthCheckGUI:
         try:
             # Run multiple health check modules
             for i in range(1, 10):
-                result = subprocess.run([
-                    'bash', 'health-check.sh', str(i)
-                ], capture_output=True, text=True, timeout=60)
+                result = subprocess.run(
+                    ['bash', 'health-check.sh', str(i)],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    universal_newlines=True,
+                    timeout=60
+                )
                 
                 self.root.after(0, self._deep_scan_progress, f"Module {i}", result.stdout)
                 time.sleep(1)

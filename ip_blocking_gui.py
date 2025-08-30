@@ -524,8 +524,13 @@ class IPBlockingGUI:
         try:
             # Check if deployment script exists and get status
             if os.path.exists('deploy_ip_blocking.sh'):
-                result = subprocess.run(['bash', 'deploy_ip_blocking.sh', '8'], 
-                                      capture_output=True, text=True, timeout=10)
+                result = subprocess.run(
+                    ['bash', 'deploy_ip_blocking.sh', '8'],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    universal_newlines=True,
+                    timeout=10
+                )
                 
                 if 'DEPLOYED' in result.stdout.upper():
                     self.deployment_data['status'] = 'Deployed'
@@ -555,8 +560,13 @@ class IPBlockingGUI:
     def _system_check_worker(self):
         """Background worker for system check"""
         try:
-            result = subprocess.run(['bash', 'deploy_ip_blocking.sh', '1'], 
-                                  capture_output=True, text=True, timeout=30)
+            result = subprocess.run(
+                ['bash', 'deploy_ip_blocking.sh', '1'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
+                timeout=30
+            )
             
             self.root.after(0, self._system_check_complete, result.stdout)
         except Exception as e:
@@ -580,8 +590,13 @@ class IPBlockingGUI:
     def _backup_worker(self):
         """Background worker for backup"""
         try:
-            result = subprocess.run(['bash', 'deploy_ip_blocking.sh', '2'], 
-                                  capture_output=True, text=True, timeout=30)
+            result = subprocess.run(
+                ['bash', 'deploy_ip_blocking.sh', '2'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
+                timeout=30
+            )
             
             self.root.after(0, self._backup_complete, result.stdout)
         except Exception as e:
@@ -607,8 +622,13 @@ class IPBlockingGUI:
     def _deploy_worker(self):
         """Background worker for deployment"""
         try:
-            result = subprocess.run(['bash', 'deploy_ip_blocking.sh', '3'], 
-                                  capture_output=True, text=True, timeout=60)
+            result = subprocess.run(
+                ['bash', 'deploy_ip_blocking.sh', '3'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
+                timeout=60
+            )
             
             self.root.after(0, self._deploy_complete, result.stdout)
         except Exception as e:
@@ -633,8 +653,13 @@ class IPBlockingGUI:
     def _test_worker(self):
         """Background worker for testing"""
         try:
-            result = subprocess.run(['bash', 'deploy_ip_blocking.sh', '4'], 
-                                  capture_output=True, text=True, timeout=30)
+            result = subprocess.run(
+                ['bash', 'deploy_ip_blocking.sh', '4'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
+                timeout=30
+            )
             
             self.root.after(0, self._test_complete, result.stdout)
         except Exception as e:
@@ -657,8 +682,13 @@ class IPBlockingGUI:
     def _activate_worker(self):
         """Background worker for activation"""
         try:
-            result = subprocess.run(['bash', 'deploy_ip_blocking.sh', '5'], 
-                                  capture_output=True, text=True, timeout=30)
+            result = subprocess.run(
+                ['bash', 'deploy_ip_blocking.sh', '5'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
+                timeout=30
+            )
             
             self.root.after(0, self._activate_complete, result.stdout)
         except Exception as e:
@@ -681,8 +711,13 @@ class IPBlockingGUI:
     def _verify_worker(self):
         """Background worker for verification"""
         try:
-            result = subprocess.run(['bash', 'deploy_ip_blocking.sh', '6'], 
-                                  capture_output=True, text=True, timeout=30)
+            result = subprocess.run(
+                ['bash', 'deploy_ip_blocking.sh', '6'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
+                timeout=30
+            )
             
             self.root.after(0, self._verify_complete, result.stdout)
         except Exception as e:
@@ -720,8 +755,13 @@ class IPBlockingGUI:
             try:
                 self.root.after(0, self.log_message, f"Running {step_name}...")
                 
-                result = subprocess.run(['bash', 'deploy_ip_blocking.sh', step_num], 
-                                      capture_output=True, text=True, timeout=60)
+                result = subprocess.run(
+                    ['bash', 'deploy_ip_blocking.sh', step_num],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    universal_newlines=True,
+                    timeout=60
+                )
                 
                 self.root.after(0, self.log_message, f"{step_name} completed")
                 self.root.after(0, self._update_deployment_output, result.stdout)
@@ -761,8 +801,13 @@ class IPBlockingGUI:
         """Background worker for emergency stop"""
         try:
             # Stop IP blocking
-            result = subprocess.run(['bash', 'deploy_ip_blocking.sh', '7'], 
-                                  capture_output=True, text=True, timeout=30)
+            result = subprocess.run(
+                ['bash', 'deploy_ip_blocking.sh', '7'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
+                timeout=30
+            )
             
             self.root.after(0, self.log_message, "EMERGENCY STOP COMPLETED")
             self.root.after(0, self._update_deployment_status, False)
@@ -782,8 +827,13 @@ class IPBlockingGUI:
         """Background worker for rollback"""
         try:
             # Rollback deployment
-            result = subprocess.run(['bash', 'deploy_ip_blocking.sh', '0'], 
-                                  capture_output=True, text=True, timeout=30)
+            result = subprocess.run(
+                ['bash', 'deploy_ip_blocking.sh', '0'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
+                timeout=30
+            )
             
             self.root.after(0, self.log_message, "Rollback completed")
             self.root.after(0, self._update_deployment_status, False)

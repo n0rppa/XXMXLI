@@ -15,7 +15,19 @@ command = ""
     Content-Disposition = "attachment"
 
 [[headers]]
+  for = "/lataukset/*.py"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Content-Disposition = "attachment"
+
+[[headers]]
   for = "/*.sh"
+  [headers.values]
+    Content-Type = "text/x-shellscript; charset=utf-8"
+    Content-Disposition = "attachment"
+
+[[headers]]
+  for = "/lataukset/*.sh"
   [headers.values]
     Content-Type = "text/x-shellscript; charset=utf-8"
     Content-Disposition = "attachment"
@@ -27,7 +39,19 @@ command = ""
     Content-Disposition = "attachment"
 
 [[headers]]
+  for = "/lataukset/*.ps1"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Content-Disposition = "attachment"
+
+[[headers]]
   for = "/*.bat"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Content-Disposition = "attachment"
+
+[[headers]]
+  for = "/lataukset/*.bat"
   [headers.values]
     Content-Type = "text/plain; charset=utf-8"
     Content-Disposition = "attachment"

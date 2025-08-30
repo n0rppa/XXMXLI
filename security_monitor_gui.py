@@ -451,42 +451,55 @@ class SecurityMonitorGUI:
         """Create configuration tab"""
         config_frame = ttk.Frame(self.notebook)
         self.notebook.add(config_frame, text="Configuration")
-        
+
         # Configuration panel
         config_panel = ttk.Frame(config_frame, style='Security.TFrame')
         config_panel.pack(fill='both', expand=True, padx=10, pady=10)
-        
+
         ttk.Label(config_panel, text="SECURITY CONFIGURATION",
-                 style='Heading.TLabel').pack(pady=5)
-        
+                  style='Heading.TLabel').pack(pady=5)
+
         # Configuration options
         config_options = tk.Frame(config_panel, bg=self.colors['panel'])
         config_options.pack(fill='x', padx=10, pady=10)
-        
+
+        # Variables
+        self.monitor_interval_var = tk.StringVar(value='60')
+        self.alert_threshold_var = tk.StringVar(value='10')
+        self.auto_response = tk.BooleanVar(value=True)
+
         # Monitoring settings
         ttk.Label(config_options, text="Monitoring Interval (seconds):",
-                 style='Info.TLabel').grid(row=0, column=0, sticky='w', pady=5)
-        self.monitor_interval = tk.Spinbox(config_options, from_=10, to=3600, width=10)
+                  style='Info.TLabel').grid(row=0, column=0, sticky='w', pady=5)
+        self.monitor_interval = tk.Spinbox(
+            config_options, from_=10, to=3600, width=10,
+            textvariable=self.monitor_interval_var
+        )
         self.monitor_interval.grid(row=0, column=1, sticky='w', padx=10, pady=5)
-        self.monitor_interval.set('60')
-        
+
         # Alert settings
         ttk.Label(config_options, text="Alert Threshold:",
-                 style='Info.TLabel').grid(row=1, column=0, sticky='w', pady=5)
-        self.alert_threshold = tk.Spinbox(config_options, from_=1, to=100, width=10)
+                  style='Info.TLabel').grid(row=1, column=0, sticky='w', pady=5)
+        self.alert_threshold = tk.Spinbox(
+            config_options, from_=1, to=100, width=10,
+            textvariable=self.alert_threshold_var
+        )
         self.alert_threshold.grid(row=1, column=1, sticky='w', padx=10, pady=5)
-        self.alert_threshold.set('10')
-        
+
         # Auto-response
         ttk.Label(config_options, text="Enable Auto-Response:",
-                 style='Info.TLabel').grid(row=2, column=0, sticky='w', pady=5)
-        self.auto_response = tk.BooleanVar(value=True)
-        ttk.Checkbutton(config_options, variable=self.auto_response).grid(row=2, column=1, sticky='w', padx=10, pady=5)
-        
+                  style='Info.TLabel').grid(row=2, column=0, sticky='w', pady=5)
+        ttk.Checkbutton(config_options, variable=self.auto_response).grid(
+            row=2, column=1, sticky='w', padx=10, pady=5
+        )
+
         # Save button
-        ttk.Button(config_options, text="Save Configuration",
-                  command=self.save_configuration,
-                  style='Action.TButton').grid(row=3, column=1, sticky='w', padx=10, pady=20)
+        ttk.Button(
+            config_options,
+            text="Save Configuration",
+            command=self.save_configuration,
+            style='Action.TButton'
+        ).grid(row=3, column=1, sticky='w', padx=10, pady=20)
         
     def create_status_bar(self):
         """Create bottom status bar"""
@@ -570,9 +583,11 @@ class SecurityMonitorGUI:
     def _run_security_scan_worker(self):
         """Background worker for security scan"""
         try:
-            result = subprocess.run([
-                'bash', 'monitor_security.sh', '1'
-            ], capture_output=True, text=True, timeout=30)
+            result = subprocess.run(
+                ['bash', 'monitor_security.sh', '1'],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                universal_newlines=True, timeout=30
+            )
             
             self.root.after(0, self._security_scan_complete, result.stdout)
         except Exception as e:
@@ -596,9 +611,11 @@ class SecurityMonitorGUI:
     def _check_ip_blocking_worker(self):
         """Background worker for IP blocking check"""
         try:
-            result = subprocess.run([
-                'bash', 'monitor_security.sh', '3'
-            ], capture_output=True, text=True, timeout=30)
+            result = subprocess.run(
+                ['bash', 'monitor_security.sh', '3'],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                universal_newlines=True, timeout=30
+            )
             
             self.root.after(0, self._ip_blocking_complete, result.stdout)
         except Exception as e:
@@ -701,9 +718,11 @@ RECOMMENDATIONS:
     def _admin_audit_worker(self):
         """Background worker for admin audit"""
         try:
-            result = subprocess.run([
-                'bash', 'monitor_security.sh', '6'
-            ], capture_output=True, text=True, timeout=60)
+            result = subprocess.run(
+                ['bash', 'monitor_security.sh', '6'],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                universal_newlines=True, timeout=60
+            )
             
             self.root.after(0, self._admin_audit_complete, result.stdout)
         except Exception as e:
