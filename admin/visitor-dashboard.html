@@ -330,7 +330,12 @@
             }
 
             async loadAPIData() {
-                const apiBase = '/api/';
+                // Use live website for analytics data
+                const isLiveEnvironment = window.location.hostname.includes('xxmxli.com') || 
+                                        window.location.hostname.includes('github.io');
+                const apiBase = isLiveEnvironment ? 'https://www.xxmxli.com/api/' : '/api/';
+                
+                console.log('Loading API data from:', apiBase);
                 
                 // Load overview stats
                 const statsResponse = await fetch(`${apiBase}get-visitor-stats.php?action=overview`);
@@ -397,9 +402,15 @@
                         console.log('StaticVisitorTracker not available');
                     }
                     
-                    // Fallback to JSON files
-                    console.log('Trying to load from JSON files...');
-                    const visitorsResponse = await fetch('../data/visitors.json');
+                    // Fallback to JSON files from live website
+                    console.log('Trying to load from live website data...');
+                    const isLiveEnvironment = window.location.hostname.includes('xxmxli.com') || 
+                                            window.location.hostname.includes('github.io');
+                    const dataBase = isLiveEnvironment ? 'https://www.xxmxli.com/data/' : '../data/';
+                    
+                    console.log('Loading data from:', dataBase);
+                    
+                    const visitorsResponse = await fetch(`${dataBase}visitors.json`);
                     
                     if (!visitorsResponse.ok) {
                         throw new Error(`Failed to load visitors.json: ${visitorsResponse.status}`);
@@ -408,7 +419,7 @@
                     const visitorsData = await visitorsResponse.json();
                     const visitors = visitorsData.visitors || visitorsData;
                     
-                    const dailyStatsResponse = await fetch('../data/daily_stats.json');
+                    const dailyStatsResponse = await fetch(`${dataBase}daily_stats.json`);
                     
                     if (!dailyStatsResponse.ok) {
                         throw new Error(`Failed to load daily_stats.json: ${dailyStatsResponse.status}`);
@@ -430,12 +441,13 @@
                     this.populateCountryFilter(countries);
                     this.renderDashboard();
                     
-                    // Show notification that we're using static data
-                    this.showInfo('Running in static mode - using sample data');
+                    // Show notification about data source
+                    const dataSource = isLiveEnvironment ? 'live website analytics' : 'local sample data';
+                    this.showInfo(`Running in static mode - using ${dataSource}`);
                     
                 } catch (error) {
                     console.error('Failed to load static data:', error);
-                    this.showError('Failed to load any data. Please check if data files exist.');
+                    this.showError('Failed to load analytics data. The visitor tracking system may still be initializing.');
                 }
             }
 

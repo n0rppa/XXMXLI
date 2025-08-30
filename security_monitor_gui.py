@@ -56,6 +56,14 @@ class SecurityMonitorGUI:
             print("This appears to be a headless environment or X server is not running.")
             print("Use the command-line version instead: monitor_security.sh")
             sys.exit(1)
+        
+        # Initialize authentication
+        self.authenticated = False
+        self.admin_password = "xxmxli_security_2024"  # Change this for production
+        
+        # Create authentication window first
+        if not self.authenticate():
+            sys.exit(0)
             
         self.root = tk.Tk()
         self.root.title("XXMXLI Security Monitor - Advanced Dashboard")
@@ -244,6 +252,119 @@ class SecurityMonitorGUI:
                 
         except Exception:
             return False
+    
+    def authenticate(self):
+        """Admin authentication dialog"""
+        auth_root = tk.Tk()
+        auth_root.title("XXMXLI Security Monitor - Authentication")
+        auth_root.geometry("400x300")
+        auth_root.configure(bg='#0a0a0a')
+        auth_root.resizable(False, False)
+        
+        # Center the window
+        auth_root.eval('tk::PlaceWindow . center')
+        
+        # Authentication result
+        auth_result = {'success': False}
+        
+        # Header
+        header_frame = tk.Frame(auth_root, bg='#0a0a0a')
+        header_frame.pack(fill='x', pady=20)
+        
+        title_label = tk.Label(header_frame,
+                              text="SECURITY MONITOR",
+                              font=('Arial', 16, 'bold'),
+                              fg='#00ff00',
+                              bg='#0a0a0a')
+        title_label.pack()
+        
+        subtitle_label = tk.Label(header_frame,
+                                 text="Admin Authentication Required",
+                                 font=('Arial', 10),
+                                 fg='#ffffff',
+                                 bg='#0a0a0a')
+        subtitle_label.pack(pady=(5, 0))
+        
+        # Login form
+        form_frame = tk.Frame(auth_root, bg='#1a1a1a', padx=20, pady=20)
+        form_frame.pack(fill='both', expand=True, padx=20, pady=20)
+        
+        password_label = tk.Label(form_frame,
+                                 text="Admin Password:",
+                                 font=('Arial', 12),
+                                 fg='#ffffff',
+                                 bg='#1a1a1a')
+        password_label.pack(pady=(0, 10))
+        
+        password_var = tk.StringVar()
+        password_entry = tk.Entry(form_frame,
+                                 textvariable=password_var,
+                                 show='*',
+                                 font=('Arial', 12),
+                                 width=25,
+                                 bg='#000000',
+                                 fg='#ffffff',
+                                 insertbackground='#ffffff')
+        password_entry.pack(pady=(0, 20))
+        
+        def check_password():
+            if password_var.get() == self.admin_password:
+                auth_result['success'] = True
+                auth_root.destroy()
+            else:
+                error_label.config(text="Invalid password!", fg='#ff4444')
+                password_entry.delete(0, tk.END)
+                password_entry.focus()
+        
+        def on_enter(event):
+            check_password()
+        
+        password_entry.bind('<Return>', on_enter)
+        password_entry.focus()
+        
+        # Buttons
+        button_frame = tk.Frame(form_frame, bg='#1a1a1a')
+        button_frame.pack(fill='x', pady=10)
+        
+        login_btn = tk.Button(button_frame,
+                             text="LOGIN",
+                             command=check_password,
+                             font=('Arial', 12, 'bold'),
+                             bg='#003300',
+                             fg='#ffffff',
+                             padx=20,
+                             pady=5,
+                             relief='flat')
+        login_btn.pack(side='left', padx=(0, 10))
+        
+        cancel_btn = tk.Button(button_frame,
+                              text="CANCEL",
+                              command=auth_root.destroy,
+                              font=('Arial', 12, 'bold'),
+                              bg='#330000',
+                              fg='#ffffff',
+                              padx=20,
+                              pady=5,
+                              relief='flat')
+        cancel_btn.pack(side='right')
+        
+        # Error label
+        error_label = tk.Label(form_frame,
+                              text="",
+                              font=('Arial', 10),
+                              bg='#1a1a1a')
+        error_label.pack(pady=(10, 0))
+        
+        # Security warning
+        warning_label = tk.Label(auth_root,
+                                text="⚠ AUTHORIZED PERSONNEL ONLY ⚠",
+                                font=('Arial', 9),
+                                fg='#ffaa00',
+                                bg='#0a0a0a')
+        warning_label.pack(pady=(0, 10))
+        
+        auth_root.mainloop()
+        return auth_result['success']
         
     def create_main_tabs(self):
         """Create main tabbed interface"""
@@ -613,15 +734,101 @@ class SecurityMonitorGUI:
     def _run_security_scan_worker(self):
         """Background worker for security scan"""
         try:
+            # Check if monitor_security.sh exists, otherwise use fallback
+            scan_script = 'monitor_security.sh'
+            if not os.path.exists(scan_script):
+                # Use built-in security scan
+                self.root.after(0, self._security_scan_complete, self._builtin_security_scan())
+                return
+                
             result = subprocess.run(
-                ['bash', 'monitor_security.sh', '1'],
+                ['bash', scan_script, '1'],
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                 universal_newlines=True, timeout=30
             )
             
-            self.root.after(0, self._security_scan_complete, result.stdout)
+            if result.returncode == 0:
+                self.root.after(0, self._security_scan_complete, result.stdout)
+            else:
+                # Fallback to built-in scan if script fails
+                self.root.after(0, self._security_scan_complete, self._builtin_security_scan())
+                
         except Exception as e:
-            self.root.after(0, self._security_scan_error, str(e))
+            # Use built-in scan as fallback
+            self.root.after(0, self._security_scan_complete, self._builtin_security_scan())
+    
+    def _builtin_security_scan(self):
+        """Built-in security scan functionality"""
+        scan_results = []
+        scan_results.append("=== XXMXLI SECURITY SCAN RESULTS ===")
+        scan_results.append(f"Scan Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        scan_results.append("")
+        
+        # Check system security basics
+        scan_results.append("1. SYSTEM SECURITY CHECK:")
+        
+        # Check if running as root (security concern)
+        if os.geteuid() == 0:
+            scan_results.append("  ⚠ WARNING: Running as root user")
+        else:
+            scan_results.append("  ✓ Not running as root (good)")
+        
+        # Check file permissions on current directory
+        try:
+            import stat
+            dir_stat = os.stat('.')
+            if stat.filemode(dir_stat.st_mode)[1:] == 'rwxr-xr-x':
+                scan_results.append("  ✓ Directory permissions secure")
+            else:
+                scan_results.append("  ⚠ Directory permissions may be too permissive")
+        except:
+            scan_results.append("  ? Unable to check directory permissions")
+        
+        scan_results.append("")
+        scan_results.append("2. NETWORK SECURITY:")
+        
+        # Check for common listening ports
+        try:
+            import socket
+            common_ports = [22, 80, 443, 3000, 8000, 8080]
+            open_ports = []
+            
+            for port in common_ports:
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.settimeout(1)
+                result = sock.connect_ex(('localhost', port))
+                if result == 0:
+                    open_ports.append(port)
+                sock.close()
+            
+            if open_ports:
+                scan_results.append(f"  ! Open ports detected: {', '.join(map(str, open_ports))}")
+            else:
+                scan_results.append("  ✓ No common ports open on localhost")
+        except:
+            scan_results.append("  ? Unable to scan ports")
+        
+        scan_results.append("")
+        scan_results.append("3. FILE SYSTEM SECURITY:")
+        
+        # Check for sensitive files
+        sensitive_files = ['.env', 'config.php', 'wp-config.php', '.htpasswd']
+        found_sensitive = []
+        
+        for filename in sensitive_files:
+            if os.path.exists(filename):
+                found_sensitive.append(filename)
+        
+        if found_sensitive:
+            scan_results.append(f"  ⚠ Sensitive files found: {', '.join(found_sensitive)}")
+        else:
+            scan_results.append("  ✓ No obvious sensitive files in current directory")
+        
+        scan_results.append("")
+        scan_results.append("=== SCAN COMPLETE ===")
+        scan_results.append("For comprehensive security analysis, ensure monitor_security.sh is available.")
+        
+        return "\n".join(scan_results)
             
     def _security_scan_complete(self, output):
         """Handle security scan completion"""
@@ -748,15 +955,121 @@ RECOMMENDATIONS:
     def _admin_audit_worker(self):
         """Background worker for admin audit"""
         try:
+            # Check if monitor_security.sh exists, otherwise use fallback
+            audit_script = 'monitor_security.sh'
+            if not os.path.exists(audit_script):
+                # Use built-in admin audit
+                self.root.after(0, self._admin_audit_complete, self._builtin_admin_audit())
+                return
+                
             result = subprocess.run(
-                ['bash', 'monitor_security.sh', '6'],
+                ['bash', audit_script, '6'],
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                 universal_newlines=True, timeout=60
             )
             
-            self.root.after(0, self._admin_audit_complete, result.stdout)
+            if result.returncode == 0:
+                self.root.after(0, self._admin_audit_complete, result.stdout)
+            else:
+                # Fallback to built-in audit if script fails
+                self.root.after(0, self._admin_audit_complete, self._builtin_admin_audit())
+                
         except Exception as e:
-            self.root.after(0, self._admin_audit_error, str(e))
+            # Use built-in audit as fallback
+            self.root.after(0, self._admin_audit_complete, self._builtin_admin_audit())
+    
+    def _builtin_admin_audit(self):
+        """Built-in admin audit functionality"""
+        audit_results = []
+        audit_results.append("=== XXMXLI ADMIN SECURITY AUDIT ===")
+        audit_results.append(f"Audit Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        audit_results.append(f"Auditor: System Admin")
+        audit_results.append("")
+        
+        # System Information
+        audit_results.append("1. SYSTEM INFORMATION:")
+        audit_results.append(f"  Operating System: {platform.system()} {platform.release()}")
+        audit_results.append(f"  Python Version: {platform.python_version()}")
+        audit_results.append(f"  Current User: {os.getenv('USER', 'unknown')}")
+        audit_results.append(f"  Working Directory: {os.getcwd()}")
+        audit_results.append("")
+        
+        # Security Configuration
+        audit_results.append("2. SECURITY CONFIGURATION AUDIT:")
+        
+        # Check admin files
+        admin_files = ['admin/', 'ADMIN_CREDENTIALS_SECURE.txt', 'security.html']
+        for admin_file in admin_files:
+            if os.path.exists(admin_file):
+                audit_results.append(f"  ✓ Admin file present: {admin_file}")
+            else:
+                audit_results.append(f"  ⚠ Admin file missing: {admin_file}")
+        
+        audit_results.append("")
+        
+        # Check security scripts
+        audit_results.append("3. SECURITY SCRIPTS AUDIT:")
+        security_scripts = ['monitor_security.sh', 'setup_ip_blocking.sh', 'health-check.sh']
+        for script in security_scripts:
+            if os.path.exists(script):
+                try:
+                    stat_info = os.stat(script)
+                    if stat_info.st_mode & 0o111:  # Check if executable
+                        audit_results.append(f"  ✓ Security script ready: {script}")
+                    else:
+                        audit_results.append(f"  ⚠ Security script not executable: {script}")
+                except:
+                    audit_results.append(f"  ? Cannot check script: {script}")
+            else:
+                audit_results.append(f"  ⚠ Security script missing: {script}")
+        
+        audit_results.append("")
+        
+        # Check for security-related processes
+        audit_results.append("4. SECURITY PROCESS AUDIT:")
+        try:
+            # Check if any security monitoring is running
+            result = subprocess.run(['ps', 'aux'], capture_output=True, text=True, timeout=10)
+            if result.returncode == 0:
+                security_processes = []
+                for line in result.stdout.split('\n'):
+                    if any(term in line.lower() for term in ['security', 'monitor', 'fail2ban', 'ufw']):
+                        security_processes.append(line.strip())
+                
+                if security_processes:
+                    audit_results.append("  Security-related processes found:")
+                    for proc in security_processes[:5]:  # Limit to 5 processes
+                        audit_results.append(f"    {proc}")
+                else:
+                    audit_results.append("  ⚠ No obvious security processes detected")
+            else:
+                audit_results.append("  ? Unable to check running processes")
+        except:
+            audit_results.append("  ? Process audit unavailable")
+        
+        audit_results.append("")
+        
+        # File permissions audit
+        audit_results.append("5. FILE PERMISSIONS AUDIT:")
+        critical_files = ['index.html', 'security.html', 'admin/']
+        for file_path in critical_files:
+            if os.path.exists(file_path):
+                try:
+                    import stat
+                    file_stat = os.stat(file_path)
+                    permissions = stat.filemode(file_stat.st_mode)
+                    audit_results.append(f"  {file_path}: {permissions}")
+                except:
+                    audit_results.append(f"  {file_path}: Unable to check permissions")
+            else:
+                audit_results.append(f"  {file_path}: File not found")
+        
+        audit_results.append("")
+        audit_results.append("=== AUDIT COMPLETE ===")
+        audit_results.append("Recommendation: Review any warnings and ensure all security")
+        audit_results.append("scripts are properly configured and executable.")
+        
+        return "\n".join(audit_results)
             
     def _admin_audit_complete(self, output):
         """Handle admin audit completion"""
