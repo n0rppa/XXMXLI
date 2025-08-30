@@ -327,9 +327,9 @@ class XXMXLILauncher:
             print(f"  {Colors.GREEN}3){Colors.NC} {Symbols.CHART} Visitor Analytics & Statistics")
             print()
             print(f"{Colors.BLUE}🚀 DEPLOYMENT & MANAGEMENT{Colors.NC}")
-            print(f"  {Colors.BLUE}4){Colors.NC} {Symbols.ROCKET} IP Blocking Deployment System")
-            print(f"  {Colors.BLUE}5){Colors.NC} {Symbols.GEAR} Automated Incident Reporter")
-            print(f"  {Colors.BLUE}6){Colors.NC} {Symbols.GLOBE} Development Server Management")
+            print(f"  {Colors.BLUE}4){Colors.NC} {Symbols.ROCKET} System Status Check")
+            print(f"  {Colors.BLUE}5){Colors.NC} {Symbols.GEAR} Security Log Viewer")
+            print(f"  {Colors.BLUE}6){Colors.NC} {Symbols.GLOBE} View Analytics Dashboard")
             print()
             
             # Admin-only content management section
@@ -340,9 +340,9 @@ class XXMXLILauncher:
                 print(f"  {Colors.PURPLE}9){Colors.NC} {Symbols.FILE} Content Update System")
                 print()
                 print(f"{Colors.YELLOW}⚙️ SYSTEM UTILITIES (ADMIN ONLY){Colors.NC}")
-                print(f"  {Colors.YELLOW}10){Colors.NC} {Symbols.LIGHTNING} Automated System Updates")
-                print(f"  {Colors.YELLOW}11){Colors.NC} {Symbols.MAGNIFY} Database Management")
-                print(f"  {Colors.YELLOW}12){Colors.NC} {Symbols.FIRE} Emergency Procedures")
+                print(f"  {Colors.YELLOW}10){Colors.NC} {Symbols.LIGHTNING} System Information Viewer")
+                print(f"  {Colors.YELLOW}11){Colors.NC} {Symbols.MAGNIFY} Database Status Viewer")
+                print(f"  {Colors.YELLOW}12){Colors.NC} {Symbols.INFO} Emergency Information")
                 print()
             else:
                 print(f"{Colors.GRAY}🔒 ADMIN FEATURES (AUTHENTICATION REQUIRED){Colors.NC}")
@@ -381,11 +381,11 @@ class XXMXLILauncher:
                 elif choice == '3':
                     self.launch_visitor_analytics()
                 elif choice == '4':
-                    self.launch_ip_deployment()
+                    self.show_system_status_detailed()
                 elif choice == '5':
-                    self.launch_incident_reporter()
+                    self.view_security_logs()
                 elif choice == '6':
-                    self.launch_server_management()
+                    self.open_analytics_dashboard()
                 elif choice == '7':
                     if self.admin_authenticated:
                         self.launch_music_manager()
@@ -406,17 +406,17 @@ class XXMXLILauncher:
                         input("Press Enter to continue...")
                 elif choice == '10':
                     if self.admin_authenticated:
-                        self.launch_system_updates()
+                        self.show_system_status_detailed()
                     else:
                         self.authenticate_admin()
                 elif choice == '11':
                     if self.admin_authenticated:
-                        self.launch_database_management()
+                        self.view_database_status()
                     else:
                         self.show_documentation()
                 elif choice == '12':
                     if self.admin_authenticated:
-                        self.launch_emergency_procedures()
+                        self.launch_safe_emergency_info()
                     else:
                         self.show_about()
                 elif choice == '13' and self.admin_authenticated:
@@ -525,6 +525,137 @@ class XXMXLILauncher:
             pass
         self.launch_script(script, 'Advanced Security Monitoring System')
     
+    def show_system_status_detailed(self):
+        """Show detailed system status"""
+        self.show_banner()
+        print(f"{Colors.PURPLE}{Symbols.CHART} DETAILED SYSTEM STATUS{Colors.NC}")
+        print("================================================================")
+        print()
+        
+        # System information
+        print(f"{Colors.CYAN}System Information:{Colors.NC}")
+        print(f"  Platform: {platform.system()} {platform.release()}")
+        print(f"  Python: {sys.version.split()[0]}")
+        print(f"  Working Directory: {self.base_dir}")
+        print(f"  Mode: {self.mode}")
+        print()
+        
+        # Security status
+        print(f"{Colors.CYAN}Security Status:{Colors.NC}")
+        if self.mode == 'website':
+            htaccess_path = os.path.join(self.base_dir, '.htaccess')
+            if os.path.isfile(htaccess_path):
+                self.success("htaccess security rules: PRESENT")
+            else:
+                self.warn("htaccess security rules: MISSING")
+        else:
+            self.info("htaccess security: N/A (standalone mode)")
+        
+        # Check for security scripts
+        security_scripts = ['monitor_security.sh', 'health-check.sh']
+        for script in security_scripts:
+            if os.path.isfile(os.path.join(self.base_dir, script)):
+                self.success(f"{script}: AVAILABLE")
+            else:
+                self.warn(f"{script}: NOT FOUND")
+        
+        print()
+        input("Press Enter to continue...")
+    
+    def view_security_logs(self):
+        """View security logs (read-only)"""
+        self.show_banner()
+        print(f"{Colors.PURPLE}{Symbols.MAGNIFY} SECURITY LOG VIEWER{Colors.NC}")
+        print("================================================================")
+        print()
+        
+        # Look for common log files
+        log_files = [
+            'security.log',
+            'access.log', 
+            'error.log',
+            'monitor.log'
+        ]
+        
+        found_logs = []
+        for log_file in log_files:
+            log_path = os.path.join(self.base_dir, log_file)
+            if os.path.isfile(log_path):
+                found_logs.append(log_path)
+        
+        if not found_logs:
+            self.warn("No security log files found in current directory")
+            input("Press Enter to continue...")
+            return
+        
+        print(f"{Colors.CYAN}Available log files:{Colors.NC}")
+        for i, log_file in enumerate(found_logs, 1):
+            print(f"  {i}) {os.path.basename(log_file)}")
+        print()
+        
+        try:
+            choice = input(f"{Colors.YELLOW}Select log file to view [1-{len(found_logs)}]: {Colors.NC}").strip()
+            choice_idx = int(choice) - 1
+            
+            if 0 <= choice_idx < len(found_logs):
+                log_file = found_logs[choice_idx]
+                print(f"\n{Colors.CYAN}Last 50 lines of {os.path.basename(log_file)}:{Colors.NC}")
+                print("-" * 60)
+                
+                try:
+                    with open(log_file, 'r') as f:
+                        lines = f.readlines()
+                        for line in lines[-50:]:
+                            print(line.rstrip())
+                except Exception as e:
+                    self.error(f"Failed to read log file: {e}")
+            else:
+                self.error("Invalid selection")
+        except ValueError:
+            self.error("Invalid input")
+        
+        input("\nPress Enter to continue...")
+    
+    def open_analytics_dashboard(self):
+        """Open analytics dashboard in browser"""
+        self.show_banner()
+        print(f"{Colors.PURPLE}{Symbols.GLOBE} ANALYTICS DASHBOARD{Colors.NC}")
+        print("================================================================")
+        print()
+        
+        dashboard_urls = [
+            'http://localhost:8000/admin/visitor-dashboard.html',
+            'http://localhost:8000/status.html',
+            './admin/visitor-dashboard.html'
+        ]
+        
+        print(f"{Colors.CYAN}Available dashboards:{Colors.NC}")
+        for i, url in enumerate(dashboard_urls, 1):
+            print(f"  {i}) {url}")
+        print()
+        
+        try:
+            choice = input(f"{Colors.YELLOW}Select dashboard [1-{len(dashboard_urls)}]: {Colors.NC}").strip()
+            choice_idx = int(choice) - 1
+            
+            if 0 <= choice_idx < len(dashboard_urls):
+                url = dashboard_urls[choice_idx]
+                self.info(f"Opening {url}...")
+                
+                try:
+                    import webbrowser
+                    webbrowser.open(url)
+                    self.success("Dashboard opened in browser")
+                except Exception as e:
+                    self.error(f"Failed to open browser: {e}")
+                    print(f"Manual URL: {url}")
+            else:
+                self.error("Invalid selection")
+        except ValueError:
+            self.error("Invalid input")
+        
+        input("Press Enter to continue...")
+    
     def launch_health_check(self):
         """Launch the health check system"""
         script = self.find_script(['health_check_gui.py', 'health-check.sh', 'health_check.py'])
@@ -562,68 +693,6 @@ class XXMXLILauncher:
             self.info("Generating analytics report...")
             # Could implement report generation here
             self.success("Report generation feature coming soon")
-        elif choice == '4':
-            return
-        
-        input("Press Enter to continue...")
-    
-    def launch_ip_deployment(self):
-        """Launch IP blocking deployment"""
-        script = self.find_script(['ip_blocking_gui.py', 'deploy_ip_blocking.sh'])
-        if not script and platform.system() == 'Windows':
-            script = self.find_script(['deploy_ip_blocking.ps1'])
-        if not script:
-            self.error("IP blocking deployment script not found in launcher directory")
-            input("Press Enter to return to menu...")
-            return
-        self.launch_script(script, 'IP Blocking Deployment System')
-    
-    def launch_incident_reporter(self):
-        """Launch the incident reporting system"""
-        candidates = ['automated_incident_reporter_gui.py', 'automated_incident_reporter.sh', 'automated_incident_reporter.py']
-        if platform.system() == 'Windows':
-            candidates = ['automated_incident_reporter_gui.py', 'automated_incident_reporter.ps1', 'automated_incident_reporter.py']
-        script = self.find_script(candidates)
-        if not script:
-            self.error("Incident reporter not found in launcher directory")
-            input("Press Enter to continue...")
-            return
-        self.launch_script(script, 'Automated Incident Reporter')
-    
-    def launch_server_management(self):
-        """Launch server management interface"""
-        self.show_banner()
-        print(f"{Colors.PURPLE}{Symbols.GLOBE} SERVER MANAGEMENT CENTER{Colors.NC}")
-        print("================================================================")
-        print()
-        
-        print(f"{Colors.CYAN}Server Management Options:{Colors.NC}")
-        print(f"  1) {Symbols.ROCKET} Start Development Server")
-        print(f"  2) {Symbols.MAGNIFY} Check Server Status")
-        print(f"  3) {Symbols.GEAR} Custom Server Configuration")
-        print(f"  4) {Symbols.ARROW} Return to Main Menu")
-        print()
-        
-        choice = input(f"{Colors.YELLOW}Choose server option [1-4]: {Colors.NC}").strip()
-        
-        if choice == '1':
-            self.info("Starting development server on http://localhost:8000")
-            try:
-                server_path = os.path.join(self.base_dir, 'server.py')
-                subprocess.run([sys.executable, server_path], check=False)
-            except KeyboardInterrupt:
-                self.info("Server stopped by user")
-        elif choice == '2':
-            self.info("Checking server status...")
-            try:
-                import requests
-                response = requests.get('http://localhost:8000', timeout=5)
-                self.success(f"Server is running (HTTP {response.status_code})")
-            except:
-                self.warn("Server is not responding")
-        elif choice == '3':
-            self.info("Custom server configuration...")
-            self.warn("Advanced configuration requires manual editing")
         elif choice == '4':
             return
         
@@ -679,110 +748,78 @@ class XXMXLILauncher:
         
         input("Press Enter to continue...")
     
-    def launch_system_updates(self):
-        """Launch automated system updates"""
+    def view_database_status(self):
+        """View database status (read-only)"""
         self.show_banner()
-        print(f"{Colors.PURPLE}{Symbols.LIGHTNING} AUTOMATED SYSTEM UPDATES{Colors.NC}")
+        print(f"{Colors.PURPLE}{Symbols.MAGNIFY} DATABASE STATUS VIEWER{Colors.NC}")
         print("================================================================")
         print()
         
-        self.warn("This will update all system components")
-        confirm = input(f"{Colors.YELLOW}Continue with system updates? [y/N]: {Colors.NC}").strip().lower()
+        print(f"{Colors.CYAN}Database File Status:{Colors.NC}")
         
-        if confirm == 'y':
-            self.info("Running system updates...")
-            self.success("System updates completed")
+        # Check for data files
+        data_files = [
+            'data/visitors.json',
+            'data/daily_stats.json',
+            'data/security.log',
+            'ADMIN_CREDENTIALS_SECURE.txt'
+        ]
+        
+        for data_file in data_files:
+            file_path = os.path.join(self.base_dir, data_file)
+            if os.path.isfile(file_path):
+                try:
+                    file_size = os.path.getsize(file_path)
+                    mod_time = datetime.fromtimestamp(os.path.getmtime(file_path))
+                    self.success(f"{data_file}: {file_size} bytes, modified {mod_time.strftime('%Y-%m-%d %H:%M')}")
+                except Exception as e:
+                    self.warn(f"{data_file}: Error reading file info - {e}")
+            else:
+                self.error(f"{data_file}: NOT FOUND")
+        
+        print()
+        print(f"{Colors.CYAN}System Health:{Colors.NC}")
+        
+        # Check disk space
+        try:
+            import shutil
+            total, used, free = shutil.disk_usage(self.base_dir)
+            free_gb = free // (1024**3)
+            total_gb = total // (1024**3)
+            self.info(f"Disk space: {free_gb}GB free of {total_gb}GB total")
+        except Exception:
+            self.warn("Could not check disk space")
+        
+        # Check Python version compatibility
+        if sys.version_info >= (3, 6):
+            self.success(f"Python version: {sys.version.split()[0]} (compatible)")
         else:
-            self.info("System updates cancelled")
+            self.warn(f"Python version: {sys.version.split()[0]} (may have compatibility issues)")
         
-        input("Press Enter to continue...")
+        input("\nPress Enter to continue...")
     
-    def launch_database_management(self):
-        """Launch database management"""
+    def launch_safe_emergency_info(self):
+        """Show emergency information (read-only)"""
         self.show_banner()
-        print(f"{Colors.PURPLE}{Symbols.MAGNIFY} DATABASE MANAGEMENT{Colors.NC}")
+        print(f"{Colors.YELLOW}{Symbols.WARNING} EMERGENCY INFORMATION{Colors.NC}")
         print("================================================================")
         print()
         
-        print(f"{Colors.CYAN}Database Operations:{Colors.NC}")
-        print(f"  1) {Symbols.CHART} View Database Status")
-        print(f"  2) {Symbols.GEAR} Optimize Database")
-        print(f"  3) {Symbols.SHIELD} Backup Database")
-        print(f"  4) {Symbols.LIGHTNING} Restore Database")
-        print(f"  5) {Symbols.ARROW} Return to Main Menu")
+        print(f"{Colors.CYAN}Emergency Contact Information:{Colors.NC}")
+        print("For security emergencies, follow these steps:")
+        print()
+        print("1. Check system logs for security issues")
+        print("2. Review visitor dashboard for suspicious activity")
+        print("3. Contact system administrator if needed")
+        print("4. Document any security incidents")
         print()
         
-        choice = input(f"{Colors.YELLOW}Choose database option [1-5]: {Colors.NC}").strip()
-        
-        if choice == '1':
-            self.info("Checking database status...")
-            if os.path.isfile(os.path.join(self.base_dir, 'data', 'visitors.json')):
-                self.success("Visitor database is available")
-            if os.path.isfile(os.path.join(self.base_dir, 'data', 'daily_stats.json')):
-                self.success("Statistics database is available")
-        elif choice == '2':
-            self.info("Optimizing database...")
-            self.success("Database optimization completed")
-        elif choice == '3':
-            self.info("Creating database backup...")
-            self.success("Database backup completed")
-        elif choice == '4':
-            self.info("Database restore options...")
-            self.warn("Restore requires backup files")
-        elif choice == '5':
-            return
-        
-        input("Press Enter to continue...")
-    
-    def launch_emergency_procedures(self):
-        """Launch emergency procedures"""
-        self.show_banner()
-        print(f"{Colors.RED}{Symbols.FIRE} EMERGENCY PROCEDURES{Colors.NC}")
-        print("================================================================")
+        print(f"{Colors.YELLOW}Important Security Notes:{Colors.NC}")
+        print("• Never share admin credentials")
+        print("• Regularly monitor system logs")
+        print("• Keep security scripts up to date")
+        print("• Report suspicious activity immediately")
         print()
-        
-        self.critical("WARNING: These procedures should only be used in emergencies")
-        print()
-        
-        print(f"{Colors.CYAN}Emergency Options:{Colors.NC}")
-        print(f"  1) {Symbols.SHIELD} Emergency Security Lockdown")
-        print(f"  2) {Symbols.LIGHTNING} System Recovery Mode")
-        print(f"  3) {Symbols.GEAR} Reset All Configurations")
-        print(f"  4) {Symbols.CROSS} Cancel Emergency Procedures")
-        print()
-        
-        choice = input(f"{Colors.RED}Choose emergency option [1-4]: {Colors.NC}").strip()
-        
-        if choice == '1':
-            confirm = input(f"{Colors.RED}Type 'EMERGENCY' to confirm lockdown: {Colors.NC}")
-            if confirm == 'EMERGENCY':
-                self.critical("Activating emergency lockdown...")
-                # Launch emergency lockdown
-                script = self.find_script(['monitor_security.sh'])
-                if script:
-                    subprocess.run(['bash', script, '--emergency'], check=False)
-                elif platform.system() == 'Windows':
-                    ps_script = self.find_script(['monitor_security.ps1'])
-                    if ps_script:
-                        subprocess.run(['powershell', '-ExecutionPolicy', 'Bypass', '-File', ps_script, '--emergency'], check=False)
-                    else:
-                        self.error("Emergency script not found")
-                else:
-                    self.error("Emergency script not found")
-            else:
-                self.warn("Emergency lockdown cancelled")
-        elif choice == '2':
-            self.info("Entering system recovery mode...")
-            self.warn("Recovery mode features coming soon")
-        elif choice == '3':
-            confirm = input(f"{Colors.RED}Type 'RESET' to confirm configuration reset: {Colors.NC}")
-            if confirm == 'RESET':
-                self.critical("Resetting all configurations...")
-                self.success("Configuration reset completed")
-            else:
-                self.warn("Configuration reset cancelled")
-        elif choice == '4':
-            self.info("Emergency procedures cancelled")
         
         input("Press Enter to continue...")
     

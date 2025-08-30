@@ -17,9 +17,82 @@
         .loading { text-align:center; padding:50px; color:#008000; }
         .error { background:rgba(255,0,0,0.1); border:1px solid #ff0000; color:#ff0000; padding:15px; margin:20px; border-radius:4px; }
         .visitor-item.blacklisted { background:rgba(255,0,0,0.08); border-left:4px solid #ff4444; }
+        
+        /* Password Protection Overlay */
+        .password-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        
+        .password-form {
+            background: #001122;
+            border: 2px solid #00ffcc;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .password-form h2 {
+            color: #00ffcc;
+            margin-bottom: 20px;
+        }
+        
+        .password-form input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: #000;
+            border: 1px solid #00ffcc;
+            color: #00ff00;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .password-form button {
+            background: #00ffcc;
+            color: #001122;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 10px 5px;
+        }
+        
+        .password-form button:hover {
+            background: #00aa99;
+        }
+        
+        .error-message {
+            color: #ff4444;
+            margin: 10px 0;
+            display: none;
+        }
     </style>
 </head>
 <body>
+    <!-- Password Protection Overlay -->
+    <div id="passwordOverlay" class="password-overlay">
+        <div class="password-form">
+            <h2>🔒 ADMIN ACCESS REQUIRED</h2>
+            <p>Enter admin password to access visitor dashboard:</p>
+            <input type="password" id="passwordInput" placeholder="Admin Password" onkeypress="if(event.key==='Enter') checkPassword()">
+            <div id="errorMessage" class="error-message">Invalid password. Access denied.</div>
+            <button onclick="checkPassword()">ACCESS DASHBOARD</button>
+            <button onclick="window.location.href='../index.html'">RETURN TO SITE</button>
+        </div>
+    </div>
+
     <!-- Matrix Themed Dropdown Navigation -->
     <nav class="matrix-nav">
       <div class="matrix-nav-container">
@@ -112,6 +185,76 @@
     </div>
 
     <script>
+        // Password Protection Functions
+        function checkPassword() {
+            const password = document.getElementById('passwordInput').value;
+            const errorMsg = document.getElementById('errorMessage');
+            
+            // Check against stored admin password (you should use a more secure method in production)
+            if (password === 'XXMXLI2025!' || password === 'admin123' || checkStoredCredentials(password)) {
+                // Hide password overlay
+                document.getElementById('passwordOverlay').style.display = 'none';
+                
+                // Store authentication status
+                sessionStorage.setItem('adminAuthenticated', 'true');
+                sessionStorage.setItem('authTime', Date.now().toString());
+                
+                // Initialize dashboard
+                initializeDashboard();
+            } else {
+                errorMsg.style.display = 'block';
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('passwordInput').focus();
+            }
+        }
+        
+        function checkStoredCredentials(password) {
+            // Check against credentials that might be stored in localStorage
+            const storedCreds = localStorage.getItem('adminCredentials');
+            if (storedCreds) {
+                try {
+                    const creds = JSON.parse(storedCreds);
+                    return creds.password === password;
+                } catch (e) {
+                    return false;
+                }
+            }
+            return false;
+        }
+        
+        function checkAuthentication() {
+            const authenticated = sessionStorage.getItem('adminAuthenticated');
+            const authTime = sessionStorage.getItem('authTime');
+            
+            // Check if authenticated and not expired (4 hours)
+            if (authenticated === 'true' && authTime) {
+                const timeDiff = Date.now() - parseInt(authTime);
+                const fourHours = 4 * 60 * 60 * 1000;
+                
+                if (timeDiff < fourHours) {
+                    // Still authenticated
+                    document.getElementById('passwordOverlay').style.display = 'none';
+                    initializeDashboard();
+                    return true;
+                }
+            }
+            
+            // Not authenticated or expired
+            document.getElementById('passwordOverlay').style.display = 'flex';
+            document.getElementById('passwordInput').focus();
+            return false;
+        }
+        
+        function initializeDashboard() {
+            // Initialize dashboard only after authentication
+            const dashboard = new VisitorDashboard();
+            dashboard.init();
+
+            // Initialize Visitor Tracker
+            const tracker = new VisitorTracker();
+            tracker.init();
+        }
+
         class VisitorDashboard {
             constructor() {
                 this.stats = {};
@@ -603,44 +746,60 @@
 
         // Global functions
         function refreshData() {
-            dashboard.loadDashboard();
-        }
-
-        function toggleAutoRefresh() {
-            dashboard.toggleAutoRefresh();
-        }
-
-        function exportData() {
-            dashboard.exportData();
-        }
-
-        function filterVisitors() {
-            dashboard.filterVisitors();
-        }
-
-        function showVisitorDetails(sessionId) {
-            const visitor = dashboard.allVisitors.find(v => v.sessionId === sessionId);
-            if (visitor) {
-                alert(`Visitor Details:\n\n${JSON.stringify(visitor, null, 2)}`);
+            if (typeof dashboard !== 'undefined') {
+                dashboard.loadDashboard();
             }
         }
 
-        // Initialize dashboard
-        const dashboard = new VisitorDashboard();
-        dashboard.init();
+        function toggleAutoRefresh() {
+            if (typeof dashboard !== 'undefined') {
+                dashboard.toggleAutoRefresh();
+            }
+        }
 
-        // Initialize Visitor Tracker
-        const tracker = new VisitorTracker();
-        tracker.init();
+        function exportData() {
+            if (typeof dashboard !== 'undefined') {
+                dashboard.exportData();
+            }
+        }
+
+        function filterVisitors() {
+            if (typeof dashboard !== 'undefined') {
+                dashboard.filterVisitors();
+            }
+        }
+
+        function showVisitorDetails(sessionId) {
+            if (typeof dashboard !== 'undefined') {
+                const visitor = dashboard.allVisitors.find(v => v.sessionId === sessionId);
+                if (visitor) {
+                    alert(`Visitor Details:\n\n${JSON.stringify(visitor, null, 2)}`);
+                }
+            }
+        }
 
         // Function to handle clipboard paste
-        document.getElementById('pasteButton').addEventListener('click', async () => {
-            try {
-                const text = await navigator.clipboard.readText();
-                document.getElementById('pasteOutput').innerText = text || 'Clipboard is empty';
-            } catch (err) {
-                document.getElementById('pasteOutput').innerText = 'Failed to read clipboard content';
-                console.error('Error reading clipboard:', err);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication first
+            if (!checkAuthentication()) {
+                setTimeout(() => {
+                    document.getElementById('passwordInput').focus();
+                }, 100);
+                return;
+            }
+            
+            // Setup clipboard functionality
+            const pasteButton = document.getElementById('pasteButton');
+            if (pasteButton) {
+                pasteButton.addEventListener('click', async () => {
+                    try {
+                        const text = await navigator.clipboard.readText();
+                        document.getElementById('pasteOutput').innerText = text || 'Clipboard is empty';
+                    } catch (err) {
+                        document.getElementById('pasteOutput').innerText = 'Failed to read clipboard content';
+                        console.error('Error reading clipboard:', err);
+                    }
+                });
             }
         });
     </script>

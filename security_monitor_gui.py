@@ -50,6 +50,13 @@ except ImportError:
 
 class SecurityMonitorGUI:
     def __init__(self):
+        # Check if display is available
+        if not self.check_display():
+            print("Error: No display available. Cannot run GUI application.")
+            print("This appears to be a headless environment or X server is not running.")
+            print("Use the command-line version instead: monitor_security.sh")
+            sys.exit(1)
+            
         self.root = tk.Tk()
         self.root.title("XXMXLI Security Monitor - Advanced Dashboard")
         self.root.geometry("1200x800")
@@ -216,6 +223,29 @@ class SecurityMonitorGUI:
         
         # Store reference for updates
         setattr(self, f'metric_{title.lower().replace(" ", "_")}_value', value_label)
+        
+    def check_display(self):
+        """Check if display is available for GUI"""
+        try:
+            # Check if DISPLAY environment variable is set
+            if os.environ.get('DISPLAY'):
+                return True
+            
+            # Check if we're on Windows (always has display)
+            if platform.system() == 'Windows':
+                return True
+                
+            # Check if we can connect to X server
+            try:
+                import subprocess
+                result = subprocess.run(['xset', 'q'], 
+                                      capture_output=True, timeout=5)
+                return result.returncode == 0
+            except:
+                return False
+                
+        except Exception:
+            return False
         
     def create_main_tabs(self):
         """Create main tabbed interface"""
