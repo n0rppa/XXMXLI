@@ -7,6 +7,31 @@ command = ""
   to = "/index.html"
   status = 200
 
+# Serve script files as attachments for download
+[[headers]]
+  for = "/*.py"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Content-Disposition = "attachment"
+
+[[headers]]
+  for = "/*.sh"
+  [headers.values]
+    Content-Type = "text/x-shellscript; charset=utf-8"
+    Content-Disposition = "attachment"
+
+[[headers]]
+  for = "/*.ps1"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Content-Disposition = "attachment"
+
+[[headers]]
+  for = "/*.bat"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Content-Disposition = "attachment"
+
 [[redirects]]
   from = "/musiikki"
   to = "/pages/music.html"
