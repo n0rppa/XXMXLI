@@ -460,6 +460,63 @@
             margin-right: 0.5rem;
         }
 
+        .legal-warning {
+            background: rgba(255, 68, 68, 0.1);
+            border: 2px solid var(--warning);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .legal-warning h3 {
+            color: var(--warning);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .legal-warning p {
+            margin-bottom: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .legal-warning ul {
+            margin: 0.5rem 0 0.5rem 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .legal-warning li {
+            margin-bottom: 0.3rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0.5rem 0;
+        }
+
+        .feature-list li {
+            padding: 0.2rem 0;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .feature-list li:before {
+            content: "✓ ";
+            color: var(--accent);
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .section-description {
+            color: var(--text-secondary);
+            font-style: italic;
+            margin-bottom: 1.5rem;
+            padding: 0.8rem;
+            background: rgba(0, 204, 0, 0.05);
+            border-left: 3px solid var(--accent);
+        }
+
         .status-message {
             padding: 0.5rem;
             margin-top: 0.5rem;
@@ -798,6 +855,95 @@ python process_w_blacklists.py
                 <a href="encryption_tools.ps1" class="download-btn" download>
                     <i class="fas fa-key"></i> Download
                 </a>
+            </div>
+        </section>
+
+        <section class="tools-section">
+            <h2><i class="fas fa-exclamation-triangle"></i> Automated Incident Reporting Tools</h2>
+            <p class="section-description">Professional-grade incident reporting system that automatically reports security incidents to law enforcement and cybersecurity authorities through secure channels.</p>
+            
+            <div class="tool-item">
+                <div class="tool-info">
+                    <h3>Automated Incident Reporter (Linux/Unix)</h3>
+                    <p>Comprehensive security incident detection and automated reporting to FBI IC3, CISA, Europol EC3, and other authorities. Features evidence collection, encryption, and secure transmission.</p>
+                    <ul class="feature-list">
+                        <li>Automated reporting to FBI IC3, CISA, Europol</li>
+                        <li>Evidence collection and chain of custody</li>
+                        <li>GPG encryption for sensitive data</li>
+                        <li>Real-time monitoring and batch processing</li>
+                        <li>Configurable severity thresholds</li>
+                        <li>Email notifications and secure transmission</li>
+                    </ul>
+                </div>
+                <a href="automated_incident_reporter.sh" class="download-btn" download>
+                    <i class="fas fa-shield-alt"></i> Download
+                </a>
+            </div>
+
+            <div class="tool-item">
+                <div class="tool-info">
+                    <h3>Automated Incident Reporter (Windows PowerShell)</h3>
+                    <p>Windows PowerShell-based incident reporting system with Windows Event Log integration, registry monitoring, and automated submission to cybersecurity authorities.</p>
+                    <ul class="feature-list">
+                        <li>Windows Event Log analysis and reporting</li>
+                        <li>Registry and service monitoring</li>
+                        <li>Automated CISA and FBI IC3 submissions</li>
+                        <li>Certificate-based encryption</li>
+                        <li>Scheduled task integration</li>
+                        <li>PowerShell cmdlet compatibility</li>
+                    </ul>
+                </div>
+                <a href="automated_incident_reporter.ps1" class="download-btn" download>
+                    <i class="fas fa-shield-alt"></i> Download
+                </a>
+            </div>
+
+            <div class="tool-item">
+                <div class="tool-info">
+                    <h3>Automated Incident Reporter (Python Cross-Platform)</h3>
+                    <p>Cross-platform Python-based incident reporting with advanced threat detection, machine learning capabilities, and multi-authority reporting support.</p>
+                    <ul class="feature-list">
+                        <li>Cross-platform compatibility (Windows, Linux, macOS)</li>
+                        <li>Advanced process and network monitoring</li>
+                        <li>SQLite database for incident tracking</li>
+                        <li>SMTP email integration</li>
+                        <li>REST API for external integration</li>
+                        <li>Comprehensive evidence collection</li>
+                    </ul>
+                </div>
+                <a href="automated_incident_reporter.py" class="download-btn" download>
+                    <i class="fas fa-shield-alt"></i> Download
+                </a>
+            </div>
+
+            <div class="legal-warning">
+                <h3><i class="fas fa-exclamation-triangle"></i> Legal Notice - Incident Reporting</h3>
+                <p><strong>WARNING:</strong> These incident reporting tools are designed to automatically submit reports to law enforcement and cybersecurity authorities. Any unauthorized access attempts, network scanning, intrusion, or abusive activity will be logged and reported to the appropriate authorities.</p>
+                
+                <p>IP addresses and metadata may be retained and used for legal enforcement, in compliance with applicable laws. By using these tools, you acknowledge that:</p>
+                
+                <ul>
+                    <li>You are authorized to deploy these monitoring and reporting systems</li>
+                    <li>Any misuse may result in account suspension, firewall bans, or prosecution</li>
+                    <li>Violators may be subject to civil and/or criminal penalties</li>
+                    <li>All activities are being monitored and logged</li>
+                </ul>
+                
+                <p><strong>Authorities that may receive reports include:</strong></p>
+                <ul>
+                    <li>FBI Internet Crime Complaint Center (IC3)</li>
+                    <li>Cybersecurity and Infrastructure Security Agency (CISA)</li>
+                    <li>Europol European Cybercrime Centre (EC3)</li>
+                    <li>National Computer Emergency Response Teams (CERTs)</li>
+                    <li>Local law enforcement cybercrime units</li>
+                    <li>Financial crimes enforcement agencies</li>
+                </ul>
+                
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <a href="INCIDENT_REPORTING_README.md" class="download-btn" download>
+                        <i class="fas fa-book"></i> Complete Documentation & Setup Guide
+                    </a>
+                </div>
             </div>
         </section>
 
@@ -1150,6 +1296,36 @@ python process_w_blacklists.py
     </div>
     
     <div class="tool-section">
+        <h2>🚨 Automated Incident Reporting (NEW)</h2>
+        <a href="automated_incident_reporter.sh" class="download-link" download>⚡ Linux Incident Reporter</a>
+        <div class="description">Automated reporting to FBI IC3, CISA, and other authorities</div>
+        
+        <a href="automated_incident_reporter.ps1" class="download-link" download>⚡ Windows PowerShell Incident Reporter</a>
+        <div class="description">Windows-specific incident detection and authority reporting</div>
+        
+        <a href="automated_incident_reporter.py" class="download-link" download>⚡ Cross-Platform Python Incident Reporter</a>
+        <div class="description">Universal incident reporting with advanced threat detection</div>
+    </div>
+    
+    <div class="tool-section">
+        <h2>🪟 Windows PowerShell Tools</h2>
+        <a href="dns_security_setup.ps1" class="download-link" download>🛡️ DNS Security (PowerShell)</a>
+        <div class="description">Windows DNS security with PowerShell cmdlets</div>
+        
+        <a href="system_hardening.ps1" class="download-link" download>🔒 System Hardening (PowerShell)</a>
+        <div class="description">Windows system hardening and registry security</div>
+        
+        <a href="network_monitor.ps1" class="download-link" download>📊 Network Monitor (PowerShell)</a>
+        <div class="description">Windows network monitoring with PowerShell</div>
+        
+        <a href="secure_tunnel.ps1" class="download-link" download>🚇 Secure Tunnel (PowerShell)</a>
+        <div class="description">Windows SSH tunnel management with OpenSSH</div>
+        
+        <a href="encryption_tools.ps1" class="download-link" download>🔐 Encryption Tools (PowerShell)</a>
+        <div class="description">Windows encryption using PowerShell and .NET</div>
+    </div>
+    
+    <div class="tool-section">
         <h2>📄 Cross-Platform Tools</h2>
         <a href="process_w_blacklists.py" class="download-link" download>� IP Blacklist Processor (Python)</a>
         <div class="description">Cross-platform IP blocking with multiple blacklist sources</div>
@@ -1200,7 +1376,52 @@ python process_w_blacklists.py
             <li>Secure Tunneling: SSH tunnels, SOCKS proxy</li>
             <li>Encryption: AES/GPG encryption, secure deletion</li>
             <li>IP Blocking: Multiple blacklist sources, real-time protection</li>
+            <li>Incident Reporting: Automated law enforcement notifications</li>
         </ul>
+        
+        <h3>🚨 Automated Incident Reporting Setup:</h3>
+        <ol style="color: #ff8800;">
+            <li><strong>Configure Organization Details:</strong>
+                <ul style="margin-top: 0.5rem;">
+                    <li>Edit configuration files with your organization information</li>
+                    <li>Set up SMTP server details for email notifications</li>
+                    <li>Configure GPG keys for encryption (optional but recommended)</li>
+                </ul>
+            </li>
+            <li><strong>Set Reporting Thresholds:</strong>
+                <ul style="margin-top: 0.5rem;">
+                    <li>Adjust severity levels for automatic reporting</li>
+                    <li>Configure which authorities receive different incident types</li>
+                    <li>Set batch processing intervals for monitoring</li>
+                </ul>
+            </li>
+            <li><strong>Test the System:</strong>
+                <ul style="margin-top: 0.5rem;">
+                    <li>Run test incidents to verify configuration</li>
+                    <li>Confirm email delivery and report generation</li>
+                    <li>Verify evidence collection is working</li>
+                </ul>
+            </li>
+            <li><strong>Deploy Monitoring:</strong>
+                <ul style="margin-top: 0.5rem;">
+                    <li>Install as system service for continuous monitoring</li>
+                    <li>Configure log rotation and storage policies</li>
+                    <li>Set up regular backup of incident data</li>
+                </ul>
+            </li>
+            <li><strong>Legal Compliance:</strong>
+                <ul style="margin-top: 0.5rem;">
+                    <li>Ensure proper authorization for deployment</li>
+                    <li>Review local laws regarding incident reporting</li>
+                    <li>Maintain chain of custody for evidence</li>
+                    <li>Document deployment and configuration</li>
+                </ul>
+            </li>
+        </ol>
+        
+        <div style="background: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+            <p style="color: #ff4444; margin: 0;"><strong>⚠️ WARNING:</strong> Incident reporting tools will automatically submit reports to law enforcement and cybersecurity authorities. Ensure you have proper authorization and understand the legal implications before deployment.</p>
+        </div>
     </div>
     
     <div class="tool-section">
