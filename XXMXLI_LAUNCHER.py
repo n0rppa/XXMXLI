@@ -1,18 +1,36 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+#!/usr/bin/env python3
 """
-================================================================
-XXMXLI MASTER CONTROL LAUNCHER
-Professional Interactive System Management Hub
-================================================================
+XXMXLI Master Control Launcher v2.0.0
+Professional System Management Hub with Enhanced Security
 
-Ultimate ease-of-use interface for all XXMXLI system operations.
-No more separate commands - everything accessible from one beautiful interface.
+A comprehensive control center for all XXMXLI operations including:
+- Security monitoring and threat intelligence
+- System health diagnostics  
+- Automated incident reporting
+- IP blocking deployment
+- Content management (Admin Only)
+- System administration (Admin Only)
+
+Features:
+- Beautiful interactive interface with ANSI colors
+- Admin authentication for sensitive operations
+- Cross-platform compatibility
+- Professional error handling
+- Comprehensive logging
 
 Author: XXMXLI Security Team
-Version: 1.0.0
 """
+
+import os
+import sys
+import subprocess
+import signal
+import time
+import getpass
+from datetime import datetime
 
 import os
 import sys
@@ -60,8 +78,10 @@ class Symbols:
 class XXMXLILauncher:
     def __init__(self):
         self.running = True
+        self.admin_authenticated = False
         self.setup_signal_handlers()
         self.check_environment()
+        self.check_admin_credentials()
         
     def setup_signal_handlers(self):
         """Setup graceful shutdown on Ctrl+C"""
@@ -73,6 +93,136 @@ class XXMXLILauncher:
         print(f"\n{Colors.YELLOW}{Symbols.WARNING} Graceful shutdown initiated...{Colors.NC}")
         self.running = False
         sys.exit(0)
+    
+    def check_admin_credentials(self):
+        """Check for admin credentials file and validate access"""
+        admin_file = "ADMIN_CREDENTIALS_SECURE.txt"
+        
+        if not os.path.isfile(admin_file):
+            self.warn("Admin features disabled - no credentials file found")
+            return
+            
+        # Check if user is in admin directory (basic security check)
+        if os.path.basename(os.getcwd()) == "admin":
+            self.admin_authenticated = True
+            self.success("Admin mode enabled")
+        elif os.path.isfile("admin/.htaccess"):
+            # Check if running from root directory with admin protection
+            self.info("Admin features require proper authentication")
+            choice = input(f"{Colors.YELLOW}Access admin features? [y/N]: {Colors.NC}").strip().lower()
+            if choice == 'y':
+                self.authenticate_admin()
+        else:
+            self.info("Running in public mode - admin features disabled")
+    
+    def authenticate_admin(self):
+        """Enhanced admin authentication with username/password"""
+        try:
+            print(f"\n{Colors.CYAN}🔐 ADMIN AUTHENTICATION{Colors.NC}")
+            print("================================================================")
+            print(f"{Colors.YELLOW}{Symbols.WARNING} Admin access required for content management features{Colors.NC}")
+            print()
+            
+            # Option 1: Username/Password authentication
+            print(f"{Colors.CYAN}1) Username/Password Authentication{Colors.NC}")
+            print(f"{Colors.CYAN}2) Legacy Key Authentication{Colors.NC}")
+            print()
+            
+            auth_method = input(f"{Colors.YELLOW}Choose authentication method [1-2]: {Colors.NC}").strip()
+            
+            if auth_method == "1":
+                # Username/password authentication
+                username = input(f"{Colors.CYAN}Username: {Colors.NC}").strip()
+                if not username:
+                    self.error("Username cannot be empty")
+                    input("Press Enter to continue...")
+                    return False
+                
+                password = getpass.getpass(f"{Colors.CYAN}Password: {Colors.NC}")
+                if not password:
+                    self.error("Password cannot be empty")
+                    input("Press Enter to continue...")
+                    return False
+                
+                # Check credentials against stored file (format: username:password)
+                creds_file = os.path.join(os.path.dirname(__file__), 'ADMIN_CREDENTIALS_SECURE.txt')
+                if not os.path.exists(creds_file):
+                    self.error("Admin credentials file not found - contact system administrator")
+                    input("Press Enter to continue...")
+                    return False
+                
+                try:
+                    with open(creds_file, 'r') as f:
+                        lines = f.read().strip().split('\n')
+                        # Check if first line is username:password format or legacy key
+                        if ':' in lines[0]:
+                            stored_creds = lines[0].split(':')
+                            if len(stored_creds) >= 2:
+                                stored_username, stored_password = stored_creds[0], stored_creds[1]
+                                
+                                if username == stored_username and password == stored_password:
+                                    self.admin_authenticated = True
+                                    self.success("Admin authentication successful!")
+                                    self.info("Full system access granted")
+                                    input("Press Enter to continue...")
+                                    return True
+                                else:
+                                    self.error("Invalid credentials")
+                                    input("Press Enter to continue...")
+                                    return False
+                        else:
+                            self.error("Credentials file format not compatible with username/password authentication")
+                            self.info("Use legacy key authentication or update credentials file")
+                            input("Press Enter to continue...")
+                            return False
+                            
+                except Exception as e:
+                    self.error(f"Error reading credentials file: {e}")
+                    input("Press Enter to continue...")
+                    return False
+            
+            elif auth_method == "2":
+                # Legacy key authentication
+                admin_key = getpass.getpass(f"{Colors.CYAN}Enter admin access key: {Colors.NC}")
+                
+                # Check against credentials file
+                if os.path.isfile("ADMIN_CREDENTIALS_SECURE.txt"):
+                    with open("ADMIN_CREDENTIALS_SECURE.txt", "r") as f:
+                        stored_content = f.read().strip()
+                        # If it's username:password format, use the password part
+                        if ':' in stored_content:
+                            stored_key = stored_content.split(':')[1]
+                        else:
+                            stored_key = stored_content
+                            
+                        if admin_key == stored_key:
+                            self.admin_authenticated = True
+                            self.success("Admin authentication successful")
+                            self.info("Full system access granted")
+                            input("Press Enter to continue...")
+                            return True
+                        else:
+                            self.error("Invalid admin credentials")
+                            self.warn("Admin features remain disabled")
+                            input("Press Enter to continue...")
+                            return False
+                else:
+                    self.error("Admin credentials file not found")
+                    input("Press Enter to continue...")
+                    return False
+            else:
+                self.error("Invalid authentication method")
+                input("Press Enter to continue...")
+                return False
+                
+        except KeyboardInterrupt:
+            print(f"\n{Colors.YELLOW}Authentication cancelled{Colors.NC}")
+            input("Press Enter to continue...")
+            return False
+        except Exception as e:
+            self.error(f"Authentication error: {str(e)}")
+            input("Press Enter to continue...")
+            return False
     
     def check_environment(self):
         """Verify we're in the correct XXMXLI directory"""
@@ -164,6 +314,10 @@ class XXMXLILauncher:
             self.show_system_status()
             
             print(f"{Colors.WHITE}{Symbols.ARROW} XXMXLI OPERATIONS CENTER{Colors.NC}")
+            if self.admin_authenticated:
+                print(f"{Colors.GREEN}🔓 ADMIN MODE ENABLED{Colors.NC}")
+            else:
+                print(f"{Colors.YELLOW}🔒 PUBLIC MODE - Limited Features{Colors.NC}")
             print("================================================================")
             print()
             print(f"{Colors.GREEN}📊 MONITORING & ANALYTICS{Colors.NC}")
@@ -176,25 +330,46 @@ class XXMXLILauncher:
             print(f"  {Colors.BLUE}5){Colors.NC} {Symbols.GEAR} Automated Incident Reporter")
             print(f"  {Colors.BLUE}6){Colors.NC} {Symbols.GLOBE} Development Server Management")
             print()
-            print(f"{Colors.PURPLE}🎵 CONTENT MANAGEMENT{Colors.NC}")
-            print(f"  {Colors.PURPLE}7){Colors.NC} {Symbols.STAR} Music Library Manager")
-            print(f"  {Colors.PURPLE}8){Colors.NC} {Symbols.DIAMOND} Photo Gallery Manager")
-            print(f"  {Colors.PURPLE}9){Colors.NC} {Symbols.FILE} Content Update System")
-            print()
-            print(f"{Colors.YELLOW}⚙️ SYSTEM UTILITIES{Colors.NC}")
-            print(f"  {Colors.YELLOW}10){Colors.NC} {Symbols.LIGHTNING} Automated System Updates")
-            print(f"  {Colors.YELLOW}11){Colors.NC} {Symbols.MAGNIFY} Database Management")
-            print(f"  {Colors.YELLOW}12){Colors.NC} {Symbols.FIRE} Emergency Procedures")
-            print()
+            
+            # Admin-only content management section
+            if self.admin_authenticated:
+                print(f"{Colors.PURPLE}🎵 CONTENT MANAGEMENT (ADMIN ONLY){Colors.NC}")
+                print(f"  {Colors.PURPLE}7){Colors.NC} {Symbols.STAR} Music Library Manager")
+                print(f"  {Colors.PURPLE}8){Colors.NC} {Symbols.DIAMOND} Photo Gallery Manager")
+                print(f"  {Colors.PURPLE}9){Colors.NC} {Symbols.FILE} Content Update System")
+                print()
+                print(f"{Colors.YELLOW}⚙️ SYSTEM UTILITIES (ADMIN ONLY){Colors.NC}")
+                print(f"  {Colors.YELLOW}10){Colors.NC} {Symbols.LIGHTNING} Automated System Updates")
+                print(f"  {Colors.YELLOW}11){Colors.NC} {Symbols.MAGNIFY} Database Management")
+                print(f"  {Colors.YELLOW}12){Colors.NC} {Symbols.FIRE} Emergency Procedures")
+                print()
+            else:
+                print(f"{Colors.GRAY}🔒 ADMIN FEATURES (AUTHENTICATION REQUIRED){Colors.NC}")
+                print(f"  {Colors.GRAY}7){Colors.NC} {Colors.GRAY}🔒 Content Management (Admin Only){Colors.NC}")
+                print(f"  {Colors.GRAY}8){Colors.NC} {Colors.GRAY}🔒 System Administration (Admin Only){Colors.NC}")
+                print(f"  {Colors.GRAY}9){Colors.NC} {Colors.GRAY}🔒 Emergency Procedures (Admin Only){Colors.NC}")
+                print()
+                print(f"  {Colors.CYAN}10){Colors.NC} {Symbols.GEAR} Request Admin Access")
+                print()
+            
             print(f"{Colors.CYAN}📚 INFORMATION & HELP{Colors.NC}")
-            print(f"  {Colors.CYAN}13){Colors.NC} {Symbols.INFO} System Documentation")
-            print(f"  {Colors.CYAN}14){Colors.NC} {Symbols.CROWN} About XXMXLI System")
+            if self.admin_authenticated:
+                print(f"  {Colors.CYAN}13){Colors.NC} {Symbols.INFO} System Documentation")
+                print(f"  {Colors.CYAN}14){Colors.NC} {Symbols.CROWN} About XXMXLI System")
+            else:
+                print(f"  {Colors.CYAN}11){Colors.NC} {Symbols.INFO} System Documentation")
+                print(f"  {Colors.CYAN}12){Colors.NC} {Symbols.CROWN} About XXMXLI System")
             print()
             print(f"{Colors.RED}0){Colors.NC} {Symbols.CROSS} Exit Launcher")
             print()
             
             try:
-                choice = input(f"{Colors.YELLOW}Choose operation [0-14]: {Colors.NC}").strip()
+                if self.admin_authenticated:
+                    choice = input(f"{Colors.YELLOW}Choose operation [0-14]: {Colors.NC}").strip()
+                    max_choice = 14
+                else:
+                    choice = input(f"{Colors.YELLOW}Choose operation [0-12]: {Colors.NC}").strip()
+                    max_choice = 12
                 
                 if choice == '0':
                     self.exit_launcher()
@@ -211,23 +386,44 @@ class XXMXLILauncher:
                 elif choice == '6':
                     self.launch_server_management()
                 elif choice == '7':
-                    self.launch_music_manager()
+                    if self.admin_authenticated:
+                        self.launch_music_manager()
+                    else:
+                        self.error("Access denied - Admin authentication required")
+                        input("Press Enter to continue...")
                 elif choice == '8':
-                    self.launch_gallery_manager()
+                    if self.admin_authenticated:
+                        self.launch_gallery_manager()
+                    else:
+                        self.error("Access denied - Admin authentication required")
+                        input("Press Enter to continue...")
                 elif choice == '9':
-                    self.launch_content_updates()
+                    if self.admin_authenticated:
+                        self.launch_content_updates()
+                    else:
+                        self.error("Access denied - Admin authentication required")
+                        input("Press Enter to continue...")
                 elif choice == '10':
-                    self.launch_system_updates()
+                    if self.admin_authenticated:
+                        self.launch_system_updates()
+                    else:
+                        self.authenticate_admin()
                 elif choice == '11':
-                    self.launch_database_management()
+                    if self.admin_authenticated:
+                        self.launch_database_management()
+                    else:
+                        self.show_documentation()
                 elif choice == '12':
-                    self.launch_emergency_procedures()
-                elif choice == '13':
+                    if self.admin_authenticated:
+                        self.launch_emergency_procedures()
+                    else:
+                        self.show_about()
+                elif choice == '13' and self.admin_authenticated:
                     self.show_documentation()
-                elif choice == '14':
+                elif choice == '14' and self.admin_authenticated:
                     self.show_about()
                 else:
-                    self.error("Invalid choice. Please select 0-14.")
+                    self.error(f"Invalid choice. Please select 0-{max_choice}.")
                     input("Press Enter to continue...")
                     
             except KeyboardInterrupt:
