@@ -415,6 +415,10 @@
         <!-- Authentication Section -->
         <div class="auth-section" id="authSection">
             <h3><i class="fas fa-lock"></i> Admin Authentication Required</h3>
+            <p style="color: #cccccc; margin-bottom: 20px;">
+                <strong>To report security incidents, please authenticate with your admin credentials.</strong><br>
+                This ensures only authorized personnel can submit incident reports.
+            </p>
             <div class="form-row">
                 <div class="form-group">
                     <label for="username">Username:</label>
@@ -426,10 +430,14 @@
                 </div>
             </div>
             <button type="button" class="btn" onclick="authenticate()">
-                <i class="fas fa-sign-in-alt"></i> Authenticate
+                <i class="fas fa-sign-in-alt"></i> Authenticate & Access Incident Reporter
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="enterDemoMode()" style="margin-left: 10px;">
+                <i class="fas fa-eye"></i> View Demo (Read-Only)
             </button>
             <div style="margin-top: 15px; color: #666; font-size: 0.9em;">
-                Valid users: admin, xxmxli, security
+                Valid users: admin, xxmxli, security<br>
+                <strong>Need access?</strong> Contact your system administrator for credentials.
             </div>
         </div>
 
@@ -633,6 +641,81 @@
                 showMessage('Invalid username or password', 'error');
                 document.getElementById('password').value = '';
             }
+        }
+
+        // Demo mode
+        function enterDemoMode() {
+            currentUser = 'demo_user';
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            showMessage('Demo Mode: You can view the interface but cannot submit real incidents.', 'warning');
+            
+            // Load sample demo data
+            loadDemoIncidents();
+            updateAnalytics();
+            
+            // Disable submit button in demo mode
+            const submitBtn = document.querySelector('button[onclick="submitIncident()"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-lock"></i> Demo Mode - Submit Disabled';
+                submitBtn.onclick = function() {
+                    showMessage('Demo Mode: Incident submission is disabled. Please authenticate for full access.', 'warning');
+                };
+            }
+        }
+
+        function loadDemoIncidents() {
+            // Sample demo incidents for demonstration
+            const demoIncidents = [
+                {
+                    id: 'INC-20250830-DEMO1',
+                    title: 'Suspicious Network Activity Detected',
+                    type: 'suspicious_activity',
+                    priority: 'high',
+                    description: 'Unusual outbound connections detected from server-01 to unknown IP addresses.',
+                    reporter: { name: 'Demo User', email: 'demo@xxmxli.com' },
+                    affectedSystems: 'server-01, firewall-02',
+                    location: '192.168.1.100',
+                    additionalNotes: 'Automated detection system flagged this activity.',
+                    files: ['network-logs.txt', 'firewall-report.pdf'],
+                    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+                    status: 'reported',
+                    reportedBy: 'security_system'
+                },
+                {
+                    id: 'INC-20250830-DEMO2',
+                    title: 'Failed Login Attempts from External IP',
+                    type: 'unauthorized_access',
+                    priority: 'medium',
+                    description: 'Multiple failed SSH login attempts detected from IP 203.0.113.42',
+                    reporter: { name: 'Security Monitor', email: 'security@xxmxli.com' },
+                    affectedSystems: 'web-server-01',
+                    location: '203.0.113.42',
+                    additionalNotes: 'IP has been temporarily blocked by fail2ban.',
+                    files: ['ssh-logs.txt'],
+                    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 hours ago
+                    status: 'reported',
+                    reportedBy: 'admin'
+                },
+                {
+                    id: 'INC-20250829-DEMO3',
+                    title: 'Malware Signature Detected',
+                    type: 'malware',
+                    priority: 'critical',
+                    description: 'Antivirus software detected potential malware in uploaded file.',
+                    reporter: { name: 'AV System', email: 'antivirus@xxmxli.com' },
+                    affectedSystems: 'file-server-01',
+                    location: '/uploads/suspicious_file.exe',
+                    additionalNotes: 'File has been quarantined and user notified.',
+                    files: ['av-report.pdf', 'file-analysis.txt'],
+                    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 24 hours ago
+                    status: 'reported',
+                    reportedBy: 'security'
+                }
+            ];
+            
+            incidents = demoIncidents;
+            displayIncidents();
         }
 
         // Tab switching
