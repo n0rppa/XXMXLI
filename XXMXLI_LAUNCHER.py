@@ -108,6 +108,53 @@ class XXMXLILauncher:
         if choice == 'y':
             self.authenticate_admin()
     
+    def authenticate_admin_prompt(self, feature_name="admin feature"):
+        """Prompt for admin credentials when accessing specific admin features"""
+        print(f"\n{Colors.CYAN}🔐 ADMIN AUTHENTICATION REQUIRED{Colors.NC}")
+        print(f"{Colors.YELLOW}{Symbols.WARNING} {feature_name} requires admin credentials{Colors.NC}")
+        print(f"{Colors.GRAY}────────────────────────────────────────────────{Colors.NC}")
+        
+        # Define valid admin credentials (same as security monitor)
+        admin_credentials = {
+            "admin": "xxmxli_security_2024",
+            "xxmxli": "admin_secure_pass",
+            "security": "monitor_access_2024"
+        }
+        
+        max_attempts = 3
+        for attempt in range(max_attempts):
+            try:
+                print(f"\n{Colors.CYAN}Attempt {attempt + 1} of {max_attempts}{Colors.NC}")
+                
+                # Get username
+                username = input(f"{Colors.BLUE}Admin Username: {Colors.NC}").strip()
+                if not username:
+                    self.warn("Username cannot be empty")
+                    continue
+                
+                # Get password (hidden input)
+                import getpass
+                password = getpass.getpass(f"{Colors.BLUE}Admin Password: {Colors.NC}")
+                
+                # Validate credentials
+                if username in admin_credentials and admin_credentials[username] == password:
+                    self.success(f"Authentication successful! Welcome, {username}")
+                    return True
+                else:
+                    self.error("Invalid username or password")
+                    if attempt < max_attempts - 1:
+                        print(f"{Colors.YELLOW}Please try again...{Colors.NC}")
+                    
+            except KeyboardInterrupt:
+                print(f"\n{Colors.YELLOW}Authentication cancelled{Colors.NC}")
+                return False
+            except Exception as e:
+                self.error(f"Authentication error: {e}")
+                return False
+        
+        self.error("Maximum authentication attempts exceeded")
+        return False
+
     def authenticate_admin(self):
         """Enhanced admin authentication with username/password"""
         try:
@@ -346,8 +393,14 @@ class XXMXLILauncher:
                 print()
             else:
                 print(f"{Colors.GRAY}🔒 ADMIN FEATURES (AUTHENTICATION REQUIRED){Colors.NC}")
-                print(f"  {Colors.GRAY}7){Colors.NC} {Colors.GRAY}🔒 Content Management (Admin Only){Colors.NC}")
-                print(f"  {Colors.GRAY}8){Colors.NC} {Colors.GRAY}🔒 System Administration (Admin Only){Colors.NC}")
+                print(f"  {Colors.GRAY}7){Colors.NC} {Colors.GRAY}🎵 Music Library Manager (Enter credentials when prompted){Colors.NC}")
+                print(f"  {Colors.GRAY}8){Colors.NC} {Colors.GRAY}📸 Photo Gallery Manager (Enter credentials when prompted){Colors.NC}")
+                print(f"  {Colors.GRAY}9){Colors.NC} {Colors.GRAY}📄 Content Update System (Enter credentials when prompted){Colors.NC}")
+                print(f"  {Colors.GRAY}10){Colors.NC} {Colors.GRAY}� System Information (Enter credentials when prompted){Colors.NC}")
+                print(f"  {Colors.GRAY}11){Colors.NC} {Colors.GRAY}🗄️ Database Status (Enter credentials when prompted){Colors.NC}")
+                print(f"  {Colors.GRAY}12){Colors.NC} {Colors.GRAY}🚨 Emergency Information (Enter credentials when prompted){Colors.NC}")
+                print()
+                print(f"{Colors.CYAN}💡 Valid admin users: admin, xxmxli, security{Colors.NC}")
                 print(f"  {Colors.GRAY}9){Colors.NC} {Colors.GRAY}🔒 Emergency Procedures (Admin Only){Colors.NC}")
                 print()
                 print(f"  {Colors.CYAN}10){Colors.NC} {Symbols.GEAR} Request Admin Access")
@@ -387,35 +440,35 @@ class XXMXLILauncher:
                 elif choice == '6':
                     self.open_analytics_dashboard()
                 elif choice == '7':
-                    if self.admin_authenticated:
+                    if self.admin_authenticated or self.authenticate_admin_prompt("Music Library Manager"):
                         self.launch_music_manager()
                     else:
-                        self.error("Access denied - Admin authentication required")
+                        self.error("Access denied - Authentication failed")
                         input("Press Enter to continue...")
                 elif choice == '8':
-                    if self.admin_authenticated:
+                    if self.admin_authenticated or self.authenticate_admin_prompt("Photo Gallery Manager"):
                         self.launch_gallery_manager()
                     else:
-                        self.error("Access denied - Admin authentication required")
+                        self.error("Access denied - Authentication failed")
                         input("Press Enter to continue...")
                 elif choice == '9':
-                    if self.admin_authenticated:
+                    if self.admin_authenticated or self.authenticate_admin_prompt("Content Update System"):
                         self.launch_content_updates()
                     else:
-                        self.error("Access denied - Admin authentication required")
+                        self.error("Access denied - Authentication failed")
                         input("Press Enter to continue...")
                 elif choice == '10':
-                    if self.admin_authenticated:
+                    if self.admin_authenticated or self.authenticate_admin_prompt("System Information Viewer"):
                         self.show_system_status_detailed()
                     else:
                         self.authenticate_admin()
                 elif choice == '11':
-                    if self.admin_authenticated:
+                    if self.admin_authenticated or self.authenticate_admin_prompt("Database Status Viewer"):
                         self.view_database_status()
                     else:
                         self.show_documentation()
                 elif choice == '12':
-                    if self.admin_authenticated:
+                    if self.admin_authenticated or self.authenticate_admin_prompt("Emergency Information"):
                         self.launch_safe_emergency_info()
                     else:
                         self.show_about()
