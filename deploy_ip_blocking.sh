@@ -1,4 +1,4 @@
-#!/bin/bash
+        #!/bin/bash
 
 # ========================================
 # XXMXLI SAFE IP BLOCKING DEPLOYMENT
@@ -23,8 +23,7 @@ echo "=================================================="
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 BACKUP_DIR="backups_$TIMESTAMP"
 MAIN_HTACCESS=".htaccess"
-ADMIN_HTACCESS="admin/.htaccess"
-GENERATED_BLOCKS=".htaccess_generated_blocks"
+ADMIN_HTACCESS="admin/.htaccess"q   
 ADMIN_BLOCKS="admin/.htaccess_ip_blocks"
 
 # Check if we're in the right directory

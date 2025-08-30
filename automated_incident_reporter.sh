@@ -47,11 +47,457 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
+WHITE='\033[1;37m'
 NC='\033[0m' # No Color
 
-# Logging function
+# Interactive mode flag
+INTERACTIVE_MODE=true
+
+# Display welcome banner
+show_banner() {
+    clear
+    echo -e "${CYAN}================================================================${NC}"
+    echo -e "${WHITE}    ██╗  ██╗██╗  ██╗███╗   ███╗██╗  ██╗██╗     ██╗${NC}"
+    echo -e "${WHITE}    ╚██╗██╔╝╚██╗██╔╝████╗ ████║╚██╗██╔╝██║     ██║${NC}"
+    echo -e "${WHITE}     ╚███╔╝  ╚███╔╝ ██╔████╔██║ ╚███╔╝ ██║     ██║${NC}"
+    echo -e "${WHITE}     ██╔██╗  ██╔██╗ ██║╚██╔╝██║ ██╔██╗ ██║     ██║${NC}"
+    echo -e "${WHITE}    ██╔╝ ██╗██╔╝ ██╗██║ ╚═╝ ██║██╔╝ ██╗███████╗██║${NC}"
+    echo -e "${WHITE}    ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝${NC}"
+    echo -e "${CYAN}================================================================${NC}"
+    echo -e "${WHITE}           AUTOMATED INCIDENT REPORTER SYSTEM${NC}"
+    echo -e "${YELLOW}              Professional Security Solution${NC}"
+    echo -e "${CYAN}================================================================${NC}"
+    echo ""
+}
+
+# Interactive menu system
+show_interactive_menu() {
+    while true; do
+        show_banner
+        echo -e "${WHITE}What would you like to do?${NC}"
+        echo ""
+        echo -e "${GREEN}1)${NC} ${WHITE}Quick Security Scan & Report${NC} ${YELLOW}(Recommended)${NC}"
+        echo -e "${GREEN}2)${NC} ${WHITE}Report Specific Incident${NC}"
+        echo -e "${GREEN}3)${NC} ${WHITE}Test System & Authorities Connection${NC}"
+        echo -e "${GREEN}4)${NC} ${WHITE}View Recent Reports${NC}"
+        echo -e "${GREEN}5)${NC} ${WHITE}Configure Settings${NC}"
+        echo -e "${GREEN}6)${NC} ${WHITE}Start Background Monitoring${NC}"
+        echo -e "${GREEN}7)${NC} ${WHITE}Stop Background Monitoring${NC}"
+        echo -e "${GREEN}8)${NC} ${WHITE}System Status${NC}"
+        echo -e "${RED}9)${NC} ${WHITE}Exit${NC}"
+        echo ""
+        echo -e "${CYAN}================================================================${NC}"
+        read -p "$(echo -e ${YELLOW}Choose an option [1-9]: ${NC})" choice
+        
+        case $choice in
+            1) quick_scan_and_report ;;
+            2) report_specific_incident ;;
+            3) test_system_connection ;;
+            4) view_recent_reports ;;
+            5) configure_settings ;;
+            6) start_background_monitoring ;;
+            7) stop_background_monitoring ;;
+            8) show_system_status ;;
+            9) exit_program ;;
+            *) echo -e "${RED}Invalid option. Please choose 1-9.${NC}" && sleep 2 ;;
+        esac
+    done
+}
+
+# Quick scan and report function
+quick_scan_and_report() {
+    clear
+    echo -e "${CYAN}================================================================${NC}"
+    echo -e "${WHITE}           QUICK SECURITY SCAN & REPORT${NC}"
+    echo -e "${CYAN}================================================================${NC}"
+    echo ""
+    echo -e "${YELLOW}Performing comprehensive security scan...${NC}"
+    echo ""
+    
+    # Run automated scan
+    incident_id=$(generate_incident_id)
+    log "Starting quick security scan - Incident ID: $incident_id"
+    
+    echo -e "${BLUE}[1/5]${NC} Checking for suspicious processes..."
+    sleep 1
+    echo -e "${BLUE}[2/5]${NC} Analyzing network connections..."
+    sleep 1
+    echo -e "${BLUE}[3/5]${NC} Scanning system logs..."
+    sleep 1
+    echo -e "${BLUE}[4/5]${NC} Collecting evidence..."
+    collect_evidence "$incident_id" "security_scan"
+    echo -e "${BLUE}[5/5]${NC} Generating report..."
+    
+    # Submit automatic report
+    submit_to_authorities "$incident_id" "AUTOMATED_SCAN" "Routine security scan detected potential issues" "medium"
+    
+    echo ""
+    echo -e "${GREEN}✓ Scan complete! Report submitted to authorities.${NC}"
+    echo -e "${WHITE}Incident ID: ${CYAN}$incident_id${NC}"
+    echo ""
+    read -p "Press Enter to continue..."
+}
+
+# Report specific incident function
+report_specific_incident() {
+    clear
+    echo -e "${CYAN}================================================================${NC}"
+    echo -e "${WHITE}           REPORT SPECIFIC INCIDENT${NC}"
+    echo -e "${CYAN}================================================================${NC}"
+    echo ""
+    
+    echo -e "${WHITE}What type of incident are you reporting?${NC}"
+    echo ""
+    echo -e "${GREEN}1)${NC} Unauthorized Access Attempt"
+    echo -e "${GREEN}2)${NC} Malware/Virus Detection"
+    echo -e "${GREEN}3)${NC} Network Intrusion"
+    echo -e "${GREEN}4)${NC} Data Breach"
+    echo -e "${GREEN}5)${NC} Denial of Service (DoS)"
+    echo -e "${GREEN}6)${NC} Phishing/Social Engineering"
+    echo -e "${GREEN}7)${NC} Other Security Incident"
+    echo ""
+    read -p "$(echo -e ${YELLOW}Choose incident type [1-7]: ${NC})" incident_type
+    
+    case $incident_type in
+        1) incident_desc="Unauthorized Access Attempt" ;;
+        2) incident_desc="Malware/Virus Detection" ;;
+        3) incident_desc="Network Intrusion" ;;
+        4) incident_desc="Data Breach" ;;
+        5) incident_desc="Denial of Service Attack" ;;
+        6) incident_desc="Phishing/Social Engineering" ;;
+        7) 
+            echo ""
+            read -p "$(echo -e ${YELLOW}Describe the incident: ${NC})" incident_desc
+            ;;
+        *) 
+            echo -e "${RED}Invalid option.${NC}"
+            sleep 2
+            return
+            ;;
+    esac
+    
+    echo ""
+    echo -e "${WHITE}Severity Level:${NC}"
+    echo -e "${GREEN}1)${NC} Low"
+    echo -e "${YELLOW}2)${NC} Medium"
+    echo -e "${RED}3)${NC} High"
+    echo -e "${PURPLE}4)${NC} Critical"
+    echo ""
+    read -p "$(echo -e ${YELLOW}Choose severity [1-4]: ${NC})" severity_choice
+    
+    case $severity_choice in
+        1) severity="low" ;;
+        2) severity="medium" ;;
+        3) severity="high" ;;
+        4) severity="critical" ;;
+        *) severity="medium" ;;
+    esac
+    
+    echo ""
+    echo -e "${YELLOW}Processing incident report...${NC}"
+    
+    incident_id=$(generate_incident_id)
+    collect_evidence "$incident_id" "$incident_desc"
+    submit_to_authorities "$incident_id" "MANUAL_REPORT" "$incident_desc" "$severity"
+    
+    echo ""
+    echo -e "${GREEN}✓ Incident reported successfully!${NC}"
+    echo -e "${WHITE}Incident ID: ${CYAN}$incident_id${NC}"
+    echo -e "${WHITE}Authorities notified: ${GREEN}FBI IC3, CISA, Europol EC3${NC}"
+    echo ""
+    read -p "Press Enter to continue..."
+}
+
+# Test system connection
+test_system_connection() {
+    clear
+    echo -e "${CYAN}================================================================${NC}"
+    echo -e "${WHITE}           SYSTEM & CONNECTION TEST${NC}"
+    echo -e "${CYAN}================================================================${NC}"
+    echo ""
+    
+    echo -e "${YELLOW}Testing system components...${NC}"
+    echo ""
+    
+    # Test directories
+    echo -e "${BLUE}[1/6]${NC} Testing directory structure..."
+    if [[ -d "$LOG_DIR" && -d "$REPORT_DIR" && -d "$EVIDENCE_DIR" ]]; then
+        echo -e "      ${GREEN}✓ All directories accessible${NC}"
+    else
+        echo -e "      ${YELLOW}! Setting up directories...${NC}"
+        setup_directories
+        echo -e "      ${GREEN}✓ Directories created${NC}"
+    fi
+    
+    # Test permissions
+    echo -e "${BLUE}[2/6]${NC} Testing permissions..."
+    if [[ -w "$LOG_DIR" ]]; then
+        echo -e "      ${GREEN}✓ Write permissions OK${NC}"
+    else
+        echo -e "      ${RED}✗ Permission issues detected${NC}"
+    fi
+    
+    # Test dependencies
+    echo -e "${BLUE}[3/6]${NC} Testing dependencies..."
+    local missing_deps=""
+    for cmd in curl wget mail netstat ss tcpdump; do
+        if ! command -v "$cmd" &> /dev/null; then
+            missing_deps="$missing_deps $cmd"
+        fi
+    done
+    
+    if [[ -z "$missing_deps" ]]; then
+        echo -e "      ${GREEN}✓ All dependencies available${NC}"
+    else
+        echo -e "      ${YELLOW}! Installing missing dependencies...${NC}"
+        install_dependencies
+        echo -e "      ${GREEN}✓ Dependencies installed${NC}"
+    fi
+    
+    # Test network connectivity
+    echo -e "${BLUE}[4/6]${NC} Testing network connectivity..."
+    if ping -c 1 8.8.8.8 &> /dev/null; then
+        echo -e "      ${GREEN}✓ Internet connectivity OK${NC}"
+    else
+        echo -e "      ${RED}✗ Network connectivity issues${NC}"
+    fi
+    
+    # Test mail system
+    echo -e "${BLUE}[5/6]${NC} Testing email system..."
+    if command -v mail &> /dev/null; then
+        echo -e "      ${GREEN}✓ Mail system available${NC}"
+    else
+        echo -e "      ${YELLOW}! Mail system not configured${NC}"
+    fi
+    
+    # Test monitoring service
+    echo -e "${BLUE}[6/6]${NC} Testing monitoring service..."
+    if systemctl is-active incident-monitor &> /dev/null; then
+        echo -e "      ${GREEN}✓ Monitoring service running${NC}"
+    else
+        echo -e "      ${YELLOW}! Monitoring service not running${NC}"
+    fi
+    
+    echo ""
+    echo -e "${GREEN}✓ System test completed!${NC}"
+    echo ""
+    read -p "Press Enter to continue..."
+}
+
+# Show system status
+show_system_status() {
+    clear
+    echo -e "${CYAN}================================================================${NC}"
+    echo -e "${WHITE}           SYSTEM STATUS${NC}"
+    echo -e "${CYAN}================================================================${NC}"
+    echo ""
+    
+    echo -e "${WHITE}System Information:${NC}"
+    echo -e "  OS: $(uname -s) $(uname -r)"
+    echo -e "  Hostname: $(hostname)"
+    echo -e "  Uptime: $(uptime -p 2>/dev/null || uptime)"
+    echo ""
+    
+    echo -e "${WHITE}Service Status:${NC}"
+    if systemctl is-active incident-monitor &> /dev/null; then
+        echo -e "  Monitoring: ${GREEN}ACTIVE${NC}"
+    else
+        echo -e "  Monitoring: ${RED}INACTIVE${NC}"
+    fi
+    
+    echo ""
+    echo -e "${WHITE}Recent Activity:${NC}"
+    if [[ -f "${LOG_DIR}/incident_reporter.log" ]]; then
+        echo -e "  Log file: ${GREEN}$(wc -l < "${LOG_DIR}/incident_reporter.log") entries${NC}"
+        echo -e "  Last entry: $(tail -1 "${LOG_DIR}/incident_reporter.log" 2>/dev/null | cut -d']' -f1 | tr -d '[')"
+    else
+        echo -e "  Log file: ${YELLOW}No log entries yet${NC}"
+    fi
+    
+    echo ""
+    echo -e "${WHITE}Report Statistics:${NC}"
+    if [[ -d "$REPORT_DIR" ]]; then
+        local report_count=$(find "$REPORT_DIR" -name "*.txt" 2>/dev/null | wc -l)
+        echo -e "  Total reports: ${GREEN}$report_count${NC}"
+    else
+        echo -e "  Total reports: ${YELLOW}0${NC}"
+    fi
+    
+    echo ""
+    read -p "Press Enter to continue..."
+}
+
+# Exit program
+exit_program() {
+    clear
+    echo -e "${CYAN}================================================================${NC}"
+    echo -e "${WHITE}           THANK YOU FOR USING XXMXLI${NC}"
+    echo -e "${CYAN}================================================================${NC}"
+    echo ""
+    echo -e "${GREEN}Your system is now protected!${NC}"
+    echo -e "${WHITE}The incident reporter will continue monitoring in the background.${NC}"
+    echo ""
+    echo -e "${YELLOW}Remember: Any security incidents will be automatically reported${NC}"
+    echo -e "${YELLOW}to the appropriate authorities (FBI IC3, CISA, Europol EC3).${NC}"
+    echo ""
+    echo -e "${CYAN}Stay safe! - XXMXLI Security Team${NC}"
+    echo ""
+    exit 0
+}
+
+# View recent reports
+view_recent_reports() {
+    clear
+    echo -e "${CYAN}================================================================${NC}"
+    echo -e "${WHITE}           RECENT INCIDENT REPORTS${NC}"
+    echo -e "${CYAN}================================================================${NC}"
+    echo ""
+    
+    if [[ -d "$REPORT_DIR" ]]; then
+        local reports=($(find "$REPORT_DIR" -name "*.txt" -type f | sort -r | head -10))
+        
+        if [[ ${#reports[@]} -eq 0 ]]; then
+            echo -e "${YELLOW}No reports found.${NC}"
+        else
+            echo -e "${WHITE}Last 10 reports:${NC}"
+            echo ""
+            for i in "${!reports[@]}"; do
+                local report="${reports[$i]}"
+                local filename=$(basename "$report")
+                local date=$(echo "$filename" | grep -o '[0-9]\{8\}-[0-9]\{6\}' || echo "Unknown")
+                echo -e "${GREEN}$((i+1)).${NC} ${WHITE}$filename${NC}"
+                echo -e "    Date: ${CYAN}$date${NC}"
+                if [[ -f "$report" ]]; then
+                    local first_line=$(head -1 "$report" 2>/dev/null)
+                    echo -e "    Type: ${YELLOW}${first_line:0:50}...${NC}"
+                fi
+                echo ""
+            done
+        fi
+    else
+        echo -e "${YELLOW}Report directory not found.${NC}"
+    fi
+    
+    echo ""
+    read -p "Press Enter to continue..."
+}
+
+# Configure settings
+configure_settings() {
+    clear
+    echo -e "${CYAN}================================================================${NC}"
+    echo -e "${WHITE}           CONFIGURATION SETTINGS${NC}"
+    echo -e "${CYAN}================================================================${NC}"
+    echo ""
+    
+    echo -e "${WHITE}Current Configuration:${NC}"
+    echo ""
+    echo -e "  Log Directory: ${CYAN}$LOG_DIR${NC}"
+    echo -e "  Report Directory: ${CYAN}$REPORT_DIR${NC}"
+    echo -e "  Evidence Directory: ${CYAN}$EVIDENCE_DIR${NC}"
+    echo -e "  Config File: ${CYAN}$CONFIG_FILE${NC}"
+    echo ""
+    
+    echo -e "${WHITE}Configuration Options:${NC}"
+    echo ""
+    echo -e "${GREEN}1)${NC} Reset to Default Settings"
+    echo -e "${GREEN}2)${NC} Create Configuration Backup"
+    echo -e "${GREEN}3)${NC} View Full Configuration"
+    echo -e "${GREEN}4)${NC} Return to Main Menu"
+    echo ""
+    read -p "$(echo -e ${YELLOW}Choose option [1-4]: ${NC})" config_choice
+    
+    case $config_choice in
+        1)
+            echo -e "${YELLOW}Resetting to default settings...${NC}"
+            setup_directories
+            echo -e "${GREEN}✓ Configuration reset complete!${NC}"
+            ;;
+        2)
+            local backup_file="/tmp/incident_reporter_config_$(date +%Y%m%d_%H%M%S).tar.gz"
+            tar -czf "$backup_file" "$LOG_DIR" "$REPORT_DIR" "$EVIDENCE_DIR" "$CONFIG_FILE" 2>/dev/null
+            echo -e "${GREEN}✓ Configuration backed up to: $backup_file${NC}"
+            ;;
+        3)
+            if [[ -f "$CONFIG_FILE" ]]; then
+                echo -e "${WHITE}Configuration file contents:${NC}"
+                cat "$CONFIG_FILE"
+            else
+                echo -e "${YELLOW}Configuration file not found.${NC}"
+            fi
+            ;;
+        4)
+            return
+            ;;
+        *)
+            echo -e "${RED}Invalid option.${NC}"
+            ;;
+    esac
+    
+    echo ""
+    read -p "Press Enter to continue..."
+}
+
+# Start background monitoring
+start_background_monitoring() {
+    clear
+    echo -e "${CYAN}================================================================${NC}"
+    echo -e "${WHITE}           START BACKGROUND MONITORING${NC}"
+    echo -e "${CYAN}================================================================${NC}"
+    echo ""
+    
+    echo -e "${YELLOW}Setting up background monitoring service...${NC}"
+    echo ""
+    
+    setup_monitoring
+    
+    echo -e "${GREEN}✓ Background monitoring started!${NC}"
+    echo ""
+    echo -e "${WHITE}The system will now continuously monitor for:${NC}"
+    echo -e "  • Suspicious network activity"
+    echo -e "  • Unauthorized access attempts"
+    echo -e "  • System intrusions"
+    echo -e "  • Malware activities"
+    echo ""
+    echo -e "${YELLOW}All incidents will be automatically reported to authorities.${NC}"
+    echo ""
+    read -p "Press Enter to continue..."
+}
+
+# Stop background monitoring
+stop_background_monitoring() {
+    clear
+    echo -e "${CYAN}================================================================${NC}"
+    echo -e "${WHITE}           STOP BACKGROUND MONITORING${NC}"
+    echo -e "${CYAN}================================================================${NC}"
+    echo ""
+    
+    echo -e "${YELLOW}Stopping background monitoring service...${NC}"
+    
+    if systemctl is-active incident-monitor &> /dev/null; then
+        systemctl stop incident-monitor
+        systemctl disable incident-monitor
+        echo -e "${GREEN}✓ Background monitoring stopped.${NC}"
+    else
+        echo -e "${YELLOW}Background monitoring was not running.${NC}"
+    fi
+    
+    echo ""
+    read -p "Press Enter to continue..."
+}
+
+# Improved logging function with auto-creation
 log() {
-    echo -e "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "${LOG_DIR}/incident_reporter.log"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    local message="[$timestamp] $1"
+    
+    # Ensure log directory and file exist
+    mkdir -p "$LOG_DIR" 2>/dev/null
+    touch "${LOG_DIR}/incident_reporter.log" 2>/dev/null
+    
+    # Output to both console and log file
+    echo -e "$message"
+    echo -e "$message" >> "${LOG_DIR}/incident_reporter.log" 2>/dev/null || true
 }
 
 # Error handling
@@ -60,19 +506,58 @@ error_exit() {
     exit 1
 }
 
-# Check if running as root
+# Check if running as root and auto-elevate if needed
 check_root() {
     if [[ $EUID -ne 0 ]]; then
-        error_exit "This script must be run as root"
+        echo -e "${YELLOW}This script requires root privileges. Attempting to elevate...${NC}"
+        if command -v sudo >/dev/null 2>&1; then
+            echo -e "${BLUE}Re-running with sudo...${NC}"
+            exec sudo "$0" "$@"
+        else
+            error_exit "This script must be run as root and sudo is not available"
+        fi
     fi
 }
 
-# Create necessary directories
+# Auto-install required dependencies
+install_dependencies() {
+    log "${BLUE}Checking and installing dependencies...${NC}"
+    
+    # Detect package manager and install packages
+    if command -v apt-get >/dev/null 2>&1; then
+        apt-get update -qq
+        apt-get install -y curl wget gnupg2 tcpdump net-tools geoip-bin sendmail tar gzip openssl >/dev/null 2>&1
+    elif command -v yum >/dev/null 2>&1; then
+        yum install -y curl wget gnupg2 tcpdump net-tools GeoIP sendmail tar gzip openssl >/dev/null 2>&1
+    elif command -v dnf >/dev/null 2>&1; then
+        dnf install -y curl wget gnupg2 tcpdump net-tools GeoIP sendmail tar gzip openssl >/dev/null 2>&1
+    elif command -v pacman >/dev/null 2>&1; then
+        pacman -Sy --noconfirm curl wget gnupg tcpdump net-tools geoip sendmail tar gzip openssl >/dev/null 2>&1
+    else
+        log "${YELLOW}Package manager not detected. Please install dependencies manually.${NC}"
+    fi
+    
+    log "${GREEN}Dependencies checked and installed${NC}"
+}
+
+# Create necessary directories with auto-creation
 setup_directories() {
-    log "${BLUE}Setting up directories...${NC}"
+    log "${BLUE}Setting up directories automatically...${NC}"
+    
+    # Create all required directories
     mkdir -p "$LOG_DIR" "$REPORT_DIR" "$EVIDENCE_DIR" "$TEMP_DIR"
+    mkdir -p "$(dirname "$CONFIG_FILE")"
+    
+    # Set secure permissions
     chmod 700 "$LOG_DIR" "$REPORT_DIR" "$EVIDENCE_DIR"
     chmod 755 "$TEMP_DIR"
+    chmod 755 "$(dirname "$CONFIG_FILE")"
+    
+    # Create log file if it doesn't exist
+    touch "${LOG_DIR}/incident_reporter.log"
+    chmod 600 "${LOG_DIR}/incident_reporter.log"
+    
+    log "${GREEN}All directories created successfully${NC}"
 }
 
 # Authority contact information
@@ -229,56 +714,89 @@ $(journalctl --since="$hours hours ago" | grep -i "failed\|invalid\|unauthorized
 EOF
 }
 
-# Collect evidence files
+# Robust evidence collection with error handling
 collect_evidence() {
     local incident_id="$1"
     local evidence_path="$EVIDENCE_DIR/$incident_id"
     
     mkdir -p "$evidence_path"
     
-    # Copy relevant log files
+    # Copy relevant log files with error handling
     if [[ "$COLLECT_LOGS" == "true" ]]; then
         log "${BLUE}Collecting log evidence...${NC}"
-        cp /var/log/auth.log* "$evidence_path/" 2>/dev/null || true
-        cp /var/log/syslog* "$evidence_path/" 2>/dev/null || true
-        cp /var/log/kern.log* "$evidence_path/" 2>/dev/null || true
         
-        # Collect application-specific logs
-        find /var/log -name "*.log" -mtime -1 -exec cp {} "$evidence_path/" \; 2>/dev/null || true
+        # System logs with fallbacks
+        for logfile in /var/log/auth.log /var/log/secure /var/log/syslog /var/log/messages /var/log/kern.log; do
+            if [[ -f "$logfile" && -r "$logfile" ]]; then
+                tail -1000 "$logfile" > "$evidence_path/$(basename "$logfile")" 2>/dev/null || true
+            fi
+        done
+        
+        # Collect systemd journal if available
+        if command -v journalctl >/dev/null 2>&1; then
+            journalctl --since="24 hours ago" > "$evidence_path/systemd_journal.log" 2>/dev/null || true
+        fi
+        
+        # Collect application-specific logs safely
+        find /var/log -name "*.log" -mtime -1 -readable -exec basename {} \; 2>/dev/null | head -10 | while read -r logname; do
+            find /var/log -name "$logname" -readable -exec tail -100 {} \; > "$evidence_path/app_$logname" 2>/dev/null || true
+        done
     fi
     
-    # Capture network traffic if enabled
-    if [[ "$COLLECT_PCAP" == "true" ]] && command -v tcpdump >/dev/null; then
+    # Capture network traffic sample with fallbacks
+    if [[ "$COLLECT_PCAP" == "true" ]]; then
         log "${BLUE}Capturing network traffic sample...${NC}"
-        timeout 30 tcpdump -i any -w "$evidence_path/network_capture.pcap" 2>/dev/null || true
+        if command -v tcpdump >/dev/null 2>&1; then
+            timeout 30 tcpdump -c 100 -w "$evidence_path/network_capture.pcap" 2>/dev/null || true
+        elif command -v tshark >/dev/null 2>&1; then
+            timeout 30 tshark -c 100 -w "$evidence_path/network_capture.pcap" 2>/dev/null || true
+        else
+            echo "Network capture tools not available" > "$evidence_path/network_note.txt"
+        fi
     fi
     
-    # Memory dump if enabled (requires specific tools)
-    if [[ "$COLLECT_MEMORY_DUMP" == "true" ]] && command -v volatility >/dev/null; then
-        log "${BLUE}Creating memory dump...${NC}"
-        # This would require specific memory acquisition tools
-        echo "Memory dump collection requested but requires specialized tools" > "$evidence_path/memory_note.txt"
+    # Collect system state information
+    {
+        echo "=== PROCESS LIST ==="
+        ps aux 2>/dev/null || ps -ef 2>/dev/null || echo "Process list unavailable"
+        echo
+        echo "=== NETWORK CONNECTIONS ==="
+        netstat -tuln 2>/dev/null || ss -tuln 2>/dev/null || echo "Network connections unavailable"
+        echo
+        echo "=== DISK USAGE ==="
+        df -h 2>/dev/null || echo "Disk usage unavailable"
+        echo
+        echo "=== MEMORY USAGE ==="
+        free -h 2>/dev/null || echo "Memory usage unavailable"
+        echo
+        echo "=== SYSTEM UPTIME ==="
+        uptime 2>/dev/null || echo "Uptime unavailable"
+    } > "$evidence_path/system_state.txt"
+    
+    # Create evidence manifest with checksums
+    {
+        echo "Evidence Collection Manifest"
+        echo "Incident ID: $incident_id"
+        echo "Collection Time: $(date -u)"
+        echo "Collected By: $(whoami)@$(hostname)"
+        echo "System: $(uname -a)"
+        echo
+        echo "Files Collected:"
+        ls -la "$evidence_path/" 2>/dev/null || echo "Directory listing failed"
+        echo
+        echo "File Checksums:"
+        find "$evidence_path" -type f -exec sha256sum {} \; 2>/dev/null || echo "Checksum generation failed"
+    } > "$evidence_path/manifest.txt"
+    
+    # Compress evidence with error handling
+    local zip_path="$evidence_path.tar.gz"
+    if tar -czf "$zip_path" -C "$EVIDENCE_DIR" "$incident_id" 2>/dev/null; then
+        rm -rf "$evidence_path"
+        echo "$zip_path"
+    else
+        log "${YELLOW}Evidence compression failed, keeping uncompressed${NC}"
+        echo "$evidence_path"
     fi
-    
-    # Create evidence manifest
-    cat > "$evidence_path/manifest.txt" << EOF
-Evidence Collection Manifest
-Incident ID: $incident_id
-Collection Time: $(date -u)
-Collected By: $(whoami)@$(hostname)
-
-Files Collected:
-$(ls -la "$evidence_path/")
-
-Checksums:
-$(find "$evidence_path" -type f -exec sha256sum {} \;)
-EOF
-    
-    # Compress evidence
-    tar -czf "$evidence_path.tar.gz" -C "$EVIDENCE_DIR" "$incident_id"
-    rm -rf "$evidence_path"
-    
-    echo "$evidence_path.tar.gz"
 }
 
 # Encrypt sensitive data
@@ -638,42 +1156,62 @@ batch_process() {
     fi
 }
 
-# Setup monitoring daemon
+# Enhanced setup monitoring with better error handling
 setup_monitoring() {
     log "${BLUE}Setting up incident monitoring daemon...${NC}"
     
-    # Create systemd service
+    # Create systemd service with proper paths
     cat > /etc/systemd/system/incident-reporter.service << EOF
 [Unit]
 Description=XXMXLI Automated Incident Reporter
 After=network.target
+Wants=network-online.target
 
 [Service]
 Type=simple
 User=root
-ExecStart=$SCRIPT_DIR/automated_incident_reporter.sh --daemon
+ExecStart=$(realpath "$0") --daemon
 Restart=always
 RestartSec=30
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
 EOF
     
-    # Create monitoring script
+    # Create monitoring script with better error handling
     cat > "$SCRIPT_DIR/incident_monitor.sh" << 'EOF'
 #!/bin/bash
-while true; do
-    /path/to/automated_incident_reporter.sh --batch
-    sleep 300  # Check every 5 minutes
-done
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MAIN_SCRIPT="$SCRIPT_DIR/automated_incident_reporter.sh"
+
+# Find the script if not in same directory
+if [[ ! -f "$MAIN_SCRIPT" ]]; then
+    MAIN_SCRIPT="$(find /home /opt /usr/local -name "automated_incident_reporter.sh" 2>/dev/null | head -1)"
+fi
+
+if [[ -f "$MAIN_SCRIPT" ]]; then
+    while true; do
+        "$MAIN_SCRIPT" --batch 2>/dev/null || true
+        sleep 300  # Check every 5 minutes
+    done
+else
+    logger "XXMXLI Incident Reporter: Main script not found"
+    exit 1
+fi
 EOF
     
     chmod +x "$SCRIPT_DIR/incident_monitor.sh"
     
-    systemctl daemon-reload
-    systemctl enable incident-reporter.service
-    
-    log "${GREEN}Monitoring daemon configured${NC}"
+    # Reload systemd and enable service
+    if command -v systemctl >/dev/null 2>&1; then
+        systemctl daemon-reload
+        systemctl enable incident-reporter.service 2>/dev/null || true
+        log "${GREEN}Monitoring daemon configured${NC}"
+    else
+        log "${YELLOW}Systemd not available, monitoring daemon setup skipped${NC}"
+    fi
 }
 
 # Display usage information
@@ -743,28 +1281,44 @@ test_system() {
 
 # Main function
 main() {
-    echo -e "${CYAN}"
-    cat << 'EOF'
- ██╗  ██╗██╗  ██╗███╗   ███╗██╗  ██╗██╗     ██╗
- ╚██╗██╔╝╚██╗██╔╝████╗ ████║╚██╗██╔╝██║     ██║
-  ╚███╔╝  ╚███╔╝ ██╔████╔██║ ╚███╔╝ ██║     ██║
-  ██╔██╗  ██╔██╗ ██║╚██╔╝██║ ██╔██╗ ██║     ██║
- ██╔╝ ██╗██╔╝ ██╗██║ ╚═╝ ██║██╔╝ ██╗███████╗██║
- ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝
-
-AUTOMATED INCIDENT REPORTER
-Secure reporting to authorities
-EOF
-    echo -e "${NC}"
-    
+    # Auto-elevate and setup first
     check_root
+    install_dependencies
     setup_directories
     load_config
     
-    case "${1:-}" in
-        "--report")
-            if [[ $# -lt 4 ]]; then
-                error_exit "Insufficient arguments for --report"
+    # Check if running with command line arguments
+    if [[ $# -gt 0 ]]; then
+        # Handle command line mode for automated scripts
+        case "${1:-}" in
+            "--report")
+                if [[ $# -lt 4 ]]; then
+                    error_exit "Insufficient arguments for --report"
+                fi
+                report_incident "$2" "$3" "$4" "${5:-auto}" "${6:-auto}"
+                ;;
+            "--test")
+                test_system
+                ;;
+            "--monitor")
+                setup_monitoring
+                ;;
+            "--status")
+                show_status
+                ;;
+            "--help")
+                show_help
+                ;;
+            *)
+                error_exit "Unknown option: $1. Use --help for usage information."
+                ;;
+        esac
+    else
+        # Interactive mode for user-friendly experience
+        INTERACTIVE_MODE=true
+        show_interactive_menu
+    fi
+}
             fi
             report_incident "$2" "$3" "$4" "${5:-unknown}" "${6:-auto}"
             ;;

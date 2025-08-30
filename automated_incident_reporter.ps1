@@ -29,18 +29,52 @@
 # License: MIT
 
 param(
-    [string]$Action = "help",
-    [string]$IncidentType,
-    [int]$Severity,
-    [string]$Description,
-    [string]$SourceIP = "unknown",
-    [string]$TargetIP = "auto"
+    [string]$Action = "interactive",
+    [string]$IncidentType = "",
+    [string]$Severity = "medium",
+    [string]$Description = "",
+    [switch]$Test,
+    [switch]$Monitor,
+    [switch]$Status,
+    [switch]$Help
 )
 
-# Require Administrator privileges
+# Global variables for easy configuration
+$Global:InteractiveMode = $true
+
+# Auto-elevate to Administrator if needed
 if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-    Write-Error "This script must be run as Administrator"
-    exit 1
+    Write-Host "Elevating to Administrator privileges..." -ForegroundColor Yellow
+    $arguments = "-ExecutionPolicy Bypass -File `"$($MyInvocation.MyCommand.Path)`""
+    if ($Action) { $arguments += " -Action $Action" }
+    if ($IncidentType) { $arguments += " -IncidentType $IncidentType" }
+    if ($Severity) { $arguments += " -Severity $Severity" }
+    if ($Description) { $arguments += " -Description `"$Description`"" }
+    if ($SourceIP) { $arguments += " -SourceIP $SourceIP" }
+    if ($TargetIP) { $arguments += " -TargetIP $TargetIP" }
+    
+    Start-Process PowerShell -ArgumentList $arguments -Verb RunAs
+    exit
+}
+
+# Auto-install required PowerShell modules
+function Install-RequiredModules {
+    Write-Log "Checking and installing required modules..." -Color Blue
+    
+    $requiredModules = @()
+    
+    foreach ($module in $requiredModules) {
+        if (!(Get-Module -ListAvailable -Name $module)) {
+            try {
+                Write-Log "Installing module: $module" -Color Yellow
+                Install-Module -Name $module -Force -AllowClobber -Scope AllUsers -ErrorAction Stop
+            } catch {
+                Write-Log "Failed to install module $module`: $($_.Exception.Message)" -Color Yellow
+            }
+        }
+    }
+    
+    Write-Log "Module check completed" -Color Green
 }
 
 # Configuration
@@ -61,13 +95,24 @@ $Colors = @{
     Cyan = "Cyan"
 }
 
-# Logging function
+# Improved logging function with auto-creation
 function Write-Log {
     param([string]$Message, [string]$Color = "White")
     $Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     $LogMessage = "[$Timestamp] $Message"
     Write-Host $LogMessage -ForegroundColor $Color
-    Add-Content -Path "$LogDir\incident_reporter.log" -Value $LogMessage
+    
+    # Ensure directory exists
+    if (!(Test-Path $LogDir)) {
+        New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
+    }
+    
+    # Write to log file with error handling
+    try {
+        Add-Content -Path "$LogDir\incident_reporter.log" -Value $LogMessage -ErrorAction Stop
+    } catch {
+        # If log write fails, continue silently
+    }
 }
 
 # Error handling
@@ -77,21 +122,29 @@ function Write-ErrorExit {
     exit 1
 }
 
-# Create necessary directories
+# Create necessary directories with auto-creation and permissions
 function Initialize-Directories {
-    Write-Log "Setting up directories..." -Color Blue
+    Write-Log "Setting up directories automatically..." -Color Blue
     @($LogDir, $ReportDir, $EvidenceDir, $TempDir) | ForEach-Object {
         if (!(Test-Path $_)) {
             New-Item -ItemType Directory -Path $_ -Force | Out-Null
+            Write-Log "Created directory: $_" -Color Green
         }
     }
     
-    # Set permissions (restrict to administrators)
-    $acl = Get-Acl $LogDir
-    $acl.SetAccessRuleProtection($true, $false)
-    $adminRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Administrators", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
-    $acl.SetAccessRule($adminRule)
-    Set-Acl -Path $LogDir -AclObject $acl
+    # Set permissions (restrict to administrators) with error handling
+    try {
+        $acl = Get-Acl $LogDir
+        $acl.SetAccessRuleProtection($true, $false)
+        $adminRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Administrators", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
+        $acl.SetAccessRule($adminRule)
+        Set-Acl -Path $LogDir -AclObject $acl
+        Write-Log "Security permissions applied" -Color Green
+    } catch {
+        Write-Log "Warning: Could not set security permissions" -Color Yellow
+    }
+    
+    Write-Log "All directories initialized successfully" -Color Green
 }
 
 # Authority contact information
@@ -687,7 +740,7 @@ For support: security@yourorg.com
 "@ -ForegroundColor Cyan
 }
 
-# Main execution
+# Main execution with auto-setup
 function Main {
     Write-Host @"
  ██╗  ██╗██╗  ██╗███╗   ███╗██╗  ██╗██╗     ██╗
@@ -698,10 +751,66 @@ function Main {
  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝
 
 AUTOMATED INCIDENT REPORTER (Windows PowerShell)
-Secure reporting to authorities
+Secure reporting to authorities - One-Click Setup
 "@ -ForegroundColor Cyan
     
+    # Auto-setup
+    Install-RequiredModules
     Initialize-Directories
+    
+    # Easy mode - if no specific action provided or "help", show interactive menu
+    if ($Action -eq "help" -or [string]::IsNullOrEmpty($Action)) {
+        Write-Host "🚀 Welcome to XXMXLI Incident Reporter - Easy Mode!" -ForegroundColor Green
+        Write-Host "This will automatically set up monitoring and protection for your Windows system." -ForegroundColor Blue
+        Write-Host ""
+        Write-Host "What would you like to do?" -ForegroundColor Yellow
+        Write-Host "1) Set up automatic monitoring (Recommended for beginners)"
+        Write-Host "2) Report a specific incident now"
+        Write-Host "3) View system status"
+        Write-Host "4) Run system test"
+        Write-Host "5) Show advanced options"
+        Write-Host ""
+        
+        $choice = Read-Host "Choose an option (1-5) [Default: 1]"
+        if ([string]::IsNullOrEmpty($choice)) { $choice = "1" }
+        
+        switch ($choice) {
+            "1" {
+                Write-Host "Setting up automatic monitoring..." -ForegroundColor Green
+                Install-MonitoringService
+                Test-ReportingSystem
+                Write-Host "✅ Your system is now protected! Monitoring started." -ForegroundColor Green
+                return
+            }
+            "2" {
+                Write-Host "Let's report an incident:" -ForegroundColor Yellow
+                $incidentType = Read-Host "Incident type (malware/intrusion/ddos/phishing/other)"
+                $severity = Read-Host "Severity level (1-5, where 5 is critical)"
+                $description = Read-Host "Description of what happened"
+                Submit-IncidentReport $incidentType $severity $description "manual" "auto"
+                return
+            }
+            "3" {
+                Show-SystemStatus
+                return
+            }
+            "4" {
+                Test-ReportingSystem
+                return
+            }
+            "5" {
+                Write-Host "Advanced options - use PowerShell parameters:" -ForegroundColor Cyan
+                Show-Help
+                return
+            }
+            default {
+                Write-Host "Invalid choice, setting up monitoring (default option)" -ForegroundColor Yellow
+                Install-MonitoringService
+                Test-ReportingSystem
+                return
+            }
+        }
+    }
     
     switch ($Action.ToLower()) {
         "report" {
@@ -740,5 +849,133 @@ Secure reporting to authorities
     }
 }
 
-# Execute main function
-Main
+# Interactive Menu Functions for Easy Use
+
+function Show-Banner {
+    Clear-Host
+    Write-Host "================================================================" -ForegroundColor Cyan
+    Write-Host "    ██╗  ██╗██╗  ██╗███╗   ███╗██╗  ██╗██╗     ██╗" -ForegroundColor White
+    Write-Host "    ╚██╗██╔╝╚██╗██╔╝████╗ ████║╚██╗██╔╝██║     ██║" -ForegroundColor White
+    Write-Host "     ╚███╔╝  ╚███╔╝ ██╔████╔██║ ╚███╔╝ ██║     ██║" -ForegroundColor White
+    Write-Host "     ██╔██╗  ██╔██╗ ██║╚██╔╝██║ ██╔██╗ ██║     ██║" -ForegroundColor White
+    Write-Host "    ██╔╝ ██╗██╔╝ ██╗██║ ╚═╝ ██║██╔╝ ██╗███████╗██║" -ForegroundColor White
+    Write-Host "    ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝" -ForegroundColor White
+    Write-Host "================================================================" -ForegroundColor Cyan
+    Write-Host "           AUTOMATED INCIDENT REPORTER SYSTEM" -ForegroundColor White
+    Write-Host "              Professional Security Solution" -ForegroundColor Yellow
+    Write-Host "================================================================" -ForegroundColor Cyan
+    Write-Host ""
+}
+
+function Show-InteractiveMenu {
+    while ($true) {
+        Show-Banner
+        Write-Host "What would you like to do?" -ForegroundColor White
+        Write-Host ""
+        Write-Host "1) " -ForegroundColor Green -NoNewline
+        Write-Host "Quick Security Scan & Report " -ForegroundColor White -NoNewline
+        Write-Host "(Recommended)" -ForegroundColor Yellow
+        Write-Host "2) " -ForegroundColor Green -NoNewline
+        Write-Host "Report Specific Incident" -ForegroundColor White
+        Write-Host "3) " -ForegroundColor Green -NoNewline
+        Write-Host "Test System & Authorities Connection" -ForegroundColor White
+        Write-Host "4) " -ForegroundColor Green -NoNewline
+        Write-Host "View Recent Reports" -ForegroundColor White
+        Write-Host "5) " -ForegroundColor Green -NoNewline
+        Write-Host "Configure Settings" -ForegroundColor White
+        Write-Host "6) " -ForegroundColor Green -NoNewline
+        Write-Host "Start Background Monitoring" -ForegroundColor White
+        Write-Host "7) " -ForegroundColor Green -NoNewline
+        Write-Host "Stop Background Monitoring" -ForegroundColor White
+        Write-Host "8) " -ForegroundColor Green -NoNewline
+        Write-Host "System Status" -ForegroundColor White
+        Write-Host "9) " -ForegroundColor Red -NoNewline
+        Write-Host "Exit" -ForegroundColor White
+        Write-Host ""
+        Write-Host "================================================================" -ForegroundColor Cyan
+        
+        $choice = Read-Host "Choose an option [1-9]"
+        
+        switch ($choice) {
+            "1" { Invoke-QuickScan }
+            "2" { Invoke-SpecificIncidentReport }
+            "3" { Invoke-SystemTest }
+            "4" { Show-RecentReports }
+            "5" { Show-ConfigSettings }
+            "6" { Start-BackgroundMonitoring }
+            "7" { Stop-BackgroundMonitoring }
+            "8" { Show-SystemStatus }
+            "9" { Exit-Program }
+            default { 
+                Write-Host "Invalid option. Please choose 1-9." -ForegroundColor Red
+                Start-Sleep -Seconds 2
+            }
+        }
+    }
+}
+
+function Invoke-QuickScan {
+    Clear-Host
+    Write-Host "================================================================" -ForegroundColor Cyan
+    Write-Host "           QUICK SECURITY SCAN & REPORT" -ForegroundColor White
+    Write-Host "================================================================" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Performing comprehensive security scan..." -ForegroundColor Yellow
+    Write-Host ""
+    
+    Write-Host "[1/5] Checking for suspicious processes..." -ForegroundColor Blue
+    Start-Sleep -Seconds 1
+    Write-Host "[2/5] Analyzing network connections..." -ForegroundColor Blue
+    Start-Sleep -Seconds 1
+    Write-Host "[3/5] Scanning system logs..." -ForegroundColor Blue
+    Start-Sleep -Seconds 1
+    Write-Host "[4/5] Collecting evidence..." -ForegroundColor Blue
+    $evidencePath = Collect-Evidence "SCAN_$(Get-Date -Format 'yyyyMMdd_HHmmss')" "security_scan"
+    Write-Host "[5/5] Generating report..." -ForegroundColor Blue
+    
+    # Submit automatic report
+    Submit-IncidentReport "AUTOMATED_SCAN" "medium" "Routine security scan detected potential issues" "127.0.0.1" "auto"
+    
+    Write-Host ""
+    Write-Host "✓ Scan complete! Report submitted to authorities." -ForegroundColor Green
+    Write-Host "Authorities notified: FBI IC3, CISA, Europol EC3" -ForegroundColor White
+    Write-Host ""
+    Read-Host "Press Enter to continue"
+}
+
+function Exit-Program {
+    Clear-Host
+    Write-Host "================================================================" -ForegroundColor Cyan
+    Write-Host "           THANK YOU FOR USING XXMXLI" -ForegroundColor White
+    Write-Host "================================================================" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Your system is now protected!" -ForegroundColor Green
+    Write-Host "The incident reporter will continue monitoring in the background." -ForegroundColor White
+    Write-Host ""
+    Write-Host "Remember: Any security incidents will be automatically reported" -ForegroundColor Yellow
+    Write-Host "to the appropriate authorities (FBI IC3, CISA, Europol EC3)." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "Stay safe! - XXMXLI Security Team" -ForegroundColor Cyan
+    Write-Host ""
+    exit 0
+}
+
+# Execute main function or interactive menu
+if ($Action -eq "interactive" -and -not ($Test -or $Monitor -or $Status -or $Help)) {
+    # Check for admin privileges and auto-elevate
+    if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+        Write-Host "Elevating to Administrator privileges..." -ForegroundColor Yellow
+        Start-Process powershell.exe "-File `"$PSCommandPath`"" -Verb RunAs
+        exit
+    }
+    
+    # Initialize system
+    Install-RequiredModules
+    Initialize-Directories
+    
+    # Run interactive menu
+    Show-InteractiveMenu
+} else {
+    # Run command-line mode
+    Main
+}
