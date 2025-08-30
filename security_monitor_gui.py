@@ -59,7 +59,11 @@ class SecurityMonitorGUI:
         
         # Initialize authentication
         self.authenticated = False
-        self.admin_password = "xxmxli_security_2024"  # Change this for production
+        self.admin_credentials = {
+            "admin": "xxmxli_security_2024",
+            "xxmxli": "admin_secure_pass",
+            "security": "monitor_access_2024"
+        }  # Change these for production
         
         # Create authentication window first
         if not self.authenticate():
@@ -289,12 +293,31 @@ class SecurityMonitorGUI:
         form_frame = tk.Frame(auth_root, bg='#1a1a1a', padx=20, pady=20)
         form_frame.pack(fill='both', expand=True, padx=20, pady=20)
         
+        # Username field
+        username_label = tk.Label(form_frame,
+                                 text="Admin Username:",
+                                 font=('Arial', 12),
+                                 fg='#ffffff',
+                                 bg='#1a1a1a')
+        username_label.pack(pady=(0, 5))
+        
+        username_var = tk.StringVar()
+        username_entry = tk.Entry(form_frame,
+                                 textvariable=username_var,
+                                 font=('Arial', 12),
+                                 width=25,
+                                 bg='#000000',
+                                 fg='#ffffff',
+                                 insertbackground='#ffffff')
+        username_entry.pack(pady=(0, 15))
+        
+        # Password field
         password_label = tk.Label(form_frame,
                                  text="Admin Password:",
                                  font=('Arial', 12),
                                  fg='#ffffff',
                                  bg='#1a1a1a')
-        password_label.pack(pady=(0, 10))
+        password_label.pack(pady=(0, 5))
         
         password_var = tk.StringVar()
         password_entry = tk.Entry(form_frame,
@@ -307,20 +330,25 @@ class SecurityMonitorGUI:
                                  insertbackground='#ffffff')
         password_entry.pack(pady=(0, 20))
         
-        def check_password():
-            if password_var.get() == self.admin_password:
+        def check_credentials():
+            username = username_var.get().strip()
+            password = password_var.get().strip()
+            
+            if username in self.admin_credentials and self.admin_credentials[username] == password:
                 auth_result['success'] = True
                 auth_root.destroy()
             else:
-                error_label.config(text="Invalid password!", fg='#ff4444')
+                error_label.config(text="Invalid username or password!", fg='#ff4444')
+                username_entry.delete(0, tk.END)
                 password_entry.delete(0, tk.END)
-                password_entry.focus()
+                username_entry.focus()
         
         def on_enter(event):
-            check_password()
+            check_credentials()
         
+        username_entry.bind('<Return>', lambda e: password_entry.focus())
         password_entry.bind('<Return>', on_enter)
-        password_entry.focus()
+        username_entry.focus()
         
         # Buttons
         button_frame = tk.Frame(form_frame, bg='#1a1a1a')
@@ -328,7 +356,7 @@ class SecurityMonitorGUI:
         
         login_btn = tk.Button(button_frame,
                              text="LOGIN",
-                             command=check_password,
+                             command=check_credentials,
                              font=('Arial', 12, 'bold'),
                              bg='#003300',
                              fg='#ffffff',
@@ -355,13 +383,23 @@ class SecurityMonitorGUI:
                               bg='#1a1a1a')
         error_label.pack(pady=(10, 0))
         
-        # Security warning
-        warning_label = tk.Label(auth_root,
+        # Security warning and hint
+        info_frame = tk.Frame(auth_root, bg='#0a0a0a')
+        info_frame.pack(pady=(0, 5))
+        
+        hint_label = tk.Label(info_frame,
+                             text="Valid admin users: admin, xxmxli, security",
+                             font=('Arial', 8),
+                             fg='#666666',
+                             bg='#0a0a0a')
+        hint_label.pack()
+        
+        warning_label = tk.Label(info_frame,
                                 text="⚠ AUTHORIZED PERSONNEL ONLY ⚠",
                                 font=('Arial', 9),
                                 fg='#ffaa00',
                                 bg='#0a0a0a')
-        warning_label.pack(pady=(0, 10))
+        warning_label.pack(pady=(5, 0))
         
         auth_root.mainloop()
         return auth_result['success']
