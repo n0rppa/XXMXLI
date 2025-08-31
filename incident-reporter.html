@@ -414,46 +414,22 @@
 
         <!-- Authentication Section -->
         <div class="auth-section" id="authSection">
-            <h3><i class="fas fa-exclamation-triangle"></i> Security Incident Reporting</h3>
-            <p style="color: #cccccc; margin-bottom: 20px;">
-                <strong>Report security incidents quickly and securely.</strong><br>
-                Choose your reporting method below.
-            </p>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                <button type="button" class="btn" onclick="enterPublicMode()">
-                    <i class="fas fa-user"></i> Public Incident Report<br>
-                    <small>Anonymous reporting for security issues</small>
-                </button>
-                <button type="button" class="btn" onclick="showAdminLogin()">
-                    <i class="fas fa-user-shield"></i> Admin Access<br>
-                    <small>Full management and advanced features</small>
-                </button>
+            <h3><i class="fas fa-lock"></i> Admin Authentication Required</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" placeholder="Enter admin username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" placeholder="Enter admin password">
+                </div>
             </div>
-            
-            <button type="button" class="btn btn-secondary" onclick="enterDemoMode()">
-                <i class="fas fa-eye"></i> View Demo Interface
+            <button type="button" class="btn" onclick="authenticate()">
+                <i class="fas fa-sign-in-alt"></i> Authenticate
             </button>
-            
-            <!-- Admin Login (initially hidden) -->
-            <div id="adminLoginSection" style="display: none; margin-top: 20px; padding: 20px; background: #333; border-radius: 8px;">
-                <h4>Admin Authentication</h4>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="username">Username:</label>
-                        <input type="text" id="username" placeholder="Enter admin username">
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password:</label>
-                        <input type="password" id="password" placeholder="Enter admin password">
-                    </div>
-                </div>
-                <button type="button" class="btn" onclick="authenticate()">
-                    <i class="fas fa-sign-in-alt"></i> Authenticate
-                </button>
-                <div style="margin-top: 10px; color: #666; font-size: 0.9em;">
-                    Valid users: admin, xxmxli, security
-                </div>
+            <div style="margin-top: 15px; color: #666; font-size: 0.9em;">
+                Valid users: admin, xxmxli, security
             </div>
         </div>
 
@@ -628,7 +604,6 @@
         let uploadedFiles = [];
         let currentUser = '';
         let incidents = [];
-        let isPublicMode = false;
 
         // Admin credentials (same as other tools)
         const adminCredentials = {
@@ -636,29 +611,6 @@
             "xxmxli": "admin_secure_pass",
             "security": "monitor_access_2024"
         };
-
-        // Public mode (no authentication required)
-        function enterPublicMode() {
-            isPublicMode = true;
-            currentUser = 'public_user';
-            document.getElementById('authSection').style.display = 'none';
-            document.getElementById('mainApp').style.display = 'block';
-            showMessage('Public Incident Reporting Mode: Your reports will be submitted anonymously.', 'warning');
-            
-            // Hide admin-only tabs in public mode
-            const tabs = document.querySelectorAll('.tab');
-            tabs[1].style.display = 'none'; // Hide "View Incidents" tab
-            tabs[2].style.display = 'none'; // Hide "Analytics" tab
-            
-            // Load only demo incidents for context
-            loadDemoIncidents();
-        }
-
-        // Show admin login section
-        function showAdminLogin() {
-            document.getElementById('adminLoginSection').style.display = 'block';
-            document.getElementById('username').focus();
-        }
 
         // Authentication
         function authenticate() {
@@ -681,81 +633,6 @@
                 showMessage('Invalid username or password', 'error');
                 document.getElementById('password').value = '';
             }
-        }
-
-        // Demo mode
-        function enterDemoMode() {
-            currentUser = 'demo_user';
-            document.getElementById('authSection').style.display = 'none';
-            document.getElementById('mainApp').style.display = 'block';
-            showMessage('Demo Mode: You can view the interface but cannot submit real incidents.', 'warning');
-            
-            // Load sample demo data
-            loadDemoIncidents();
-            updateAnalytics();
-            
-            // Disable submit button in demo mode
-            const submitBtn = document.querySelector('button[onclick="submitIncident()"]');
-            if (submitBtn) {
-                submitBtn.innerHTML = '<i class="fas fa-lock"></i> Demo Mode - Submit Disabled';
-                submitBtn.onclick = function() {
-                    showMessage('Demo Mode: Incident submission is disabled. Please authenticate for full access.', 'warning');
-                };
-            }
-        }
-
-        function loadDemoIncidents() {
-            // Sample demo incidents for demonstration
-            const demoIncidents = [
-                {
-                    id: 'INC-20250830-DEMO1',
-                    title: 'Suspicious Network Activity Detected',
-                    type: 'suspicious_activity',
-                    priority: 'high',
-                    description: 'Unusual outbound connections detected from server-01 to unknown IP addresses.',
-                    reporter: { name: 'Demo User', email: 'demo@xxmxli.com' },
-                    affectedSystems: 'server-01, firewall-02',
-                    location: '192.168.1.100',
-                    additionalNotes: 'Automated detection system flagged this activity.',
-                    files: ['network-logs.txt', 'firewall-report.pdf'],
-                    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-                    status: 'reported',
-                    reportedBy: 'security_system'
-                },
-                {
-                    id: 'INC-20250830-DEMO2',
-                    title: 'Failed Login Attempts from External IP',
-                    type: 'unauthorized_access',
-                    priority: 'medium',
-                    description: 'Multiple failed SSH login attempts detected from IP 203.0.113.42',
-                    reporter: { name: 'Security Monitor', email: 'security@xxmxli.com' },
-                    affectedSystems: 'web-server-01',
-                    location: '203.0.113.42',
-                    additionalNotes: 'IP has been temporarily blocked by fail2ban.',
-                    files: ['ssh-logs.txt'],
-                    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 hours ago
-                    status: 'reported',
-                    reportedBy: 'admin'
-                },
-                {
-                    id: 'INC-20250829-DEMO3',
-                    title: 'Malware Signature Detected',
-                    type: 'malware',
-                    priority: 'critical',
-                    description: 'Antivirus software detected potential malware in uploaded file.',
-                    reporter: { name: 'AV System', email: 'antivirus@xxmxli.com' },
-                    affectedSystems: 'file-server-01',
-                    location: '/uploads/suspicious_file.exe',
-                    additionalNotes: 'File has been quarantined and user notified.',
-                    files: ['av-report.pdf', 'file-analysis.txt'],
-                    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 24 hours ago
-                    status: 'reported',
-                    reportedBy: 'security'
-                }
-            ];
-            
-            incidents = demoIncidents;
-            displayIncidents();
         }
 
         // Tab switching
@@ -856,23 +733,16 @@
                 additionalNotes: document.getElementById('additionalNotes').value.trim(),
                 files: uploadedFiles.map(f => f.name),
                 timestamp: new Date().toISOString(),
-                status: isPublicMode ? 'public_report' : 'reported',
-                reportedBy: isPublicMode ? 'public_user' : currentUser,
-                isPublic: isPublicMode
+                status: 'reported',
+                reportedBy: currentUser
             };
 
             // Store incident (in real implementation, this would go to a server)
             storeIncident(incident);
 
-            if (isPublicMode) {
-                showMessage('Public incident report submitted successfully! Your report has been logged and will be reviewed by security personnel.', 'success');
-            } else {
-                showMessage('Incident report submitted successfully!', 'success');
-            }
+            showMessage('Incident report submitted successfully!', 'success');
             clearForm();
-            if (!isPublicMode) {
-                updateAnalytics();
-            }
+            updateAnalytics();
         }
 
         function generateIncidentId() {
