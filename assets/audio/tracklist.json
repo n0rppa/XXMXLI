@@ -1,86 +1,70 @@
 [
   {
     "file": "03.mellow.flac",
-    "title": "Mellow",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "03.mellow.flac"
   },
   {
     "file": "07.strange.flac",
-    "title": "Strange",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "07.strange.flac"
   },
   {
     "file": "09.swishaz.flac",
-    "title": "Swishaz",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "09.swishaz.flac"
   },
   {
     "file": "10.Frosty.flac",
-    "title": "Frosty",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "10.Frosty.flac"
   },
   {
     "file": "13.rain.flac",
-    "title": "Rain",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "13.rain.flac"
   },
   {
     "file": "18.alley.flac",
-    "title": "Alley",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "18.alley.flac"
   },
   {
     "file": "20.cloudy_instrumental.flac",
-    "title": "Cloudy Instrumental",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "20.cloudy_instrumental.flac"
   },
   {
     "file": "21.oldschool_hip-hop_beat.flac",
-    "title": "Oldschool Hip Hop Beat",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
-    "file": "astrologik.flac",
-    "title": "Astrologik",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "21.oldschool_hip-hop_beat.flac"
   },
   {
     "file": "Drizzle.m4a",
-    "title": "Drizzle",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
-    "file": "freefall.wav",
-    "title": "Freefall",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
-    "file": "ganon.flac",
-    "title": "Ganon",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "Drizzle.m4a",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": "3:34"
   },
   {
     "file": "Rain (1).flac",
-    "title": "Rain (1)",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "Rain (1).flac"
+  },
+  {
+    "file": "astrologik.flac",
+    "title": "astrologik.flac"
+  },
+  {
+    "file": "freefall.wav",
+    "title": "freefall.wav",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": "3:42"
+  },
+  {
+    "file": "ganon.flac",
+    "title": "ganon.flac"
   },
   {
     "file": "tekknobadger.wav",
-    "title": "Tekknobadger",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "tekknobadger.wav",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": "7:16"
   }
 ]
