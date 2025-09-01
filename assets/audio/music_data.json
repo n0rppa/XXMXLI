@@ -1,7 +1,28 @@
 {
-  "last_updated": "2025-08-30T14:47:54.358791",
-  "total_files": 13,
+  "last_updated": "2025-09-01T04:42:25.570953",
+  "total_files": 14,
   "files": [
+    {
+      "filename": "03.mellow.flac",
+      "path": "assets/audio/03.mellow.flac",
+      "size": 37303580,
+      "modified": "2025-08-12T17:36:47.514251",
+      "extension": ".flac"
+    },
+    {
+      "filename": "07.strange.flac",
+      "path": "assets/audio/07.strange.flac",
+      "size": 58092312,
+      "modified": "2025-08-12T17:36:49.974261",
+      "extension": ".flac"
+    },
+    {
+      "filename": "09.swishaz.flac",
+      "path": "assets/audio/09.swishaz.flac",
+      "size": 17090153,
+      "modified": "2025-08-12T17:36:25.126157",
+      "extension": ".flac"
+    },
     {
       "filename": "10.Frosty.flac",
       "path": "assets/audio/10.Frosty.flac",
@@ -10,11 +31,60 @@
       "extension": ".flac"
     },
     {
+      "filename": "13.rain.flac",
+      "path": "assets/audio/13.rain.flac",
+      "size": 16432498,
+      "modified": "2025-08-12T17:36:30.822181",
+      "extension": ".flac"
+    },
+    {
+      "filename": "18.alley.flac",
+      "path": "assets/audio/18.alley.flac",
+      "size": 18910775,
+      "modified": "2025-08-12T17:36:29.238174",
+      "extension": ".flac"
+    },
+    {
+      "filename": "20.cloudy_instrumental.flac",
+      "path": "assets/audio/20.cloudy_instrumental.flac",
+      "size": 8328141,
+      "modified": "2025-08-12T17:36:34.090194",
+      "extension": ".flac"
+    },
+    {
+      "filename": "21.oldschool_hip-hop_beat.flac",
+      "path": "assets/audio/21.oldschool_hip-hop_beat.flac",
+      "size": 10014321,
+      "modified": "2025-08-12T17:36:36.374204",
+      "extension": ".flac"
+    },
+    {
+      "filename": "astrologik.flac",
+      "path": "assets/audio/astrologik.flac",
+      "size": 23317661,
+      "modified": "2025-08-12T17:36:35.226199",
+      "extension": ".flac"
+    },
+    {
+      "filename": "Drizzle.m4a",
+      "path": "assets/audio/Drizzle.m4a",
+      "size": 3776671,
+      "modified": "2025-09-01T04:37:28.647221",
+      "extension": ".m4a"
+    },
+    {
       "filename": "freefall.wav",
       "path": "assets/audio/freefall.wav",
       "size": 78219978,
       "modified": "2025-08-12T15:57:51.173887",
       "extension": ".wav"
+    },
+    {
+      "filename": "ganon.flac",
+      "path": "assets/audio/ganon.flac",
+      "size": 9010816,
+      "modified": "2025-08-12T17:36:33.898194",
+      "extension": ".flac"
     },
     {
       "filename": "Rain (1).flac",
@@ -29,69 +99,6 @@
       "size": 76974584,
       "modified": "2025-08-12T15:57:51.173933",
       "extension": ".wav"
-    },
-    {
-      "filename": "track1.flac",
-      "path": "assets/audio/track1.flac",
-      "size": 37303580,
-      "modified": "2025-08-12T17:36:47.514251",
-      "extension": ".flac"
-    },
-    {
-      "filename": "track2.flac",
-      "path": "assets/audio/track2.flac",
-      "size": 23317661,
-      "modified": "2025-08-12T17:36:35.226199",
-      "extension": ".flac"
-    },
-    {
-      "filename": "track3.flac",
-      "path": "assets/audio/track3.flac",
-      "size": 16432498,
-      "modified": "2025-08-12T17:36:30.822181",
-      "extension": ".flac"
-    },
-    {
-      "filename": "track4.flac",
-      "path": "assets/audio/track4.flac",
-      "size": 58092312,
-      "modified": "2025-08-12T17:36:49.974261",
-      "extension": ".flac"
-    },
-    {
-      "filename": "track5.flac",
-      "path": "assets/audio/track5.flac",
-      "size": 17090153,
-      "modified": "2025-08-12T17:36:25.126157",
-      "extension": ".flac"
-    },
-    {
-      "filename": "track6.flac",
-      "path": "assets/audio/track6.flac",
-      "size": 18910775,
-      "modified": "2025-08-12T17:36:29.238174",
-      "extension": ".flac"
-    },
-    {
-      "filename": "track7.flac",
-      "path": "assets/audio/track7.flac",
-      "size": 8328141,
-      "modified": "2025-08-12T17:36:34.090194",
-      "extension": ".flac"
-    },
-    {
-      "filename": "track8.flac",
-      "path": "assets/audio/track8.flac",
-      "size": 10014321,
-      "modified": "2025-08-12T17:36:36.374204",
-      "extension": ".flac"
-    },
-    {
-      "filename": "track9.flac",
-      "path": "assets/audio/track9.flac",
-      "size": 9010816,
-      "modified": "2025-08-12T17:36:33.898194",
-      "extension": ".flac"
     }
   ]
 }
