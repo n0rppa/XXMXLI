@@ -6,6 +6,12 @@
     "duration": ""
   },
   {
+    "file": "06.Trippy Instrumental.flac",
+    "title": "Trippy Instrumental",
+    "artist": "n0rppa",
+    "duration": ""
+  },
+  {
     "file": "07.strange.flac",
     "title": "Strange",
     "artist": "n0rppa",
@@ -14,12 +20,6 @@
   {
     "file": "09.swishaz.flac",
     "title": "Swishaz",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
-    "file": "10.Frosty.flac",
-    "title": "Frosty",
     "artist": "n0rppa",
     "duration": ""
   },
@@ -48,8 +48,14 @@
     "duration": ""
   },
   {
-    "file": "astrologik.flac",
-    "title": "Astrologik",
+    "file": "22.Hard trap beat.flac",
+    "title": "Hard Trap Beat",
+    "artist": "n0rppa",
+    "duration": ""
+  },
+  {
+    "file": "cloudwave lizard.wav",
+    "title": "Cloudwave Lizard",
     "artist": "n0rppa",
     "duration": ""
   },
@@ -72,8 +78,26 @@
     "duration": ""
   },
   {
+    "file": "happy days.wav",
+    "title": "Happy Days",
+    "artist": "n0rppa",
+    "duration": ""
+  },
+  {
+    "file": "neo-memphis trappin.wav",
+    "title": "Neo Memphis Trappin",
+    "artist": "n0rppa",
+    "duration": ""
+  },
+  {
     "file": "Rain (1).flac",
     "title": "Rain (1)",
+    "artist": "n0rppa",
+    "duration": ""
+  },
+  {
+    "file": "reviant.wav",
+    "title": "Reviant",
     "artist": "n0rppa",
     "duration": ""
   },

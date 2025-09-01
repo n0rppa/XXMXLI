@@ -1,12 +1,19 @@
 {
-  "last_updated": "2025-09-01T04:42:25.570953",
-  "total_files": 14,
+  "last_updated": "2025-09-01T07:26:31.721919",
+  "total_files": 18,
   "files": [
     {
       "filename": "03.mellow.flac",
       "path": "assets/audio/03.mellow.flac",
       "size": 37303580,
       "modified": "2025-08-12T17:36:47.514251",
+      "extension": ".flac"
+    },
+    {
+      "filename": "06.Trippy Instrumental.flac",
+      "path": "assets/audio/06.Trippy Instrumental.flac",
+      "size": 40005522,
+      "modified": "2023-12-25T15:01:20",
       "extension": ".flac"
     },
     {
@@ -21,13 +28,6 @@
       "path": "assets/audio/09.swishaz.flac",
       "size": 17090153,
       "modified": "2025-08-12T17:36:25.126157",
-      "extension": ".flac"
-    },
-    {
-      "filename": "10.Frosty.flac",
-      "path": "assets/audio/10.Frosty.flac",
-      "size": 15820320,
-      "modified": "2025-08-12T17:36:26.134161",
       "extension": ".flac"
     },
     {
@@ -59,11 +59,18 @@
       "extension": ".flac"
     },
     {
-      "filename": "astrologik.flac",
-      "path": "assets/audio/astrologik.flac",
-      "size": 23317661,
-      "modified": "2025-08-12T17:36:35.226199",
+      "filename": "22.Hard trap beat.flac",
+      "path": "assets/audio/22.Hard trap beat.flac",
+      "size": 10711983,
+      "modified": "2023-12-25T15:11:14",
       "extension": ".flac"
+    },
+    {
+      "filename": "cloudwave lizard.wav",
+      "path": "assets/audio/cloudwave lizard.wav",
+      "size": 30939478,
+      "modified": "2024-09-04T15:49:22",
+      "extension": ".wav"
     },
     {
       "filename": "Drizzle.m4a",
@@ -87,11 +94,32 @@
       "extension": ".flac"
     },
     {
+      "filename": "happy days.wav",
+      "path": "assets/audio/happy days.wav",
+      "size": 27551164,
+      "modified": "2025-08-27T13:37:10",
+      "extension": ".wav"
+    },
+    {
+      "filename": "neo-memphis trappin.wav",
+      "path": "assets/audio/neo-memphis trappin.wav",
+      "size": 69420228,
+      "modified": "2025-08-27T10:55:32",
+      "extension": ".wav"
+    },
+    {
       "filename": "Rain (1).flac",
       "path": "assets/audio/Rain (1).flac",
       "size": 16432616,
       "modified": "2025-08-12T17:36:27.246166",
       "extension": ".flac"
+    },
+    {
+      "filename": "reviant.wav",
+      "path": "assets/audio/reviant.wav",
+      "size": 63732436,
+      "modified": "2024-09-04T14:59:40",
+      "extension": ".wav"
     },
     {
       "filename": "tekknobadger.wav",
