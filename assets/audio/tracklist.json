@@ -5,25 +5,15 @@
   },
   {
     "file": "06.Trippy Instrumental.flac",
-    "title": "Trippy Instrumental",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "06.Trippy Instrumental.flac"
   },
   {
     "file": "07.strange.flac",
-    "title": "Strange",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "07.strange.flac"
   },
   {
     "file": "09.swishaz.flac",
-    "title": "Swishaz",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
-    "file": "10.Frosty.flac",
-    "title": "10.Frosty.flac"
+    "title": "09.swishaz.flac"
   },
   {
     "file": "13.rain.flac",
@@ -43,15 +33,7 @@
   },
   {
     "file": "22.Hard trap beat.flac",
-    "title": "Hard Trap Beat",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
-    "file": "cloudwave lizard.wav",
-    "title": "Cloudwave Lizard",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "22.Hard trap beat.flac"
   },
   {
     "file": "Drizzle.m4a",
@@ -63,13 +45,15 @@
   },
   {
     "file": "Rain (1).flac",
-    "title": "Rain (1)",
-    "artist": "n0rppa",
-    "duration": ""
+    "title": "Rain (1).flac"
   },
   {
-    "file": "astrologik.flac",
-    "title": "astrologik.flac"
+    "file": "cloudwave lizard.wav",
+    "title": "cloudwave lizard.wav",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
   },
   {
     "file": "freefall.wav",
@@ -80,25 +64,31 @@
     "duration": "3:42"
   },
   {
-    "file": "happy days.wav",
-    "title": "Happy Days",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
-    "file": "neo-memphis trappin.wav",
-    "title": "Neo Memphis Trappin",
-    "artist": "n0rppa",
-    "duration": ""
-  },
-  {
     "file": "ganon.flac",
     "title": "ganon.flac"
   },
   {
+    "file": "happy days.wav",
+    "title": "happy days.wav",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
+  },
+  {
+    "file": "neo-memphis trappin.wav",
+    "title": "neo-memphis trappin.wav",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
+  },
+  {
     "file": "reviant.wav",
-    "title": "Reviant",
-    "artist": "n0rppa",
+    "title": "reviant.wav",
+    "artist": "",
+    "album": "",
+    "picture": null,
     "duration": ""
   },
   {
