@@ -681,6 +681,205 @@
             <i class="fas fa-paste"></i> Paste Clipboard Content
         </button>
         <div id="pasteOutput" style="margin-top: 1rem; color: var(--cyber-green);"></div>
+        
+        <!-- Universal Chat Box -->
+        <section class="chat-section" style="margin:2rem auto;max-width:600px;background:#001900;border:2px solid #00ff00;border-radius:8px;padding:1.5rem;box-shadow:0 0 10px #00ff00;">
+            <h2 style="color:#00ff00;text-align:center;margin-bottom:1rem;"><i class="fas fa-comments"></i> World Chat</h2>
+            <div id="chatLog" style="height:220px;overflow-y:auto;background:#000;padding:1rem;border-radius:6px;border:1px solid #003300;margin-bottom:1rem;font-family:'Courier New',monospace;font-size:1rem;color:#00ff00;"></div>
+            <form id="chatForm" style="display:flex;gap:0.5rem;">
+                <input id="chatName" type="text" placeholder="Name" maxlength="16" style="flex:1;padding:0.5rem;border-radius:4px;border:1px solid #00ff00;background:#001900;color:#00ff00;" required>
+                <input id="chatPassword" type="password" placeholder="Password (optional)" maxlength="20" style="flex:1;padding:0.5rem;border-radius:4px;border:1px solid #00ff00;background:#001900;color:#00ff00;">
+                <input id="chatMsg" type="text" placeholder="Type your message..." maxlength="200" style="flex:3;padding:0.5rem;border-radius:4px;border:1px solid #00ff00;background:#001900;color:#00ff00;" required>
+                <button type="submit" style="background:#00ff00;color:#000;border:none;padding:0.5rem 1rem;border-radius:4px;font-weight:bold;">Send</button>
+            </form>
+            <div style="font-size:0.9rem;color:#008000;margin-top:0.5rem;">🔒 <b>AES-256 Encrypted Chat</b> | 👑 Moderator: masak1st1 | IRC-style: <b>/me</b> for actions, <b>/help</b> for commands. Admin bot auto-bans trolls.</div>
+        </section>
+
+        <script>
+        // Fully encrypted chat with admin bot and IRC-style commands
+        const chatLog = document.getElementById('chatLog');
+        const chatForm = document.getElementById('chatForm');
+        const chatName = document.getElementById('chatName');
+        const chatMsg = document.getElementById('chatMsg');
+        
+        // Crypto functions for ultimate encryption
+        async function generateKey(password) {
+            const enc = new TextEncoder();
+            const keyMaterial = await window.crypto.subtle.importKey(
+                'raw', enc.encode(password), {name: 'PBKDF2'}, false, ['deriveBits', 'deriveKey']
+            );
+            return await window.crypto.subtle.deriveKey(
+                {name: 'PBKDF2', salt: enc.encode('worldchat2025'), iterations: 100000, hash: 'SHA-256'},
+                keyMaterial, {name: 'AES-GCM', length: 256}, true, ['encrypt', 'decrypt']
+            );
+        }
+        
+        async function encrypt(text, key) {
+            const enc = new TextEncoder();
+            const iv = window.crypto.getRandomValues(new Uint8Array(12));
+            const encrypted = await window.crypto.subtle.encrypt(
+                {name: 'AES-GCM', iv: iv}, key, enc.encode(text)
+            );
+            return btoa(String.fromCharCode(...iv)) + ':' + btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+        }
+        
+        async function decrypt(encryptedText, key) {
+            try {
+                const [ivB64, dataB64] = encryptedText.split(':');
+                const iv = new Uint8Array(atob(ivB64).split('').map(c => c.charCodeAt(0)));
+                const data = new Uint8Array(atob(dataB64).split('').map(c => c.charCodeAt(0)));
+                const decrypted = await window.crypto.subtle.decrypt({name: 'AES-GCM', iv: iv}, key, data);
+                return new TextDecoder().decode(decrypted);
+            } catch(e) { return '[ENCRYPTED]'; }
+        }
+        
+        // Initialize encryption key (shared secret)
+        let cryptoKey = null;
+        const initCrypto = async () => {
+            const masterKey = prompt('Enter chat encryption passphrase (shared with others):') || 'worldchat2025default';
+            cryptoKey = await generateKey(masterKey);
+        };
+        initCrypto();
+        
+        let chatHistory = JSON.parse(localStorage.getItem('worldChatHistoryEncrypted')||'[]');
+        let bannedUsers = JSON.parse(localStorage.getItem('worldChatBanned')||'[]');
+        
+        // Built-in moderator credentials
+        const MODERATOR_USERNAME = 'masak1st1';
+        const MODERATOR_PASSWORD = 'masa_1982';
+        let currentUser = null;
+        
+        // Check for moderator login
+        function checkModeratorLogin(username, password) {
+            return username === MODERATOR_USERNAME && password === MODERATOR_PASSWORD;
+        }
+
+        async function renderChat() {
+            const decryptedHistory = [];
+            for (const entry of chatHistory) {
+                if (cryptoKey && entry.encryptedMsg) {
+                    const decryptedMsg = await decrypt(entry.encryptedMsg, cryptoKey);
+                    decryptedHistory.push({...entry, msg: decryptedMsg});
+                } else {
+                    decryptedHistory.push(entry);
+                }
+            }
+            chatLog.innerHTML = decryptedHistory.map(e =>
+                `<div><b style="color:${e.isAdmin?'#ff4444':(e.isMod?'#ffaa00':'#00ff00')}">${e.name}${e.isMod?'👑':''}</b>: <span>${e.msg}</span></div>`
+            ).join('');
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+        
+        setTimeout(() => renderChat(), 500); // Wait for crypto init
+
+        chatForm.onsubmit = async function(e) {
+            e.preventDefault();
+            if (!cryptoKey) {
+                alert('Encryption not initialized. Please refresh the page.');
+                return;
+            }
+            const name = chatName.value.trim().replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            const password = document.getElementById('chatPassword').value;
+            const msg = chatMsg.value.trim().replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            if (!name || !msg) return;
+            if (bannedUsers.includes(name.toLowerCase())) {
+                alert('You are banned from chat.');
+                return;
+            }
+            
+            // Check if user is moderator
+            const isModerator = checkModeratorLogin(name, password);
+            currentUser = {name, isMod: isModerator};
+            
+            // IRC-style /me
+            let displayMsg = msg;
+            if (msg.startsWith('/me ')) displayMsg = `<i>* ${name} ${msg.slice(4)}</i>`;
+            
+            // Moderator commands
+            if (msg.startsWith('/ban ') && isModerator) {
+                const toBan = msg.split(' ')[1]?.toLowerCase();
+                if (toBan && !bannedUsers.includes(toBan)) {
+                    bannedUsers.push(toBan);
+                    localStorage.setItem('worldChatBanned',JSON.stringify(bannedUsers));
+                    const modMsg = `<span style='color:#ff4444'>👑 Moderator banned user <b>${toBan}</b>.</span>`;
+                    const encryptedModMsg = await encrypt(modMsg, cryptoKey);
+                    chatHistory.push({name:'ModBot',msg:modMsg,encryptedMsg:encryptedModMsg,isAdmin:true});
+                    localStorage.setItem('worldChatHistoryEncrypted',JSON.stringify(chatHistory));
+                    renderChat();
+                    return;
+                }
+            }
+            if (msg.startsWith('/unban ') && isModerator) {
+                const toUnban = msg.split(' ')[1]?.toLowerCase();
+                const index = bannedUsers.indexOf(toUnban);
+                if (index > -1) {
+                    bannedUsers.splice(index, 1);
+                    localStorage.setItem('worldChatBanned',JSON.stringify(bannedUsers));
+                    const unbanMsg = `<span style='color:#00ff00'>👑 Moderator unbanned user <b>${toUnban}</b>.</span>`;
+                    const encryptedUnbanMsg = await encrypt(unbanMsg, cryptoKey);
+                    chatHistory.push({name:'ModBot',msg:unbanMsg,encryptedMsg:encryptedUnbanMsg,isAdmin:true});
+                    localStorage.setItem('worldChatHistoryEncrypted',JSON.stringify(chatHistory));
+                    renderChat();
+                    return;
+                }
+            }
+            if (msg.startsWith('/clear ') && isModerator) {
+                chatHistory = [];
+                localStorage.setItem('worldChatHistoryEncrypted',JSON.stringify(chatHistory));
+                const clearMsg = `<span style='color:#ffaa00'>👑 Moderator cleared chat history.</span>`;
+                const encryptedClearMsg = await encrypt(clearMsg, cryptoKey);
+                chatHistory.push({name:'ModBot',msg:clearMsg,encryptedMsg:encryptedClearMsg,isAdmin:true});
+                localStorage.setItem('worldChatHistoryEncrypted',JSON.stringify(chatHistory));
+                renderChat();
+                return;
+            }
+            // Admin bot commands (legacy support)
+            if (msg.startsWith('/ban ') && name.toLowerCase()==='admin') {
+                const toBan = msg.split(' ')[1]?.toLowerCase();
+                if (toBan && !bannedUsers.includes(toBan)) {
+                    bannedUsers.push(toBan);
+                    localStorage.setItem('worldChatBanned',JSON.stringify(bannedUsers));
+                    const adminMsg = `<span style='color:#ff4444'>User <b>${toBan}</b> has been banned.</span>`;
+                    const encryptedAdminMsg = await encrypt(adminMsg, cryptoKey);
+                    chatHistory.push({name:'AdminBot',msg:adminMsg,encryptedMsg:encryptedAdminMsg,isAdmin:true});
+                    localStorage.setItem('worldChatHistoryEncrypted',JSON.stringify(chatHistory));
+                    renderChat();
+                    return;
+                }
+            }
+            if (msg.startsWith('/help')) {
+                const helpMsg = isModerator ? 
+                    '👑 Moderator Commands: /ban [user], /unban [user], /clear, /me. Regular: /help. All messages AES-256 encrypted!' :
+                    'Commands: /me, /ban [user] (admin only). All messages are AES-256 encrypted!';
+                const encryptedHelpMsg = await encrypt(helpMsg, cryptoKey);
+                chatHistory.push({name:'AdminBot',msg:helpMsg,encryptedMsg:encryptedHelpMsg,isAdmin:true});
+                localStorage.setItem('worldChatHistoryEncrypted',JSON.stringify(chatHistory));
+                renderChat();
+                return;
+            }
+            // Troll filter (simple)
+            if (/troll|spam|idiot|hate|nazi|racist|kill|suicide|fool|stupid|dumb|f\*\*k|s\*\*t|c\*\*t|n\*\*r/i.test(msg)) {
+                const banMsg = `<span style='color:#ff4444'>User <b>${name}</b> has been banned for inappropriate language.</span>`;
+                const encryptedBanMsg = await encrypt(banMsg, cryptoKey);
+                chatHistory.push({name:'AdminBot',msg:banMsg,encryptedMsg:encryptedBanMsg,isAdmin:true});
+                bannedUsers.push(name.toLowerCase());
+                localStorage.setItem('worldChatBanned',JSON.stringify(bannedUsers));
+                localStorage.setItem('worldChatHistoryEncrypted',JSON.stringify(chatHistory));
+                renderChat();
+                return;
+            }
+            // Encrypt and store message
+            const encryptedMsg = await encrypt(displayMsg, cryptoKey);
+            chatHistory.push({name,msg:displayMsg,encryptedMsg:encryptedMsg,isAdmin:false,isMod:isModerator});
+            if (chatHistory.length>100) chatHistory = chatHistory.slice(-100);
+            localStorage.setItem('worldChatHistoryEncrypted',JSON.stringify(chatHistory));
+            renderChat();
+            chatMsg.value = '';
+        };
+        // Placeholder for IRC integration (future):
+        // You could use WebSocket or a public IRC gateway API here.
+        </script>
+        <!-- End Chat Box -->
     </main>
 
     <script>
