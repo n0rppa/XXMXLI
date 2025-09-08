@@ -208,12 +208,12 @@ def show_cli_launcher():
             description = input("Description: ").strip()
             
             try:
-          incident_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "automated_incident_reporter.py")
-          cmd = [sys.executable, incident_path, "report",
-              "--type", incident_type.upper(),
-              "--severity", severity,
-              "--description", description]
-          subprocess.run(cmd, check=True)
+                incident_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "automated_incident_reporter.py")
+                cmd = [sys.executable, incident_path, "report",
+                       "--type", incident_type.upper(),
+                       "--severity", severity,
+                       "--description", description]
+                subprocess.run(cmd, check=True)
                 print("Incident reported successfully!")
             except subprocess.CalledProcessError as e:
                 print(f"Error reporting incident: {e}")
