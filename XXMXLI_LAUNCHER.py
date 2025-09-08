@@ -439,6 +439,10 @@ class XXMXLILauncher:
         print("================================================================")
         print()
         
+        # Convert to absolute path based on launcher location
+        if not os.path.isabs(script_path):
+            script_path = os.path.join(self.base_dir, script_path)
+        
         if not os.path.isfile(script_path):
             self.error(f"Script not found: {script_path}")
             input("Press Enter to return to menu...")
@@ -451,11 +455,11 @@ class XXMXLILauncher:
             # Make script executable if it's a shell script
             if script_path.endswith('.sh'):
                 os.chmod(script_path, 0o755)
-                result = subprocess.run(['bash', script_path], check=False)
+                result = subprocess.run(['bash', script_path], check=False, cwd=self.base_dir)
             elif script_path.endswith('.py'):
-                result = subprocess.run([sys.executable, script_path], check=False)
+                result = subprocess.run([sys.executable, script_path], check=False, cwd=self.base_dir)
             else:
-                result = subprocess.run([script_path], check=False)
+                result = subprocess.run([script_path], check=False, cwd=self.base_dir)
             
             print()
             if result.returncode == 0:

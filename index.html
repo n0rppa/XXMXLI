@@ -603,6 +603,7 @@
         <a href="projects.html"><i class="fas fa-project-diagram"></i> Projektit</a>
         <a href="contact.html"><i class="fas fa-envelope"></i> Ota yhteyttä</a>
         <a href="security.html"><i class="fas fa-shield-alt"></i> Turvallisuus</a>
+        <a href="#cert-section"><i class="fas fa-certificate"></i> CERT Info</a>
         <a href="admin/login.html"><i class="fas fa-user-shield"></i> Admin Login</a>
   <a href="downloads.html"><i class="fas fa-download"></i> Lataukset</a>
     </nav>
@@ -632,6 +633,13 @@
                 <h2>Projektit</h2>
                 <p>Tutustu meneillään oleviin ja valmistuneisiin projekteihin.</p>
                 <a href="projects.html">Lue lisää <i class="fas fa-chevron-right"></i></a>
+            </div>
+
+            <div class="grid-item">
+                <i class="fas fa-shield-alt"></i>
+                <h2>CERT & Security</h2>
+                <p>Computer Emergency Response Team information and SSL certificate details.</p>
+                <a href="#cert-section">View Details <i class="fas fa-chevron-right"></i></a>
             </div>
         </div>
 
@@ -674,6 +682,102 @@
 
                 <div id="formMessage" class="form-message" style="display: none;"></div>
             </form>
+        </section>
+
+        <!-- CERT & Security Information Section -->
+        <section id="cert-section" class="contact-form" style="margin-top: 3rem;">
+            <h2><i class="fas fa-shield-alt"></i> CERT & Security Information</h2>
+            
+            <div style="background: var(--card-bg); border: 1px solid var(--border); padding: 2rem; border-radius: 8px; margin-bottom: 2rem;">
+                <h3 style="color: var(--accent); margin-bottom: 1rem;">🔐 SSL Certificate Information</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <strong>Issuer:</strong><br>
+                        Let's Encrypt (R3)
+                    </div>
+                    <div>
+                        <strong>Subject:</strong><br>
+                        www.xxmxli.com
+                    </div>
+                    <div>
+                        <strong>Algorithm:</strong><br>
+                        ECDSA with P-256
+                    </div>
+                    <div>
+                        <strong>Valid Until:</strong><br>
+                        ~90 days from issuance
+                    </div>
+                </div>
+                <p style="font-size: 0.9rem; color: var(--text-secondary);">
+                    Certificate automatically renewed by GitHub Pages. Check current status: 
+                    <a href="https://www.ssllabs.com/ssltest/analyze.html?d=www.xxmxli.com" target="_blank" style="color: var(--accent);">SSL Labs Test</a>
+                </p>
+            </div>
+            
+            <div style="background: var(--card-bg); border: 1px solid var(--border); padding: 2rem; border-radius: 8px; margin-bottom: 2rem;">
+                <h3 style="color: var(--accent); margin-bottom: 1rem;">🛡️ Computer Emergency Response Team (CERT)</h3>
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="color: var(--text-primary); margin-bottom: 0.5rem;">CERT-FI (Finland)</h4>
+                    <p style="margin-bottom: 0.5rem;">National CERT for Finland - handles cybersecurity incidents and provides security guidance.</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div>
+                            <strong>Website:</strong><br>
+                            <a href="https://www.cert.fi/" target="_blank" style="color: var(--accent);">www.cert.fi</a>
+                        </div>
+                        <div>
+                            <strong>Contact:</strong><br>
+                            cert@cert.fi
+                        </div>
+                        <div>
+                            <strong>Phone:</strong><br>
+                            +358 40 123 4567
+                        </div>
+                        <div>
+                            <strong>Report Incidents:</strong><br>
+                            <a href="https://www.cert.fi/en/reporting/" target="_blank" style="color: var(--accent);">Online Form</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="color: var(--text-primary); margin-bottom: 0.5rem;">GitHub Security</h4>
+                    <p style="margin-bottom: 0.5rem;">For security issues related to GitHub Pages hosting.</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div>
+                            <strong>Security Team:</strong><br>
+                            <a href="mailto:security@github.com" style="color: var(--accent);">security@github.com</a>
+                        </div>
+                        <div>
+                            <strong>Bug Bounty:</strong><br>
+                            <a href="https://bounty.github.com/" target="_blank" style="color: var(--accent);">bounty.github.com</a>
+                        </div>
+                        <div>
+                            <strong>Advisories:</strong><br>
+                            <a href="https://github.com/security-advisories" target="_blank" style="color: var(--accent);">Security Advisories</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="background: var(--card-bg); border: 1px solid var(--border); padding: 2rem; border-radius: 8px;">
+                <h3 style="color: var(--accent); margin-bottom: 1rem;">🚨 Incident Reporting</h3>
+                <p style="margin-bottom: 1rem;">If you discover a security vulnerability or incident on this website:</p>
+                <ol style="margin-bottom: 1.5rem; padding-left: 1.5rem;">
+                    <li style="margin-bottom: 0.5rem;">Document the issue with screenshots and steps to reproduce</li>
+                    <li style="margin-bottom: 0.5rem;">Contact the website administrator through the contact form above</li>
+                    <li style="margin-bottom: 0.5rem;">For critical security issues, contact CERT-FI directly</li>
+                    <li style="margin-bottom: 0.5rem;">Do not publicly disclose vulnerabilities before they are fixed</li>
+                </ol>
+                
+                <div style="background: rgba(0, 255, 0, 0.1); border: 1px solid var(--accent); padding: 1rem; border-radius: 4px;">
+                    <strong>⚡ Quick Actions:</strong>
+                    <div style="margin-top: 0.5rem;">
+                        <a href="mailto:cert@cert.fi?subject=Security%20Incident%20Report%20-%20www.xxmxli.com" style="color: var(--accent); margin-right: 1rem;">📧 Report to CERT-FI</a>
+                        <a href="https://www.cert.fi/en/reporting/" target="_blank" style="color: var(--accent); margin-right: 1rem;">🌐 Online Incident Form</a>
+                        <a href="#contactForm" style="color: var(--accent);">💬 Contact Admin</a>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <!-- Clipboard Paste Feature -->

@@ -65,8 +65,8 @@ any suspicious activity to the appropriate authorities."""
         if result:
             try:
                 # Run the Python incident reporter
-                subprocess.run([sys.executable, "automated_incident_reporter.py"], 
-                             check=True, cwd=os.path.dirname(__file__))
+                incident_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "automated_incident_reporter.py")
+                subprocess.run([sys.executable, incident_path], check=True)
                 messagebox.showinfo("Success", "Security monitoring has been set up!\n"
                                               "Your system is now protected.")
             except subprocess.CalledProcessError as e:
@@ -97,18 +97,17 @@ any suspicious activity to the appropriate authorities."""
         
         try:
             # Run the incident reporter with parameters
-            cmd = [sys.executable, "automated_incident_reporter.py", "report",
+            incident_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "automated_incident_reporter.py")
+            cmd = [sys.executable, incident_path, "report",
                    "--type", incident_type.upper(),
                    "--severity", str(severity),
                    "--description", description]
-            
             result = subprocess.run(
                 cmd,
                 check=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                universal_newlines=True,
-                cwd=os.path.dirname(__file__)
+                universal_newlines=True
             )
             
             messagebox.showinfo("Success", f"Incident reported successfully!\n\n{result.stdout}")
@@ -194,7 +193,8 @@ def show_cli_launcher():
         elif choice == '1':
             print("Setting up security monitoring...")
             try:
-                subprocess.run([sys.executable, "automated_incident_reporter.py"], check=True)
+                incident_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "automated_incident_reporter.py")
+                subprocess.run([sys.executable, incident_path], check=True)
                 print("Security monitoring set up successfully!")
             except subprocess.CalledProcessError as e:
                 print(f"Error setting up monitoring: {e}")
@@ -208,11 +208,12 @@ def show_cli_launcher():
             description = input("Description: ").strip()
             
             try:
-                cmd = [sys.executable, "automated_incident_reporter.py", "report",
-                       "--type", incident_type.upper(),
-                       "--severity", severity,
-                       "--description", description]
-                subprocess.run(cmd, check=True)
+          incident_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "automated_incident_reporter.py")
+          cmd = [sys.executable, incident_path, "report",
+              "--type", incident_type.upper(),
+              "--severity", severity,
+              "--description", description]
+          subprocess.run(cmd, check=True)
                 print("Incident reported successfully!")
             except subprocess.CalledProcessError as e:
                 print(f"Error reporting incident: {e}")

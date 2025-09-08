@@ -29,6 +29,10 @@ import json
 import re
 from datetime import datetime
 
+# Ensure we're working from the script's directory
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+os.chdir(SCRIPT_DIR)
+
 # GUI imports with fallback
 try:
     import tkinter as tk
