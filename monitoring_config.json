@@ -1,0 +1,12 @@
+{
+  "enabled": true,
+  "check_interval": 300,
+  "auto_report_threshold": 8,
+  "agencies": [
+    "FBI_IC3",
+    "CISA",
+    "EUROPOL_EC3",
+    "NATIONAL_CERT"
+  ],
+  "setup_timestamp": "2025-09-08T23:59:30.135241+00:00"
+}

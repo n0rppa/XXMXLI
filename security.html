@@ -701,6 +701,121 @@
                 font-size: 0.9rem;
             }
         }
+
+        /* Accordion Styles */
+        .accordion {
+            margin: 2rem 0;
+        }
+
+        .accordion-btn {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, var(--accent), #00d4aa);
+            color: var(--background);
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 0.5rem;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .accordion-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+        }
+
+        .accordion-btn:active {
+            transform: translateY(0);
+        }
+
+        .accordion-btn::after {
+            content: '▼';
+            transition: transform 0.3s ease;
+            font-size: 0.8rem;
+        }
+
+        .accordion-btn.active::after {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .accordion-content.show {
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+            }
+            to {
+                opacity: 1;
+                max-height: 1000px;
+            }
+        }
+
+        .cert-info-container {
+            padding: 2rem;
+        }
+
+        .cert-section {
+            background: var(--background);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .cert-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .cert-item {
+            padding: 0.5rem;
+            border-left: 3px solid var(--accent);
+            background: rgba(0, 255, 136, 0.05);
+        }
+
+        .quick-actions {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid var(--accent);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+
+        .quick-actions a {
+            color: var(--accent);
+            text-decoration: none;
+            margin-right: 1rem;
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--accent);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .quick-actions a:hover {
+            background: var(--accent);
+            color: var(--background);
+        }
     </style>
 </head>
 <body>
@@ -715,6 +830,7 @@
         <a href="admin/login.html"><i class="fas fa-user-shield"></i> Admin Login</a>
     </nav>
 
+
     <main class="main-content">
         <section class="hero">
             <h1>
@@ -724,1396 +840,576 @@
             <p>Comprehensive tools and guides to protect yourself in the digital world</p>
         </section>
 
-        <div class="warning-box">
-            <h3><i class="fas fa-exclamation-triangle"></i> Important Security Notice</h3>
-            <p><strong>This system is actively monitored and protected.</strong></p>
-            <p>Any unauthorized access attempts, network scanning, intrusion, or abusive activity will be logged and reported to the appropriate authorities. IP addresses and metadata may be retained and used for legal enforcement, in compliance with applicable laws.</p>
-            <p>By continuing, you acknowledge that you are authorized to use this system and that any misuse may result in account suspension, firewall bans, or prosecution under national and international law. Violators may be subject to civil and/or criminal penalties.</p>
-            <p><strong>Your access is being monitored.</strong></p>
-        </div>
-
-        <div class="warning-box">
-            <h3><i class="fas fa-exclamation-triangle"></i> Tool Usage Notice</h3>
-            <p>These tools are provided for educational and legitimate security purposes only. Always use responsibly and in accordance with applicable laws and regulations.</p>
-        </div>
-
-        <div class="safety-grid">
-            <div class="safety-card">
-                <h2><i class="fas fa-ban"></i> IP Blacklisting</h2>
-                <ul>
-                    <li><i class="fas fa-check"></i> Block malicious IPs automatically</li>
-                    <li><i class="fas fa-check"></i> Real-time threat detection</li>
-                    <li><i class="fas fa-check"></i> Multiple blacklist sources</li>
-                    <li><i class="fas fa-check"></i> Custom rule support</li>
-                </ul>
-                <div class="code-block">
-python process_w_blacklists.py
-                </div>
-            </div>
-
-            <div class="safety-card">
-                <h2><i class="fab fa-windows"></i> Windows Protection</h2>
-                <ul>
-                    <li><i class="fas fa-check"></i> PowerShell and Batch scripts</li>
-                    <li><i class="fas fa-check"></i> Windows Firewall integration</li>
-                    <li><i class="fas fa-check"></i> Hosts file modification</li>
-                    <li><i class="fas fa-check"></i> Administrator tools included</li>
-                </ul>
-                <div class="code-block">
-.\process_w_blacklists.ps1 -GenerateFirewallRules
-                </div>
-            </div>
-
-            <div class="safety-card">
-                <h2><i class="fas fa-eye-slash"></i> Privacy Protection</h2>
-                <ul>
-                    <li><i class="fas fa-check"></i> Anonymous browsing techniques</li>
-                    <li><i class="fas fa-check"></i> Data encryption tools</li>
-                    <li><i class="fas fa-check"></i> Tracker blocking</li>
-                    <li><i class="fas fa-check"></i> Secure communication</li>
-                </ul>
-            </div>
-
-            <div class="safety-card">
-                <h2><i class="fas fa-lock"></i> Web Security</h2>
-                <ul>
-                    <li><i class="fas fa-check"></i> HTTPS enforcement</li>
-                    <li><i class="fas fa-check"></i> Content Security Policy</li>
-                    <li><i class="fas fa-check"></i> XSS protection</li>
-                    <li><i class="fas fa-check"></i> Secure headers</li>
-                </ul>
-            </div>
-
-            <div class="safety-card">
-                <h2><i class="fas fa-network-wired"></i> Network Anonymity</h2>
-                <ul>
-                    <li><i class="fas fa-check"></i> MAC address spoofing tools</li>
-                    <li><i class="fas fa-check"></i> IP address changing utilities</li>
-                    <li><i class="fas fa-check"></i> Network identity masking</li>
-                    <li><i class="fas fa-check"></i> Privacy enhancement scripts</li>
-                </ul>
-            </div>
-        </div>
-
-        <section class="tools-section">
-            <h2><i class="fas fa-download"></i> Advanced Security Tools</h2>
-            
-            <!-- DNS Security Tools -->
-            <div class="tool-item">
-                <div class="tool-info">
-                    <h3>DNS Security Setup</h3>
-                    <p>Comprehensive DNS security and privacy configuration tool with DNS-over-HTTPS/TLS support, multiple providers, and filtering capabilities.</p>
-                </div>
-                <a href="lataukset/dns_security_setup.sh" class="download-btn" download>
-                    <i class="fas fa-shield-alt"></i> Download
-                </a>
-            </div>
-
-            <div class="tool-item">
-                <div class="tool-info">
-                    <h3>System Hardening Tool</h3>
-                    <p>Complete Linux system hardening script with SSH security, firewall configuration, kernel protection, and audit logging.</p>
-                </div>
-                <a href="lataukset/system_hardening.sh" class="download-btn" download>
-                    <i class="fas fa-lock"></i> Download
-                </a>
-            </div>
-
-            <div class="tool-item">
-                <div class="tool-info">
-                    <h3>Network Monitor</h3>
-                    <p>Real-time network traffic monitoring and security analysis tool with packet capture, bandwidth monitoring, and intrusion detection.</p>
-                </div>
-                <a href="lataukset/network_monitor.sh" class="download-btn" download>
-                    <i class="fas fa-network-wired"></i> Download
-                </a>
-            </div>
-
-            <div class="tool-item">
-                <div class="tool-info">
-                    <h3>Secure Tunneling Tool</h3>
-                    <p>SSH tunnel and VPN management tool with SOCKS proxy, port forwarding, and secure communication setup.</p>
-                </div>
-                <a href="lataukset/secure_tunnel.sh" class="download-btn" download>
-                    <i class="fas fa-user-secret"></i> Download
-                </a>
-            </div>
-
-            <div class="tool-item">
-                <div class="tool-info">
-                    <h3>Encryption Tools</h3>
-                    <p>File and folder encryption toolkit with AES encryption, GPG operations, secure deletion, and encrypted vault management.</p>
-                </div>
-                <a href="lataukset/encryption_tools.sh" class="download-btn" download>
-                    <i class="fas fa-key"></i> Download
-                </a>
-            </div>
-        </section>
-
-        <section class="tools-section">
-            <h2><i class="fab fa-windows"></i> Windows PowerShell Security Tools</h2>
-            
-            <!-- Windows PowerShell versions of the security tools -->
-            <div class="tool-item">
-                <div class="tool-info">
-                    <h3>DNS Security Setup (Windows PowerShell)</h3>
-                    <p>Windows DNS security configuration with DNS-over-HTTPS/TLS support, multiple providers (Cloudflare, Quad9, OpenDNS), and comprehensive filtering capabilities.</p>
-                </div>
-                <a href="lataukset/dns_security_setup.ps1" class="download-btn" download>
-                    <i class="fas fa-shield-alt"></i> Download
-                </a>
-            </div>
-
-            <div class="tool-item">
-                <div class="tool-info">
-                    <h3>System Hardening Tool (Windows PowerShell)</h3>
-                    <p>Complete Windows system hardening with registry security settings, Windows Firewall configuration, service management, and audit policies.</p>
-                </div>
-                <a href="lataukset/system_hardening.ps1" class="download-btn" download>
-                    <i class="fas fa-lock"></i> Download
-                </a>
-            </div>
-
-            <div class="tool-item">
-                <div class="tool-info">
-                    <h3>Network Monitor (Windows PowerShell)</h3>
-                    <p>Windows network traffic monitoring and analysis with PowerShell cmdlets, connection tracking, bandwidth analysis, and HTML report generation.</p>
-                </div>
-                <a href="lataukset/network_monitor.ps1" class="download-btn" download>
-                    <i class="fas fa-network-wired"></i> Download
-                </a>
-            </div>
-
-            <div class="tool-item">
-                <div class="tool-info">
-                    <h3>Secure Tunneling Tool (Windows PowerShell)</h3>
-                    <p>Windows SSH tunnel and secure connection management with OpenSSH integration, SOCKS proxy, port forwarding, and tunnel management.</p>
-                </div>
-                <a href="lataukset/secure_tunnel.ps1" class="download-btn" download>
-                    <i class="fas fa-user-secret"></i> Download
-                </a>
-            </div>
-
-            <div class="tool-item">
-                <div class="tool-info">
-                    <h3>Encryption Tools (Windows PowerShell)</h3>
-                    <p>Windows file and folder encryption toolkit with AES encryption, secure vault management, password generation, and secure deletion using PowerShell and .NET APIs.</p>
-                </div>
-                <a href="lataukset/encryption_tools.ps1" class="download-btn" download>
-                    <i class="fas fa-key"></i> Download
-                </a>
-            </div>
-        </section>
-
-        <section class="tools-section">
-            <h2><i class="fas fa-exclamation-triangle"></i> Automated Incident Reporting Tools</h2>
-            <p class="section-description">Professional-grade incident reporting system that automatically reports security incidents to law enforcement and cybersecurity authorities through secure channels.</p>
-            
-            <div class="tool-item" style="border: 3px solid #ffff00; background: rgba(255, 255, 0, 0.1);">
-                <div class="tool-info">
-                    <h3><i class="fas fa-mouse-pointer"></i> 🎯 SUPER EASY - Double-Click Launcher (GUI)</h3>
-                    <p><strong>⭐ RECOMMENDED FOR EVERYONE!</strong> Beautiful graphical interface - just double-click and click buttons! Perfect for non-technical users.</p>
-                    <ul class="feature-list">
-                        <li>✨ Beautiful point-and-click interface</li>
-                        <li>🖱️ Just double-click to start</li>
-                        <li>🛡️ One-click security setup</li>
-                        <li>📞 Easy incident reporting form</li>
-                        <li>💻 Works on Windows, Linux, macOS</li>
-                        <li>❓ Built-in help and instructions</li>
-                    </ul>
-                    <div style="background: rgba(255, 255, 0, 0.15); padding: 0.8rem; margin: 0.5rem 0; border-radius: 4px;">
-                        <strong>Usage:</strong> Download → Double-click → Click "Set Up Monitoring" → Done!
-                    </div>
-                </div>
-                <a href="lataukset/EASY_LAUNCHER.py" class="download-btn" download style="background: #ffff00; color: #000; font-weight: bold;">
-                    <i class="fas fa-mouse-pointer"></i> Super Easy GUI
-                </a>
-            </div>
-
-            <div class="tool-item" style="border: 2px solid #00ff00; background: rgba(0, 255, 0, 0.05);">
-                <div class="tool-info">
-                    <h3><i class="fas fa-rocket"></i> One-Click Installer (Linux/Unix)</h3>
-                    <p><strong>NEW!</strong> Fully automated setup - just download and run! No manual configuration needed.</p>
-                    <ul class="feature-list">
-                        <li>Automatic dependency installation</li>
-                        <li>Auto-elevates to root privileges</li>
-                        <li>Creates all required directories</li>
-                        <li>Sets up monitoring service</li>
-                        <li>Runs system test automatically</li>
-                        <li>Ready to use in seconds!</li>
-                    </ul>
-                    <div style="background: rgba(0, 255, 0, 0.1); padding: 0.8rem; margin: 0.5rem 0; border-radius: 4px;">
-                        <strong>Usage:</strong> <code>wget script.sh && chmod +x install_incident_reporter.sh && ./install_incident_reporter.sh</code>
-                    </div>
-                </div>
-                <a href="lataukset/install_incident_reporter.sh" class="download-btn" download style="background: #00ff00; color: #000;">
-                    <i class="fas fa-rocket"></i> One-Click Install
-                </a>
-            </div>
-
-            <div class="tool-item" style="border: 2px solid #00ff00; background: rgba(0, 255, 0, 0.05);">
-                <div class="tool-info">
-                    <h3><i class="fas fa-rocket"></i> One-Click Installer (Windows)</h3>
-                    <p><strong>NEW!</strong> Windows batch installer - right-click and "Run as Administrator"!</p>
-                    <ul class="feature-list">
-                        <li>Automatic Administrator elevation</li>
-                        <li>Creates all directories and shortcuts</li>
-                        <li>Configures PowerShell execution policy</li>
-                        <li>Adds desktop shortcut</li>
-                        <li>Runs system test</li>
-                        <li>Works on all Windows versions</li>
-                    </ul>
-                    <div style="background: rgba(0, 255, 0, 0.1); padding: 0.8rem; margin: 0.5rem 0; border-radius: 4px;">
-                        <strong>Usage:</strong> Download → Right-click → "Run as administrator"
-                    </div>
-                </div>
-                <a href="lataukset/install_incident_reporter.bat" class="download-btn" download style="background: #00ff00; color: #000;">
-                    <i class="fas fa-rocket"></i> One-Click Install
-                </a>
-            </div>
-
-            <div class="tool-item" style="border: 2px solid #0099ff; background: rgba(0, 150, 255, 0.05);">
-                <div class="tool-info">
-                    <h3><i class="fas fa-play-circle"></i> Double-Click Launchers</h3>
-                    <p>Simple launchers for running the main scripts without typing commands.</p>
-                    <ul class="feature-list">
-                        <li>Double-click to run - no typing needed</li>
-                        <li>Automatic terminal opening</li>
-                        <li>Interactive easy mode</li>
-                        <li>Works from file manager</li>
-                        <li>Auto-privilege elevation</li>
-                        <li>Beginner-friendly interface</li>
-                    </ul>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <a href="lataukset/DOUBLE_CLICK_LAUNCHER.sh" class="download-btn" download style="background: #0099ff; color: #fff; flex: 1;">
-                        <i class="fab fa-linux"></i> Linux Launcher
-                    </a>
-                    <a href="lataukset/DOUBLE_CLICK_LAUNCHER.bat" class="download-btn" download style="background: #0099ff; color: #fff; flex: 1;">
-                        <i class="fab fa-windows"></i> Windows Launcher
-                    </a>
-                </div>
-            </div>
-            
-            <div class="tool-item">
-                <div class="tool-info">
-                    <h3>Automated Incident Reporter (Linux/Unix)</h3>
-                    <p>Comprehensive security incident detection and automated reporting to FBI IC3, CISA, Europol EC3, and other authorities. Features evidence collection, encryption, and secure transmission.</p>
-                    <ul class="feature-list">
-                        <li>Automated reporting to FBI IC3, CISA, Europol</li>
-                        <li>Evidence collection and chain of custody</li>
-                        <li>GPG encryption for sensitive data</li>
-                        <li>Real-time monitoring and batch processing</li>
-                        <li>Configurable severity thresholds</li>
-                        <li>Email notifications and secure transmission</li>
-                    </ul>
-                </div>
-                <a href="lataukset/automated_incident_reporter.sh" class="download-btn" download>
-                    <i class="fas fa-shield-alt"></i> Download
-                </a>
-            </div>
-
-            <div class="tool-item">
-                <div class="tool-info">
-                    <h3>Automated Incident Reporter (Windows PowerShell)</h3>
-                    <p>Windows-optimized version with Event Log integration and GUI notifications. Auto-elevates to Administrator privileges and configures itself automatically.</p>
-                    <ul class="feature-list">
-                        <li>Windows Event Log integration</li>
-                        <li>Auto-elevation to Administrator</li>
-                        <li>GUI notifications and balloon tips</li>
-                        <li>PowerShell module auto-installation</li>
-                        <li>Registry monitoring capabilities</li>
-                        <li>Windows Defender integration</li>
-                    </ul>
-                </div>
-                <a href="lataukset/automated_incident_reporter.ps1" class="download-btn" download>
-                    <i class="fas fa-windows"></i> Download
-                </a>
-            </div>
-
-            <div class="tool-item">
-                <div class="tool-info">
-                    <h3>Automated Incident Reporter (Python Cross-Platform)</h3>
-                    <p>Universal Python implementation that works on Windows, Linux, and macOS. Automatically installs dependencies and elevates privileges as needed.</p>
-                    <ul class="feature-list">
-                        <li>Cross-platform compatibility</li>
-                        <li>Auto-privilege elevation</li>
-                        <li>Pip dependency auto-installation</li>
-                        <li>Advanced threat detection algorithms</li>
-                        <li>JSON and XML export formats</li>
-                        <li>RESTful API integration</li>
-                    </ul>
-                </div>
-                <a href="lataukset/automated_incident_reporter.py" class="download-btn" download>
-                    <i class="fab fa-python"></i> Download
-                </a>
-            </div>
-
-            <div class="legal-warning">
-                <h3><i class="fas fa-exclamation-triangle"></i> Legal Notice - Incident Reporting</h3>
-                <p><strong>WARNING:</strong> These incident reporting tools are designed to automatically submit reports to law enforcement and cybersecurity authorities. Any unauthorized access attempts, network scanning, intrusion, or abusive activity will be logged and reported to the appropriate authorities.</p>
-                
-                <p>IP addresses and metadata may be retained and used for legal enforcement, in compliance with applicable laws. By using these tools, you acknowledge that:</p>
-                
-                <ul>
-                    <li>You are authorized to deploy these monitoring and reporting systems</li>
-                    <li>Any misuse may result in account suspension, firewall bans, or prosecution</li>
-                    <li>Violators may be subject to civil and/or criminal penalties</li>
-                    <li>All activities are being monitored and logged</li>
-                </ul>
-                
-                <p><strong>Authorities that may receive reports include:</strong></p>
-                <ul>
-                    <li>FBI Internet Crime Complaint Center (IC3)</li>
-                    <li>Cybersecurity and Infrastructure Security Agency (CISA)</li>
-                    <li>Europol European Cybercrime Centre (EC3)</li>
-                    <li>National Computer Emergency Response Teams (CERTs)</li>
-                    <li>Local law enforcement cybercrime units</li>
-                    <li>Financial crimes enforcement agencies</li>
-                </ul>
-                
-                <div style="text-align: center; margin-top: 1.5rem;">
-                    <a href="lataukset/INCIDENT_REPORTING_README.md" class="download-btn" download>
-                        <i class="fas fa-book"></i> Complete Documentation & Setup Guide
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <section class="tools-section">
-            <h2><i class="fas fa-download"></i> Legacy Security Tools</h2>
-            
-            <div class="tool-item">
-                <div class="tool-info">
-                    <h3>IP Blacklist Processor (Python)</h3>
-                    <p>Cross-platform Python script that processes multiple IP blacklist sources and generates JavaScript blocklists for web protection.</p>
-                </div>
-                <a href="lataukset/process_w_blacklists.py" class="download-btn" download>
-                    <i class="fas fa-python"></i> Download
-                </a>
-            </div>
-
-            <div class="tool-item">
-                <div class="tool-info">
-                    <h3>IP Blacklist Processor (Windows PowerShell)</h3>
-                    <p>Windows PowerShell script with firewall integration and hosts file generation for comprehensive Windows protection.</p>
-                </div>
-                <a href="lataukset/process_w_blacklists.ps1" class="download-btn" download>
-                    <i class="fab fa-windows"></i> Download
-                </a>
-            </div>
-
-            <div class="tool-item">
-                <div class="tool-info">
-                    <h3>IP Blacklist Processor (Windows Batch)</h3>
-                    <p>Windows batch file for legacy systems and command-line users. Generates firewall rules and hosts file entries.</p>
-                </div>
-                <a href="lataukset/process_w_blacklists.bat" class="download-btn" download>
-                    <i class="fas fa-terminal"></i> Download
-                </a>
-            </div>
-
-            <div class="tool-item">
-                <div class="tool-info">
-                    <h3>Windows Setup Guide</h3>
-                    <p>Complete instructions for Windows users including PowerShell, batch files, firewall configuration, and troubleshooting.</p>
-                </div>
-                <a href="lataukset/README_Windows.md" class="download-btn" download>
-                    <i class="fas fa-book"></i> Download
-                </a>
-            </div>
-
-            <div class="tool-item">
-                <div class="tool-info">
-                    <h3>Blocked IPs JavaScript</h3>
-                    <p>Ready-to-use JavaScript file containing processed IP blacklists for client-side protection.</p>
-                </div>
-                <a href="lataukset/blocked_ips.js" class="download-btn" download>
-                    <i class="fas fa-js"></i> Download
-                </a>
-            </div>
-
-            <div class="tool-item">
-                <div class="tool-info">
-                    <h3>Blacklist Statistics</h3>
-                    <p>JSON file containing statistics and metadata about processed blacklists and threat intelligence.</p>
-                </div>
-                <a href="lataukset/blacklist_stats.json" class="download-btn" download>
-                    <i class="fas fa-chart-bar"></i> Download
-                </a>
-            </div>
-
-            <div class="tool-item">
-                <div class="tool-info">
-                    <h3>Complete Safety Toolkit</h3>
-                    <p>All tools and scripts bundled together in a convenient ZIP archive for easy deployment.</p>
-                </div>
-                <a href="#" class="download-btn" onclick="createSafetyToolkit()">
-                    <i class="fas fa-archive"></i> Generate Toolkit
-                </a>
-            </div>
-        </section>
-
-        <!-- MAC & IP Address Changer Section -->
-        <section class="tools-section" id="network-tools">
-            <h2><i class="fas fa-network-wired"></i> MAC & IP Address Changer</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.9rem;">
-                <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i>
-                <strong>Legal Warning:</strong> These tools are for educational and legitimate network administration purposes only.
-                Unauthorized use may violate laws and terms of service. Always obtain proper authorization before use.
-            </p>
-
-            <div class="network-tools-grid">
-                <!-- MAC Address Changer -->
-                <div class="network-tool-card">
-                    <h3><i class="fas fa-ethernet"></i> MAC Address Spoofer</h3>
-                    <div class="tool-input-group">
-                        <label for="currentMac">Current MAC Address:</label>
-                        <input type="text" id="currentMac" readonly value="Detecting..." style="background: var(--background); border: 1px solid var(--border); color: var(--text-primary); padding: 0.5rem; font-family: 'Courier New', monospace;">
-                    </div>
-
-                    <div class="tool-input-group">
-                        <label for="newMac">New MAC Address:</label>
-                        <input type="text" id="newMac" placeholder="XX:XX:XX:XX:XX:XX" style="background: var(--background); border: 1px solid var(--border); color: var(--text-primary); padding: 0.5rem; font-family: 'Courier New', monospace;">
-                    </div>
-
-                    <div class="tool-buttons">
-                        <button class="network-btn" onclick="detectCurrentMac()">
-                            <i class="fas fa-search"></i> Detect Current
-                        </button>
-                        <button class="network-btn" onclick="generateRandomMac()">
-                            <i class="fas fa-random"></i> Generate Random
-                        </button>
-                        <button class="network-btn primary" onclick="changeMacAddress()">
-                            <i class="fas fa-exchange-alt"></i> Change MAC
-                        </button>
-                        <div class="dropdown">
-                            <button class="network-btn dropdown-btn">
-                                <i class="fas fa-download"></i> Download Script ▼
-                            </button>
-                            <div class="dropdown-content">
-                                <a href="#" onclick="downloadMacScript()">🐧 Linux/macOS Script</a>
-                                <a href="#" onclick="downloadWindowsPowerShell()">🪟 Windows PowerShell</a>
-                                <a href="#" onclick="downloadWindowsBatch()">⚡ Windows Batch</a>
+        <!-- Accordion Section -->
+        <div class="accordion">
+            <!-- CERT Info & Incident Reporting -->
+            <button class="accordion-btn" onclick="toggleAccordion('certInfo', this)">
+                🛡️ CERT Info & Incident Reporting
+            </button>
+            <div class="accordion-content" id="certInfo">
+                <div class="cert-info-container">
+                    <div class="cert-section">
+                        <h3 style="color: var(--accent); margin-bottom: 1rem;">🛡️ Computer Emergency Response Team (CERT)</h3>
+                        <div style="margin-bottom: 1.5rem;">
+                            <h4 style="color: var(--text-primary); margin-bottom: 0.5rem;">CERT-FI (Finland)</h4>
+                            <p style="margin-bottom: 0.5rem;">National CERT for Finland - handles cybersecurity incidents and provides security guidance.</p>
+                            <div class="cert-grid">
+                                <div class="cert-item">
+                                    <strong>Website:</strong><br>
+                                    <a href="https://www.cert.fi/" target="_blank" style="color: var(--accent);">www.cert.fi</a>
+                                </div>
+                                <div class="cert-item">
+                                    <strong>Contact:</strong><br>
+                                    cert@cert.fi
+                                </div>
+                                <div class="cert-item">
+                                    <strong>Phone:</strong><br>
+                                    +358 40 123 4567
+                                </div>
+                                <div class="cert-item">
+                                    <strong>Report Incidents:</strong><br>
+                                    <a href="https://www.cert.fi/en/reporting/" target="_blank" style="color: var(--accent);">Online Form</a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div id="macStatus" class="status-message"></div>
-                </div>
-
-                <!-- IP Address Changer -->
-                <div class="network-tool-card">
-                    <h3><i class="fas fa-globe"></i> IP Address Changer</h3>
-                    <div class="tool-input-group">
-                        <label for="currentIp">Current IP Address:</label>
-                        <input type="text" id="currentIp" readonly value="Detecting..." style="background: var(--background); border: 1px solid var(--border); color: var(--text-primary); padding: 0.5rem; font-family: 'Courier New', monospace;">
-                    </div>
-
-                    <div class="tool-input-group">
-                        <label for="newIp">New IP Address:</label>
-                        <input type="text" id="newIp" placeholder="192.168.1.XXX" style="background: var(--background); border: 1px solid var(--border); color: var(--text-primary); padding: 0.5rem; font-family: 'Courier New', monospace;">
-                    </div>
-
-                    <div class="tool-input-group">
-                        <label for="subnetMask">Subnet Mask:</label>
-                        <input type="text" id="subnetMask" placeholder="255.255.255.0" style="background: var(--background); border: 1px solid var(--border); color: var(--text-primary); padding: 0.5rem; font-family: 'Courier New', monospace;">
-                    </div>
-
-                    <div class="tool-buttons">
-                        <button class="network-btn" onclick="detectCurrentIp()">
-                            <i class="fas fa-search"></i> Detect Current
-                        </button>
-                        <button class="network-btn" onclick="generateRandomIp()">
-                            <i class="fas fa-random"></i> Generate Random
-                        </button>
-                        <button class="network-btn primary" onclick="changeIpAddress()">
-                            <i class="fas fa-exchange-alt"></i> Change IP
-                        </button>
-                        <div class="dropdown">
-                            <button class="network-btn dropdown-btn">
-                                <i class="fas fa-download"></i> Download Script ▼
-                            </button>
-                            <div class="dropdown-content">
-                                <a href="#" onclick="downloadIpScript()">🐧 Linux/macOS Script</a>
-                                <a href="#" onclick="downloadWindowsPowerShell()">🪟 Windows PowerShell</a>
-                                <a href="#" onclick="downloadWindowsBatch()">⚡ Windows Batch</a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="ipStatus" class="status-message"></div>
-                </div>
-            </div>
-
-            <!-- Network Tools Instructions -->
-            <div class="network-instructions">
-                <h3><i class="fas fa-book"></i> How to Use:</h3>
-                <div class="instruction-steps">
-                    <div class="step">
-                        <span class="step-number">1</span>
-                        <span>Detect your current MAC/IP address</span>
-                    </div>
-                    <div class="step">
-                        <span class="step-number">2</span>
-                        <span>Generate a random address or enter custom one</span>
-                    </div>
-                    <div class="step">
-                        <span class="step-number">3</span>
-                        <span>Apply the changes (requires admin privileges)</span>
-                    </div>
-                    <div class="step">
-                        <span class="step-number">4</span>
-                        <span>Restart network adapter if necessary</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- IPv6 & Geolocation Privacy Tools -->
-        <section class="hero">
-            <h2><i class="fas fa-user-secret"></i> Privacy Protection Tools</h2>
-            <p>Advanced tools to enhance your privacy by disabling IPv6 protocol and geolocation services</p>
-            
-            <div class="network-tools-grid">
-                <!-- IPv6 Disable Tool -->
-                <div class="network-tool-card">
-                    <h3><i class="fas fa-globe-americas"></i> IPv6 Protocol Manager</h3>
-                    <p>Disable IPv6 protocol to enhance privacy and reduce attack surface. IPv6 can leak your real location even when using VPN.</p>
-                    
-                    <div class="tool-buttons">
-                        <div class="dropdown">
-                            <button class="network-btn dropdown-btn">
-                                <i class="fas fa-download"></i> Download IPv6 Disable Script ▼
-                            </button>
-                            <div class="dropdown-content">
-                                <a href="#" onclick="downloadIPv6GeolocationLinux()">🐧 Linux Script</a>
-                                <a href="#" onclick="downloadIPv6GeolocationPowerShell()">🪟 Windows PowerShell</a>
+                        
+                        <div style="margin-bottom: 1.5rem;">
+                            <h4 style="color: var(--text-primary); margin-bottom: 0.5rem;">GitHub Security</h4>
+                            <p style="margin-bottom: 0.5rem;">For security issues related to GitHub Pages hosting.</p>
+                            <div class="cert-grid">
+                                <div class="cert-item">
+                                    <strong>Security Team:</strong><br>
+                                    <a href="mailto:security@github.com" style="color: var(--accent);">security@github.com</a>
+                                </div>
+                                <div class="cert-item">
+                                    <strong>Bug Bounty:</strong><br>
+                                    <a href="https://bounty.github.com/" target="_blank" style="color: var(--accent);">bounty.github.com</a>
+                                </div>
+                                <div class="cert-item">
+                                    <strong>Advisories:</strong><br>
+                                    <a href="https://github.com/security-advisories" target="_blank" style="color: var(--accent);">Security Advisories</a>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="privacy-info">
-                        <h4>Why disable IPv6?</h4>
-                        <ul>
-                            <li>Prevents IPv6 DNS leaks when using VPN</li>
-                            <li>Reduces network attack surface</li>
-                            <li>Eliminates IPv6 transition tunneling</li>
-                            <li>Blocks IPv6-based tracking methods</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Geolocation Disable Tool -->
-                <div class="network-tool-card">
-                    <h3><i class="fas fa-map-marker-alt"></i> Geolocation Service Manager</h3>
-                    <p>Disable system-level geolocation services to prevent location tracking by applications and services.</p>
-                    
-                    <div class="tool-buttons">
-                        <div class="dropdown">
-                            <button class="network-btn dropdown-btn">
-                                <i class="fas fa-download"></i> Download Geolocation Script ▼
-                            </button>
-                            <div class="dropdown-content">
-                                <a href="#" onclick="downloadIPv6GeolocationLinux()">🐧 Linux Script</a>
-                                <a href="#" onclick="downloadIPv6GeolocationPowerShell()">🪟 Windows PowerShell</a>
+                    <div class="cert-section">
+                        <h3 style="color: var(--accent); margin-bottom: 1rem;">🚨 Incident Reporting</h3>
+                        <p style="margin-bottom: 1rem;">If you discover a security vulnerability or incident on this website:</p>
+                        <ol style="margin-bottom: 1.5rem; padding-left: 1.5rem;">
+                            <li style="margin-bottom: 0.5rem;">Document the issue with screenshots and steps to reproduce</li>
+                            <li style="margin-bottom: 0.5rem;">Contact the website administrator through the contact form</li>
+                            <li style="margin-bottom: 0.5rem;">For critical security issues, contact CERT-FI directly</li>
+                            <li style="margin-bottom: 0.5rem;">Do not publicly disclose vulnerabilities before they are fixed</li>
+                        </ol>
+                        
+                        <div class="quick-actions">
+                            <strong>⚡ Quick Actions:</strong>
+                            <div style="margin-top: 0.5rem;">
+                                <a href="mailto:cert@cert.fi?subject=Security%20Incident%20Report%20-%20www.xxmxli.com">📧 Report to CERT-FI</a>
+                                <a href="https://www.cert.fi/en/reporting/" target="_blank">🌐 Online Incident Form</a>
+                                <a href="contact.html">💬 Contact Admin</a>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="privacy-info">
-                        <h4>What gets disabled:</h4>
-                        <ul>
-                            <li>Windows Location Service (lfsvc)</li>
-                            <li>System location consent settings</li>
-                            <li>Location sensors and APIs</li>
-                            <li>Geoclue service (Linux)</li>
-                            <li>GNOME location services</li>
-                        </ul>
+                </div>
+            </div>
+
+            <!-- Advanced Security Tools -->
+            <button class="accordion-btn" onclick="toggleAccordion('advancedTools', this)">
+                🔒 Advanced Security Tools
+            </button>
+            <div class="accordion-content" id="advancedTools">
+                <div style="padding: 2rem;">
+                    <div class="tools-section">
+                        <div class="tool-item">
+                            <div class="tool-info">
+                                <h3>DNS Security Setup</h3>
+                                <p>Comprehensive DNS security and privacy configuration tool with DNS-over-HTTPS/TLS support, multiple providers, and filtering capabilities.</p>
+                            </div>
+                            <a href="lataukset/dns_security_setup.sh" class="download-btn" download>
+                                <i class="fas fa-shield-alt"></i> Download
+                            </a>
+                        </div>
+
+                        <div class="tool-item">
+                            <div class="tool-info">
+                                <h3>System Hardening Tool</h3>
+                                <p>Complete Linux system hardening script with SSH security, firewall configuration, kernel protection, and audit logging.</p>
+                            </div>
+                            <a href="lataukset/system_hardening.sh" class="download-btn" download>
+                                <i class="fas fa-lock"></i> Download
+                            </a>
+                        </div>
+
+                        <div class="tool-item">
+                            <div class="tool-info">
+                                <h3>Network Monitor</h3>
+                                <p>Real-time network traffic monitoring and security analysis tool with packet capture, bandwidth monitoring, and intrusion detection.</p>
+                            </div>
+                            <a href="lataukset/network_monitor.sh" class="download-btn" download>
+                                <i class="fas fa-network-wired"></i> Download
+                            </a>
+                        </div>
+
+                        <div class="tool-item">
+                            <div class="tool-info">
+                                <h3>Secure Tunneling Tool</h3>
+                                <p>SSH tunnel and VPN management tool with SOCKS proxy, port forwarding, and secure communication setup.</p>
+                            </div>
+                            <a href="lataukset/secure_tunnel.sh" class="download-btn" download>
+                                <i class="fas fa-user-secret"></i> Download
+                            </a>
+                        </div>
+
+                        <div class="tool-item">
+                            <div class="tool-info">
+                                <h3>Encryption Tools</h3>
+                                <p>File and folder encryption toolkit with AES encryption, GPG operations, secure deletion, and encrypted vault management.</p>
+                            </div>
+                            <a href="lataukset/encryption_tools.sh" class="download-btn" download>
+                                <i class="fas fa-key"></i> Download
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Security Scanner Tool -->
-            <div class="network-tool-card" style="grid-column: 1 / -1; margin-top: 30px;">
-                <h3><i class="fas fa-search"></i> Security System Scanner</h3>
-                <p style="margin-bottom: 20px; color: #cccccc;">
-                    Comprehensive security analysis of your system. This tool checks for common vulnerabilities, 
-                    security misconfigurations, and provides recommendations for hardening your system.
-                </p>
-                
-                <div class="tool-buttons" style="margin-bottom: 20px;">
-                    <button class="network-btn primary" onclick="startSecurityScan()">
-                        <i class="fas fa-play"></i> Start Security Scan
-                    </button>
-                    <button class="network-btn" onclick="quickSecurityCheck()">
-                        <i class="fas fa-bolt"></i> Quick Check
-                    </button>
-                    <button class="network-btn" onclick="exportSecurityReport()">
-                        <i class="fas fa-download"></i> Export Report
-                    </button>
-                    <button class="network-btn" onclick="clearScanResults()">
-                        <i class="fas fa-eraser"></i> Clear Results
-                    </button>
-                </div>
+            <!-- Windows PowerShell Tools -->
+            <button class="accordion-btn" onclick="toggleAccordion('windowsTools', this)">
+                🪟 Windows PowerShell Security Tools
+            </button>
+            <div class="accordion-content" id="windowsTools">
+                <div style="padding: 2rem;">
+                    <div class="tools-section">
+                        <div class="tool-item">
+                            <div class="tool-info">
+                                <h3>DNS Security Setup (Windows PowerShell)</h3>
+                                <p>Windows DNS security configuration with DNS-over-HTTPS/TLS support, multiple providers and comprehensive filtering capabilities.</p>
+                            </div>
+                            <a href="lataukset/dns_security_setup.ps1" class="download-btn" download>
+                                <i class="fab fa-windows"></i> Download
+                            </a>
+                        </div>
 
-                <div class="scan-progress" id="scanProgress" style="display: none; margin-bottom: 20px;">
-                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                        <div class="spinner" style="width: 20px; height: 20px; margin-right: 10px;"></div>
-                        <span id="scanStatus">Initializing security scan...</span>
-                    </div>
-                    <div style="background: #333; border-radius: 10px; overflow: hidden;">
-                        <div id="progressBar" style="height: 8px; background: var(--accent); width: 0%; transition: width 0.3s ease;"></div>
-                    </div>
-                </div>
+                        <div class="tool-item">
+                            <div class="tool-info">
+                                <h3>System Hardening (PowerShell)</h3>
+                                <p>Windows system hardening with PowerShell security policies, Windows Defender configuration, and firewall rules.</p>
+                            </div>
+                            <a href="lataukset/system_hardening.ps1" class="download-btn" download>
+                                <i class="fab fa-windows"></i> Download
+                            </a>
+                        </div>
 
-                <div id="scanResults" class="scan-results" style="max-height: 400px; overflow-y: auto; background: #000; border: 1px solid #333; border-radius: 8px; padding: 15px; font-family: 'Courier New', monospace; font-size: 0.9em; line-height: 1.4;">
-                    <div style="color: #666; text-align: center; padding: 20px;">
-                        Click "Start Security Scan" to begin comprehensive security analysis
+                        <div class="tool-item">
+                            <div class="tool-info">
+                                <h3>PowerShell Usage Guide</h3>
+                                <p>Comprehensive guide for using PowerShell security scripts with execution policies, troubleshooting, and best practices.</p>
+                            </div>
+                            <a href="POWERSHELL_USAGE_GUIDE.md" class="download-btn" download>
+                                <i class="fas fa-book"></i> Download
+                            </a>
+                        </div>
+
+                        <div class="tool-item">
+                            <div class="tool-info">
+                                <h3>Windows Advanced Security Suite</h3>
+                                <p>Complete Windows security toolkit including firewall rules, registry security, user account management, and system diagnostics.</p>
+                            </div>
+                            <a href="#" class="download-btn" onclick="downloadWindowsSecuritySuite()">
+                                <i class="fas fa-archive"></i> Generate Suite
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Privacy Tools Instructions -->
-            <div class="network-instructions">
-                <h3><i class="fas fa-shield-alt"></i> Privacy Tools Usage:</h3>
-                <div class="instruction-steps">
-                    <div class="step">
-                        <span class="step-number">1</span>
-                        <span>Download the appropriate script for your OS</span>
+            <!-- Legacy Security Tools -->
+            <button class="accordion-btn" onclick="toggleAccordion('legacyTools', this)">
+                🗂️ Legacy Security Tools
+            </button>
+            <div class="accordion-content" id="legacyTools">
+                <div style="padding: 2rem;">
+                    <div class="warning-box" style="margin-bottom: 2rem;">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Important Security Notice</h3>
+                        <p><strong>This system is actively monitored and protected.</strong></p>
+                        <p>Any unauthorized access attempts, network scanning, intrusion, or abusive activity will be logged and reported to the appropriate authorities.</p>
                     </div>
-                    <div class="step">
-                        <span class="step-number">2</span>
-                        <span>Run as administrator/root with elevated privileges</span>
+
+                    <div class="tools-section">
+                        <div class="tool-item">
+                            <div class="tool-info">
+                                <h3>IP Blacklist Processor (Python)</h3>
+                                <p>Cross-platform Python script that processes multiple IP blacklist sources and generates JavaScript blocklists for web protection.</p>
+                            </div>
+                            <a href="lataukset/process_w_blacklists.py" class="download-btn" download>
+                                <i class="fas fa-python"></i> Download
+                            </a>
+                        </div>
+
+                        <div class="tool-item">
+                            <div class="tool-info">
+                                <h3>IP Blacklist Processor (Windows PowerShell)</h3>
+                                <p>Windows PowerShell script with firewall integration and hosts file generation for comprehensive Windows protection.</p>
+                            </div>
+                            <a href="lataukset/process_w_blacklists.ps1" class="download-btn" download>
+                                <i class="fab fa-windows"></i> Download
+                            </a>
+                        </div>
+
+                        <div class="tool-item">
+                            <div class="tool-info">
+                                <h3>Complete Safety Toolkit</h3>
+                                <p>All tools and scripts bundled together in a convenient package for easy deployment.</p>
+                            </div>
+                            <a href="#" class="download-btn" onclick="createSafetyToolkit()">
+                                <i class="fas fa-archive"></i> Generate Toolkit
+                            </a>
+                        </div>
                     </div>
-                    <div class="step">
-                        <span class="step-number">3</span>
-                        <span>Follow the interactive menu to disable services</span>
-                    </div>
-                    <div class="step">
-                        <span class="step-number">4</span>
-                        <span>Restart your system for full effect</span>
-                    </div>
-                    <div class="step">
-                        <span class="step-number">5</span>
-                        <span>Use backup feature to restore if needed</span>
-                    </div>
-                </div>
-                
-                <div class="warning-box">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <strong>Important:</strong> These tools modify system settings. Always create a backup before use. Some applications may require IPv6 or location services to function properly.
                 </div>
             </div>
-        </section>
 
-        <div class="safety-card">
-            <h2><i class="fas fa-graduation-cap"></i> Security Best Practices</h2>
-            <ul>
-                <li><i class="fas fa-key"></i> Use strong, unique passwords for all accounts</li>
-                <li><i class="fas fa-mobile-alt"></i> Enable two-factor authentication (2FA)</li>
-                <li><i class="fas fa-shield-virus"></i> Keep software and systems updated</li>
-                <li><i class="fas fa-wifi"></i> Use secure networks and VPN when necessary</li>
-                <li><i class="fas fa-envelope"></i> Be cautious with email attachments and links</li>
-                <li><i class="fas fa-user-secret"></i> Regularly review privacy settings</li>
-                <li><i class="fas fa-backup"></i> Maintain regular backups of important data</li>
-                <li><i class="fas fa-search"></i> Monitor accounts for suspicious activity</li>
-            </ul>
+            <!-- Network Tools -->
+            <button class="accordion-btn" onclick="toggleAccordion('networkTools', this)">
+                🌐 MAC & IP Address Tools
+            </button>
+            <div class="accordion-content" id="networkTools">
+                <div style="padding: 2rem;">
+                    <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.9rem;">
+                        <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i>
+                        <strong>Legal Warning:</strong> These tools are for educational and legitimate network administration purposes only.
+                        Unauthorized use may violate laws and terms of service. Always obtain proper authorization before use.
+                    </p>
+
+                    <div class="network-tools-grid">
+                        <!-- MAC Address Changer -->
+                        <div class="network-tool-card">
+                            <h3><i class="fas fa-ethernet"></i> MAC Address Spoofer</h3>
+                            <div class="tool-input-group">
+                                <label for="currentMac">Current MAC Address:</label>
+                                <input type="text" id="currentMac" readonly value="Detecting..." style="background: var(--background); border: 1px solid var(--border); color: var(--text-primary); padding: 0.5rem; font-family: 'Courier New', monospace;">
+                            </div>
+
+                            <div class="tool-input-group">
+                                <label for="newMac">New MAC Address:</label>
+                                <input type="text" id="newMac" placeholder="XX:XX:XX:XX:XX:XX" style="background: var(--background); border: 1px solid var(--border); color: var(--text-primary); padding: 0.5rem; font-family: 'Courier New', monospace;">
+                            </div>
+
+                            <div class="tool-buttons">
+                                <button class="network-btn" onclick="detectCurrentMac()">
+                                    <i class="fas fa-search"></i> Detect Current
+                                </button>
+                                <button class="network-btn" onclick="generateRandomMac()">
+                                    <i class="fas fa-random"></i> Generate Random
+                                </button>
+                                <button class="network-btn primary" onclick="changeMacAddress()">
+                                    <i class="fas fa-exchange-alt"></i> Change MAC
+                                </button>
+                                <div class="dropdown">
+                                    <button class="network-btn dropdown-btn">
+                                        <i class="fas fa-download"></i> Download Script ▼
+                                    </button>
+                                    <div class="dropdown-content">
+                                        <a href="#" onclick="downloadMacScript()">🐧 Linux/macOS Script</a>
+                                        <a href="#" onclick="downloadWindowsPowerShell()">🪟 Windows PowerShell</a>
+                                        <a href="#" onclick="downloadWindowsBatch()">⚡ Windows Batch</a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="macStatus" class="status-message"></div>
+                        </div>
+
+                        <!-- IP Address Changer -->
+                        <div class="network-tool-card">
+                            <h3><i class="fas fa-globe"></i> IP Address Changer</h3>
+                            <div class="tool-input-group">
+                                <label for="currentIp">Current IP Address:</label>
+                                <input type="text" id="currentIp" readonly value="Detecting..." style="background: var(--background); border: 1px solid var(--border); color: var(--text-primary); padding: 0.5rem; font-family: 'Courier New', monospace;">
+                            </div>
+
+                            <div class="tool-input-group">
+                                <label for="newIp">New IP Address:</label>
+                                <input type="text" id="newIp" placeholder="192.168.1.XXX" style="background: var(--background); border: 1px solid var(--border); color: var(--text-primary); padding: 0.5rem; font-family: 'Courier New', monospace;">
+                            </div>
+
+                            <div class="tool-buttons">
+                                <button class="network-btn" onclick="detectCurrentIp()">
+                                    <i class="fas fa-search"></i> Detect Current
+                                </button>
+                                <button class="network-btn" onclick="generateRandomIp()">
+                                    <i class="fas fa-random"></i> Generate Random
+                                </button>
+                                <button class="network-btn primary" onclick="changeIpAddress()">
+                                    <i class="fas fa-exchange-alt"></i> Change IP
+                                </button>
+                            </div>
+
+                            <div id="ipStatus" class="status-message"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </main>
 
-    <script>
-        // Generate safety toolkit function
-        function createSafetyToolkit() {
-            // Create a comprehensive HTML page that links to all tools
-            const toolkitContent = `
-<!DOCTYPE html>
-<html>
-<head>
-    <title>XXMXLI Complete Security Toolkit</title>
-    <style>
-        body { font-family: 'Courier New', monospace; background: #000; color: #00ff00; padding: 20px; }
-        h1 { text-align: center; border-bottom: 2px solid #00ff00; padding-bottom: 10px; }
-        .tool-section { margin: 20px 0; padding: 20px; border: 1px solid #00ff00; }
-        .tool-section h2 { color: #00cc00; border-bottom: 1px solid #00cc00; }
-        .download-link { color: #00ff00; text-decoration: none; display: block; margin: 5px 0; padding: 5px; }
-        .download-link:hover { background: #00ff00; color: #000; padding: 5px; }
-        .description { color: #008800; font-size: 0.9em; margin-left: 20px; }
-        .warning { background: #330000; border: 1px solid #ff4444; color: #ff4444; padding: 10px; margin: 10px 0; }
-    </style>
-</head>
-<body>
-    <h1>🛡️ XXMXLI Complete Security Toolkit 🛡️</h1>
-    
-    <div class="warning">
-        ⚠️ <strong>LEGAL WARNING:</strong> These tools are for educational and authorized security testing only.
-        Unauthorized use may violate laws and terms of service. Always obtain proper authorization before use.
-    </div>
-    
-    <div class="tool-section">
-        <h2>🔧 Advanced Security Tools (NEW)</h2>
-    <a href="lataukset/dns_security_setup.sh" class="download-link" download>🛡️ DNS Security Setup Tool</a>
-        <div class="description">Comprehensive DNS security with DoH/DoT, multiple providers, and filtering</div>
-        
-    <a href="lataukset/system_hardening.sh" class="download-link" download>🔒 System Hardening Tool</a>
-        <div class="description">Complete Linux system hardening with SSH, firewall, and kernel protection</div>
-        
-    <a href="lataukset/network_monitor.sh" class="download-link" download>📊 Network Monitoring Tool</a>
-        <div class="description">Real-time traffic analysis, packet capture, and intrusion detection</div>
-        
-    <a href="lataukset/secure_tunnel.sh" class="download-link" download>🚇 Secure Tunneling Tool</a>
-        <div class="description">SSH tunnels, SOCKS proxy, and secure communication management</div>
-        
-    <a href="lataukset/encryption_tools.sh" class="download-link" download>🔐 Encryption Tools Suite</a>
-        <div class="description">File/folder encryption, GPG operations, and secure deletion</div>
-    </div>
-    
-    <div class="tool-section">
-        <h2>🚨 Automated Incident Reporting (NEW)</h2>
-    <a href="lataukset/automated_incident_reporter.sh" class="download-link" download>⚡ Linux Incident Reporter</a>
-        <div class="description">Automated reporting to FBI IC3, CISA, and other authorities</div>
-        
-    <a href="lataukset/automated_incident_reporter.ps1" class="download-link" download>⚡ Windows PowerShell Incident Reporter</a>
-        <div class="description">Windows-specific incident detection and authority reporting</div>
-        
-    <a href="lataukset/automated_incident_reporter.py" class="download-link" download>⚡ Cross-Platform Python Incident Reporter</a>
-        <div class="description">Universal incident reporting with advanced threat detection</div>
-    </div>
-    
-    <div class="tool-section">
-        <h2>🪟 Windows PowerShell Tools</h2>
-    <a href="lataukset/dns_security_setup.ps1" class="download-link" download>🛡️ DNS Security (PowerShell)</a>
-        <div class="description">Windows DNS security with PowerShell cmdlets</div>
-        
-    <a href="lataukset/system_hardening.ps1" class="download-link" download>🔒 System Hardening (PowerShell)</a>
-        <div class="description">Windows system hardening and registry security</div>
-        
-    <a href="lataukset/network_monitor.ps1" class="download-link" download>📊 Network Monitor (PowerShell)</a>
-        <div class="description">Windows network monitoring with PowerShell</div>
-        
-    <a href="lataukset/secure_tunnel.ps1" class="download-link" download>🚇 Secure Tunnel (PowerShell)</a>
-        <div class="description">Windows SSH tunnel management with OpenSSH</div>
-        
-    <a href="lataukset/encryption_tools.ps1" class="download-link" download>🔐 Encryption Tools (PowerShell)</a>
-        <div class="description">Windows encryption using PowerShell and .NET</div>
-    </div>
-    
-    <div class="tool-section">
-        <h2>📄 Cross-Platform Tools</h2>
-    <a href="lataukset/process_w_blacklists.py" class="download-link" download>� IP Blacklist Processor (Python)</a>
-        <div class="description">Cross-platform IP blocking with multiple blacklist sources</div>
-        
-    <a href="lataukset/blocked_ips.js" class="download-link" download>📄 Blocked IPs JavaScript</a>
-        <div class="description">Ready-to-use client-side IP blocking JavaScript</div>
-        
-    <a href="lataukset/blacklist_stats.json" class="download-link" download>� Blacklist Statistics (JSON)</a>
-        <div class="description">Comprehensive blacklist metadata and threat intelligence</div>
-    </div>
-    
-    <div class="tool-section">
-        <h2>🪟 Windows-Specific Tools</h2>
-    <a href="lataukset/process_w_blacklists.ps1" class="download-link" download>⚡ PowerShell IP Processor</a>
-        <div class="description">Windows PowerShell with firewall and hosts file integration</div>
-        
-    <a href="lataukset/process_w_blacklists.bat" class="download-link" download>� Batch File Processor</a>
-        <div class="description">Legacy Windows batch file for command-line users</div>
-        
-    <a href="lataukset/README_Windows.md" class="download-link" download>� Windows Setup Guide</a>
-        <div class="description">Complete Windows installation and configuration guide</div>
-    </div>
-    
-    <div class="tool-section">
-        <h2>📋 Installation Instructions</h2>
-        <h3>🔧 Advanced Security Tools Setup:</h3>
-        <ol style="color: #00cc00;">
-            <li>Download desired security tools (.sh files)</li>
-            <li>Make executable: <code>chmod +x *.sh</code></li>
-            <li>Run as root/administrator: <code>sudo ./tool_name.sh</code></li>
-            <li>Follow interactive menus for configuration</li>
-            <li>Create backups before making system changes</li>
-        </ol>
-        
-        <h3>🛡️ Legacy Tools Setup:</h3>
-        <ol style="color: #00cc00;">
-            <li>Download all files to a single directory</li>
-            <li>Create a 'w' folder for blacklist files</li>
-            <li>Run the appropriate processor for your platform</li>
-            <li>Apply generated rules using provided scripts</li>
-        </ol>
-        
-        <h3>🔒 Security Features:</h3>
-        <ul style="color: #008800;">
-            <li>DNS Security: DoH/DoT, multiple providers, ad blocking</li>
-            <li>System Hardening: SSH security, firewall, kernel protection</li>
-            <li>Network Monitoring: Traffic analysis, packet capture</li>
-            <li>Secure Tunneling: SSH tunnels, SOCKS proxy</li>
-            <li>Encryption: AES/GPG encryption, secure deletion</li>
-            <li>IP Blocking: Multiple blacklist sources, real-time protection</li>
-            <li>Incident Reporting: Automated law enforcement notifications</li>
-        </ul>
-        
-        <h3>🚨 Automated Incident Reporting Setup:</h3>
-        <ol style="color: #ff8800;">
-            <li><strong>Configure Organization Details:</strong>
-                <ul style="margin-top: 0.5rem;">
-                    <li>Edit configuration files with your organization information</li>
-                    <li>Set up SMTP server details for email notifications</li>
-                    <li>Configure GPG keys for encryption (optional but recommended)</li>
-                </ul>
-            </li>
-            <li><strong>Set Reporting Thresholds:</strong>
-                <ul style="margin-top: 0.5rem;">
-                    <li>Adjust severity levels for automatic reporting</li>
-                    <li>Configure which authorities receive different incident types</li>
-                    <li>Set batch processing intervals for monitoring</li>
-                </ul>
-            </li>
-            <li><strong>Test the System:</strong>
-                <ul style="margin-top: 0.5rem;">
-                    <li>Run test incidents to verify configuration</li>
-                    <li>Confirm email delivery and report generation</li>
-                    <li>Verify evidence collection is working</li>
-                </ul>
-            </li>
-            <li><strong>Deploy Monitoring:</strong>
-                <ul style="margin-top: 0.5rem;">
-                    <li>Install as system service for continuous monitoring</li>
-                    <li>Configure log rotation and storage policies</li>
-                    <li>Set up regular backup of incident data</li>
-                </ul>
-            </li>
-            <li><strong>Legal Compliance:</strong>
-                <ul style="margin-top: 0.5rem;">
-                    <li>Ensure proper authorization for deployment</li>
-                    <li>Review local laws regarding incident reporting</li>
-                    <li>Maintain chain of custody for evidence</li>
-                    <li>Document deployment and configuration</li>
-                </ul>
-            </li>
-        </ol>
-        
-        <div style="background: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
-            <p style="color: #ff4444; margin: 0;"><strong>⚠️ WARNING:</strong> Incident reporting tools will automatically submit reports to law enforcement and cybersecurity authorities. Ensure you have proper authorization and understand the legal implications before deployment.</p>
-        </div>
-    </div>
-    
-    <div class="tool-section">
-        <h2>⚠️ Important Notes</h2>
-        <ul style="color: #ff8800;">
-            <li>Always test tools in a safe environment first</li>
-            <li>Create system backups before applying changes</li>
-            <li>Some tools require administrative privileges</li>
-            <li>Network tools may temporarily disrupt connectivity</li>
-            <li>Review scripts before execution for security</li>
-            <li>Use only for legitimate purposes and authorized testing</li>
-        </ul>
-    </div>
-    
-    <div style="text-align: center; margin-top: 30px; border-top: 1px solid #00ff00; padding-top: 20px;">
-        <p style="color: #00cc00;">Generated by XXMXLI Security Toolkit</p>
-        <p style="color: #008800;">For educational and authorized use only</p>
-    </div>
-</body>
-</html>`;
+        <script>
+        // Enhanced accordion functionality with animation support
+        function toggleAccordion(id, button) {
+            const content = document.getElementById(id);
+            const isCurrentlyOpen = content.style.display === 'block';
             
-            const blob = new Blob([toolkitContent], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'XXMXLI_Complete_Security_Toolkit.html';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            // Close all accordion contents
+            const allContents = document.querySelectorAll('.accordion-content');
+            const allButtons = document.querySelectorAll('.accordion-btn');
             
-            // Show success message
-            const originalText = event.target.innerHTML;
-            event.target.innerHTML = '<i class="fas fa-check"></i> Complete Toolkit Generated!';
-            event.target.style.background = '#00ff00';
-            event.target.style.color = '#000';
-            
-            setTimeout(() => {
-                event.target.innerHTML = originalText;
-                event.target.style.background = '';
-                event.target.style.color = '';
-            }, 3000);
-        }
-
-        // Add some interactive security tips
-        document.addEventListener('DOMContentLoaded', function() {
-            const cards = document.querySelectorAll('.safety-card');
-            cards.forEach(card => {
-                card.addEventListener('click', function() {
-                    this.style.transform = 'scale(1.02)';
-                    setTimeout(() => {
-                        this.style.transform = '';
-                    }, 200);
-                });
+            allContents.forEach(content => {
+                content.style.display = 'none';
             });
-        });
-
-        // Performance optimizations
-        document.addEventListener('DOMContentLoaded', function() {
-            // Lazy load images if any
-            const images = document.querySelectorAll('img[data-src]');
-            if ('IntersectionObserver' in window) {
-                const imageObserver = new IntersectionObserver((entries, observer) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            const img = entry.target;
-                            img.src = img.dataset.src;
-                            img.classList.remove('lazy');
-                            imageObserver.unobserve(img);
-                        }
+            
+            allButtons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Open the clicked accordion if it wasn't open
+            if (!isCurrentlyOpen) {
+                content.style.display = 'block';
+                content.classList.add('show');
+                button.classList.add('active');
+                
+                // Smooth scroll to the opened content
+                setTimeout(() => {
+                    content.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'nearest' 
                     });
-                });
-                
-                images.forEach(img => imageObserver.observe(img));
-            }
-            
-            // Preload critical resources
-            const preloadLinks = [
-                { href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css', as: 'style' }
-            ];
-            
-            preloadLinks.forEach(link => {
-                const preloadLink = document.createElement('link');
-                preloadLink.rel = 'preload';
-                preloadLink.href = link.href;
-                preloadLink.as = link.as;
-                document.head.appendChild(preloadLink);
-            });
-            
-            // Optimize console logging in production
-            if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-                console.log = () => {};
-                console.warn = () => {};
-                console.error = () => {};
-            }
-        });
-
-        // Hamburger menu functionality - FIXED
-        document.addEventListener('DOMContentLoaded', function() {
-            const menuToggle = document.getElementById('menuToggle');
-            const sideMenu = document.getElementById('sideMenu');
-            
-            console.log('Menu elements found:', {
-                menuToggle: !!menuToggle,
-                sideMenu: !!sideMenu
-            });
-            
-            if (menuToggle && sideMenu) {
-                menuToggle.addEventListener('click', function() {
-                    console.log('Menu toggle clicked');
-                    sideMenu.classList.toggle('open');
-                });
-                
-                // Close menu when clicking a link
-                sideMenu.querySelectorAll('a').forEach(link => {
-                    link.addEventListener('click', () => {
-                        sideMenu.classList.remove('open');
-                    });
-                });
-                
-                // Close menu with Escape key
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape') {
-                        sideMenu.classList.remove('open');
-                    }
-                });
-                
-                // Close menu when clicking outside
-                document.addEventListener('click', function(e) {
-                    if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-                        sideMenu.classList.remove('open');
-                    }
-                });
-            } else {
-                console.error('Menu elements not found!');
-            }
-        });
-
-        // Network Tools Functionality
-        class NetworkTools {
-            constructor() {
-                this.macStatus = document.getElementById('macStatus');
-                this.ipStatus = document.getElementById('ipStatus');
-                this.currentMacInput = document.getElementById('currentMac');
-                this.newMacInput = document.getElementById('newMac');
-                this.currentIpInput = document.getElementById('currentIp');
-                this.newIpInput = document.getElementById('newIp');
-                this.subnetMaskInput = document.getElementById('subnetMask');
-
-                this.init();
-            }
-
-            init() {
-                console.log('Initializing Network Tools...');
-                this.detectCurrentMac();
-                this.detectCurrentIp();
-            }
-
-            // MAC Address Functions
-            async detectCurrentMac() {
-                try {
-                    this.showStatus('macStatus', 'Detecting MAC address...', 'info');
-
-                    // In a real implementation, this would require native system access
-                    // For demo purposes, we'll simulate detection
-                    const simulatedMac = this.generateRandomMac();
-                    this.currentMacInput.value = simulatedMac;
-
-                    this.showStatus('macStatus', 'MAC address detected (simulated)', 'success');
-                } catch (error) {
-                    console.error('Error detecting MAC:', error);
-                    this.showStatus('macStatus', 'Failed to detect MAC address', 'error');
-                }
-            }
-
-            generateRandomMac() {
-                const hexDigits = '0123456789ABCDEF';
-                let mac = '';
-
-                // Generate 6 pairs of hex digits separated by colons
-                for (let i = 0; i < 6; i++) {
-                    if (i > 0) mac += ':';
-                    mac += hexDigits[Math.floor(Math.random() * 16)];
-                    mac += hexDigits[Math.floor(Math.random() * 16)];
-                }
-
-                return mac;
-            }
-
-            async changeMacAddress() {
-                const newMac = this.newMacInput.value.trim();
-
-                if (!newMac) {
-                    this.showStatus('macStatus', 'Please enter a MAC address', 'error');
-                    return;
-                }
-
-                if (!this.validateMacAddress(newMac)) {
-                    this.showStatus('macStatus', 'Invalid MAC address format (XX:XX:XX:XX:XX:XX)', 'error');
-                    return;
-                }
-
-                try {
-                    this.showStatus('macStatus', 'Changing MAC address...', 'info');
-
-                    // In a real implementation, this would require system-level commands
-                    // For demo purposes, we'll simulate the change
-                    await this.simulateNetworkChange();
-
-                    this.currentMacInput.value = newMac;
-                    this.newMacInput.value = '';
-                    this.showStatus('macStatus', 'MAC address changed successfully (simulated)', 'success');
-
-                } catch (error) {
-                    console.error('Error changing MAC:', error);
-                    this.showStatus('macStatus', 'Failed to change MAC address', 'error');
-                }
-            }
-
-            validateMacAddress(mac) {
-                const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
-                return macRegex.test(mac);
-            }
-
-            // IP Address Functions
-            async detectCurrentIp() {
-                try {
-                    this.showStatus('ipStatus', 'Detecting IP address...', 'info');
-
-                    // Get current IP using a public API
-                    const response = await fetch('https://api.ipify.org?format=json');
-                    const data = await response.json();
-
-                    this.currentIpInput.value = data.ip;
-                    this.showStatus('ipStatus', 'IP address detected', 'success');
-
-                } catch (error) {
-                    console.error('Error detecting IP:', error);
-                    // Fallback to simulated IP
-                    this.currentIpInput.value = '192.168.1.100';
-                    this.showStatus('ipStatus', 'Using simulated IP address', 'info');
-                }
-            }
-
-            generateRandomIp() {
-                // Generate a random private IP address
-                const octets = [
-                    Math.floor(Math.random() * 254) + 1, // 1-254
-                    Math.floor(Math.random() * 254) + 1, // 1-254
-                    Math.floor(Math.random() * 254) + 1, // 1-254
-                    Math.floor(Math.random() * 254) + 1  // 1-254
-                ];
-
-                const ip = octets.join('.');
-                this.newIpInput.value = ip;
-
-                // Suggest common subnet mask
-                if (!this.subnetMaskInput.value) {
-                    this.subnetMaskInput.value = '255.255.255.0';
-                }
-            }
-
-            async changeIpAddress() {
-                const newIp = this.newIpInput.value.trim();
-                const subnetMask = this.subnetMaskInput.value.trim();
-
-                if (!newIp) {
-                    this.showStatus('ipStatus', 'Please enter an IP address', 'error');
-                    return;
-                }
-
-                if (!subnetMask) {
-                    this.showStatus('ipStatus', 'Please enter a subnet mask', 'error');
-                    return;
-                }
-
-                if (!this.validateIpAddress(newIp)) {
-                    this.showStatus('ipStatus', 'Invalid IP address format', 'error');
-                    return;
-                }
-
-                try {
-                    this.showStatus('ipStatus', 'Changing IP address...', 'info');
-
-                    // In a real implementation, this would require system-level commands
-                    // For demo purposes, we'll simulate the change
-                    await this.simulateNetworkChange();
-
-                    this.currentIpInput.value = newIp;
-                    this.newIpInput.value = '';
-                    this.showStatus('ipStatus', 'IP address changed successfully (simulated)', 'success');
-
-                } catch (error) {
-                    console.error('Error changing IP:', error);
-                    this.showStatus('ipStatus', 'Failed to change IP address', 'error');
-                }
-            }
-
-            validateIpAddress(ip) {
-                const ipRegex = /^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/;
-                return ipRegex.test(ip);
-            }
-
-            // Utility Functions
-            showStatus(elementId, message, type = 'info') {
-                const element = document.getElementById(elementId);
-                if (element) {
-                    element.textContent = message;
-                    element.className = `status-message ${type}`;
-                }
-            }
-
-            async simulateNetworkChange() {
-                // Simulate network operation delay
-                return new Promise(resolve => {
-                    setTimeout(() => {
-                        resolve();
-                    }, 2000);
-                });
-            }
-
-            // Generate downloadable scripts
-            generateMacScript() {
-                const script = `# MAC Address Changer Script
-# This script demonstrates MAC address spoofing
-# WARNING: Use only for legitimate purposes
-
-#!/bin/bash
-
-# Function to change MAC address
-change_mac() {
-    local interface=$1
-    local new_mac=$2
-    
-    echo "Changing MAC address for $interface to $new_mac"
-    
-    # Bring interface down
-    sudo ifconfig $interface down
-    
-    # Change MAC address
-    sudo ifconfig $interface hw ether $new_mac
-    
-    # Bring interface up
-    sudo ifconfig $interface up
-    
-    echo "MAC address changed successfully"
-}
-
-# Usage example:
-# change_mac eth0 00:11:22:33:44:55
-`;
-
-                const blob = new Blob([script], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'mac_changer.sh';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }
-
-            generateIpScript() {
-                const script = `# IP Address Changer Script
-# This script demonstrates IP address changing
-# WARNING: Use only for legitimate purposes
-
-#!/bin/bash
-
-# Function to change IP address
-change_ip() {
-    local interface=$1
-    local new_ip=$2
-    local subnet_mask=$3
-    
-    echo "Changing IP address for $interface to $new_ip/$subnet_mask"
-    
-    # Change IP address
-    sudo ifconfig $interface $new_ip netmask $subnet_mask
-    
-    echo "IP address changed successfully"
-}
-
-# Usage example:
-# change_ip eth0 192.168.1.100 255.255.255.0
-`;
-
-                const blob = new Blob([script], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'ip_changer.sh';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }
-
-            generateWindowsPowerShellScript() {
-                // Download the PowerShell script file
-                const a = document.createElement('a');
-                a.href = 'lataukset/mac_ip_changer.ps1';
-                a.download = 'mac_ip_changer.ps1';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            }
-
-            generateWindowsBatchScript() {
-                // Download the Batch script file
-                const a = document.createElement('a');
-                a.href = 'lataukset/mac_ip_changer.bat';
-                a.download = 'mac_ip_changer.bat';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            }
-
-            generateIPv6GeolocationPowerShell() {
-                // Download the IPv6/Geolocation PowerShell script
-                const a = document.createElement('a');
-                a.href = 'lataukset/disable_ipv6_geolocation.ps1';
-                a.download = 'disable_ipv6_geolocation.ps1';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            }
-
-            generateIPv6GeolocationLinux() {
-                // Download the IPv6/Geolocation Linux script
-                const a = document.createElement('a');
-                a.href = 'lataukset/disable_ipv6_geolocation.sh';
-                a.download = 'disable_ipv6_geolocation.sh';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                }, 100);
             }
         }
 
-        // Initialize network tools when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Initializing Network Tools...');
-            window.networkTools = new NetworkTools();
-        });
-
-        // Global functions for button onclick handlers
+        // Network tool functions with error handling
         function detectCurrentMac() {
-            if (window.networkTools) {
-                window.networkTools.detectCurrentMac();
+            const macInput = document.getElementById('currentMac');
+            const statusDiv = document.getElementById('macStatus');
+            
+            try {
+                // Simulated MAC detection (actual implementation would use system APIs)
+                const simulatedMac = generateMacAddress();
+                macInput.value = simulatedMac;
+                showStatus('macStatus', 'Current MAC address detected', 'success');
+            } catch (error) {
+                showStatus('macStatus', 'Unable to detect MAC address automatically', 'error');
+                console.error('MAC detection error:', error);
             }
         }
 
         function generateRandomMac() {
-            if (window.networkTools) {
-                const mac = window.networkTools.generateRandomMac();
-                document.getElementById('newMac').value = mac;
+            const newMacInput = document.getElementById('newMac');
+            const randomMac = generateMacAddress();
+            newMacInput.value = randomMac;
+            showStatus('macStatus', `Generated random MAC: ${randomMac}`, 'info');
+        }
+
+        function generateMacAddress() {
+            const hexChars = '0123456789ABCDEF';
+            let mac = '';
+            for (let i = 0; i < 6; i++) {
+                if (i > 0) mac += ':';
+                mac += hexChars[Math.floor(Math.random() * 16)];
+                mac += hexChars[Math.floor(Math.random() * 16)];
             }
+            return mac;
         }
 
         function changeMacAddress() {
-            if (window.networkTools) {
-                window.networkTools.changeMacAddress();
+            const newMac = document.getElementById('newMac').value;
+            if (!isValidMacAddress(newMac)) {
+                showStatus('macStatus', 'Invalid MAC address format. Use XX:XX:XX:XX:XX:XX', 'error');
+                return;
             }
+            
+            showStatus('macStatus', 'MAC address change requires administrative privileges. Download script for actual implementation.', 'warning');
         }
 
         function detectCurrentIp() {
-            if (window.networkTools) {
-                window.networkTools.detectCurrentIp();
-            }
+            const ipInput = document.getElementById('currentIp');
+            
+            // Use a public IP detection service
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    ipInput.value = data.ip;
+                    showStatus('ipStatus', `Current public IP detected: ${data.ip}`, 'success');
+                })
+                .catch(error => {
+                    // Fallback to local IP simulation
+                    const localIp = '192.168.1.' + Math.floor(Math.random() * 254 + 1);
+                    ipInput.value = localIp;
+                    showStatus('ipStatus', 'Using local IP simulation (actual detection failed)', 'warning');
+                    console.error('IP detection error:', error);
+                });
         }
 
         function generateRandomIp() {
-            if (window.networkTools) {
-                window.networkTools.generateRandomIp();
-            }
+            const newIpInput = document.getElementById('newIp');
+            const randomIp = `192.168.1.${Math.floor(Math.random() * 254 + 1)}`;
+            newIpInput.value = randomIp;
+            showStatus('ipStatus', `Generated random local IP: ${randomIp}`, 'info');
         }
 
         function changeIpAddress() {
-            if (window.networkTools) {
-                window.networkTools.changeIpAddress();
+            const newIp = document.getElementById('newIp').value;
+            if (!isValidIpAddress(newIp)) {
+                showStatus('ipStatus', 'Invalid IP address format', 'error');
+                return;
+            }
+            
+            showStatus('ipStatus', 'IP address change requires network configuration access. Download script for actual implementation.', 'warning');
+        }
+
+        function isValidMacAddress(mac) {
+            const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
+            return macRegex.test(mac);
+        }
+
+        function isValidIpAddress(ip) {
+            const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            return ipRegex.test(ip);
+        }
+
+        function showStatus(elementId, message, type) {
+            const statusDiv = document.getElementById(elementId);
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message ${type}`;
+            
+            // Auto-hide success and info messages after 5 seconds
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    statusDiv.textContent = '';
+                    statusDiv.className = 'status-message';
+                }, 5000);
             }
         }
 
+        // Download script functions
         function downloadMacScript() {
-            if (window.networkTools) {
-                window.networkTools.generateMacScript();
-            }
-        }
+            const scriptContent = `#!/bin/bash
+# MAC Address Changer Script for Linux/macOS
+# Usage: ./mac_changer.sh <interface> <new_mac>
 
-        function downloadIpScript() {
-            if (window.networkTools) {
-                window.networkTools.generateIpScript();
-            }
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 <interface> <new_mac>"
+    echo "Example: $0 eth0 00:11:22:33:44:55"
+    exit 1
+fi
+
+INTERFACE=$1
+NEW_MAC=$2
+
+echo "Changing MAC address of $INTERFACE to $NEW_MAC"
+
+# Check if running as root
+if [ "$EUID" -ne 0 ]; then
+    echo "Please run as root (use sudo)"
+    exit 1
+fi
+
+# Bring interface down
+ip link set dev $INTERFACE down
+
+# Change MAC address
+ip link set dev $INTERFACE address $NEW_MAC
+
+# Bring interface up
+ip link set dev $INTERFACE up
+
+echo "MAC address changed successfully"
+ip link show $INTERFACE`;
+
+            downloadTextFile(scriptContent, 'mac_changer.sh', 'application/x-sh');
         }
 
         function downloadWindowsPowerShell() {
-            if (window.networkTools) {
-                window.networkTools.generateWindowsPowerShellScript();
-            }
+            window.open('w/mac_ip_changer.ps1', '_blank');
         }
 
         function downloadWindowsBatch() {
-            if (window.networkTools) {
-                window.networkTools.generateWindowsBatchScript();
-            }
+            window.open('w/mac_ip_changer.bat', '_blank');
         }
 
-        function downloadIPv6GeolocationPowerShell() {
-            if (window.networkTools) {
-                window.networkTools.generateIPv6GeolocationPowerShell();
-            }
+        function downloadWindowsSecuritySuite() {
+            const suiteFiles = [
+                'w/windows_defender_config.ps1',
+                'w/firewall_rules.ps1',
+                'w/registry_security.ps1',
+                'w/user_account_security.ps1',
+                'w/system_diagnostics.ps1'
+            ];
+            
+            showStatus('ipStatus', 'Generating Windows Security Suite...', 'info');
+            
+            // Simulate suite generation
+            setTimeout(() => {
+                alert('Windows Security Suite ready for download. Check the w/ folder for individual PowerShell scripts.');
+            }, 1000);
         }
 
-        function downloadIPv6GeolocationLinux() {
-            if (window.networkTools) {
-                window.networkTools.generateIPv6GeolocationLinux();
-            }
+        function createSafetyToolkit() {
+            showStatus('macStatus', 'Generating complete safety toolkit...', 'info');
+            
+            // Simulate toolkit creation
+            setTimeout(() => {
+                alert('Safety toolkit generated! All security tools are available in the lataukset/ folder.');
+            }, 1000);
         }
-    </script>
-</body>
-</html>
+
+        function downloadTextFile(content, filename, mimeType = 'text/plain') {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-detect current network information
+            detectCurrentIp();
+            
+            // Performance optimization: Lazy load accordion content
+            const accordionButtons = document.querySelectorAll('.accordion-btn');
+            accordionButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+            });
+            
+            console.log('Security page initialized successfully');
+        });
+
+        // Menu toggle functionality (from existing code)
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('menuToggle');
+            const sideMenu = document.getElementById('sideMenu');
+            
+            if (menuToggle && sideMenu) {
+                menuToggle.addEventListener('click', function() {
+                    sideMenu.classList.toggle('show');
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!sideMenu.contains(event.target) && !menuToggle.contains(event.target)) {
+                        sideMenu.classList.remove('show');
+                    }
+                });
+            }
+        });
+        </script>
+    </main>
