@@ -87,10 +87,51 @@
     </section>
     <div style="text-align:center;margin-top:2rem"><a href="index.html" class="back-button"><i class="fas fa-arrow-left"></i> Takaisin etusivulle</a></div>
 </main>
-<script>
+    <!-- reCAPTCHA v3 site key is used client-side -->
+    <script src="https://www.google.com/recaptcha/api.js?render=6LdhmsYrAAAAAAjco0hNjltD13HimgFFQ5DOehWp"></script>
+    <script>
 const menuButton=document.querySelector('.menu-button');const navMenu=document.querySelector('.nav-menu');if(menuButton){menuButton.addEventListener('click',()=>navMenu.classList.toggle('active'));}
 const contactForm=document.getElementById('contactForm');const formMessage=document.getElementById('formMessage');const urlParams=new URLSearchParams(window.location.search);if(urlParams.get('success')==='1'){formMessage.className='form-message success';formMessage.textContent='Viesti lähetetty onnistuneesti! Kiitos yhteydenotosta.';formMessage.style.display='block';}
-contactForm.addEventListener('submit',e=>{const submitBtn=contactForm.querySelector('.submit-btn');const original=submitBtn.innerHTML;submitBtn.disabled=true;submitBtn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Lähetetään...';const data={name:document.getElementById('name').value,email:document.getElementById('email').value,subject:document.getElementById('subject').value,message:document.getElementById('message').value,timestamp:new Date().toLocaleString('fi-FI')};saveContact(data);setTimeout(()=>{formMessage.className='form-message success';formMessage.textContent='Viesti lähetetään... Sinut ohjataan pian takaisin.';formMessage.style.display='block';},1000);setTimeout(()=>{submitBtn.disabled=false;submitBtn.innerHTML=original;},3000);});
+
+// Append hidden input for reCAPTCHA token
+function ensureRecaptchaField() {
+    if (!contactForm.querySelector('input[name="g-recaptcha-response"]')) {
+        const h = document.createElement('input'); h.type='hidden'; h.name='g-recaptcha-response'; contactForm.appendChild(h);
+    }
+}
+
+contactForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    const submitBtn=contactForm.querySelector('.submit-btn');
+    const original=submitBtn.innerHTML;
+    submitBtn.disabled=true; submitBtn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Lähetetään...';
+
+    // Use reCAPTCHA v3 to get a token then submit the form to Formspree or your verification endpoint
+    grecaptcha.ready(function(){
+        grecaptcha.execute('6LdhmsYrAAAAAAjco0hNjltD13HimgFFQ5DOehWp', {action: 'contact'}).then(function(token) {
+            ensureRecaptchaField();
+            contactForm.querySelector('input[name="g-recaptcha-response"]').value = token;
+
+            // Option A: Submit directly to Formspree (they can verify token server-side if configured)
+            contactForm.submit();
+
+            // Option B (recommended): POST to your Supabase Edge Function /verify-recaptcha which will verify token with the secret and forward the message or store it.
+            // Example (uncomment to use):
+            /*
+            const data = new FormData(contactForm);
+            fetch('/.netlify/functions/verify-recaptcha', { method: 'POST', body: data })
+                .then(r => r.json()).then(resp => {
+                    if (resp.ok) {
+                        window.location.href = contactForm.querySelector('input[name="_next"]').value;
+                    } else {
+                        formMessage.className='form-message error'; formMessage.textContent='CAPTCHA verification failed.'; formMessage.style.display='block';
+                        submitBtn.disabled=false; submitBtn.innerHTML=original;
+                    }
+                }).catch(err=>{ console.error(err); submitBtn.disabled=false; submitBtn.innerHTML=original; formMessage.className='form-message error'; formMessage.textContent='Sending failed'; formMessage.style.display='block'; });
+            */
+        });
+    });
+});
 function saveContact(data){try{const list=JSON.parse(localStorage.getItem('xxmxli_contacts')||'[]');list.push({...data,id:Date.now(),saved_at:new Date().toISOString()});if(list.length>50)list.splice(0,list.length-50);localStorage.setItem('xxmxli_contacts',JSON.stringify(list));}catch(e){console.error('Save fail',e);}}
 if(typeof StaticVisitorTracker!=='undefined'){StaticVisitorTracker.trackVisit();}
 </script>
