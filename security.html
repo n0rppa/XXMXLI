@@ -1418,20 +1418,36 @@ ip link show $INTERFACE`;
             console.log('Security page initialized successfully');
         });
 
-        // Menu toggle functionality (from existing code)
+        // Improved menu toggle functionality
         document.addEventListener('DOMContentLoaded', function() {
             const menuToggle = document.getElementById('menuToggle');
             const sideMenu = document.getElementById('sideMenu');
-            
+            let justToggled = false;
+
+            function openMenu() { sideMenu.classList.add('open'); }
+            function closeMenu() { sideMenu.classList.remove('open'); }
+            function toggleMenu() {
+                if (sideMenu.classList.contains('open')) closeMenu(); else openMenu();
+            }
+
             if (menuToggle && sideMenu) {
-                menuToggle.addEventListener('click', function() {
-                    sideMenu.classList.toggle('show');
+                menuToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleMenu();
+                    justToggled = true;
+                    setTimeout(() => justToggled = false, 150);
                 });
-                
-                // Close menu when clicking outside
+
+                // Close menu with Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') closeMenu();
+                });
+
+                // Close menu when clicking outside (ignore clicks right after toggle)
                 document.addEventListener('click', function(event) {
+                    if (justToggled) return;
                     if (!sideMenu.contains(event.target) && !menuToggle.contains(event.target)) {
-                        sideMenu.classList.remove('show');
+                        closeMenu();
                     }
                 });
             }

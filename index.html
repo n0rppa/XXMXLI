@@ -684,81 +684,7 @@
             </form>
         </section>
 
-        <!-- CERT & Security Information Section -->
-        <section id="cert-section" class="contact-form" style="margin-top: 3rem;">
-            <h2><i class="fas fa-shield-alt"></i> CERT & Security Information</h2>
-            
-            <div style="background: var(--card-bg); border: 1px solid var(--border); padding: 2rem; border-radius: 8px; margin-bottom: 2rem;">
-                <h3 style="color: var(--accent); margin-bottom: 1rem;">🔐 SSL Certificate Information</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
-                    <div>
-                        <strong>Issuer:</strong><br>
-                        Let's Encrypt (R3)
-                    </div>
-                    <div>
-                        <strong>Subject:</strong><br>
-                        www.xxmxli.com
-                    </div>
-                    <div>
-                        <strong>Algorithm:</strong><br>
-                        ECDSA with P-256
-                    </div>
-                    <div>
-                        <strong>Valid Until:</strong><br>
-                        ~90 days from issuance
-                    </div>
-                </div>
-                <p style="font-size: 0.9rem; color: var(--text-secondary);">
-                    Certificate automatically renewed by GitHub Pages. Check current status: 
-                    <a href="https://www.ssllabs.com/ssltest/analyze.html?d=www.xxmxli.com" target="_blank" style="color: var(--accent);">SSL Labs Test</a>
-                </p>
-            </div>
-            
-            <div style="background: var(--card-bg); border: 1px solid var(--border); padding: 2rem; border-radius: 8px; margin-bottom: 2rem;">
-                <h3 style="color: var(--accent); margin-bottom: 1rem;">🛡️ Computer Emergency Response Team (CERT)</h3>
-                <div style="margin-bottom: 1.5rem;">
-                    <h4 style="color: var(--text-primary); margin-bottom: 0.5rem;">CERT-FI (Finland)</h4>
-                    <p style="margin-bottom: 0.5rem;">National CERT for Finland - handles cybersecurity incidents and provides security guidance.</p>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                        <div>
-                            <strong>Website:</strong><br>
-                            <a href="https://www.cert.fi/" target="_blank" style="color: var(--accent);">www.cert.fi</a>
-                        </div>
-                        <div>
-                            <strong>Contact:</strong><br>
-                            cert@cert.fi
-                        </div>
-                        <div>
-                            <strong>Phone:</strong><br>
-                            +358 40 123 4567
-                        </div>
-                        <div>
-                            <strong>Report Incidents:</strong><br>
-                            <a href="https://www.cert.fi/en/reporting/" target="_blank" style="color: var(--accent);">Online Form</a>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 1.5rem;">
-                    <h4 style="color: var(--text-primary); margin-bottom: 0.5rem;">GitHub Security</h4>
-                    <p style="margin-bottom: 0.5rem;">For security issues related to GitHub Pages hosting.</p>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                        <div>
-                            <strong>Security Team:</strong><br>
-                            <a href="mailto:security@github.com" style="color: var(--accent);">security@github.com</a>
-                        </div>
-                        <div>
-                            <strong>Bug Bounty:</strong><br>
-                            <a href="https://bounty.github.com/" target="_blank" style="color: var(--accent);">bounty.github.com</a>
-                        </div>
-                        <div>
-                            <strong>Advisories:</strong><br>
-                            <a href="https://github.com/security-advisories" target="_blank" style="color: var(--accent);">Security Advisories</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
+  <!-- CERT & Security details moved to dedicated security page -->
             <div style="background: var(--card-bg); border: 1px solid var(--border); padding: 2rem; border-radius: 8px;">
                 <h3 style="color: var(--accent); margin-bottom: 1rem;">🚨 Incident Reporting</h3>
                 <p style="margin-bottom: 1rem;">If you discover a security vulnerability or incident on this website:</p>
@@ -796,7 +722,7 @@
                 <input id="chatMsg" type="text" placeholder="Type your message..." maxlength="200" style="flex:3;padding:0.5rem;border-radius:4px;border:1px solid #00ff00;background:#001900;color:#00ff00;" required>
                 <button type="submit" style="background:#00ff00;color:#000;border:none;padding:0.5rem 1rem;border-radius:4px;font-weight:bold;">Send</button>
             </form>
-            <div style="font-size:0.9rem;color:#008000;margin-top:0.5rem;">🔒 <b>AES-256 Encrypted Chat</b> | 👑 Moderator: masak1st1 | IRC-style: <b>/me</b> for actions, <b>/help</b> for commands. Admin bot auto-bans trolls.</div>
+            <div style="font-size:0.9rem;color:#008000;margin-top:0.5rem;">🔒 <b>AES-256 Encrypted Chat</b> | IRC-style: <b>/me</b> for actions, <b>/help</b> for commands.</div>
         </section>
 
         <script>
@@ -848,15 +774,12 @@
         let chatHistory = JSON.parse(localStorage.getItem('worldChatHistoryEncrypted')||'[]');
         let bannedUsers = JSON.parse(localStorage.getItem('worldChatBanned')||'[]');
         
-        // Built-in moderator credentials
-        const MODERATOR_USERNAME = 'masak1st1';
-        const MODERATOR_PASSWORD = 'masa_1982';
-        let currentUser = null;
-        
-        // Check for moderator login
-        function checkModeratorLogin(username, password) {
-            return username === MODERATOR_USERNAME && password === MODERATOR_PASSWORD;
-        }
+    // No built-in moderators displayed or stored on the frontpage chat
+    let currentUser = null;
+    function checkModeratorLogin(username, password) {
+      // Frontpage chat does not expose moderator accounts. Return false by default.
+      return false;
+    }
 
         async function renderChat() {
             const decryptedHistory = [];
@@ -899,44 +822,7 @@
             let displayMsg = msg;
             if (msg.startsWith('/me ')) displayMsg = `<i>* ${name} ${msg.slice(4)}</i>`;
             
-            // Moderator commands
-            if (msg.startsWith('/ban ') && isModerator) {
-                const toBan = msg.split(' ')[1]?.toLowerCase();
-                if (toBan && !bannedUsers.includes(toBan)) {
-                    bannedUsers.push(toBan);
-                    localStorage.setItem('worldChatBanned',JSON.stringify(bannedUsers));
-                    const modMsg = `<span style='color:#ff4444'>👑 Moderator banned user <b>${toBan}</b>.</span>`;
-                    const encryptedModMsg = await encrypt(modMsg, cryptoKey);
-                    chatHistory.push({name:'ModBot',msg:modMsg,encryptedMsg:encryptedModMsg,isAdmin:true});
-                    localStorage.setItem('worldChatHistoryEncrypted',JSON.stringify(chatHistory));
-                    renderChat();
-                    return;
-                }
-            }
-            if (msg.startsWith('/unban ') && isModerator) {
-                const toUnban = msg.split(' ')[1]?.toLowerCase();
-                const index = bannedUsers.indexOf(toUnban);
-                if (index > -1) {
-                    bannedUsers.splice(index, 1);
-                    localStorage.setItem('worldChatBanned',JSON.stringify(bannedUsers));
-                    const unbanMsg = `<span style='color:#00ff00'>👑 Moderator unbanned user <b>${toUnban}</b>.</span>`;
-                    const encryptedUnbanMsg = await encrypt(unbanMsg, cryptoKey);
-                    chatHistory.push({name:'ModBot',msg:unbanMsg,encryptedMsg:encryptedUnbanMsg,isAdmin:true});
-                    localStorage.setItem('worldChatHistoryEncrypted',JSON.stringify(chatHistory));
-                    renderChat();
-                    return;
-                }
-            }
-            if (msg.startsWith('/clear ') && isModerator) {
-                chatHistory = [];
-                localStorage.setItem('worldChatHistoryEncrypted',JSON.stringify(chatHistory));
-                const clearMsg = `<span style='color:#ffaa00'>👑 Moderator cleared chat history.</span>`;
-                const encryptedClearMsg = await encrypt(clearMsg, cryptoKey);
-                chatHistory.push({name:'ModBot',msg:clearMsg,encryptedMsg:encryptedClearMsg,isAdmin:true});
-                localStorage.setItem('worldChatHistoryEncrypted',JSON.stringify(chatHistory));
-                renderChat();
-                return;
-            }
+            // Moderator commands are disabled on the frontpage.
             // Admin bot commands (legacy support)
             if (msg.startsWith('/ban ') && name.toLowerCase()==='admin') {
                 const toBan = msg.split(' ')[1]?.toLowerCase();
