@@ -2,4 +2,4 @@
 # Optional format: Label | address
 # Example:
 # Bitcoin | bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh
-Ethereum | 0x591a978B4ce8901469cd5333418A75dDac3eEFB2
+BNB (Trust Wallet) | 0x591a978B4ce8901469cd5333418A75dDac3eEFB2
