@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Donate - XXMXLI</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; background:#000; color:#0f0; padding:2rem; }
+        .card { background:#001100; border:1px solid #003300; padding:1.5rem; border-radius:8px; max-width:720px; margin:1rem auto; }
+        .address { background:#000; border:1px dashed #00cc00; padding:0.75rem; margin-top:0.75rem; font-family: monospace; }
+        .hint { color:#00cc00; font-size:0.9rem; }
+    </style>
+</head>
+<body>
+    <main class="card">
+        <h1>Donate</h1>
+        <p class="hint">Thank you for considering a donation. Below are the cryptocurrency addresses for sending support.</p>
+
+        <div id="addresses">
+            <p>Loading addresses...</p>
+        </div>
+
+        <p style="margin-top:1rem;">If you prefer, contact the site owner via the <a href="contact.html">contact form</a>.</p>
+    </main>
+
+    <script>
+    // Attempt to fetch simple text file with donation addresses (one per line). File should be in repository root named donate_addresses.txt
+    (async function(){
+        const container = document.getElementById('addresses');
+        try {
+            const res = await fetch('donate_addresses.txt', {cache: 'no-store'});
+            if (!res.ok) throw new Error('No addresses file');
+            const text = await res.text();
+            const lines = text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+            if (lines.length === 0) {
+                container.innerHTML = '<p>No donation addresses found in donate_addresses.txt.</p>';
+                return;
+            }
+            container.innerHTML = lines.map(line => {
+                // if line contains a label separated by '|' show label
+                const parts = line.split('|').map(p=>p.trim());
+                const label = parts.length>1 ? parts[0] : '';
+                const addr = parts.length>1 ? parts[1] : parts[0];
+                return `<div class="address">${label ? '<strong>'+label+'</strong><br>' : ''}${addr}</div>`;
+            }).join('');
+        } catch (err) {
+            container.innerHTML = '<p>No donation address file found. Please provide <code>donate_addresses.txt</code> in the site root with one address per line (optional label|address).</p>';
+        }
+    })();
+    </script>
+</body>
+</html>
