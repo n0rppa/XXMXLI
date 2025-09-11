@@ -6,6 +6,9 @@
     "build": "echo 'No build step needed for static site'",
     "start": "echo 'Static HTML site - open index.html in browser'"
   },
+  "devDependencies": {
+    "cheerio": "^1.0.0-rc.12"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/n0rppa/XXMXLI.git"

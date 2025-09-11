@@ -21,6 +21,15 @@
             <p>Loading addresses...</p>
         </div>
 
+        <div style="margin-top:1.25rem;">
+            <h3>Donate via hosted payment (optional)</h3>
+            <p class="hint">Coinbase Commerce / BTCPay embeds go here. Configure your account and paste the embed code below.</p>
+            <div id="coinbase-widget">
+                <!-- Placeholder: paste Coinbase Commerce embed here -->
+                <p style="color:#00cc00;">No hosted widget configured.</p>
+            </div>
+        </div>
+
         <p style="margin-top:1rem;">If you prefer, contact the site owner via the <a href="contact.html">contact form</a>.</p>
     </main>
 
@@ -38,11 +47,11 @@
                 return;
             }
             container.innerHTML = lines.map(line => {
-                // if line contains a label separated by '|' show label
                 const parts = line.split('|').map(p=>p.trim());
                 const label = parts.length>1 ? parts[0] : '';
                 const addr = parts.length>1 ? parts[1] : parts[0];
-                return `<div class="address">${label ? '<strong>'+label+'</strong><br>' : ''}${addr}</div>`;
+                const qr = `https://chart.googleapis.com/chart?cht=qr&chs=220x220&chl=${encodeURIComponent(addr)}`;
+                return `<div class="address">${label ? '<strong>'+label+'</strong><br>' : ''}${addr}<div style="margin-top:0.5rem;"><img src="${qr}" alt="QR for ${addr}"/></div></div>`;
             }).join('');
         } catch (err) {
             container.innerHTML = '<p>No donation address file found. Please provide <code>donate_addresses.txt</code> in the site root with one address per line (optional label|address).</p>';
