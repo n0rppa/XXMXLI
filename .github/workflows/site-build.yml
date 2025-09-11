@@ -1,0 +1,30 @@
+name: Site build
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install deps
+        run: npm ci || true
+      - name: Optimize images
+        run: node tools/optimize-images.js || true
+      - name: Build search index
+        run: node tools/build-search-index.js || true
+      - name: Generate sitemap
+        run: node tools/generate-sitemap.js || true
+      - name: Commit generated files
+        run: |
+          git config user.name 'github-actions'
+          git config user.email 'actions@github.com'
+          git add search-index.json sitemap.xml || true
+          git commit -m 'Auto build: images/index/sitemap' || echo 'No changes'
+          git push || echo 'Push failed'

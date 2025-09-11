@@ -7,7 +7,9 @@
     "start": "echo 'Static HTML site - open index.html in browser'"
   },
   "devDependencies": {
-    "cheerio": "^1.0.0-rc.12"
+    "cheerio": "^1.0.0-rc.12",
+    "sharp": "^0.32.0",
+    "lunr": "^2.3.9"
   },
   "repository": {
     "type": "git",
