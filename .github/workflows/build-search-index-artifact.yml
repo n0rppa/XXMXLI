@@ -14,19 +14,33 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          for i in 1 2 3; do npm ci && break || sleep 5; done
 
       - name: Build search index
         run: npm run build-index
 
       - name: Upload search-index.json
+        if: always()
+        run: |
+          if [ -f search-index.json ]; then echo 'uploading'; else echo 'search-index.json missing' && exit 1; fi
         uses: actions/upload-artifact@v4
         with:
           name: search-index
