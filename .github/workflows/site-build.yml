@@ -19,12 +19,34 @@ jobs:
         run: node tools/optimize-images.js || true
       - name: Build search index
         run: node tools/build-search-index.js || true
+      - name: Upload search-index artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: search-index
+          path: search-index.json
       - name: Generate sitemap
         run: node tools/generate-sitemap.js || true
-      - name: Commit generated files
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    if: ${{ secrets.NETLIFY_AUTH_TOKEN && secrets.NETLIFY_SITE_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download search-index artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: search-index
+          path: .
+
+      - name: Install Netlify CLI
+        run: npm install -g netlify-cli
+
+      - name: Deploy to Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         run: |
-          git config user.name 'github-actions'
-          git config user.email 'actions@github.com'
-          git add search-index.json sitemap.xml || true
-          git commit -m 'Auto build: images/index/sitemap' || echo 'No changes'
-          git push || echo 'Push failed'
+          # publish directory is repository root per netlify.toml
+          netlify deploy --dir=. --prod --site=$NETLIFY_SITE_ID
