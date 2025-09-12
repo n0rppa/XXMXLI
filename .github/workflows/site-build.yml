@@ -83,10 +83,14 @@ jobs:
         run: npm install -g netlify-cli
 
       - name: Deploy to Netlify
-        if: ${{ secrets.NETLIFY_AUTH_TOKEN && secrets.NETLIFY_SITE_ID }}
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         run: |
+          # if secrets are not provided, skip deploy (prevents parse-time secret usage issues)
+          if [ -z "$NETLIFY_AUTH_TOKEN" ] || [ -z "$NETLIFY_SITE_ID" ]; then
+            echo "Netlify secrets missing; skipping deploy"
+            exit 0
+          fi
           # publish directory is repository root per netlify.toml
           netlify deploy --dir=. --prod --site=$NETLIFY_SITE_ID
