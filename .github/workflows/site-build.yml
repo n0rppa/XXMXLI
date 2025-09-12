@@ -53,6 +53,7 @@ jobs:
           fi
         shell: bash
       - name: Upload debug artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: site-build-debug
@@ -75,6 +76,7 @@ jobs:
           fi
         shell: bash
       - name: Upload search-index artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: search-index
@@ -99,14 +101,17 @@ jobs:
         run: npm install -g netlify-cli
 
       - name: Deploy to Netlify
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         run: |
-          # if secrets are not provided, skip deploy (prevents parse-time secret usage issues)
+          # Inject secrets at runtime to avoid parse-time evaluation
+          NETLIFY_AUTH_TOKEN="${{ secrets.NETLIFY_AUTH_TOKEN }}"
+          NETLIFY_SITE_ID="${{ secrets.NETLIFY_SITE_ID }}"
+          export NETLIFY_AUTH_TOKEN NETLIFY_SITE_ID
+
+          # if secrets are not provided, skip deploy
           if [ -z "$NETLIFY_AUTH_TOKEN" ] || [ -z "$NETLIFY_SITE_ID" ]; then
             echo "Netlify secrets missing; skipping deploy"
             exit 0
           fi
+
           # publish directory is repository root per netlify.toml
           netlify deploy --dir=. --prod --site=$NETLIFY_SITE_ID
