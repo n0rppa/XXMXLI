@@ -1,5 +1,5 @@
 /*
-  Content-Security-Policy-Report-Only: default-src 'self'; base-uri 'self'; script-src 'self' https://cdnjs.cloudflare.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://formspree.io https://api.ipify.org https://ipapi.co https://www.google.com/recaptcha/ https://plausible.io; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests; report-uri /netlify/functions/csp-report
+  Content-Security-Policy-Report-Only: default-src 'self'; base-uri 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://formspree.io; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests; report-uri /netlify/functions/csp-report
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
@@ -7,8 +7,8 @@
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 
 /* Apply same report-only for contact page explicitly (Netlify uses longest path match)
-/contact.html
-  Content-Security-Policy-Report-Only: default-src 'self'; base-uri 'self'; script-src 'self' https://cdnjs.cloudflare.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://formspree.io https://api.ipify.org https://ipapi.co https://www.google.com/recaptcha/ https://plausible.io; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests; report-uri /netlify/functions/csp-report
+ /contact.html
+  Content-Security-Policy-Report-Only: default-src 'self'; base-uri 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://formspree.io; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests; report-uri /netlify/functions/csp-report
 
 /.well-known/*
   Cache-Control: public, max-age=3600

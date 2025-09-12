@@ -7,7 +7,6 @@
     <title>XXMXLI - Ota yhteyttä</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="assets/security/blocked_ips.js"></script>
-    <script src="assets/js/static-visitor-tracker.js"></script>
     <style>
         :root { --background:#000; --text-primary:#00ff00; --text-secondary:#008000; --accent:#00ff00; --accent-hover:#00cc00; --border:#003300; --card-bg:#001100; }
         *{margin:0;padding:0;box-sizing:border-box}
@@ -72,7 +71,7 @@
     </section>
     <section class="contact-form">
         <h2><i class="fas fa-paper-plane"></i> Lähetä viesti</h2>
-        <form id="contactForm" action="https://formspree.io/f/mvgqqyqr" method="POST">
+    <form id="contactForm" action="/netlify/functions/submit-form" method="POST">
             <div class="form-group"><label for="name"><i class="fas fa-user"></i> Nimi *</label><input id="name" name="name" required></div>
             <div class="form-group"><label for="email"><i class="fas fa-envelope"></i> Sähköposti *</label><input type="email" id="email" name="email" required></div>
             <div class="form-group"><label for="subject"><i class="fas fa-tag"></i> Aihe</label><input id="subject" name="subject" value="Yhteydenotto XXMXLI-sivuilta"></div>
@@ -87,36 +86,8 @@
     </section>
     <div style="text-align:center;margin-top:2rem"><a href="index.html" class="back-button"><i class="fas fa-arrow-left"></i> Takaisin etusivulle</a></div>
 </main>
-    <!-- reCAPTCHA v3: dynamically load only when allowed by CSP -->
-    <script>
-// Try to dynamically load grecaptcha script; if CSP blocks it, proceed without CAPTCHA
-(function(){
-    const siteKey = '6LdhmsYrAAAAAAjco0hNjltD13HimgFFQ5DOehWp';
-    function loadRecaptcha(){
-        try{
-            const s = document.createElement('script');
-            s.src = 'https://www.google.com/recaptcha/api.js?render=' + siteKey;
-            s.async = true;
-            s.onload = function(){ console.log('reCAPTCHA script loaded'); };
-            s.onerror = function(){ console.warn('reCAPTCHA load blocked or failed'); };
-            document.head.appendChild(s);
-        }catch(e){console.warn('Failed to inject reCAPTCHA script', e)}
-    }
-
-    // Only attempt to load when CSP likely allows external scripts (basic heuristic)
-    const cspAllowsExternal = true; // conservative default; if failures seen, set to false
-    loadRecaptcha();
-})();
-
-const menuButton=document.querySelector('.menu-button');const navMenu=document.querySelector('.nav-menu');if(menuButton){menuButton.addEventListener('click',()=>navMenu.classList.toggle('active'));}
+const menuButton=document.querySelector('.menu-button');const navMenu=document.querySelector('.nav-menu');if(menuButton){menuButton.addEventListener('click',()=>navMenu.classList.toggle('active'));
 const contactForm=document.getElementById('contactForm');const formMessage=document.getElementById('formMessage');const urlParams=new URLSearchParams(window.location.search);if(urlParams.get('success')==='1'){formMessage.className='form-message success';formMessage.textContent='Viesti lähetetty onnistuneesti! Kiitos yhteydenotosta.';formMessage.style.display='block';}
-
-// Append hidden input for reCAPTCHA token
-function ensureRecaptchaField() {
-    if (!contactForm.querySelector('input[name="g-recaptcha-response"]')) {
-        const h = document.createElement('input'); h.type='hidden'; h.name='g-recaptcha-response'; contactForm.appendChild(h);
-    }
-}
 
 contactForm.addEventListener('submit', function(e){
     e.preventDefault();
@@ -124,40 +95,19 @@ contactForm.addEventListener('submit', function(e){
     const original=submitBtn.innerHTML;
     submitBtn.disabled=true; submitBtn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Lähetetään...';
 
-    // Use reCAPTCHA v3 to get a token then submit the form to Formspree or your verification endpoint
-    // Guard grecaptcha usage; if unavailable, submit without token (Formspree can still accept)
-    if (window.grecaptcha && typeof grecaptcha.ready === 'function') {
-        grecaptcha.ready(function(){
-            grecaptcha.execute('6LdhmsYrAAAAAAjco0hNjltD13HimgFFQ5DOehWp', {action: 'contact'}).then(function(token) {
-            ensureRecaptchaField();
-            contactForm.querySelector('input[name="g-recaptcha-response"]').value = token;
-
-            // Option A: Submit directly to Formspree (they can verify token server-side if configured)
-            contactForm.submit();
-
-            // Option B (recommended): POST to your Supabase Edge Function /verify-recaptcha which will verify token with the secret and forward the message or store it.
-            // Example (uncomment to use):
-            /*
-            const data = new FormData(contactForm);
-            fetch('/.netlify/functions/verify-recaptcha', { method: 'POST', body: data })
-                .then(r => r.json()).then(resp => {
-                    if (resp.ok) {
-                        window.location.href = contactForm.querySelector('input[name="_next"]').value;
-                    } else {
-                        formMessage.className='form-message error'; formMessage.textContent='CAPTCHA verification failed.'; formMessage.style.display='block';
-                        submitBtn.disabled=false; submitBtn.innerHTML=original;
-                    }
-                }).catch(err=>{ console.error(err); submitBtn.disabled=false; submitBtn.innerHTML=original; formMessage.className='form-message error'; formMessage.textContent='Sending failed'; formMessage.style.display='block'; });
-            */
-            });
-        });
-    } else {
-        // No grecaptcha available; submit the form normally and show a note
-        console.warn('grecaptcha not available; submitting without CAPTCHA');
-        ensureRecaptchaField();
-        contactForm.querySelector('input[name="g-recaptcha-response"]').value = '';
-        contactForm.submit();
-    }
+    const data = new FormData(contactForm);
+    fetch(contactForm.action, { method: 'POST', body: data })
+      .then(r => {
+        if (r.ok || r.status === 204 || r.status === 200) {
+          window.location.href = contactForm.querySelector('input[name="_next"]').value;
+        } else {
+          throw new Error('Send failed');
+        }
+      }).catch(err => {
+        console.error(err);
+        const formMessage=document.getElementById('formMessage'); formMessage.className='form-message error'; formMessage.textContent='Lähetys epäonnistui. Yritä myöhemmin.'; formMessage.style.display='block';
+        submitBtn.disabled=false; submitBtn.innerHTML=original;
+      });
 });
 function saveContact(data){try{const list=JSON.parse(localStorage.getItem('xxmxli_contacts')||'[]');list.push({...data,id:Date.now(),saved_at:new Date().toISOString()});if(list.length>50)list.splice(0,list.length-50);localStorage.setItem('xxmxli_contacts',JSON.stringify(list));}catch(e){console.error('Save fail',e);}}
 if(typeof StaticVisitorTracker!=='undefined'){StaticVisitorTracker.trackVisit();}
