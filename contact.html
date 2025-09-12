@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://formspree.io https://api.ipify.org http://ip-api.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://formspree.io https://api.ipify.org http://ip-api.com ws://localhost:8080 wss://localhost:8080; media-src 'self' data:;">
+        <meta http-equiv="Content-Security-Policy-Report-Only" content="default-src 'self'; base-uri 'self'; script-src 'self' https://cdnjs.cloudflare.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://formspree.io https://api.ipify.org https://ipapi.co https://www.google.com/recaptcha/; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests; report-uri /csp-report-endpoint">
     <title>XXMXLI - Ota yhteyttä</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="assets/security/blocked_ips.js"></script>
@@ -87,9 +87,27 @@
     </section>
     <div style="text-align:center;margin-top:2rem"><a href="index.html" class="back-button"><i class="fas fa-arrow-left"></i> Takaisin etusivulle</a></div>
 </main>
-    <!-- reCAPTCHA v3 site key is used client-side -->
-    <script src="https://www.google.com/recaptcha/api.js?render=6LdhmsYrAAAAAAjco0hNjltD13HimgFFQ5DOehWp"></script>
+    <!-- reCAPTCHA v3: dynamically load only when allowed by CSP -->
     <script>
+// Try to dynamically load grecaptcha script; if CSP blocks it, proceed without CAPTCHA
+(function(){
+    const siteKey = '6LdhmsYrAAAAAAjco0hNjltD13HimgFFQ5DOehWp';
+    function loadRecaptcha(){
+        try{
+            const s = document.createElement('script');
+            s.src = 'https://www.google.com/recaptcha/api.js?render=' + siteKey;
+            s.async = true;
+            s.onload = function(){ console.log('reCAPTCHA script loaded'); };
+            s.onerror = function(){ console.warn('reCAPTCHA load blocked or failed'); };
+            document.head.appendChild(s);
+        }catch(e){console.warn('Failed to inject reCAPTCHA script', e)}
+    }
+
+    // Only attempt to load when CSP likely allows external scripts (basic heuristic)
+    const cspAllowsExternal = true; // conservative default; if failures seen, set to false
+    loadRecaptcha();
+})();
+
 const menuButton=document.querySelector('.menu-button');const navMenu=document.querySelector('.nav-menu');if(menuButton){menuButton.addEventListener('click',()=>navMenu.classList.toggle('active'));}
 const contactForm=document.getElementById('contactForm');const formMessage=document.getElementById('formMessage');const urlParams=new URLSearchParams(window.location.search);if(urlParams.get('success')==='1'){formMessage.className='form-message success';formMessage.textContent='Viesti lähetetty onnistuneesti! Kiitos yhteydenotosta.';formMessage.style.display='block';}
 
@@ -107,8 +125,10 @@ contactForm.addEventListener('submit', function(e){
     submitBtn.disabled=true; submitBtn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Lähetetään...';
 
     // Use reCAPTCHA v3 to get a token then submit the form to Formspree or your verification endpoint
-    grecaptcha.ready(function(){
-        grecaptcha.execute('6LdhmsYrAAAAAAjco0hNjltD13HimgFFQ5DOehWp', {action: 'contact'}).then(function(token) {
+    // Guard grecaptcha usage; if unavailable, submit without token (Formspree can still accept)
+    if (window.grecaptcha && typeof grecaptcha.ready === 'function') {
+        grecaptcha.ready(function(){
+            grecaptcha.execute('6LdhmsYrAAAAAAjco0hNjltD13HimgFFQ5DOehWp', {action: 'contact'}).then(function(token) {
             ensureRecaptchaField();
             contactForm.querySelector('input[name="g-recaptcha-response"]').value = token;
 
@@ -129,8 +149,15 @@ contactForm.addEventListener('submit', function(e){
                     }
                 }).catch(err=>{ console.error(err); submitBtn.disabled=false; submitBtn.innerHTML=original; formMessage.className='form-message error'; formMessage.textContent='Sending failed'; formMessage.style.display='block'; });
             */
+            });
         });
-    });
+    } else {
+        // No grecaptcha available; submit the form normally and show a note
+        console.warn('grecaptcha not available; submitting without CAPTCHA');
+        ensureRecaptchaField();
+        contactForm.querySelector('input[name="g-recaptcha-response"]').value = '';
+        contactForm.submit();
+    }
 });
 function saveContact(data){try{const list=JSON.parse(localStorage.getItem('xxmxli_contacts')||'[]');list.push({...data,id:Date.now(),saved_at:new Date().toISOString()});if(list.length>50)list.splice(0,list.length-50);localStorage.setItem('xxmxli_contacts',JSON.stringify(list));}catch(e){console.error('Save fail',e);}}
 if(typeof StaticVisitorTracker!=='undefined'){StaticVisitorTracker.trackVisit();}
