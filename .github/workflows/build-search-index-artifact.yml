@@ -34,6 +34,26 @@ jobs:
         run: |
           for i in 1 2 3; do npm ci && break || sleep 5; done
 
+      - name: Save npm debug info
+        if: failure()
+        run: |
+          node -v > workflow-debug-node.txt || true
+          npm -v > workflow-debug-npm.txt || true
+          npm ci --loglevel verbose > npm-ci.log 2>&1 || true
+          ls -la > repo-listing.txt || true
+        shell: bash
+
+      - name: Upload debug artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-build-debug
+          path: |
+            workflow-debug-node.txt
+            workflow-debug-npm.txt
+            npm-ci.log
+            repo-listing.txt
+
       - name: Build search index
         run: npm run build-index
 
