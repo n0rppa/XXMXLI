@@ -32,7 +32,6 @@ jobs:
           for i in 1 2 3; do npm ci && break || sleep 5; done
 
       - name: Save npm debug info
-        if: failure()
         run: |
           node -v > workflow-debug-node.txt || true
           npm -v > workflow-debug-npm.txt || true
@@ -40,16 +39,24 @@ jobs:
           ls -la > repo-listing.txt || true
         shell: bash
 
+      - name: Package debug artifacts (if any)
+        run: |
+          if [ -f workflow-debug-node.txt ] || [ -f npm-ci.log ]; then
+            mkdir -p debug-artifacts
+            cp workflow-debug-node.txt debug-artifacts/ || true
+            cp workflow-debug-npm.txt debug-artifacts/ || true
+            cp npm-ci.log debug-artifacts/ || true
+            cp repo-listing.txt debug-artifacts/ || true
+          else
+            echo 'No debug artifacts to upload'
+            exit 0
+          fi
+        shell: bash
       - name: Upload debug artifacts
-        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: site-build-debug
-          path: |
-            workflow-debug-node.txt
-            workflow-debug-npm.txt
-            npm-ci.log
-            repo-listing.txt
+          path: debug-artifacts
 
       - name: Optimize images
         run: node tools/optimize-images.js || true
@@ -57,12 +64,21 @@ jobs:
       - name: Build search index
         run: node tools/build-search-index.js || true
 
+      - name: Package search-index (if present)
+        run: |
+          if [ -f search-index.json ]; then
+            mkdir -p search-artifact
+            cp search-index.json search-artifact/
+          else
+            echo 'search-index.json not found; skipping package'
+            exit 0
+          fi
+        shell: bash
       - name: Upload search-index artifact
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: search-index
-          path: search-index.json
+          path: search-artifact
 
       - name: Generate sitemap
         run: node tools/generate-sitemap.js || true
