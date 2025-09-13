@@ -3,7 +3,12 @@ const path = require('path');
 const fetch = require('node-fetch');
 
 exports.handler = async function(event) {
-  if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method not allowed' };
+  // CORS preflight
+  const CORS_HEADERS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' };
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 204, headers: CORS_HEADERS, body: '' };
+  }
+  if (event.httpMethod !== 'POST') return { statusCode: 405, headers: CORS_HEADERS, body: 'Method not allowed' };
   try {
     // event.body is URL-encoded form data when sent from fetch with FormData; Netlify provides raw body
     const contentType = event.headers['content-type'] || event.headers['Content-Type'] || '';
@@ -26,23 +31,27 @@ exports.handler = async function(event) {
     const fp = path.join(submissionsDir, filename);
     fs.writeFileSync(fp, JSON.stringify({ headers: event.headers, form: formData }, null, 2));
 
-    // Forward to Formspree endpoint server-side
+    // Forward to Formspree endpoint server-side as application/x-www-form-urlencoded
     const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mvgqqyqr';
-    let forwardResp;
+    let bodyForForward;
     if (formData === null) {
-      // Multipart: forward raw body
-      forwardResp = await fetch(FORMSPREE_ENDPOINT, { method: 'POST', headers: { 'Content-Type': contentType }, body: event.body });
+      // multipart/raw body: forward as-is
+      bodyForForward = event.body;
     } else {
-      forwardResp = await fetch(FORMSPREE_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
+      const params = new URLSearchParams();
+      for (const k of Object.keys(formData)) params.append(k, formData[k]);
+      bodyForForward = params.toString();
     }
+
+    const forwardResp = await fetch(FORMSPREE_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: bodyForForward });
 
     if (!forwardResp.ok && forwardResp.status !== 200 && forwardResp.status !== 204) {
-      return { statusCode: 502, body: 'Forwarding to Formspree failed' };
+      return { statusCode: 502, headers: CORS_HEADERS, body: 'Forwarding to Formspree failed' };
     }
 
-    return { statusCode: 200, body: '' };
+    return { statusCode: 200, headers: CORS_HEADERS, body: '' };
   } catch (err) {
     console.error('submit-form error', err);
-    return { statusCode: 500, body: 'Internal Server Error' };
+    return { statusCode: 500, headers: CORS_HEADERS, body: 'Internal Server Error' };
   }
 };

@@ -95,8 +95,11 @@ contactForm.addEventListener('submit', function(e){
     const original=submitBtn.innerHTML;
     submitBtn.disabled=true; submitBtn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Lähetetään...';
 
-    const data = new FormData(contactForm);
-    fetch(contactForm.action, { method: 'POST', body: data })
+    // Serialize form as application/x-www-form-urlencoded
+    const formPairs = [];
+    new FormData(contactForm).forEach((v,k)=> formPairs.push(encodeURIComponent(k) + '=' + encodeURIComponent(v)));
+    const urlEncoded = formPairs.join('&');
+    fetch(contactForm.action, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: urlEncoded })
       .then(r => {
         if (r.ok || r.status === 204 || r.status === 200) {
           window.location.href = contactForm.querySelector('input[name="_next"]').value;
