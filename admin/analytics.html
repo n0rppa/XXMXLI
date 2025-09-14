@@ -75,7 +75,7 @@
         async function loadAnalytics(filter = '') {
             try {
                 // Load real analytics data from the function
-                const SECRET_KEY = 'xxmxli_admin_2025'; // Change this in production!
+                const SECRET_KEY = 'xxmxli_analytics_secure_2025_09_14'; // CHANGE THIS IN PRODUCTION!
                 const response = await fetch(`/netlify/functions/analytics-view?key=${SECRET_KEY}`);
                 
                 if (!response.ok) {

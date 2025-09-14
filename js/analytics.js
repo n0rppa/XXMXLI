@@ -1,8 +1,28 @@
 // XXMXLI Analytics Tracker
 // Sends visitor data to analytics endpoint
+// GDPR Compliant - only runs with user consent
 
 (function() {
   'use strict';
+  
+  // Check GDPR consent before running analytics
+  function hasAnalyticsConsent() {
+    try {
+      const consent = localStorage.getItem('xxmxli_gdpr_consent');
+      if (!consent) return false;
+      
+      const parsed = JSON.parse(consent);
+      return parsed.analytics === true;
+    } catch (e) {
+      return false;
+    }
+  }
+  
+  // Don't run analytics if user hasn't consented
+  if (!hasAnalyticsConsent()) {
+    console.log('Analytics disabled - no user consent');
+    return;
+  }
   
   // Generate session ID (persists for session)
   function getSessionId() {

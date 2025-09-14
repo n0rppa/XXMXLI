@@ -115,6 +115,7 @@ contactForm.addEventListener('submit', function(e){
 function saveContact(data){try{const list=JSON.parse(localStorage.getItem('xxmxli_contacts')||'[]');list.push({...data,id:Date.now(),saved_at:new Date().toISOString()});if(list.length>50)list.splice(0,list.length-50);localStorage.setItem('xxmxli_contacts',JSON.stringify(list));}catch(e){console.error('Save fail',e);}}
 if(typeof StaticVisitorTracker!=='undefined'){StaticVisitorTracker.trackVisit();}
 </script>
+<script src="/js/gdpr-consent.js"></script>
 <script src="/js/analytics.js" async></script>
 </body>
 </html>

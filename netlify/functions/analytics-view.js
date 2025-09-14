@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 
 exports.handler = async function(event) {
-  // Basic authentication via query parameter (change this secret!)
-  const SECRET_KEY = 'xxmxli_admin_2025';
+  // Basic authentication via query parameter (CHANGE THIS SECRET IN PRODUCTION!)
+  const SECRET_KEY = 'xxmxli_analytics_secure_2025_09_14';
   const providedKey = event.queryStringParameters?.key;
   
   if (providedKey !== SECRET_KEY) {
