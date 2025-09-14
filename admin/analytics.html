@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XXMXLI - Analytics Dashboard</title>
+    <style>
+        :root { --background:#000; --text-primary:#00ff00; --text-secondary:#008000; --accent:#00ff00; --border:#003300; --card-bg:#001100; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Courier New',monospace; background:var(--background); color:var(--text-primary); line-height:1.6; padding:2rem; }
+        .container { max-width:1200px; margin:0 auto; }
+        h1 { color:var(--accent); text-align:center; margin-bottom:2rem; text-shadow:0 0 5px var(--accent); }
+        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:1rem; margin-bottom:2rem; }
+        .stat-card { background:var(--card-bg); border:1px solid var(--border); padding:1rem; border-radius:4px; }
+        .stat-card h3 { color:var(--accent); margin-bottom:0.5rem; }
+        .stat-value { font-size:1.5rem; font-weight:bold; color:var(--text-primary); }
+        .log-viewer { background:var(--card-bg); border:1px solid var(--border); padding:1rem; border-radius:4px; }
+        .log-entry { border-bottom:1px solid var(--border); padding:0.5rem 0; font-size:0.9rem; }
+        .log-entry:last-child { border-bottom:none; }
+        .log-ip { color:var(--accent); }
+        .log-time { color:var(--text-secondary); }
+        .log-page { color:var(--text-primary); }
+        .controls { margin-bottom:1rem; }
+        .btn { background:transparent; border:1px solid var(--accent); color:var(--accent); padding:0.5rem 1rem; cursor:pointer; margin-right:0.5rem; }
+        .btn:hover { background:var(--accent); color:var(--background); }
+        .error { color:#ff6b6b; background:rgba(255,107,107,0.1); padding:1rem; border-radius:4px; margin-bottom:1rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 XXMXLI Analytics Dashboard</h1>
+        
+        <div class="controls">
+            <button class="btn" onclick="loadAnalytics()">🔄 Refresh</button>
+            <button class="btn" onclick="loadAnalytics('today')">📅 Today</button>
+            <button class="btn" onclick="loadAnalytics('week')">📅 This Week</button>
+            <select id="dateFilter" onchange="loadAnalytics(this.value)">
+                <option value="">All Time</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+            </select>
+        </div>
+        
+        <div id="error-message" class="error" style="display:none;"></div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>👥 Total Visitors</h3>
+                <div class="stat-value" id="totalVisitors">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>📄 Page Views</h3>
+                <div class="stat-value" id="pageViews">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>🌍 Unique IPs</h3>
+                <div class="stat-value" id="uniqueIPs">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>🗓️ Today's Visits</h3>
+                <div class="stat-value" id="todayVisits">-</div>
+            </div>
+        </div>
+        
+        <div class="log-viewer">
+            <h3 style="color:var(--accent); margin-bottom:1rem;">📋 Recent Visits</h3>
+            <div id="logEntries">Loading...</div>
+        </div>
+    </div>
+
+    <script>
+        let analyticsData = [];
+        
+        async function loadAnalytics(filter = '') {
+            try {
+                // Load real analytics data from the function
+                const SECRET_KEY = 'xxmxli_admin_2025'; // Change this in production!
+                const response = await fetch(`/netlify/functions/analytics-view?key=${SECRET_KEY}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                analyticsData = await response.json();
+                
+                displayStats(analyticsData, filter);
+                displayLogs(analyticsData, filter);
+                
+                document.getElementById('error-message').style.display = 'none';
+            } catch (error) {
+                console.error('Failed to load analytics:', error);
+                
+                // Fallback to mock data for demo
+                console.log('Falling back to mock data for demonstration');
+                const mockData = generateMockData();
+                analyticsData = mockData;
+                
+                displayStats(analyticsData, filter);
+                displayLogs(analyticsData, filter);
+                
+                document.getElementById('error-message').innerHTML = 'Using demo data. Real analytics available after deployment to Netlify.';
+                document.getElementById('error-message').style.display = 'block';
+            }
+        }
+        
+        function generateMockData() {
+            // Mock data for demonstration
+            const data = [];
+            const now = Date.now();
+            const ips = ['192.168.1.1', '10.0.0.1', '172.16.0.1', '203.0.113.1', '198.51.100.1'];
+            const pages = ['/', '/contact.html', '/music.html', '/photography.html', '/projects.html'];
+            const userAgents = [
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+                'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X)'
+            ];
+            
+            for (let i = 0; i < 50; i++) {
+                data.push({
+                    timestamp: new Date(now - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+                    ip: ips[Math.floor(Math.random() * ips.length)],
+                    page: pages[Math.floor(Math.random() * pages.length)],
+                    userAgent: userAgents[Math.floor(Math.random() * userAgents.length)],
+                    country: ['FI', 'US', 'SE', 'NO', 'DK'][Math.floor(Math.random() * 5)],
+                    sessionId: 'session_' + Math.random().toString(36).substr(2, 9)
+                });
+            }
+            
+            return data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        }
+        
+        function filterData(data, filter) {
+            if (!filter) return data;
+            
+            const now = new Date();
+            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const startOfWeek = new Date(startOfDay.getTime() - (startOfDay.getDay() * 24 * 60 * 60 * 1000));
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            
+            return data.filter(entry => {
+                const entryDate = new Date(entry.timestamp);
+                switch (filter) {
+                    case 'today':
+                        return entryDate >= startOfDay;
+                    case 'week':
+                        return entryDate >= startOfWeek;
+                    case 'month':
+                        return entryDate >= startOfMonth;
+                    default:
+                        return true;
+                }
+            });
+        }
+        
+        function displayStats(data, filter) {
+            const filteredData = filterData(data, filter);
+            const uniqueIPs = new Set(filteredData.map(entry => entry.ip)).size;
+            const uniqueSessions = new Set(filteredData.map(entry => entry.sessionId)).size;
+            const todayData = filterData(data, 'today');
+            
+            document.getElementById('totalVisitors').textContent = uniqueSessions;
+            document.getElementById('pageViews').textContent = filteredData.length;
+            document.getElementById('uniqueIPs').textContent = uniqueIPs;
+            document.getElementById('todayVisits').textContent = todayData.length;
+        }
+        
+        function displayLogs(data, filter) {
+            const filteredData = filterData(data, filter);
+            const logContainer = document.getElementById('logEntries');
+            
+            if (filteredData.length === 0) {
+                logContainer.innerHTML = '<div class="log-entry">No visits found for the selected period.</div>';
+                return;
+            }
+            
+            const html = filteredData.slice(0, 20).map(entry => {
+                const time = new Date(entry.timestamp).toLocaleString();
+                const page = entry.page || '/';
+                return `
+                    <div class="log-entry">
+                        <span class="log-time">${time}</span> - 
+                        <span class="log-ip">${entry.ip}</span> - 
+                        <span class="log-page">${page}</span>
+                        ${entry.country ? ` (${entry.country})` : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            logContainer.innerHTML = html;
+        }
+        
+        // Load analytics on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAnalytics();
+        });
+    </script>
+</body>
+</html>
