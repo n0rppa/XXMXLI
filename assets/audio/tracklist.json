@@ -61,7 +61,7 @@
     "artist": "",
     "album": "",
     "picture": null,
-    "duration": "3:42"
+    "duration": ""
   },
   {
     "file": "ganon.flac",
@@ -97,6 +97,6 @@
     "artist": "",
     "album": "",
     "picture": null,
-    "duration": "7:16"
+    "duration": ""
   }
 ]
