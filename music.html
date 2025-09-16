@@ -702,10 +702,46 @@
                     // Create bound handlers
                     this.audioErrorHandler = (e) => {
                         const audioPath = `assets/audio/${track.file}`;
-                        console.error(`Error loading audio file: ${audioPath}`, e.target.error);
+                        const error = e.target.error;
+                        console.error(`Error loading audio file: ${audioPath}`, error);
+                        
+                        let errorMessage = 'Unknown error';
+                        let shouldRetry = false;
+                        
+                        if (error) {
+                            // Handle specific Firefox demuxer errors
+                            if (error.message && error.message.includes('NS_ERROR_DOM_MEDIA_DEMUXER_ERR')) {
+                                errorMessage = 'Audio format not supported - trying alternative loading';
+                                shouldRetry = true;
+                            } else if (error.code === MediaError.MEDIA_ERR_DECODE) {
+                                errorMessage = 'Audio decoding failed - file may be corrupted';
+                            } else if (error.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED) {
+                                errorMessage = 'Audio format not supported by browser';
+                            } else if (error.code === MediaError.MEDIA_ERR_NETWORK) {
+                                errorMessage = 'Network error loading audio';
+                                shouldRetry = true;
+                            } else {
+                                errorMessage = error.message || `Media error code: ${error.code}`;
+                            }
+                        }
+                        
                         document.getElementById('currentTrackTitle').textContent = `Error: ${track.title}`;
-                        document.getElementById('currentTrackArtist').textContent = `Failed to load: ${e.target.error?.message || 'Unknown error'}`;
-                        reject(new Error(`Audio load failed: ${e.target.error?.message}`));
+                        document.getElementById('currentTrackArtist').textContent = errorMessage;
+                        
+                        if (shouldRetry) {
+                            console.log('Attempting to retry with different loading strategy...');
+                            // Try reloading with different approach
+                            setTimeout(() => {
+                                this.audio.src = '';
+                                this.audio.load();
+                                setTimeout(() => {
+                                    this.audio.src = audioPath;
+                                    this.audio.load();
+                                }, 100);
+                            }, 500);
+                        } else {
+                            reject(new Error(`Audio load failed: ${errorMessage}`));
+                        }
                     };
                     
                     this.audioLoadStartHandler = () => {
@@ -794,6 +830,23 @@
                 } catch (error) {
                     console.error('Error in togglePlay:', error);
                     
+                    // Check if this is a demuxer error or other media error
+                    const isDemuxerError = error.message && (
+                        error.message.includes('NS_ERROR_DOM_MEDIA_DEMUXER_ERR') ||
+                        error.message.includes('MEDIA_ERR_DECODE') ||
+                        error.message.includes('demux')
+                    );
+                    
+                    if (isDemuxerError) {
+                        console.log('Demuxer error detected, trying to skip to next track...');
+                        document.getElementById('currentTrackTitle').textContent = 'Skipping corrupted track';
+                        document.getElementById('currentTrackArtist').textContent = 'Trying next track...';
+                        
+                        // Try to skip to next working track
+                        await this.findAndPlayNextWorkingTrack();
+                        return;
+                    }
+                    
                     // Provide specific error messages
                     let errorMessage = 'Unable to play audio. ';
                     
@@ -836,6 +889,33 @@
                 }
             }
 
+            async findAndPlayNextWorkingTrack() {
+                const maxAttempts = this.tracks.length;
+                let attempts = 0;
+                
+                while (attempts < maxAttempts) {
+                    attempts++;
+                    const nextIndex = (this.currentTrackIndex + attempts) % this.tracks.length;
+                    
+                    try {
+                        console.log(`Trying track ${nextIndex + 1}: ${this.tracks[nextIndex].title}`);
+                        await this.loadTrack(nextIndex);
+                        await this.audio.play();
+                        console.log(`Successfully playing track: ${this.tracks[nextIndex].title}`);
+                        return;
+                    } catch (error) {
+                        console.log(`Track ${nextIndex + 1} also failed:`, error.message);
+                        // Mark this track as potentially corrupted
+                        this.tracks[nextIndex].corrupted = true;
+                        continue;
+                    }
+                }
+                
+                // If we get here, all tracks failed
+                document.getElementById('currentTrackTitle').textContent = 'All tracks failed to load';
+                document.getElementById('currentTrackArtist').textContent = 'Please check audio files and browser compatibility';
+            }
+
             stop() {
                 this.audio.pause();
                 this.audio.currentTime = 0;
@@ -843,7 +923,15 @@
             }
 
             next() {
-                const nextIndex = (this.currentTrackIndex + 1) % this.tracks.length;
+                // Skip corrupted tracks
+                let nextIndex = (this.currentTrackIndex + 1) % this.tracks.length;
+                let attempts = 0;
+                
+                while (this.tracks[nextIndex]?.corrupted && attempts < this.tracks.length) {
+                    nextIndex = (nextIndex + 1) % this.tracks.length;
+                    attempts++;
+                }
+                
                 this.loadTrack(nextIndex);
                 if (this.isPlaying) {
                     setTimeout(() => this.audio.play(), 100);
@@ -854,7 +942,15 @@
                 if (this.audio.currentTime > 3) {
                     this.audio.currentTime = 0;
                 } else {
-                    const prevIndex = this.currentTrackIndex === 0 ? this.tracks.length - 1 : this.currentTrackIndex - 1;
+                    // Skip corrupted tracks
+                    let prevIndex = this.currentTrackIndex === 0 ? this.tracks.length - 1 : this.currentTrackIndex - 1;
+                    let attempts = 0;
+                    
+                    while (this.tracks[prevIndex]?.corrupted && attempts < this.tracks.length) {
+                        prevIndex = prevIndex === 0 ? this.tracks.length - 1 : prevIndex - 1;
+                        attempts++;
+                    }
+                    
                     this.loadTrack(prevIndex);
                     if (this.isPlaying) {
                         setTimeout(() => this.audio.play(), 100);

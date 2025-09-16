@@ -1,102 +1,110 @@
 [
   {
     "file": "03.mellow.flac",
-    "title": "03.mellow.flac"
+    "title": "Mellow",
+    "artist": "n0rppa",
+    "duration": "4:11"
   },
   {
     "file": "06.Trippy Instrumental.flac",
-    "title": "06.Trippy Instrumental.flac"
+    "title": "Trippy Instrumental Fo Sho",
+    "artist": "n0rppa",
+    "duration": "3:22"
   },
   {
     "file": "07.strange.flac",
-    "title": "07.strange.flac"
+    "title": "Strange",
+    "artist": "n0rppa",
+    "duration": "5:50"
   },
   {
     "file": "09.swishaz.flac",
-    "title": "09.swishaz.flac"
+    "title": "Swishaz",
+    "artist": "n0rppa",
+    "duration": "2:09"
   },
   {
     "file": "13.rain.flac",
-    "title": "13.rain.flac"
+    "title": "Rain",
+    "artist": "n0rppa",
+    "duration": "2:01"
   },
   {
     "file": "18.alley.flac",
-    "title": "18.alley.flac"
+    "title": "Alley",
+    "artist": "n0rppa",
+    "duration": "2:13"
   },
   {
     "file": "20.cloudy_instrumental.flac",
-    "title": "20.cloudy_instrumental.flac"
+    "title": "Cloudy Instrumental",
+    "artist": "n0rppa",
+    "duration": "1:07"
   },
   {
     "file": "21.oldschool_hip-hop_beat.flac",
-    "title": "21.oldschool_hip-hop_beat.flac"
+    "title": "Oldschool Hip-Hop Beat",
+    "artist": "n0rppa",
+    "duration": "0:59"
   },
   {
     "file": "22.Hard trap beat.flac",
-    "title": "22.Hard trap beat.flac"
+    "title": "Hard Trap Beat",
+    "artist": "n0rppa",
+    "duration": "1:08"
   },
   {
     "file": "Drizzle.m4a",
-    "title": "Drizzle.m4a",
-    "artist": "",
-    "album": "",
-    "picture": null,
+    "title": "Drizzle",
+    "artist": "n0rppa",
     "duration": "3:34"
   },
   {
     "file": "Rain (1).flac",
-    "title": "Rain (1).flac"
+    "title": "Rain (Alt Version)",
+    "artist": "n0rppa",
+    "duration": "2:01"
   },
   {
     "file": "cloudwave lizard.wav",
-    "title": "cloudwave lizard.wav",
-    "artist": "",
-    "album": "",
-    "picture": null,
-    "duration": ""
+    "title": "Cloudwave Lizard",
+    "artist": "n0rppa",
+    "duration": "4:25"
   },
   {
     "file": "freefall.wav",
-    "title": "freefall.wav",
-    "artist": "",
-    "album": "",
-    "picture": null,
+    "title": "Freefall",
+    "artist": "n0rppa",
     "duration": "3:42"
   },
   {
     "file": "ganon.flac",
-    "title": "ganon.flac"
+    "title": "Ganon",
+    "artist": "n0rppa",
+    "duration": "2:34"
   },
   {
     "file": "happy days.wav",
-    "title": "happy days.wav",
-    "artist": "",
-    "album": "",
-    "picture": null,
-    "duration": ""
+    "title": "Happy Days",
+    "artist": "n0rppa",
+    "duration": "3:18"
   },
   {
     "file": "neo-memphis trappin.wav",
-    "title": "neo-memphis trappin.wav",
-    "artist": "",
-    "album": "",
-    "picture": null,
-    "duration": ""
+    "title": "Neo-Memphis Trappin",
+    "artist": "n0rppa",
+    "duration": "2:47"
   },
   {
     "file": "reviant.wav",
-    "title": "reviant.wav",
-    "artist": "",
-    "album": "",
-    "picture": null,
-    "duration": ""
+    "title": "Reviant",
+    "artist": "n0rppa",
+    "duration": "4:12"
   },
   {
     "file": "tekknobadger.wav",
-    "title": "tekknobadger.wav",
-    "artist": "",
-    "album": "",
-    "picture": null,
+    "title": "Tekknobadger",
+    "artist": "n0rppa",
     "duration": "7:16"
   }
 ]
