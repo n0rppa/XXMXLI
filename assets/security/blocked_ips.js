@@ -100013,8 +100013,8 @@ const BLACKLIST_CONFIG = {
     database_total: 1795104,
     loaded_count: 100000,
     sources_count: 240,
-    has_errors: False,
-    performance_optimized: True,
+  has_errors: false,
+  performance_optimized: true,
     version: "1.0.0"
 };
 

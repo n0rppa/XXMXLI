@@ -258,3 +258,15 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
 
 // Make available globally
 window.StaticVisitorTracker = StaticVisitorTracker;
+
+// Convenience static wrapper: allow pages to call StaticVisitorTracker.trackVisit()
+if (typeof StaticVisitorTracker.trackVisit !== 'function') {
+    StaticVisitorTracker.trackVisit = function() {
+        try {
+            const inst = new StaticVisitorTracker();
+            return inst.trackVisit();
+        } catch (e) {
+            console.warn('StaticVisitorTracker.trackVisit wrapper failed', e);
+        }
+    };
+}
