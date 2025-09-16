@@ -466,6 +466,7 @@
                 this.currentTrackIndex = 0;
                 this.isPlaying = false;
                 this.isInitialized = false;
+                this.basicMode = false; // Fallback mode without Web Audio API
                 
                 this.init();
             }
@@ -537,21 +538,55 @@
                 if (this.audioContext) return;
                 
                 try {
-                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    console.log('Setting up Web Audio API context...');
+                    
+                    // Create audio context with fallback for older browsers
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioContextClass) {
+                        throw new Error('Web Audio API not supported in this browser');
+                    }
+                    
+                    this.audioContext = new AudioContextClass();
+                    console.log('Audio context created, state:', this.audioContext.state);
+                    
+                    // Create analyser for visualizations
                     this.analyser = this.audioContext.createAnalyser();
                     this.analyser.fftSize = 256;
                     this.analyser.smoothingTimeConstant = 0.8;
                     
+                    // Connect audio element to audio context
                     this.source = this.audioContext.createMediaElementSource(this.audio);
                     this.source.connect(this.analyser);
                     this.analyser.connect(this.audioContext.destination);
                     
+                    // Setup visualization data arrays
                     this.bufferLength = this.analyser.frequencyBinCount;
                     this.dataArray = new Uint8Array(this.bufferLength);
                     
                     this.isInitialized = true;
+                    this.basicMode = false;
+                    console.log('Audio context setup complete');
                 } catch (error) {
                     console.error('Error setting up audio context:', error);
+                    console.log('Falling back to basic audio mode (no visualizations)');
+                    
+                    // Enable basic mode - just HTML5 audio without Web Audio API
+                    this.basicMode = true;
+                    this.isInitialized = true;
+                    
+                    // Hide visualizer since it won't work
+                    const visualizerContainer = document.querySelector('.visualizer-container');
+                    if (visualizerContainer) {
+                        visualizerContainer.style.display = 'none';
+                    }
+                    const visualizerControls = document.querySelector('.visualizer-controls');
+                    if (visualizerControls) {
+                        visualizerControls.style.display = 'none';
+                    }
+                    
+                    // Show info message
+                    document.getElementById('currentTrackTitle').textContent = 'Audio Player (Basic Mode)';
+                    document.getElementById('currentTrackArtist').textContent = 'Visualizations disabled - audio only';
                 }
             }
 
@@ -644,7 +679,7 @@
                 
                 console.log(`Loading track ${index + 1}:`, track);
                 
-                // Update UI
+                // Update UI immediately
                 document.getElementById('currentTrackTitle').textContent = track.title;
                 document.getElementById('currentTrackArtist').textContent = track.artist || 'n0rppa';
                 
@@ -657,83 +692,147 @@
                 this.audio.pause();
                 this.audio.currentTime = 0;
                 
-                // Load audio with error handling
-                const audioPath = `assets/audio/${track.file}`;
-                console.log(`Loading audio from: ${audioPath}`);
-                
-                // Remove old event listeners
-                this.audio.removeEventListener('error', this.audioErrorHandler);
-                this.audio.removeEventListener('loadstart', this.audioLoadStartHandler);
-                this.audio.removeEventListener('canplay', this.audioCanPlayHandler);
-                
-                // Create bound handlers
-                this.audioErrorHandler = (e) => {
-                    console.error(`Error loading audio file: ${audioPath}`, e);
-                    document.getElementById('currentTrackTitle').textContent = `Error: ${track.title}`;
-                    document.getElementById('currentTrackArtist').textContent = 'Failed to load audio file';
-                };
-                
-                this.audioLoadStartHandler = () => {
-                    console.log(`Started loading: ${audioPath}`);
-                };
-                
-                this.audioCanPlayHandler = () => {
-                    console.log(`Can play: ${audioPath}`);
-                    document.getElementById('currentTrackTitle').textContent = track.title;
-                    document.getElementById('currentTrackArtist').textContent = track.artist || 'n0rppa';
-                };
-                
-                // Add event listeners
-                this.audio.addEventListener('error', this.audioErrorHandler, { once: true });
-                this.audio.addEventListener('loadstart', this.audioLoadStartHandler, { once: true });
-                this.audio.addEventListener('canplay', this.audioCanPlayHandler, { once: true });
-                
-                // Set the source
-                this.audio.src = audioPath;
-                this.audio.load(); // Force reload
-                
-                if (!this.isInitialized) {
-                    await this.setupAudioContext();
-                }
+                return new Promise((resolve, reject) => {
+                    // Remove old event listeners
+                    this.audio.removeEventListener('error', this.audioErrorHandler);
+                    this.audio.removeEventListener('loadstart', this.audioLoadStartHandler);
+                    this.audio.removeEventListener('canplay', this.audioCanPlayHandler);
+                    this.audio.removeEventListener('loadeddata', this.audioLoadedDataHandler);
+                    
+                    // Create bound handlers
+                    this.audioErrorHandler = (e) => {
+                        const audioPath = `assets/audio/${track.file}`;
+                        console.error(`Error loading audio file: ${audioPath}`, e.target.error);
+                        document.getElementById('currentTrackTitle').textContent = `Error: ${track.title}`;
+                        document.getElementById('currentTrackArtist').textContent = `Failed to load: ${e.target.error?.message || 'Unknown error'}`;
+                        reject(new Error(`Audio load failed: ${e.target.error?.message}`));
+                    };
+                    
+                    this.audioLoadStartHandler = () => {
+                        console.log(`Started loading: ${track.file}`);
+                        document.getElementById('currentTrackTitle').textContent = `Loading: ${track.title}`;
+                    };
+                    
+                    this.audioLoadedDataHandler = () => {
+                        console.log(`Data loaded for: ${track.file}`);
+                        document.getElementById('currentTrackTitle').textContent = track.title;
+                        document.getElementById('currentTrackArtist').textContent = track.artist || 'n0rppa';
+                        resolve();
+                    };
+                    
+                    this.audioCanPlayHandler = () => {
+                        console.log(`Can play: ${track.file}`);
+                        document.getElementById('currentTrackTitle').textContent = track.title;
+                        document.getElementById('currentTrackArtist').textContent = track.artist || 'n0rppa';
+                        if (!this.audioLoadedDataHandler.called) {
+                            resolve();
+                        }
+                    };
+                    
+                    // Add event listeners
+                    this.audio.addEventListener('error', this.audioErrorHandler, { once: true });
+                    this.audio.addEventListener('loadstart', this.audioLoadStartHandler, { once: true });
+                    this.audio.addEventListener('canplay', this.audioCanPlayHandler, { once: true });
+                    this.audio.addEventListener('loadeddata', this.audioLoadedDataHandler, { once: true });
+                    
+                    // Set the source and load
+                    const audioPath = `assets/audio/${track.file}`;
+                    console.log(`Setting audio source: ${audioPath}`);
+                    this.audio.src = audioPath;
+                    this.audio.load(); // Force reload
+                    
+                    // Timeout fallback
+                    setTimeout(() => {
+                        if (!this.audioLoadedDataHandler.called && !this.audioCanPlayHandler.called) {
+                            console.warn(`Timeout loading track: ${track.file}`);
+                            resolve(); // Don't block, but log the issue
+                        }
+                    }, 5000);
+                });
             }
 
             async togglePlay() {
-                if (!this.isInitialized) {
-                    await this.setupAudioContext();
-                }
-                
-                if (this.audioContext && this.audioContext.state === 'suspended') {
-                    await this.audioContext.resume();
-                }
-                
-                if (this.isPlaying) {
-                    this.audio.pause();
-                } else {
-                    try {
-                        // Check if audio src is set
-                        if (!this.audio.src) {
+                try {
+                    // Initialize audio context on first user interaction (unless in basic mode)
+                    if (!this.isInitialized) {
+                        console.log('Initializing audio system...');
+                        await this.setupAudioContext();
+                        if (!this.isInitialized) {
+                            throw new Error('Failed to initialize audio system');
+                        }
+                    }
+                    
+                    // Resume audio context if suspended (only in Web Audio API mode)
+                    if (!this.basicMode && this.audioContext && this.audioContext.state === 'suspended') {
+                        console.log('Resuming suspended audio context...');
+                        await this.audioContext.resume();
+                    }
+                    
+                    if (this.isPlaying) {
+                        this.audio.pause();
+                    } else {
+                        // Ensure we have a track loaded
+                        if (!this.audio.src && this.tracks.length > 0) {
                             console.log('No audio source, loading first track...');
                             await this.loadTrack(0);
                         }
                         
+                        if (!this.audio.src) {
+                            throw new Error('No audio tracks available');
+                        }
+                        
                         console.log('Attempting to play:', this.audio.src);
+                        console.log('Basic mode:', this.basicMode);
+                        
+                        // Set volume and ensure audio is ready
+                        this.audio.volume = document.getElementById('volumeSlider').value / 100;
+                        
+                        // Try to play
                         await this.audio.play();
                         console.log('Audio playback started successfully');
-                    } catch (error) {
-                        console.error('Error playing audio:', error);
-                        
-                        // Try to reload the current track
-                        if (this.tracks.length > 0) {
-                            console.log('Retrying with current track...');
-                            await this.loadTrack(this.currentTrackIndex);
-                            try {
-                                await this.audio.play();
-                            } catch (retryError) {
-                                console.error('Retry failed:', retryError);
-                                alert('Unable to play audio. Please check your browser settings and try again.');
-                            }
-                        }
                     }
+                } catch (error) {
+                    console.error('Error in togglePlay:', error);
+                    
+                    // Provide specific error messages
+                    let errorMessage = 'Unable to play audio. ';
+                    
+                    if (error.name === 'NotAllowedError') {
+                        errorMessage += 'Browser blocked playback. Click play again to allow audio.';
+                    } else if (error.name === 'NotSupportedError') {
+                        errorMessage += 'Audio format not supported by your browser.';
+                    } else if (error.name === 'AbortError') {
+                        errorMessage += 'Playback was interrupted.';
+                    } else if (error.message.includes('context') || error.message.includes('audio system')) {
+                        errorMessage += 'Audio initialization failed. Trying basic mode...';
+                        // Force basic mode and retry
+                        this.basicMode = true;
+                        this.isInitialized = true;
+                        try {
+                            await this.audio.play();
+                            console.log('Basic mode playback successful');
+                            return;
+                        } catch (basicError) {
+                            errorMessage += ' Basic mode also failed.';
+                        }
+                    } else {
+                        errorMessage += 'Please check your browser settings and try again.';
+                    }
+                    
+                    // Show error in UI
+                    document.getElementById('currentTrackTitle').textContent = 'Error: ' + (error.name || 'PlaybackError');
+                    document.getElementById('currentTrackArtist').textContent = errorMessage;
+                    
+                    // Log detailed error for debugging
+                    console.error('Detailed error info:', {
+                        name: error.name,
+                        message: error.message,
+                        audioSrc: this.audio.src,
+                        audioContextState: this.audioContext?.state,
+                        basicMode: this.basicMode,
+                        tracksLength: this.tracks.length,
+                        currentIndex: this.currentTrackIndex
+                    });
                 }
             }
 
@@ -788,7 +887,11 @@
             }
 
             startVisualization() {
-                if (!this.analyser) return;
+                // Skip visualization in basic mode
+                if (this.basicMode || !this.analyser) {
+                    console.log('Visualization skipped (basic mode or no analyser)');
+                    return;
+                }
                 
                 const draw = () => {
                     if (!this.isPlaying) return;
