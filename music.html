@@ -72,11 +72,48 @@
           transform: scale(0.95);
         }
 
-        .side-menu { position:fixed; top:0; left:0; height:100%; width:280px; background:#001100; border-right:2px solid var(--accent); transform:translateX(-100%); transition:transform .3s ease; z-index:1099; padding-top:100px; display:flex; flex-direction:column; box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5); }
-        .side-menu a { color:var(--accent); text-decoration:none; padding:1.5rem 2rem; border-bottom:1px solid #003300; font-family:'Courier New', monospace; font-size: 1.1rem; transition: all 0.3s ease; display: flex; align-items: center; gap: 12px; }
-        .side-menu a:hover { background:#002200; padding-left: 2.5rem; color: #fff; border-left: 4px solid var(--accent); }
-        .side-menu a i { width: 20px; text-align: center; }
-        .side-menu.open { transform:translateX(0); }
+        /* Side Menu Styles */
+        .side-menu {
+          position: fixed;
+          top: 0;
+          left: 0;
+          height: 100%;
+          width: 280px;
+          background: #001100;
+          border-right: 2px solid var(--accent);
+          transform: translateX(-100%);
+          transition: transform 0.3s ease;
+          z-index: 1099;
+          padding-top: 100px;
+          display: flex;
+          flex-direction: column;
+          box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+        }
+        .side-menu a {
+          color: var(--accent);
+          text-decoration: none;
+          padding: 1.5rem 2rem;
+          border-bottom: 1px solid #003300;
+          font-family: 'Courier New', monospace;
+          font-size: 1.1rem;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .side-menu a:hover {
+          background: #002200;
+          padding-left: 2.5rem;
+          color: #fff;
+          border-left: 4px solid var(--accent);
+        }
+        .side-menu a i {
+          width: 20px;
+          text-align: center;
+        }
+        .side-menu.open {
+          transform: translateX(0);
+        }
         .header { display:none !important; }
 
         .main-content {
@@ -349,6 +386,7 @@
         <a href="projects.html"><i class="fas fa-project-diagram"></i> Projektit</a>
         <a href="contact.html"><i class="fas fa-envelope"></i> Ota yhteyttä</a>
         <a href="security.html"><i class="fas fa-shield-alt"></i> Turvallisuus</a>
+        <a href="security.html#certInfo"><i class="fas fa-certificate"></i> CERT Info</a>
         <a href="admin/login.html"><i class="fas fa-user-shield"></i> Admin Login</a>
     </nav>
     <main class="main-content">
@@ -448,7 +486,10 @@
                     this.renderPlaylist();
                     
                     if (this.tracks.length > 0) {
-                        this.loadTrack(0);
+                        console.log('Auto-loading first track...');
+                        await this.loadTrack(0);
+                    } else {
+                        console.warn('No tracks available to load');
                     }
                 } catch (error) {
                     console.error('Error initializing player:', error);
@@ -593,17 +634,37 @@
                 this.currentTrackIndex = index;
                 const track = this.tracks[index];
                 
+                console.log(`Loading track ${index + 1}:`, track);
+                
                 // Update UI
                 document.getElementById('currentTrackTitle').textContent = track.title;
-                document.getElementById('currentTrackArtist').textContent = track.artist || '';
+                document.getElementById('currentTrackArtist').textContent = track.artist || 'n0rppa';
                 
                 // Update active track in playlist
                 document.querySelectorAll('.track-item').forEach((item, i) => {
                     item.classList.toggle('active', i === index);
                 });
                 
-                // Load audio
-                this.audio.src = `assets/audio/${track.file}`;
+                // Load audio with error handling
+                const audioPath = `assets/audio/${track.file}`;
+                console.log(`Loading audio from: ${audioPath}`);
+                
+                this.audio.src = audioPath;
+                
+                // Add error handling
+                this.audio.addEventListener('error', (e) => {
+                    console.error(`Error loading audio file: ${audioPath}`, e);
+                    document.getElementById('currentTrackTitle').textContent = `Error: ${track.title}`;
+                    document.getElementById('currentTrackArtist').textContent = 'Failed to load audio file';
+                }, { once: true });
+                
+                this.audio.addEventListener('loadstart', () => {
+                    console.log(`Started loading: ${audioPath}`);
+                }, { once: true });
+                
+                this.audio.addEventListener('canplay', () => {
+                    console.log(`Can play: ${audioPath}`);
+                }, { once: true });
                 
                 if (!this.isInitialized) {
                     await this.setupAudioContext();
@@ -615,7 +676,7 @@
                     await this.setupAudioContext();
                 }
                 
-                if (this.audioContext.state === 'suspended') {
+                if (this.audioContext && this.audioContext.state === 'suspended') {
                     await this.audioContext.resume();
                 }
                 
@@ -623,9 +684,29 @@
                     this.audio.pause();
                 } else {
                     try {
+                        // Check if audio src is set
+                        if (!this.audio.src) {
+                            console.log('No audio source, loading first track...');
+                            await this.loadTrack(0);
+                        }
+                        
+                        console.log('Attempting to play:', this.audio.src);
                         await this.audio.play();
+                        console.log('Audio playback started successfully');
                     } catch (error) {
                         console.error('Error playing audio:', error);
+                        
+                        // Try to reload the current track
+                        if (this.tracks.length > 0) {
+                            console.log('Retrying with current track...');
+                            await this.loadTrack(this.currentTrackIndex);
+                            try {
+                                await this.audio.play();
+                            } catch (retryError) {
+                                console.error('Retry failed:', retryError);
+                                alert('Unable to play audio. Please check your browser settings and try again.');
+                            }
+                        }
                     }
                 }
             }
@@ -831,10 +912,23 @@
             new MusicPlayer();
         });
 
-        // Hamburger menu functionality - FIXED
+        // Hamburger menu functionality - FIXED VERSION
         document.addEventListener('DOMContentLoaded', function() {
             const menuToggle = document.getElementById('menuToggle');
             const sideMenu = document.getElementById('sideMenu');
+            let justToggled = false;
+
+            function openMenu() { 
+                sideMenu.classList.add('open'); 
+                console.log('Menu opened');
+            }
+            function closeMenu() { 
+                sideMenu.classList.remove('open'); 
+                console.log('Menu closed');
+            }
+            function toggleMenu() {
+                if (sideMenu.classList.contains('open')) closeMenu(); else openMenu();
+            }
             
             console.log('Menu elements found:', {
                 menuToggle: !!menuToggle,
@@ -842,33 +936,41 @@
             });
             
             if (menuToggle && sideMenu) {
-                menuToggle.addEventListener('click', function() {
+                // Main toggle button click
+                menuToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
                     console.log('Menu toggle clicked');
-                    sideMenu.classList.toggle('open');
+                    toggleMenu();
+                    justToggled = true;
+                    setTimeout(() => justToggled = false, 150);
                 });
                 
-                // Close menu when clicking a link
+                // Close menu when clicking a navigation link
                 sideMenu.querySelectorAll('a').forEach(link => {
                     link.addEventListener('click', () => {
-                        sideMenu.classList.remove('open');
+                        console.log('Navigation link clicked, closing menu');
+                        closeMenu();
                     });
                 });
                 
                 // Close menu with Escape key
                 document.addEventListener('keydown', function(e) {
                     if (e.key === 'Escape') {
-                        sideMenu.classList.remove('open');
+                        closeMenu();
                     }
                 });
                 
-                // Close menu when clicking outside
+                // Close menu when clicking outside (ignore clicks right after toggle)
                 document.addEventListener('click', function(e) {
+                    if (justToggled) return;
                     if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-                        sideMenu.classList.remove('open');
+                        closeMenu();
                     }
                 });
+                
+                console.log('✅ Hamburger menu initialized successfully');
             } else {
-                console.error('Menu elements not found!');
+                console.error('❌ Menu elements not found!');
             }
         });
     </script>

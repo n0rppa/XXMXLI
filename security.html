@@ -754,6 +754,7 @@
             margin-bottom: 1rem;
             overflow: hidden;
             transition: all 0.3s ease;
+            display: none; /* Default hidden state */
         }
 
         .accordion-content.show {
@@ -1186,7 +1187,10 @@
         // Enhanced accordion functionality with animation support
         function toggleAccordion(id, button) {
             const content = document.getElementById(id);
-            const isCurrentlyOpen = content.style.display === 'block';
+            // Check if accordion is currently open by checking computed style or explicit display
+            const computedStyle = window.getComputedStyle(content);
+            const isCurrentlyOpen = content.style.display === 'block' || 
+                                   (computedStyle.display === 'block' && button.classList.contains('active'));
             
             // Close all accordion contents
             const allContents = document.querySelectorAll('.accordion-content');
@@ -1194,6 +1198,7 @@
             
             allContents.forEach(content => {
                 content.style.display = 'none';
+                content.classList.remove('show');
             });
             
             allButtons.forEach(btn => {
@@ -1417,6 +1422,17 @@ ip link show $INTERFACE`;
                     e.stopPropagation();
                 });
             });
+            
+            // Auto-open CERT info if hash is present
+            if (window.location.hash === '#certInfo') {
+                setTimeout(() => {
+                    const certButton = document.querySelector('button[onclick*="certInfo"]');
+                    if (certButton) {
+                        toggleAccordion('certInfo', certButton);
+                        certButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 300);
+            }
             
             console.log('Security page initialized successfully');
         });

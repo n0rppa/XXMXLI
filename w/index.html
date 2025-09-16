@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows Security Tools - W Folder</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --background: #000000;
+            --text-primary: #00ff00;
+            --text-secondary: #008000;
+            --accent: #00ff00;
+            --accent-hover: #00cc00;
+            --border: #003300;
+            --card-bg: #001100;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--accent);
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px var(--accent);
+        }
+
+        .description {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+        }
+
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .file-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .file-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent);
+            transform: translateY(-3px);
+        }
+
+        .file-card h3 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .file-card p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent);
+            text-decoration: none;
+            border: 1px solid var(--accent);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background: var(--accent);
+            color: var(--background);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .warning {
+            background: rgba(255, 165, 0, 0.1);
+            border: 1px solid #ff8c00;
+            color: #ff8c00;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent);
+            text-decoration: none;
+            margin-bottom: 2rem;
+            border: 1px solid var(--accent);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: var(--accent);
+            color: var(--background);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../projects.html" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Projects
+        </a>
+
+        <h1><i class="fab fa-windows"></i> Windows Security Tools</h1>
+
+        <div class="description">
+            <h2 style="color: var(--accent); margin-bottom: 1rem;">About W Folder</h2>
+            <p>This folder contains comprehensive Windows security tools and PowerShell scripts designed to enhance Windows system security, configure Windows Defender, manage firewall rules, and perform system diagnostics.</p>
+        </div>
+
+        <div class="warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Important:</strong> These scripts require administrative privileges and should be reviewed before execution. Always test in a controlled environment first.
+        </div>
+
+        <div class="file-grid">
+            <div class="file-card">
+                <h3><i class="fas fa-shield-alt"></i> Windows Defender Config</h3>
+                <p>Comprehensive Windows Defender configuration script with real-time protection, cloud protection, and advanced threat protection settings.</p>
+                <a href="windows_defender_config.ps1" class="download-btn" download>
+                    <i class="fas fa-download"></i> Download
+                </a>
+            </div>
+
+            <div class="file-card">
+                <h3><i class="fas fa-firewall"></i> Firewall Rules</h3>
+                <p>Advanced Windows Firewall configuration with inbound/outbound rules, network profiles, and security settings.</p>
+                <a href="firewall_rules.ps1" class="download-btn" download>
+                    <i class="fas fa-download"></i> Download
+                </a>
+            </div>
+
+            <div class="file-card">
+                <h3><i class="fas fa-cogs"></i> Registry Security</h3>
+                <p>Registry security hardening script to configure Windows security policies, disable unnecessary services, and enhance system protection.</p>
+                <a href="registry_security.ps1" class="download-btn" download>
+                    <i class="fas fa-download"></i> Download
+                </a>
+            </div>
+
+            <div class="file-card">
+                <h3><i class="fas fa-user-cog"></i> User Account Security</h3>
+                <p>User account management and security configuration including password policies, account lockout settings, and privilege management.</p>
+                <a href="user_account_security.ps1" class="download-btn" download>
+                    <i class="fas fa-download"></i> Download
+                </a>
+            </div>
+
+            <div class="file-card">
+                <h3><i class="fas fa-chart-line"></i> System Diagnostics</h3>
+                <p>Comprehensive system diagnostics tool for security analysis, system health checks, and vulnerability assessment.</p>
+                <a href="system_diagnostics.ps1" class="download-btn" download>
+                    <i class="fas fa-download"></i> Download
+                </a>
+            </div>
+
+            <div class="file-card">
+                <h3><i class="fas fa-ban"></i> IP Blacklist Database</h3>
+                <p>Large IP blacklist database for blocking malicious traffic. Contains threat intelligence from multiple sources.</p>
+                <a href="blacklist.txt" class="download-btn" download>
+                    <i class="fas fa-download"></i> Download (Large File)
+                </a>
+            </div>
+
+            <div class="file-card">
+                <h3><i class="fas fa-folder"></i> BLKLST Directory</h3>
+                <p>Additional blacklist resources and IP block lists for comprehensive network protection.</p>
+                <a href="BLKLST/" class="download-btn">
+                    <i class="fas fa-folder-open"></i> Browse
+                </a>
+            </div>
+
+            <div class="file-card">
+                <h3><i class="fas fa-shield-virus"></i> BlokeD Directory</h3>
+                <p>Advanced blocking resources including threat intelligence feeds, malicious IP databases, and security lists.</p>
+                <a href="BlokeD/" class="download-btn">
+                    <i class="fas fa-folder-open"></i> Browse
+                </a>
+            </div>
+        </div>
+
+        <div style="margin-top: 3rem; text-align: center; color: var(--text-secondary);">
+            <p><i class="fas fa-info-circle"></i> For questions about these tools, contact the administrator</p>
+            <p style="margin-top: 0.5rem;"><a href="../contact.html" style="color: var(--accent);">Contact Form</a> | <a href="../security.html" style="color: var(--accent);">Security Page</a></p>
+        </div>
+    </div>
+</body>
+</html>
