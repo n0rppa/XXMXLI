@@ -1424,15 +1424,26 @@ ip link show $INTERFACE`;
             });
             
             // Auto-open CERT info if hash is present
-            if (window.location.hash === '#certInfo') {
-                setTimeout(() => {
-                    const certButton = document.querySelector('button[onclick*="certInfo"]');
-                    if (certButton) {
-                        toggleAccordion('certInfo', certButton);
-                        certButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }, 300);
+            function handleCertHash() {
+                if (window.location.hash === '#certInfo') {
+                    setTimeout(() => {
+                        const certButton = document.querySelector('button[onclick*="certInfo"]');
+                        if (certButton) {
+                            console.log('Auto-opening CERT accordion from hash');
+                            toggleAccordion('certInfo', certButton);
+                            setTimeout(() => {
+                                certButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }, 300);
+                        } else {
+                            console.error('CERT button not found');
+                        }
+                    }, 500);
+                }
             }
+            
+            // Handle hash on load and changes
+            handleCertHash();
+            window.addEventListener('hashchange', handleCertHash);
             
             console.log('Security page initialized successfully');
         });

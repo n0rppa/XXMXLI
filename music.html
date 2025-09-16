@@ -621,15 +621,23 @@
                             <span class="track-number">${(index + 1).toString().padStart(2, '0')}</span>
                             <span class="track-title">${track.title}</span>
                         </div>
-                        <span class="track-duration">${track.duration || ''}</span>
+                        <span class="track-duration">${track.duration || 'Loading...'}</span>
                     `;
-                    trackElement.addEventListener('click', () => this.loadTrack(index));
+                    trackElement.addEventListener('click', () => {
+                        console.log(`Track ${index + 1} clicked: ${track.title}`);
+                        this.loadTrack(index);
+                    });
                     playlist.appendChild(trackElement);
                 });
+                
+                console.log('Playlist rendered successfully');
             }
 
             async loadTrack(index) {
-                if (index < 0 || index >= this.tracks.length) return;
+                if (index < 0 || index >= this.tracks.length) {
+                    console.error(`Invalid track index: ${index}`);
+                    return;
+                }
                 
                 this.currentTrackIndex = index;
                 const track = this.tracks[index];
@@ -645,26 +653,44 @@
                     item.classList.toggle('active', i === index);
                 });
                 
+                // Stop current audio
+                this.audio.pause();
+                this.audio.currentTime = 0;
+                
                 // Load audio with error handling
                 const audioPath = `assets/audio/${track.file}`;
                 console.log(`Loading audio from: ${audioPath}`);
                 
-                this.audio.src = audioPath;
+                // Remove old event listeners
+                this.audio.removeEventListener('error', this.audioErrorHandler);
+                this.audio.removeEventListener('loadstart', this.audioLoadStartHandler);
+                this.audio.removeEventListener('canplay', this.audioCanPlayHandler);
                 
-                // Add error handling
-                this.audio.addEventListener('error', (e) => {
+                // Create bound handlers
+                this.audioErrorHandler = (e) => {
                     console.error(`Error loading audio file: ${audioPath}`, e);
                     document.getElementById('currentTrackTitle').textContent = `Error: ${track.title}`;
                     document.getElementById('currentTrackArtist').textContent = 'Failed to load audio file';
-                }, { once: true });
+                };
                 
-                this.audio.addEventListener('loadstart', () => {
+                this.audioLoadStartHandler = () => {
                     console.log(`Started loading: ${audioPath}`);
-                }, { once: true });
+                };
                 
-                this.audio.addEventListener('canplay', () => {
+                this.audioCanPlayHandler = () => {
                     console.log(`Can play: ${audioPath}`);
-                }, { once: true });
+                    document.getElementById('currentTrackTitle').textContent = track.title;
+                    document.getElementById('currentTrackArtist').textContent = track.artist || 'n0rppa';
+                };
+                
+                // Add event listeners
+                this.audio.addEventListener('error', this.audioErrorHandler, { once: true });
+                this.audio.addEventListener('loadstart', this.audioLoadStartHandler, { once: true });
+                this.audio.addEventListener('canplay', this.audioCanPlayHandler, { once: true });
+                
+                // Set the source
+                this.audio.src = audioPath;
+                this.audio.load(); // Force reload
                 
                 if (!this.isInitialized) {
                     await this.setupAudioContext();
