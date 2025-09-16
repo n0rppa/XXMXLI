@@ -551,18 +551,14 @@
                     this.analyser.fftSize = 256;
                     this.analyser.smoothingTimeConstant = 0.8;
                     
-                    // Connect audio element to audio context
-                    this.source = this.audioContext.createMediaElementSource(this.audio);
-                    this.source.connect(this.analyser);
-                    this.analyser.connect(this.audioContext.destination);
-                    
                     // Setup visualization data arrays
                     this.bufferLength = this.analyser.frequencyBinCount;
                     this.dataArray = new Uint8Array(this.bufferLength);
                     
+                    // Don't connect audio element immediately - wait for user interaction
                     this.isInitialized = true;
                     this.basicMode = false;
-                    console.log('Audio context setup complete');
+                    console.log('Audio context setup complete (visualizer ready)');
                 } catch (error) {
                     console.error('Error setting up audio context:', error);
                     console.log('Falling back to basic audio mode (no visualizations)');
@@ -784,45 +780,71 @@
                 });
             }
 
+            connectAudioToContext() {
+                // Only connect if we have audio context and haven't connected yet
+                if (!this.basicMode && this.audioContext && !this.source) {
+                    try {
+                        console.log('Connecting audio element to Web Audio API...');
+                        this.source = this.audioContext.createMediaElementSource(this.audio);
+                        this.source.connect(this.analyser);
+                        this.analyser.connect(this.audioContext.destination);
+                        console.log('Audio element connected to Web Audio API');
+                    } catch (error) {
+                        console.error('Failed to connect audio to Web Audio API:', error);
+                        console.log('Continuing with basic HTML5 audio...');
+                        this.basicMode = true;
+                    }
+                }
+            }
+
             async togglePlay() {
                 try {
-                    // Initialize audio context on first user interaction (unless in basic mode)
-                    if (!this.isInitialized) {
-                        console.log('Initializing audio system...');
-                        await this.setupAudioContext();
-                        if (!this.isInitialized) {
-                            throw new Error('Failed to initialize audio system');
-                        }
-                    }
-                    
-                    // Resume audio context if suspended (only in Web Audio API mode)
-                    if (!this.basicMode && this.audioContext && this.audioContext.state === 'suspended') {
-                        console.log('Resuming suspended audio context...');
-                        await this.audioContext.resume();
-                    }
-                    
                     if (this.isPlaying) {
                         this.audio.pause();
-                    } else {
-                        // Ensure we have a track loaded
-                        if (!this.audio.src && this.tracks.length > 0) {
-                            console.log('No audio source, loading first track...');
-                            await this.loadTrack(0);
-                        }
-                        
-                        if (!this.audio.src) {
-                            throw new Error('No audio tracks available');
-                        }
-                        
-                        console.log('Attempting to play:', this.audio.src);
-                        console.log('Basic mode:', this.basicMode);
-                        
-                        // Set volume and ensure audio is ready
-                        this.audio.volume = document.getElementById('volumeSlider').value / 100;
-                        
-                        // Try to play
+                        return;
+                    }
+                    
+                    // Ensure we have a track loaded
+                    if (!this.audio.src && this.tracks.length > 0) {
+                        console.log('No audio source, loading first track...');
+                        await this.loadTrack(0);
+                    }
+                    
+                    if (!this.audio.src) {
+                        throw new Error('No audio tracks available');
+                    }
+                    
+                    console.log('Attempting to play:', this.audio.src);
+                    
+                    // Set volume
+                    this.audio.volume = document.getElementById('volumeSlider').value / 100;
+                    
+                    // Try basic HTML5 audio first
+                    try {
                         await this.audio.play();
-                        console.log('Audio playback started successfully');
+                        console.log('HTML5 audio playback started successfully');
+                        
+                        // Initialize audio context after successful basic playback
+                        if (!this.isInitialized) {
+                            console.log('Initializing audio system for visualizations...');
+                            await this.setupAudioContext();
+                        }
+                        
+                        // Connect to Web Audio API only if visualizations are enabled
+                        if (!this.basicMode && this.currentVisualizerType && this.audioContext) {
+                            this.connectAudioToContext();
+                            
+                            // Resume audio context if suspended
+                            if (this.audioContext.state === 'suspended') {
+                                console.log('Resuming suspended audio context...');
+                                await this.audioContext.resume();
+                            }
+                        }
+                        
+                        return;
+                    } catch (playError) {
+                        console.error('HTML5 audio play failed:', playError);
+                        throw playError;
                     }
                 } catch (error) {
                     console.error('Error in togglePlay:', error);
