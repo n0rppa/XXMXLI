@@ -1,110 +1,238 @@
 [
   {
+    "file": "03.mellow.flac",
+    "title": "03.mellow.flac"
+  },
+  {
     "file": "03.mellow.m4a",
-    "title": "Mellow",
-    "artist": "n0rppa",
+    "title": "03.Mellow",
+    "artist": "Eemeli",
+    "album": "",
+    "picture": null,
     "duration": "4:11"
   },
   {
+    "file": "06.Trippy Instrumental.flac",
+    "title": "06.Trippy Instrumental.flac"
+  },
+  {
     "file": "06.Trippy Instrumental.m4a",
-    "title": "Trippy Instrumental Fo Sho",
-    "artist": "n0rppa",
-    "duration": "3:22"
+    "title": "06.Trippy Instrumental",
+    "artist": "Eemeli",
+    "album": "",
+    "picture": null,
+    "duration": "3:58"
+  },
+  {
+    "file": "07.strange.flac",
+    "title": "07.strange.flac"
   },
   {
     "file": "07.strange.m4a",
-    "title": "Strange",
-    "artist": "n0rppa",
+    "title": "07.Strange",
+    "artist": "Eemeli",
+    "album": "",
+    "picture": null,
     "duration": "5:50"
   },
   {
+    "file": "09.swishaz.flac",
+    "title": "09.swishaz.flac"
+  },
+  {
     "file": "09.swishaz.m4a",
-    "title": "Swishaz",
-    "artist": "n0rppa",
+    "title": "09.Swishaz",
+    "artist": "Eemeli",
+    "album": "",
+    "picture": null,
     "duration": "2:09"
   },
   {
+    "file": "13.rain.flac",
+    "title": "13.rain.flac"
+  },
+  {
     "file": "13.rain.m4a",
-    "title": "Rain",
-    "artist": "n0rppa",
+    "title": "13.Rain",
+    "artist": "Eemeli",
+    "album": "",
+    "picture": null,
     "duration": "2:01"
   },
   {
+    "file": "18.alley.flac",
+    "title": "18.alley.flac"
+  },
+  {
     "file": "18.alley.m4a",
-    "title": "Alley",
-    "artist": "n0rppa",
+    "title": "18.Alley",
+    "artist": "Eemeli",
+    "album": "",
+    "picture": null,
     "duration": "2:13"
   },
   {
+    "file": "20.cloudy_instrumental.flac",
+    "title": "20.cloudy_instrumental.flac"
+  },
+  {
     "file": "20.cloudy_instrumental.m4a",
-    "title": "Cloudy Instrumental",
-    "artist": "n0rppa",
+    "title": "20.Cloudy instrumental",
+    "artist": "Eemeli",
+    "album": "",
+    "picture": null,
     "duration": "1:07"
   },
   {
+    "file": "21.oldschool_hip-hop_beat.flac",
+    "title": "21.oldschool_hip-hop_beat.flac"
+  },
+  {
     "file": "21.oldschool_hip-hop_beat.m4a",
-    "title": "Oldschool Hip-Hop Beat",
-    "artist": "n0rppa",
+    "title": "21.Oldschool hip-hop beat",
+    "artist": "Eemeli",
+    "album": "",
+    "picture": null,
     "duration": "0:59"
   },
   {
+    "file": "22.Hard trap beat.flac",
+    "title": "22.Hard trap beat.flac"
+  },
+  {
     "file": "22.Hard trap beat.m4a",
-    "title": "Hard Trap Beat",
-    "artist": "n0rppa",
-    "duration": "1:08"
+    "title": "22.Hard trap beat",
+    "artist": "Eemeli",
+    "album": "",
+    "picture": null,
+    "duration": "1:11"
   },
   {
     "file": "Drizzle.m4a",
-    "title": "Drizzle",
-    "artist": "n0rppa",
+    "title": "Drizzle.m4a",
+    "artist": "",
+    "album": "",
+    "picture": null,
     "duration": "3:34"
   },
   {
+    "file": "Rain (1).flac",
+    "title": "Rain (1).flac"
+  },
+  {
     "file": "Rain (1).m4a",
-    "title": "Rain (Alt Version)",
-    "artist": "n0rppa",
+    "title": "13.Rain",
+    "artist": "Eemeli",
+    "album": "",
+    "picture": null,
     "duration": "2:01"
   },
   {
     "file": "cloudwave lizard.m4a",
-    "title": "Cloudwave Lizard",
-    "artist": "n0rppa",
-    "duration": "4:25"
+    "title": "cloudwave lizard.m4a",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": "1:57"
+  },
+  {
+    "file": "cloudwave lizard.wav",
+    "title": "cloudwave lizard.wav",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
   },
   {
     "file": "freefall.m4a",
-    "title": "Freefall",
-    "artist": "n0rppa",
+    "title": "freefall.m4a",
+    "artist": "",
+    "album": "",
+    "picture": null,
     "duration": "3:42"
   },
   {
+    "file": "freefall.wav",
+    "title": "freefall.wav",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
+  },
+  {
+    "file": "ganon.flac",
+    "title": "ganon.flac"
+  },
+  {
     "file": "ganon.m4a",
-    "title": "Ganon",
-    "artist": "n0rppa",
-    "duration": "2:34"
+    "title": "23.Chill oldschool beat",
+    "artist": "Eemeli",
+    "album": "",
+    "picture": null,
+    "duration": "1:08"
   },
   {
     "file": "happy days.m4a",
-    "title": "Happy Days",
-    "artist": "n0rppa",
-    "duration": "3:18"
+    "title": "happy days.m4a",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": "1:18"
+  },
+  {
+    "file": "happy days.wav",
+    "title": "happy days.wav",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
   },
   {
     "file": "neo-memphis trappin.m4a",
-    "title": "Neo-Memphis Trappin",
-    "artist": "n0rppa",
-    "duration": "2:47"
+    "title": "neo-memphis trappin.m4a",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": "3:17"
+  },
+  {
+    "file": "neo-memphis trappin.wav",
+    "title": "neo-memphis trappin.wav",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
   },
   {
     "file": "reviant.m4a",
-    "title": "Reviant",
-    "artist": "n0rppa",
-    "duration": "4:12"
+    "title": "reviant.m4a",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": "4:01"
+  },
+  {
+    "file": "reviant.wav",
+    "title": "reviant.wav",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
   },
   {
     "file": "tekknobadger.m4a",
-    "title": "Tekknobadger",
-    "artist": "n0rppa",
+    "title": "tekknobadger.m4a",
+    "artist": "",
+    "album": "",
+    "picture": null,
     "duration": "7:16"
+  },
+  {
+    "file": "tekknobadger.wav",
+    "title": "tekknobadger.wav",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
   }
 ]
