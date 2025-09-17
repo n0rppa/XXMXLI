@@ -1,0 +1,76 @@
+version: "2.0"
+
+performance:
+  search_timeout: 30
+  preferred_search_tool: "rg"
+  fallback_tools: ["ag", "awk", "grep"]
+  max_concurrent_operations: 4
+  cache_results: true
+  cache_ttl_seconds: 300
+
+logging:
+  enabled: true
+  level: "info"
+  retention_days: 30
+  max_size_mb: 100
+  rotate_on_size: true
+  compress_old_logs: true
+  debug_log_enabled: false
+
+monitoring:
+  check_interval_seconds: 60
+  failed_login_threshold: 5
+  blocked_ip_alert_threshold: 100
+  auto_block_enabled: true
+  whitelist_enabled: true
+  whitelist_ips:
+    - "127.0.0.1"
+    - "::1"
+
+notifications:
+  enabled: true
+  methods: ["log", "console"]
+  critical_only: false
+  webhook_url: ""
+  email_enabled: false
+  email_smtp:
+    server: ""
+    port: 587
+    username: ""
+    password: ""
+    from: "security@xxmxli.local"
+
+security:
+  require_admin_auth: true
+  session_timeout_minutes: 30
+  max_failed_attempts: 3
+  lockout_duration_minutes: 15
+  enforce_https: true
+  security_headers:
+    x_frame_options: "DENY"
+    x_content_type_options: "nosniff"
+    x_xss_protection: "1; mode=block"
+    strict_transport_security: "max-age=31536000; includeSubDomains"
+
+paths:
+  htaccess_file: ".htaccess"
+  admin_htaccess: "admin/.htaccess"
+  log_directory: "logs"
+  report_directory: "reports"
+  backup_directory: "backups"
+  temp_directory: "/tmp/xxmxli"
+
+features:
+  real_time_monitoring: true
+  threat_intelligence: true
+  automated_blocking: true
+  geo_blocking: false
+  rate_limiting: true
+  honeypot_detection: false
+
+maintenance:
+  auto_cleanup_enabled: true
+  cleanup_interval_days: 7
+  backup_before_cleanup: true
+  health_check_interval_hours: 24
+  update_check_enabled: true

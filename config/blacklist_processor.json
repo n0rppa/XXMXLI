@@ -1,0 +1,78 @@
+{
+  "version": "2.0",
+  "sources": [
+    {
+      "name": "Emerging Threats",
+      "url": "https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt",
+      "format": "plain",
+      "timeout": 30,
+      "retry_count": 3,
+      "enabled": true
+    },
+    {
+      "name": "Spamhaus DROP", 
+      "url": "https://www.spamhaus.org/drop/drop.txt",
+      "format": "cidr_comment",
+      "timeout": 30,
+      "retry_count": 3,
+      "enabled": true
+    },
+    {
+      "name": "Abuse.ch URLhaus IPs",
+      "url": "https://urlhaus.abuse.ch/downloads/hostfile/",
+      "format": "hosts",
+      "timeout": 45,
+      "retry_count": 2,
+      "enabled": true
+    },
+    {
+      "name": "FireHOL Level 1",
+      "url": "https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/firehol_level1.netset",
+      "format": "plain",
+      "timeout": 60,
+      "retry_count": 3,
+      "enabled": true
+    }
+  ],
+  "processing": {
+    "max_concurrent_downloads": 5,
+    "max_ips_output": 100000,
+    "chunk_size": 1000,
+    "memory_limit_mb": 512,
+    "timeout_seconds": 120,
+    "enable_deduplication": true,
+    "enable_validation": true,
+    "skip_private_ips": true
+  },
+  "output": {
+    "formats": ["javascript", "json", "csv"],
+    "javascript_file": "assets/security/blocked_ips.js",
+    "json_file": "assets/security/blocked_ips.json", 
+    "csv_file": "assets/security/blocked_ips.csv",
+    "htaccess_file": ".htaccess_generated",
+    "enable_compression": true,
+    "enable_backup": true
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "logs/blacklist_processor.log",
+    "max_size_mb": 10,
+    "backup_count": 5,
+    "enable_console": true,
+    "enable_colors": true
+  },
+  "performance": {
+    "use_async": true,
+    "enable_caching": true,
+    "cache_duration_hours": 6,
+    "enable_progress_bars": true,
+    "optimize_memory": true
+  },
+  "security": {
+    "validate_ssl": true,
+    "user_agent": "XXMXLI-Security-Scanner/2.0",
+    "max_redirects": 3,
+    "enable_rate_limiting": true,
+    "requests_per_second": 10
+  }
+}

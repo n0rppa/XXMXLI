@@ -1,0 +1,71 @@
+XXMXLI SECURITY HEALTH REPORT
+==============================
+Generated: Wed Sep 17 06:33:36 EEST 2025
+System: Linux Windows8-Enterprise 6.2.0-060200-generic #202302191831 SMP PREEMPT_DYNAMIC Sun Feb 19 23:37:22 UTC 2023 x86_64 x86_64 x86_64 GNU/Linux
+
+DEPENDENCY CHECK:
+[32m✅(B[m grep: available
+[2025-09-17 06:33:36] SUCCESS: grep: available
+[32m✅(B[m awk: available
+[2025-09-17 06:33:36] SUCCESS: awk: available
+[32m✅(B[m curl: available
+[2025-09-17 06:33:36] SUCCESS: curl: available
+[32m✅(B[m python3: available
+[2025-09-17 06:33:36] SUCCESS: python3: available
+[32m✅(B[m bash: available
+[2025-09-17 06:33:36] SUCCESS: bash: available
+[33m⚠️(B[m rg: not available (optional, improves performance)
+[2025-09-17 06:33:36] WARNING: rg: not available (optional, improves performance)
+[33m⚠️(B[m ag: not available (optional, improves performance)
+[2025-09-17 06:33:36] WARNING: ag: not available (optional, improves performance)
+[32m✅(B[m jq: available (jq-1.5-1-a5b5cbe)
+[2025-09-17 06:33:36] SUCCESS: jq: available (jq-1.5-1-a5b5cbe)
+[33m⚠️(B[m yq: not available (optional, improves performance)
+[2025-09-17 06:33:36] WARNING: yq: not available (optional, improves performance)
+[32m✅(B[m timeout: available (installed)
+[2025-09-17 06:33:36] SUCCESS: timeout: available (installed)
+
+SCRIPT HEALTH:
+[32m✅(B[m monitor_security.sh: executable and ready
+[2025-09-17 06:33:36] SUCCESS: monitor_security.sh: executable and ready
+[32m✅(B[m security_monitor_optimized.sh: executable and ready
+[2025-09-17 06:33:36] SUCCESS: security_monitor_optimized.sh: executable and ready
+[32m✅(B[m process_w_blacklists.py: executable and ready
+[2025-09-17 06:33:36] SUCCESS: process_w_blacklists.py: executable and ready
+[32m✅(B[m blacklist_processor_optimized.py: executable and ready
+[2025-09-17 06:33:36] SUCCESS: blacklist_processor_optimized.py: executable and ready
+[32m✅(B[m health-check.sh: executable and ready
+[2025-09-17 06:33:36] SUCCESS: health-check.sh: executable and ready
+[32m✅(B[m Script health: 100% (5/5 scripts healthy)
+[2025-09-17 06:33:36] SUCCESS: Script health: 100% (5/5 scripts healthy)
+
+CONFIGURATION STATUS:
+[32m✅(B[m config/security_monitor.conf: valid configuration
+[2025-09-17 06:33:36] SUCCESS: config/security_monitor.conf: valid configuration
+[32m✅(B[m config/security_monitor.json: valid JSON
+[2025-09-17 06:33:36] SUCCESS: config/security_monitor.json: valid JSON
+[33m⚠️(B[m config/security_monitor.yaml: exists but cannot validate (yq not available)
+[2025-09-17 06:33:36] WARNING: config/security_monitor.yaml: exists but cannot validate (yq not available)
+[32m✅(B[m config/blacklist_processor.json: valid JSON
+[2025-09-17 06:33:36] SUCCESS: config/blacklist_processor.json: valid JSON
+[34mℹ️(B[m Configuration status: 4/4 files valid
+[2025-09-17 06:33:36] INFO: Configuration status: 4/4 files valid
+
+PERFORMANCE METRICS:
+[32m✅(B[m grep performance: 7ms (excellent)
+[2025-09-17 06:33:37] SUCCESS: grep performance: 7ms (excellent)
+[32m✅(B[m awk performance: 5ms (excellent)
+[2025-09-17 06:33:37] SUCCESS: awk performance: 5ms (excellent)
+[31m❌(B[m Disk usage: 96% (cleanup needed)
+[2025-09-17 06:33:37] ERROR: Disk usage: 96% (cleanup needed)
+[32m✅(B[m Memory usage: 51% (healthy)
+[2025-09-17 06:33:37] SUCCESS: Memory usage: 51% (healthy)
+
+SECURITY INFRASTRUCTURE:
+[32m✅(B[m Main .htaccess: active with 100 blocked IPs
+[2025-09-17 06:33:37] SUCCESS: Main .htaccess: active with 100 blocked IPs
+[32m✅(B[m Admin .htaccess: protection configured
+[2025-09-17 06:33:37] SUCCESS: Admin .htaccess: protection configured
+[33m⚠️(B[m Blocked IPs database: outdated (108h old)
+[2025-09-17 06:33:37] WARNING: Blocked IPs database: outdated (108h old)
+
