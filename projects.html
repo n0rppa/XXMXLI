@@ -490,93 +490,19 @@
     <script src="plugins/visitor-tracker-plugin.js"></script>
 
     <script>
-        const menuButton = document.querySelector('.menu-button');
-        const navMenu = document.querySelector('.nav-menu');
-
-        menuButton.addEventListener('click', () => {
-            navMenu.classList.toggle('active');
-        });
-
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', () => {
-                navMenu.classList.remove('active');
-            });
-        });
-
-        // Hidden visitor tracker shortcut: Ctrl+Shift+U
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.shiftKey && e.key === 'U') {
-                e.preventDefault();
-                if (window.XXMXLITracker) {
-                    window.XXMXLITracker.openDashboard();
-                    console.log('🔍 Visitor Tracker opened via hidden shortcut (Ctrl+Shift+U)');
-                } else {
-                    console.log('⚠️ Visitor Tracker not loaded yet');
+        // Enhanced CERT Info navigation
+        function goToCertInfo() {
+            window.location.href = 'security.html#certInfo';
+            // Auto-open CERT accordion when arriving at security page
+            setTimeout(() => {
+                if (window.location.hash === '#certInfo') {
+                    const certButton = document.querySelector('button[onclick*="certInfo"]');
+                    if (certButton && typeof toggleAccordion === 'function') {
+                        toggleAccordion('certInfo', certButton);
+                    }
                 }
-            }
-        });
-
-        // Hamburger menu functionality - FIXED VERSION
-        document.addEventListener('DOMContentLoaded', function() {
-            const menuToggle = document.getElementById('menuToggle');
-            const sideMenu = document.getElementById('sideMenu');
-            let justToggled = false;
-
-            function openMenu() { 
-                sideMenu.classList.add('open'); 
-                console.log('Menu opened');
-            }
-            function closeMenu() { 
-                sideMenu.classList.remove('open'); 
-                console.log('Menu closed');
-            }
-            function toggleMenu() {
-                if (sideMenu.classList.contains('open')) closeMenu(); else openMenu();
-            }
-            
-            console.log('Menu elements found:', {
-                menuToggle: !!menuToggle,
-                sideMenu: !!sideMenu
-            });
-            
-            if (menuToggle && sideMenu) {
-                // Main toggle button click
-                menuToggle.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    console.log('Menu toggle clicked');
-                    toggleMenu();
-                    justToggled = true;
-                    setTimeout(() => justToggled = false, 150);
-                });
-                
-                // Close menu when clicking a navigation link
-                sideMenu.querySelectorAll('a').forEach(link => {
-                    link.addEventListener('click', () => {
-                        console.log('Navigation link clicked, closing menu');
-                        closeMenu();
-                    });
-                });
-                
-                // Close menu with Escape key
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape') {
-                        closeMenu();
-                    }
-                });
-                
-                // Close menu when clicking outside (ignore clicks right after toggle)
-                document.addEventListener('click', function(e) {
-                    if (justToggled) return;
-                    if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-                        closeMenu();
-                    }
-                });
-                
-                console.log('✅ Hamburger menu initialized successfully');
-            } else {
-                console.error('❌ Menu elements not found!');
-            }
-        });
+            }, 100);
+        }
 
         // W Folder download function
         function downloadWFolder() {
@@ -605,19 +531,101 @@
             });
         }
 
-        // Enhanced CERT Info navigation
-        function goToCertInfo() {
-            window.location.href = 'security.html#certInfo';
-            // Auto-open CERT accordion when arriving at security page
-            setTimeout(() => {
-                if (window.location.hash === '#certInfo') {
-                    const certButton = document.querySelector('button[onclick*="certInfo"]');
-                    if (certButton && typeof toggleAccordion === 'function') {
-                        toggleAccordion('certInfo', certButton);
-                    }
+        // Fixed Hamburger menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('menuToggle');
+            const sideMenu = document.getElementById('sideMenu');
+            let isToggling = false;
+
+            // Validate elements exist
+            if (!menuToggle || !sideMenu) {
+                console.error('❌ Menu elements not found:', {
+                    menuToggle: !!menuToggle,
+                    sideMenu: !!sideMenu
+                });
+                return;
+            }
+
+            // Menu control functions
+            function openMenu() { 
+                sideMenu.classList.add('open'); 
+                console.log('Menu opened');
+            }
+            
+            function closeMenu() { 
+                sideMenu.classList.remove('open'); 
+                console.log('Menu closed');
+            }
+            
+            function toggleMenu() {
+                if (isToggling) return; // Prevent rapid toggling
+                isToggling = true;
+                
+                if (sideMenu.classList.contains('open')) {
+                    closeMenu();
+                } else {
+                    openMenu();
                 }
-            }, 100);
-        }
+                
+                setTimeout(() => isToggling = false, 150);
+            }
+            
+            // Main toggle button click with debouncing
+            menuToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Menu toggle clicked');
+                toggleMenu();
+            });
+            
+            // Close menu when clicking navigation links
+            const menuLinks = sideMenu.querySelectorAll('a');
+            menuLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    console.log('Navigation link clicked, closing menu');
+                    closeMenu();
+                });
+            });
+            
+            // Close menu with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && sideMenu.classList.contains('open')) {
+                    console.log('Escape key pressed, closing menu');
+                    closeMenu();
+                }
+            });
+            
+            // Close menu when clicking outside (debounced)
+            let clickTimeout;
+            document.addEventListener('click', function(e) {
+                if (isToggling) return;
+                
+                clearTimeout(clickTimeout);
+                clickTimeout = setTimeout(() => {
+                    if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+                        if (sideMenu.classList.contains('open')) {
+                            console.log('Clicked outside, closing menu');
+                            closeMenu();
+                        }
+                    }
+                }, 50);
+            });
+            
+            console.log('✅ Hamburger menu initialized successfully');
+        });
+
+        // Hidden visitor tracker shortcut: Ctrl+Shift+U
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.shiftKey && e.key === 'U') {
+                e.preventDefault();
+                if (window.XXMXLITracker) {
+                    window.XXMXLITracker.openDashboard();
+                    console.log('🔍 Visitor Tracker opened via hidden shortcut (Ctrl+Shift+U)');
+                } else {
+                    console.log('⚠️ Visitor Tracker not loaded yet');
+                }
+            }
+        });
     </script>
 </body>
 </html>
