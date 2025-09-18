@@ -1,0 +1,132 @@
+{
+  "script": "./deploy_ip_blocking.sh",
+  "timestamp": "2025-09-17T07:40:19+03:00",
+  "functions_analyzed": 25,
+  "issues_found": [
+    {
+      "severity": "WARNING",
+      "function": "show_banner",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "log",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "success",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "error",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "warn",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "info",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "show_interactive_menu",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "check_environment",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "check_environment",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "safe_deploy_blocking",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "quick_deploy",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "create_backup",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "deploy_ip_blocks",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "verify_deployment",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "check_deployment_status",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "restore_from_backup",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "view_deployment_log",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "emergency_rollback",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "advanced_options",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "test_ip_blocking",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "generate_custom_htaccess",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "validate_blacklist",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "export_report",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "exit_program",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "main",
+      "issue": "missing_error_handling"
+    }
+  ]
+}

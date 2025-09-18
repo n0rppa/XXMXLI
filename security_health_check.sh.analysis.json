@@ -1,0 +1,112 @@
+{
+  "script": "./security_health_check.sh",
+  "timestamp": "2025-09-17T07:40:11+03:00",
+  "functions_analyzed": 21,
+  "issues_found": [
+    {
+      "severity": "WARNING",
+      "function": "setup_colors",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "setup_symbols",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "log_with_timestamp",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "log_info",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "log_success",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "log_warning",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "log_error",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "log_critical",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "setup_logging",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "show_health_banner",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "check_system_dependencies",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "check_security_scripts",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "check_configuration_files",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "check_log_health",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "check_performance",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "check_security_infrastructure",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "generate_health_report",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "show_health_menu",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "run_full_health_check",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "schedule_automatic_checks",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "main",
+      "issue": "missing_error_handling"
+    }
+  ]
+}

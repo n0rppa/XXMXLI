@@ -1,0 +1,34 @@
+{
+  "dependency_report": {
+    "timestamp": "2025-09-17T07:57:37+03:00",
+    "platform": {
+      "os": "Linux",
+      "distribution": "Ubuntu",
+      "version": "18.04",
+      "architecture": "x86_64",
+      "package_manager": "apt",
+      "shell": "bash"
+    },
+    "categories": {
+      "critical": {
+        "available": ["grep","bash","wget","sed","awk","curl"],
+        "missing": [""]
+      },
+      "security": {
+        "available": ["ufw","iptables","netstat","nmap","ss"],
+        "missing": ["fail2ban"]
+      },
+      "performance": {
+        "available": ["parallel","jq","timeout"],
+        "missing": ["yq","rg","ag"]
+      },
+      "system": {
+        "available": ["service","rsync","crontab","tar","logrotate","systemctl"],
+        "missing": [""]
+      }
+    },
+    "recommendations": [
+      "Install security tools to enhance system protection","Install performance tools to improve script execution speed"
+    ]
+  }
+}

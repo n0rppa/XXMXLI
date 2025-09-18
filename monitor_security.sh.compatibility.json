@@ -1,0 +1,6 @@
+{
+  "script": "./monitor_security.sh",
+  "compatibility_issues": [
+
+  ]
+}

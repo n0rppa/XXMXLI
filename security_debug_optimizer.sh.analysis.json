@@ -1,0 +1,87 @@
+{
+  "script": "./security_debug_optimizer.sh",
+  "timestamp": "2025-09-17T07:40:15+03:00",
+  "functions_analyzed": 16,
+  "issues_found": [
+    {
+      "severity": "WARNING",
+      "function": "load_debug_config",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "setup_colors",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "setup_symbols",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "log_debug",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "optimized_search",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "run_with_timeout",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "check_and_install_dependencies",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "analyze_script_functions",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "check_cross_platform_compatibility",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "optimize_script_performance",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "optimized_search",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "generate_predictive_checklist",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "generate_error_report",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "debug_security_scripts",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "show_debug_menu",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "main",
+      "issue": "missing_error_handling"
+    }
+  ]
+}

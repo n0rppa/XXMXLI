@@ -1,0 +1,6 @@
+{
+  "script": "./deploy_ip_blocking.sh",
+  "compatibility_issues": [
+
+  ]
+}

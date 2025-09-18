@@ -1,0 +1,32 @@
+{
+  "schedule_interval_hours": 24,
+  "run_comprehensive_tests": true,
+  "run_performance_tests": true,
+  "run_security_tests": true,
+  "enable_notifications": true,
+  "max_log_retention_days": 30,
+  "alert_on_failures": true,
+  "test_environments": {
+    "development": {
+      "quick_tests": true,
+      "verbose_output": true,
+      "strict_mode": false
+    },
+    "production": {
+      "comprehensive_tests": true,
+      "security_focused": true,
+      "strict_mode": true
+    }
+  },
+  "notification_settings": {
+    "desktop_notifications": true,
+    "log_notifications": true,
+    "email_notifications": false,
+    "webhook_notifications": false
+  },
+  "cleanup_settings": {
+    "auto_cleanup": true,
+    "max_reports_to_keep": 10,
+    "max_logs_age_days": 30
+  }
+}

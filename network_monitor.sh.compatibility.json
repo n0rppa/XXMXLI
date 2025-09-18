@@ -1,0 +1,6 @@
+{
+  "script": "./network_monitor.sh",
+  "compatibility_issues": [
+
+  ]
+}

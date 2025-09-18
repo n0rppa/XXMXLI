@@ -86,6 +86,7 @@
     </section>
     <div style="text-align:center;margin-top:2rem"><a href="index.html" class="back-button"><i class="fas fa-arrow-left"></i> Takaisin etusivulle</a></div>
 </main>
+<script>
 const menuButton=document.querySelector('.menu-button');const navMenu=document.querySelector('.nav-menu');if(menuButton){menuButton.addEventListener('click',()=>navMenu.classList.toggle('active'));
 const contactForm=document.getElementById('contactForm');const formMessage=document.getElementById('formMessage');const urlParams=new URLSearchParams(window.location.search);if(urlParams.get('success')==='1'){formMessage.className='form-message success';formMessage.textContent='Viesti lähetetty onnistuneesti! Kiitos yhteydenotosta.';formMessage.style.display='block';}
 
@@ -114,7 +115,9 @@ contactForm.addEventListener('submit', function(e){
 });
 function saveContact(data){try{const list=JSON.parse(localStorage.getItem('xxmxli_contacts')||'[]');list.push({...data,id:Date.now(),saved_at:new Date().toISOString()});if(list.length>50)list.splice(0,list.length-50);localStorage.setItem('xxmxli_contacts',JSON.stringify(list));}catch(e){console.error('Save fail',e);}}
 if(typeof StaticVisitorTracker!=='undefined'){StaticVisitorTracker.trackVisit();}
+}
 </script>
+<script src="/js/gdpr-consent.js"></script>
 <script src="/js/gdpr-consent.js"></script>
 <script src="/js/analytics.js" async></script>
 </body>

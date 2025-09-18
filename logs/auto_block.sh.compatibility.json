@@ -1,0 +1,6 @@
+{
+  "script": "./logs/auto_block.sh",
+  "compatibility_issues": [
+
+  ]
+}

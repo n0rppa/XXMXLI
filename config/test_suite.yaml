@@ -1,0 +1,164 @@
+---
+# XXMXLI Comprehensive Test Suite Configuration
+# YAML format for human-readable test configuration
+
+parallel_tests: 4
+timeout_seconds: 300
+performance_baseline_ms: 100
+security_scan_enabled: true
+
+test_categories:
+  unit:
+    enabled: true
+    timeout: 60
+    strict_mode: false
+    tests:
+      - script_executability
+      - configuration_loading
+      - help_functionality
+      - basic_syntax
+  
+  integration:
+    enabled: true
+    timeout: 120
+    dependency_check: true
+    tests:
+      - script_interdependencies
+      - configuration_consistency
+      - log_directory_structure
+      - shared_resources
+  
+  performance:
+    enabled: true
+    baseline_ms: 100
+    benchmark_iterations: 3
+    search_tools:
+      - name: "ripgrep"
+        command: "rg"
+        priority: 1
+        expected_performance: "excellent"
+      - name: "the_silver_searcher"
+        command: "ag"
+        priority: 2
+        expected_performance: "good"
+      - name: "awk"
+        command: "awk"
+        priority: 3
+        expected_performance: "acceptable"
+      - name: "grep"
+        command: "grep"
+        priority: 4
+        expected_performance: "baseline"
+    
+    metrics:
+      - startup_time
+      - search_performance
+      - memory_usage
+      - cpu_efficiency
+  
+  security:
+    enabled: true
+    scan_depth: "comprehensive"
+    checks:
+      credentials:
+        enabled: true
+        patterns:
+          - "password.*=.*['\"][^'\"]*['\"]"
+          - "secret.*=.*['\"][^'\"]*['\"]"
+          - "key.*=.*['\"][^'\"]*['\"]"
+          - "token.*=.*['\"][^'\"]*['\"]"
+      
+      injection:
+        enabled: true
+        patterns:
+          - "\\$\\{[^}]*\\}"
+          - "\\$\\([^)]*\\)"
+          - "eval.*\\$"
+          - "exec.*\\$"
+      
+      permissions:
+        enabled: true
+        check_world_writable: true
+        check_executable_perms: true
+        recommended_perms: "755"
+  
+  error_handling:
+    enabled: true
+    tests:
+      missing_dependencies:
+        enabled: true
+        simulate_missing_tools: ["rg", "ag", "jq", "yq"]
+      
+      corrupt_config:
+        enabled: true
+        test_invalid_json: true
+        test_invalid_yaml: true
+        test_missing_config: true
+      
+      resource_limits:
+        enabled: true
+        test_disk_space: true
+        test_memory_limits: false  # Potentially dangerous
+        test_timeout_behavior: true
+
+reporting:
+  html_enabled: true
+  text_enabled: true
+  json_enabled: true
+  include_logs: true
+  include_metrics: true
+  
+  templates:
+    html: "comprehensive_report.html"
+    text: "test_summary.txt"
+    json: "test_results.json"
+  
+  metrics_to_track:
+    - test_duration
+    - tests_passed
+    - tests_failed
+    - performance_improvements
+    - security_issues_found
+    - error_handling_coverage
+
+optimization_targets:
+  search_tools:
+    preferred_order: ["rg", "ag", "awk", "grep"]
+    fallback_enabled: true
+    timeout_protection: true
+    auto_detection: true
+  
+  error_handling:
+    graceful_degradation: true
+    user_friendly_messages: true
+    audit_logging: true
+    retry_mechanisms: true
+  
+  performance:
+    startup_time_ms: 1000
+    search_time_ms: 100
+    memory_efficient: true
+    cpu_optimized: true
+  
+  security:
+    no_hardcoded_secrets: true
+    secure_file_permissions: true
+    input_validation: true
+    safe_command_execution: true
+
+# Testing environments
+environments:
+  development:
+    strict_mode: false
+    verbose_logging: true
+    quick_tests: true
+  
+  production:
+    strict_mode: true
+    comprehensive_tests: true
+    security_focused: true
+  
+  ci_cd:
+    parallel_execution: true
+    detailed_reports: true
+    fail_fast: false

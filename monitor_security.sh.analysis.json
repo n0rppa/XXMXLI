@@ -1,0 +1,132 @@
+{
+  "script": "./monitor_security.sh",
+  "timestamp": "2025-09-17T07:40:25+03:00",
+  "functions_analyzed": 25,
+  "issues_found": [
+    {
+      "severity": "WARNING",
+      "function": "log",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "success",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "error",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "warn",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "info",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "critical",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "show_banner",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "show_interactive_menu",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "check_environment",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "security_status_overview",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "real_time_blocked_attempts",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "test_ip_blocking",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "advanced_security_analytics",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "threat_intelligence_dashboard",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "admin_security_audit",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "live_log_monitor",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "automated_response_system",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "generate_security_report",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "advanced_configuration",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "show_help",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "security_status_overview_silent",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "threat_intelligence_dashboard_silent",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "admin_security_audit_silent",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "exit_program",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "main",
+      "issue": "missing_error_handling"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "script": "./security_debug_optimizer.sh",
+  "compatibility_issues": [
+
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "script": "./lataukset/dns_security_setup.sh",
+  "compatibility_issues": [
+
+  ]
+}

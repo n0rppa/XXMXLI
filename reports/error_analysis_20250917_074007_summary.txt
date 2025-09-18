@@ -1,0 +1,12 @@
+XXMXLI Security Scripts Error Analysis Summary
+=============================================
+Generated: Wed Sep 17 07:40:36 EEST 2025
+
+ANALYSIS RESULTS:
+- Scripts Analyzed: 8
+- Critical Errors: 0
+- Warnings: 113
+
+⚠️ ATTENTION NEEDED: 113 warnings found
+
+Detailed JSON report: /home/kodachi/Desktop/kotisivu/reports/error_analysis_20250917_074007.json
