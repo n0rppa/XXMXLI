@@ -374,6 +374,57 @@
             .control-btn {
                 padding: 0.4rem 0.8rem;
             }
+
+            /* Mobile-specific audio player improvements */
+            .visualizer-container {
+                height: 120px; /* Smaller on mobile */
+            }
+
+            .volume-control {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: center;
+            }
+
+            .volume-slider {
+                width: 150px; /* Wider on mobile for easier control */
+            }
+
+            /* Better touch targets for mobile */
+            .control-btn, .visualizer-btn {
+                min-height: 44px;
+                min-width: 44px;
+            }
+
+            /* Mobile playlist improvements */
+            .track-item {
+                padding: 1rem 0.5rem;
+            }
+
+            .track-info {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .track-title {
+                font-size: 1rem;
+            }
+        }
+
+        /* Mobile compatibility notice */
+        .mobile-notice {
+            background: rgba(255, 165, 0, 0.1);
+            border: 1px solid #ffa500;
+            color: #ffa500;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+            text-align: center;
+            display: none;
+        }
+
+        .mobile-notice.show {
+            display: block;
         }
     </style>
 </head>
@@ -396,6 +447,11 @@
         </section>
 
         <section class="music-player">
+            <div id="mobileNotice" class="mobile-notice">
+                <i class="fas fa-mobile-alt"></i> Mobile Device Detected<br>
+                <small>Using mobile-optimized audio formats. Visualizations disabled for better performance.</small>
+            </div>
+
             <div class="now-playing">
                 <div class="track-info-display" id="currentTrackTitle">Select a track to play</div>
                 <div class="track-artist" id="currentTrackArtist"></div>
@@ -468,7 +524,32 @@
                 this.isInitialized = false;
                 this.basicMode = false; // Fallback mode without Web Audio API
                 
+                // Mobile browser detection
+                this.isMobile = this.detectMobile();
+                this.isIOS = this.detectIOS();
+                this.isAndroid = this.detectAndroid();
+                
+                console.log('Browser detection:', {
+                    isMobile: this.isMobile,
+                    isIOS: this.isIOS,
+                    isAndroid: this.isAndroid
+                });
+                
                 this.init();
+            }
+
+            detectMobile() {
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                       (window.innerWidth <= 768 && window.innerHeight <= 1024);
+            }
+
+            detectIOS() {
+                return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            }
+
+            detectAndroid() {
+                return /Android/i.test(navigator.userAgent);
             }
 
             async init() {
@@ -479,8 +560,12 @@
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
-                    this.tracks = await response.json();
-                    console.log(`Loaded ${this.tracks.length} tracks:`, this.tracks);
+                    let allTracks = await response.json();
+                    
+                    // Filter tracks based on mobile compatibility
+                    this.tracks = this.filterTracksForMobile(allTracks);
+                    
+                    console.log(`Loaded ${this.tracks.length} tracks (${allTracks.length} total, filtered for mobile: ${this.isMobile})`);
                     
                     this.setupElements();
                     this.setupEventListeners();
@@ -490,27 +575,102 @@
                         console.log('Auto-loading first track...');
                         await this.loadTrack(0);
                     } else {
-                        console.warn('No tracks available to load');
+                        console.warn('No compatible tracks available');
+                        this.showMobileCompatibilityMessage();
                     }
                 } catch (error) {
                     console.error('Error initializing player:', error);
-                    // Fallback to basic tracks
-                    this.tracks = [
-                        { file: '03.mellow.flac', title: 'Mellow', artist: 'n0rppa', duration: '4:11' },
-                        { file: '06.Trippy Instrumental.flac', title: 'Trippy Instrumental Fo Sho', artist: 'n0rppa', duration: '3:22' },
-                        { file: '07.strange.flac', title: 'Strange', artist: 'n0rppa', duration: '5:50' },
-                        { file: '09.swishaz.flac', title: 'Swishaz', artist: 'n0rppa', duration: '2:09' },
-                        { file: '13.rain.flac', title: 'Rain', artist: 'n0rppa', duration: '2:01' }
-                    ];
+                    // Fallback to mobile-compatible tracks
+                    this.tracks = this.getMobileFallbackTracks();
                     
                     this.setupElements();
                     this.renderPlaylist();
                     
                     if (this.tracks.length > 0) {
-                        console.log('Auto-loading first track...');
+                        console.log('Auto-loading first fallback track...');
                         await this.loadTrack(0);
                     } else {
-                        console.warn('No tracks available to load');
+                        console.warn('No fallback tracks available');
+                        this.showMobileCompatibilityMessage();
+                    }
+                }
+            }
+
+            filterTracksForMobile(allTracks) {
+                if (!this.isMobile) {
+                    // On desktop, prefer FLAC but allow M4A as fallback
+                    return allTracks.filter(track => 
+                        track.file.endsWith('.flac') || 
+                        (!allTracks.some(t => t.title === track.title && t.file.endsWith('.flac')))
+                    );
+                }
+                
+                // On mobile, strictly prefer M4A over FLAC
+                const mobileCompatible = [];
+                const trackTitles = new Set();
+                
+                // First pass: collect all M4A files
+                allTracks.forEach(track => {
+                    if (track.file.endsWith('.m4a') || track.file.endsWith('.mp4')) {
+                        const titleKey = track.title.replace(/\.\w+$/, ''); // Remove extension from title
+                        if (!trackTitles.has(titleKey)) {
+                            mobileCompatible.push(track);
+                            trackTitles.add(titleKey);
+                        }
+                    }
+                });
+                
+                // Second pass: add M4A files that don't have FLAC equivalents
+                allTracks.forEach(track => {
+                    if (track.file.endsWith('.m4a') || track.file.endsWith('.mp4')) {
+                        const titleKey = track.title.replace(/\.\w+$/, '');
+                        if (!trackTitles.has(titleKey)) {
+                            mobileCompatible.push(track);
+                            trackTitles.add(titleKey);
+                        }
+                    }
+                });
+                
+                console.log(`Mobile filter: ${allTracks.length} total -> ${mobileCompatible.length} compatible`);
+                return mobileCompatible.length > 0 ? mobileCompatible : this.getMobileFallbackTracks();
+            }
+
+            getMobileFallbackTracks() {
+                // Mobile-compatible fallback tracks (M4A format)
+                return [
+                    { file: '03.mellow.m4a', title: 'Mellow', artist: 'n0rppa', duration: '4:11' },
+                    { file: '06.Trippy Instrumental.m4a', title: 'Trippy Instrumental', artist: 'n0rppa', duration: '3:58' },
+                    { file: '07.strange.m4a', title: 'Strange', artist: 'n0rppa', duration: '5:50' },
+                    { file: '09.swishaz.m4a', title: 'Swishaz', artist: 'n0rppa', duration: '2:09' },
+                    { file: '13.rain.m4a', title: 'Rain', artist: 'n0rppa', duration: '2:01' },
+                    { file: '18.alley.m4a', title: 'Alley', artist: 'n0rppa', duration: '2:13' },
+                    { file: '20.cloudy_instrumental.m4a', title: 'Cloudy Instrumental', artist: 'n0rppa', duration: '1:07' },
+                    { file: '21.oldschool_hip-hop_beat.m4a', title: 'Oldschool Hip-Hop Beat', artist: 'n0rppa', duration: '0:59' },
+                    { file: '22.Hard trap beat.m4a', title: 'Hard Trap Beat', artist: 'n0rppa', duration: '1:11' },
+                    { file: 'ganon.m4a', title: 'Chill Oldschool Beat', artist: 'n0rppa', duration: '1:08' }
+                ];
+            }
+
+            showMobileCompatibilityMessage() {
+                // Show mobile compatibility notice
+                const mobileNotice = document.getElementById('mobileNotice');
+                if (mobileNotice) {
+                    mobileNotice.classList.add('show');
+                }
+
+                // Update track info for mobile
+                document.getElementById('currentTrackTitle').textContent = 'Mobile Audio Player';
+                document.getElementById('currentTrackArtist').textContent = 'Tap play to start • Optimized for mobile';
+
+                // Hide visualizer on mobile if no tracks
+                if (this.tracks.length === 0) {
+                    const visualizerContainer = document.querySelector('.visualizer-container');
+                    if (visualizerContainer) {
+                        visualizerContainer.style.display = 'none';
+                    }
+                    const visualizerControls = document.querySelector('.visualizer-controls');
+                    if (visualizerControls) {
+                        visualizerControls.style.display = 'none';
                     }
                 }
             }
@@ -533,6 +693,25 @@
 
             async setupAudioContext() {
                 if (this.audioContext) return;
+                
+                // Skip Web Audio API on mobile to avoid issues
+                if (this.isMobile) {
+                    console.log('Skipping Web Audio API on mobile device');
+                    this.basicMode = true;
+                    this.isInitialized = true;
+                    
+                    // Hide visualizer on mobile
+                    const visualizerContainer = document.querySelector('.visualizer-container');
+                    if (visualizerContainer) {
+                        visualizerContainer.style.display = 'none';
+                    }
+                    const visualizerControls = document.querySelector('.visualizer-controls');
+                    if (visualizerControls) {
+                        visualizerControls.style.display = 'none';
+                    }
+                    
+                    return;
+                }
                 
                 try {
                     console.log('Setting up Web Audio API context...');
@@ -700,16 +879,20 @@
                         
                         let errorMessage = 'Unknown error';
                         let shouldRetry = false;
+                        let isFormatIssue = false;
                         
                         if (error) {
                             // Handle specific Firefox demuxer errors
                             if (error.message && error.message.includes('NS_ERROR_DOM_MEDIA_DEMUXER_ERR')) {
-                                errorMessage = 'Audio format not supported - trying alternative loading';
+                                errorMessage = 'Audio format not supported - trying alternative';
                                 shouldRetry = true;
+                                isFormatIssue = true;
                             } else if (error.code === MediaError.MEDIA_ERR_DECODE) {
                                 errorMessage = 'Audio decoding failed - file may be corrupted';
+                                isFormatIssue = true;
                             } else if (error.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED) {
                                 errorMessage = 'Audio format not supported by browser';
+                                isFormatIssue = true;
                             } else if (error.code === MediaError.MEDIA_ERR_NETWORK) {
                                 errorMessage = 'Network error loading audio';
                                 shouldRetry = true;
@@ -718,10 +901,23 @@
                             }
                         }
                         
+                        // Mobile-specific error messages
+                        if (this.isMobile) {
+                            if (isFormatIssue) {
+                                if (this.isIOS) {
+                                    errorMessage = 'iOS Safari has limited audio format support. Try Chrome or Firefox.';
+                                } else if (this.isAndroid) {
+                                    errorMessage = 'Android browser may not support this audio format. Try a different browser.';
+                                } else {
+                                    errorMessage = 'Mobile browser has limited audio format support.';
+                                }
+                            }
+                        }
+                        
                         document.getElementById('currentTrackTitle').textContent = `Error: ${track.title}`;
                         document.getElementById('currentTrackArtist').textContent = errorMessage;
                         
-                        if (shouldRetry) {
+                        if (shouldRetry && !isFormatIssue) {
                             console.log('Attempting to retry with different loading strategy...');
                             // Try reloading with different approach
                             setTimeout(() => {
@@ -732,6 +928,10 @@
                                     this.audio.load();
                                 }, 100);
                             }, 500);
+                        } else if (isFormatIssue && this.isMobile) {
+                            // On mobile format issues, try to find alternative format
+                            console.log('Format issue on mobile, trying alternative format...');
+                            this.tryAlternativeFormat(track);
                         } else {
                             reject(new Error(`Audio load failed: ${errorMessage}`));
                         }
@@ -778,6 +978,27 @@
                         }
                     }, 5000);
                 });
+            }
+
+            tryAlternativeFormat(track) {
+                // Try to find alternative format for the same track
+                const baseName = track.file.replace(/\.(flac|m4a|mp3|wav|ogg)$/i, '');
+                const alternativeFormats = ['.m4a', '.mp3', '.wav', '.ogg'];
+                
+                for (const ext of alternativeFormats) {
+                    const altFile = baseName + ext;
+                    // Check if this alternative exists in our tracks
+                    const altTrack = this.tracks.find(t => t.file === altFile);
+                    if (altTrack) {
+                        console.log(`Found alternative format: ${altFile}`);
+                        document.getElementById('currentTrackArtist').textContent = `Trying alternative format...`;
+                        setTimeout(() => this.loadTrack(this.tracks.indexOf(altTrack)), 500);
+                        return;
+                    }
+                }
+                
+                // If no alternative found, show final error
+                document.getElementById('currentTrackArtist').textContent = 'No compatible audio format found for this device';
             }
 
             connectAudioToContext() {
