@@ -449,7 +449,7 @@
         <section class="music-player">
             <div id="mobileNotice" class="mobile-notice">
                 <i class="fas fa-mobile-alt"></i> Mobile Device Detected<br>
-                <small>Using mobile-optimized audio formats. Visualizations disabled for better performance.</small>
+                <small>Using mobile-optimized audio. Visualizations may be limited.</small>
             </div>
 
             <div class="now-playing">
@@ -539,8 +539,14 @@
             }
 
             detectMobile() {
-                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-                       (window.innerWidth <= 768 && window.innerHeight <= 1024);
+                // More accurate mobile detection - don't rely only on screen size
+                const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+                const isSmallScreen = window.innerWidth <= 768 && window.innerHeight <= 1024;
+                
+                // Only consider it mobile if it's actually a mobile device OR a touch device with small screen
+                // This prevents desktop browsers with small windows from being detected as mobile
+                return isMobileUA || (isTouchDevice && isSmallScreen && window.innerWidth < 1024);
             }
 
             detectIOS() {
@@ -574,6 +580,16 @@
                     if (this.tracks.length > 0) {
                         console.log('Auto-loading first track...');
                         await this.loadTrack(0);
+                        
+                        // Show mobile notice only on actual mobile devices
+                        if (this.isMobile) {
+                            setTimeout(() => {
+                                const mobileNotice = document.getElementById('mobileNotice');
+                                if (mobileNotice) {
+                                    mobileNotice.classList.add('show');
+                                }
+                            }, 1000); // Show after a second so user sees it loaded
+                        }
                     } else {
                         console.warn('No compatible tracks available');
                         this.showMobileCompatibilityMessage();
@@ -598,41 +614,29 @@
 
             filterTracksForMobile(allTracks) {
                 if (!this.isMobile) {
-                    // On desktop, prefer FLAC but allow M4A as fallback
-                    return allTracks.filter(track => 
-                        track.file.endsWith('.flac') || 
-                        (!allTracks.some(t => t.title === track.title && t.file.endsWith('.flac')))
-                    );
+                    // On desktop, show all tracks but prefer FLAC when available
+                    console.log('Desktop mode: showing all tracks');
+                    return allTracks;
                 }
                 
-                // On mobile, strictly prefer M4A over FLAC
-                const mobileCompatible = [];
-                const trackTitles = new Set();
-                
-                // First pass: collect all M4A files
-                allTracks.forEach(track => {
-                    if (track.file.endsWith('.m4a') || track.file.endsWith('.mp4')) {
-                        const titleKey = track.title.replace(/\.\w+$/, ''); // Remove extension from title
-                        if (!trackTitles.has(titleKey)) {
-                            mobileCompatible.push(track);
-                            trackTitles.add(titleKey);
-                        }
-                    }
-                });
-                
-                // Second pass: add M4A files that don't have FLAC equivalents
-                allTracks.forEach(track => {
-                    if (track.file.endsWith('.m4a') || track.file.endsWith('.mp4')) {
-                        const titleKey = track.title.replace(/\.\w+$/, '');
-                        if (!trackTitles.has(titleKey)) {
-                            mobileCompatible.push(track);
-                            trackTitles.add(titleKey);
-                        }
-                    }
-                });
+                // On mobile, only show M4A/MP3/WAV files (exclude FLAC)
+                const mobileCompatible = allTracks.filter(track => 
+                    track.file.endsWith('.m4a') || 
+                    track.file.endsWith('.mp3') || 
+                    track.file.endsWith('.wav') ||
+                    track.file.endsWith('.mp4')
+                );
                 
                 console.log(`Mobile filter: ${allTracks.length} total -> ${mobileCompatible.length} compatible`);
-                return mobileCompatible.length > 0 ? mobileCompatible : this.getMobileFallbackTracks();
+                
+                // If we have mobile-compatible tracks, use them
+                if (mobileCompatible.length > 0) {
+                    return mobileCompatible;
+                }
+                
+                // Fallback to hardcoded mobile tracks if JSON doesn't have compatible ones
+                console.log('No compatible tracks in JSON, using fallback tracks');
+                return this.getMobileFallbackTracks();
             }
 
             getMobileFallbackTracks() {
@@ -694,23 +698,9 @@
             async setupAudioContext() {
                 if (this.audioContext) return;
                 
-                // Skip Web Audio API on mobile to avoid issues
+                // On mobile, try Web Audio API but don't force basic mode initially
                 if (this.isMobile) {
-                    console.log('Skipping Web Audio API on mobile device');
-                    this.basicMode = true;
-                    this.isInitialized = true;
-                    
-                    // Hide visualizer on mobile
-                    const visualizerContainer = document.querySelector('.visualizer-container');
-                    if (visualizerContainer) {
-                        visualizerContainer.style.display = 'none';
-                    }
-                    const visualizerControls = document.querySelector('.visualizer-controls');
-                    if (visualizerControls) {
-                        visualizerControls.style.display = 'none';
-                    }
-                    
-                    return;
+                    console.log('Mobile device detected - trying Web Audio API with fallback');
                 }
                 
                 try {
@@ -740,25 +730,39 @@
                     console.log('Audio context setup complete (visualizer ready)');
                 } catch (error) {
                     console.error('Error setting up audio context:', error);
-                    console.log('Falling back to basic audio mode (no visualizations)');
                     
-                    // Enable basic mode - just HTML5 audio without Web Audio API
-                    this.basicMode = true;
-                    this.isInitialized = true;
-                    
-                    // Hide visualizer since it won't work
-                    const visualizerContainer = document.querySelector('.visualizer-container');
-                    if (visualizerContainer) {
-                        visualizerContainer.style.display = 'none';
+                    if (this.isMobile) {
+                        console.log('Web Audio API failed on mobile - enabling basic mode');
+                        // On mobile, fall back to basic mode
+                        this.basicMode = true;
+                        
+                        // Hide visualizer on mobile only if Web Audio API completely fails
+                        const visualizerContainer = document.querySelector('.visualizer-container');
+                        if (visualizerContainer) {
+                            visualizerContainer.style.display = 'none';
+                        }
+                        const visualizerControls = document.querySelector('.visualizer-controls');
+                        if (visualizerControls) {
+                            visualizerControls.style.display = 'none';
+                        }
+                    } else {
+                        console.log('Falling back to basic audio mode (no visualizations)');
+                        this.basicMode = true;
+                        
+                        // Hide visualizer since it won't work
+                        const visualizerContainer = document.querySelector('.visualizer-container');
+                        if (visualizerContainer) {
+                            visualizerContainer.style.display = 'none';
+                        }
+                        const visualizerControls = document.querySelector('.visualizer-controls');
+                        if (visualizerControls) {
+                            visualizerControls.style.display = 'none';
+                        }
+                        
+                        // Show info message
+                        document.getElementById('currentTrackTitle').textContent = 'Audio Player (Basic Mode)';
+                        document.getElementById('currentTrackArtist').textContent = 'Visualizations disabled - audio only';
                     }
-                    const visualizerControls = document.querySelector('.visualizer-controls');
-                    if (visualizerControls) {
-                        visualizerControls.style.display = 'none';
-                    }
-                    
-                    // Show info message
-                    document.getElementById('currentTrackTitle').textContent = 'Audio Player (Basic Mode)';
-                    document.getElementById('currentTrackArtist').textContent = 'Visualizations disabled - audio only';
                 }
             }
 
