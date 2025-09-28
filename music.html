@@ -302,7 +302,10 @@
             margin-top: 2rem;
             border: 1px solid var(--accent);
             border-radius: 8px;
-            overflow: hidden;
+            /* Make the playlist scrollable to ensure all tracks are accessible */
+            max-height: 70vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .track-item {
@@ -508,6 +511,28 @@
     <script src="assets/js/static-visitor-tracker.js"></script>
 
     <script>
+        // Debug function - users can run this in browser console
+        window.debugMusicPlayer = function() {
+            if (window.musicPlayer) {
+                console.log('🎵 Music Player Debug Info:');
+                console.log('Tracks loaded:', window.musicPlayer.tracks.length);
+                console.log('Is mobile:', window.musicPlayer.isMobile);
+                console.log('Is iOS:', window.musicPlayer.isIOS);
+                console.log('Is Android:', window.musicPlayer.isAndroid);
+                console.log('User Agent:', navigator.userAgent);
+                console.log('Screen size:', window.innerWidth + 'x' + window.innerHeight);
+                console.log('All tracks:', window.musicPlayer.tracks);
+                return {
+                    trackCount: window.musicPlayer.tracks.length,
+                    isMobile: window.musicPlayer.isMobile,
+                    tracks: window.musicPlayer.tracks
+                };
+            } else {
+                console.log('❌ Music player not initialized yet');
+                return null;
+            }
+        };
+
         class MusicPlayer {
             constructor() {
                 this.audio = new Audio();
@@ -561,17 +586,16 @@
             async init() {
                 try {
                     // Load tracks from JSON
-                    console.log('Loading tracks from tracklist.json...');
-                    const response = await fetch('assets/audio/tracklist.json');
+                    console.log('Loading tracks from tracklist_complete_all.json...');
+                    const response = await fetch('assets/audio/tracklist_complete_all.json');
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     let allTracks = await response.json();
                     
-                    // Filter tracks based on mobile compatibility
-                    this.tracks = this.filterTracksForMobile(allTracks);
-                    
-                    console.log(`Loaded ${this.tracks.length} tracks (${allTracks.length} total, filtered for mobile: ${this.isMobile})`);
+                    // Always show all tracks, let player pick best format
+                    this.tracks = allTracks;
+                    console.log(`Loaded ${this.tracks.length} tracks (no device filtering)`);
                     
                     this.setupElements();
                     this.setupEventListeners();
@@ -640,18 +664,26 @@
             }
 
             getMobileFallbackTracks() {
-                // Mobile-compatible fallback tracks (M4A format)
+                // Complete mobile-compatible fallback tracks (M4A format)
                 return [
-                    { file: '03.mellow.m4a', title: 'Mellow', artist: 'n0rppa', duration: '4:11' },
-                    { file: '06.Trippy Instrumental.m4a', title: 'Trippy Instrumental', artist: 'n0rppa', duration: '3:58' },
-                    { file: '07.strange.m4a', title: 'Strange', artist: 'n0rppa', duration: '5:50' },
-                    { file: '09.swishaz.m4a', title: 'Swishaz', artist: 'n0rppa', duration: '2:09' },
-                    { file: '13.rain.m4a', title: 'Rain', artist: 'n0rppa', duration: '2:01' },
-                    { file: '18.alley.m4a', title: 'Alley', artist: 'n0rppa', duration: '2:13' },
-                    { file: '20.cloudy_instrumental.m4a', title: 'Cloudy Instrumental', artist: 'n0rppa', duration: '1:07' },
-                    { file: '21.oldschool_hip-hop_beat.m4a', title: 'Oldschool Hip-Hop Beat', artist: 'n0rppa', duration: '0:59' },
-                    { file: '22.Hard trap beat.m4a', title: 'Hard Trap Beat', artist: 'n0rppa', duration: '1:11' },
-                    { file: 'ganon.m4a', title: 'Chill Oldschool Beat', artist: 'n0rppa', duration: '1:08' }
+                    { id: 1, file: '03.mellow.m4a', title: 'Mellow', artist: 'n0rppa', duration: '4:11' },
+                    { id: 2, file: '06.Trippy Instrumental.m4a', title: 'Trippy Instrumental', artist: 'n0rppa', duration: '3:58' },
+                    { id: 3, file: '07.strange.m4a', title: 'Strange', artist: 'n0rppa', duration: '5:50' },
+                    { id: 4, file: '09.swishaz.m4a', title: 'Swishaz', artist: 'n0rppa', duration: '2:09' },
+                    { id: 5, file: '13.rain.m4a', title: 'Rain', artist: 'n0rppa', duration: '2:01' },
+                    { id: 6, file: '18.alley.m4a', title: 'Alley', artist: 'n0rppa', duration: '2:13' },
+                    { id: 7, file: '20.cloudy_instrumental.m4a', title: 'Cloudy Instrumental', artist: 'n0rppa', duration: '1:07' },
+                    { id: 8, file: '21.oldschool_hip-hop_beat.m4a', title: 'Oldschool Hip-Hop Beat', artist: 'n0rppa', duration: '0:59' },
+                    { id: 9, file: '22.Hard trap beat.m4a', title: 'Hard Trap Beat', artist: 'n0rppa', duration: '1:11' },
+                    { id: 10, file: 'cloudwave lizard.m4a', title: 'Cloudwave Lizard', artist: 'n0rppa', duration: '3:22' },
+                    { id: 11, file: 'Drizzle.m4a', title: 'Drizzle', artist: 'n0rppa', duration: '2:45' },
+                    { id: 12, file: 'freefall.m4a', title: 'Freefall', artist: 'n0rppa', duration: '3:15' },
+                    { id: 13, file: 'ganon.m4a', title: 'Chill Oldschool Beat', artist: 'n0rppa', duration: '1:08' },
+                    { id: 14, file: 'happy days.m4a', title: 'Happy Days', artist: 'n0rppa', duration: '2:33' },
+                    { id: 15, file: 'neo-memphis trappin.m4a', title: 'Neo-Memphis Trappin', artist: 'n0rppa', duration: '2:48' },
+                    { id: 16, file: 'Rain (1).m4a', title: 'Rain (1)', artist: 'n0rppa', duration: '2:12' },
+                    { id: 17, file: 'reviant.m4a', title: 'Reviant', artist: 'n0rppa', duration: '3:01' },
+                    { id: 18, file: 'tekknobadger.m4a', title: 'Tekknobadger', artist: 'n0rppa', duration: '2:55' }
                 ];
             }
 
@@ -766,6 +798,23 @@
                 }
             }
 
+            // Connect HTMLAudioElement to Web Audio API graph for visualizer
+            connectAudioToContext() {
+                try {
+                    if (!this.audioContext || !this.analyser || this.basicMode) return;
+                    if (this.source) {
+                        try { this.source.disconnect(); } catch (e) {}
+                    }
+                    this.source = this.audioContext.createMediaElementSource(this.audio);
+                    this.source.connect(this.analyser);
+                    this.analyser.connect(this.audioContext.destination);
+                    console.log('Connected audio node graph');
+                } catch (err) {
+                    console.warn('connectAudioToContext failed, disabling visualizer', err);
+                    this.basicMode = true;
+                }
+            }
+
             setupEventListeners() {
                 // Player controls
                 document.getElementById('playBtn').addEventListener('click', () => this.togglePlay());
@@ -857,7 +906,7 @@
                 
                 // Update UI immediately
                 document.getElementById('currentTrackTitle').textContent = track.title;
-                document.getElementById('currentTrackArtist').textContent = track.artist || 'n0rppa';
+                document.getElementById('currentTrackArtist').textContent = (track.artist && track.artist !== 'Unknown Artist') ? track.artist : 'n0rppa';
                 
                 // Update active track in playlist
                 document.querySelectorAll('.track-item').forEach((item, i) => {
@@ -949,14 +998,14 @@
                     this.audioLoadedDataHandler = () => {
                         console.log(`Data loaded for: ${track.file}`);
                         document.getElementById('currentTrackTitle').textContent = track.title;
-                        document.getElementById('currentTrackArtist').textContent = track.artist || 'n0rppa';
+                        document.getElementById('currentTrackArtist').textContent = (track.artist && track.artist !== 'Unknown Artist') ? track.artist : 'n0rppa';
                         resolve();
                     };
                     
                     this.audioCanPlayHandler = () => {
                         console.log(`Can play: ${track.file}`);
                         document.getElementById('currentTrackTitle').textContent = track.title;
-                        document.getElementById('currentTrackArtist').textContent = track.artist || 'n0rppa';
+                        document.getElementById('currentTrackArtist').textContent = (track.artist && track.artist !== 'Unknown Artist') ? track.artist : 'n0rppa';
                         if (!this.audioLoadedDataHandler.called) {
                             resolve();
                         }
@@ -967,11 +1016,22 @@
                     this.audio.addEventListener('loadstart', this.audioLoadStartHandler, { once: true });
                     this.audio.addEventListener('canplay', this.audioCanPlayHandler, { once: true });
                     this.audio.addEventListener('loadeddata', this.audioLoadedDataHandler, { once: true });
+                    // Update duration from metadata when available
+                    this.audio.addEventListener('loadedmetadata', () => {
+                        if (!isNaN(this.audio.duration)) {
+                            const dur = this.formatTime(this.audio.duration);
+                            this.tracks[index].duration = dur;
+                            const items = document.querySelectorAll('.track-item .track-duration');
+                            if (items[index]) items[index].textContent = dur;
+                            document.getElementById('totalTime').textContent = dur;
+                        }
+                    }, { once: true });
                     
-                    // Set the source and load
-                    const audioPath = `assets/audio/${track.file}`;
-                    console.log(`Setting audio source: ${audioPath}`);
-                    this.audio.src = audioPath;
+                    // Choose best playable source for this browser/device
+                    const audioPath = this.getBestPlayableSource(track);
+                    const cacheBusted = `${audioPath}?v=${Date.now()}`;
+                    console.log(`Setting audio source: ${cacheBusted}`);
+                    this.audio.src = cacheBusted;
                     this.audio.load(); // Force reload
                     
                     // Timeout fallback
@@ -984,42 +1044,75 @@
                 });
             }
 
+            // Select the best playable source for the current browser/device
+            getBestPlayableSource(track) {
+                const baseDir = 'assets/audio/';
+                const preferOrder = ['mp3', 'm4a', 'wav', 'ogg', 'flac'];
+
+                // Build candidate list: primary file first, then formats array
+                const candidates = [];
+                if (track.file) candidates.push(track.file);
+                if (Array.isArray(track.formats)) candidates.push(...track.formats);
+
+                // Ensure unique and preserve order
+                const seen = new Set();
+                const uniqueCandidates = candidates.filter(f => {
+                    if (seen.has(f)) return false;
+                    seen.add(f);
+                    return true;
+                });
+
+                // Sort by preferred order of extensions
+                const sorted = uniqueCandidates.sort((a, b) => {
+                    const ea = (a.split('.').pop() || '').toLowerCase();
+                    const eb = (b.split('.').pop() || '').toLowerCase();
+                    return preferOrder.indexOf(ea) - preferOrder.indexOf(eb);
+                });
+
+                // Always prefer non-FLAC first, regardless of canPlayType (some browsers return empty)
+                const nonFlac = sorted.find(f => /\.(mp3|m4a|wav|ogg)$/i.test(f));
+                if (nonFlac) return baseDir + nonFlac;
+                // If only FLAC exists, return it as last resort
+                return baseDir + (sorted[0] || track.file);
+            }
+
             tryAlternativeFormat(track) {
-                // Try to find alternative format for the same track
-                const baseName = track.file.replace(/\.(flac|m4a|mp3|wav|ogg)$/i, '');
-                const alternativeFormats = ['.m4a', '.mp3', '.wav', '.ogg'];
-                
-                for (const ext of alternativeFormats) {
-                    const altFile = baseName + ext;
-                    // Check if this alternative exists in our tracks
-                    const altTrack = this.tracks.find(t => t.file === altFile);
-                    if (altTrack) {
-                        console.log(`Found alternative format: ${altFile}`);
+                // Prefer formats listed in track.formats
+                if (Array.isArray(track.formats)) {
+                    const alt = track.formats.find(f => /\.(m4a|mp3|wav|ogg)$/i.test(f));
+                    if (alt) {
+                        console.log(`Found alternative format via formats list: ${alt}`);
                         document.getElementById('currentTrackArtist').textContent = `Trying alternative format...`;
-                        setTimeout(() => this.loadTrack(this.tracks.indexOf(altTrack)), 500);
+                        const altTrack = { ...track, file: alt };
+                        const audioPath = this.getBestPlayableSource(altTrack);
+                        this.audio.src = `${audioPath}?v=${Date.now()}`;
+                        this.audio.load();
+                        this.audio.play().catch(() => {});
                         return;
                     }
                 }
-                
-                // If no alternative found, show final error
-                document.getElementById('currentTrackArtist').textContent = 'No compatible audio format found for this device';
-            }
 
-            connectAudioToContext() {
-                // Only connect if we have audio context and haven't connected yet
-                if (!this.basicMode && this.audioContext && !this.source) {
-                    try {
-                        console.log('Connecting audio element to Web Audio API...');
-                        this.source = this.audioContext.createMediaElementSource(this.audio);
-                        this.source.connect(this.analyser);
-                        this.analyser.connect(this.audioContext.destination);
-                        console.log('Audio element connected to Web Audio API');
-                    } catch (error) {
-                        console.error('Failed to connect audio to Web Audio API:', error);
-                        console.log('Continuing with basic HTML5 audio...');
-                        this.basicMode = true;
+                // Try common alternative extensions based on base name
+                const baseName = track.file.replace(/\.(flac|m4a|mp3|wav|ogg)$/i, '');
+                const alternativeFormats = ['.mp3', '.m4a', '.wav', '.ogg'];
+                for (const ext of alternativeFormats) {
+                    const altFile = baseName + ext;
+                    if (altFile !== track.file) {
+                        const altTrack = { ...track, file: altFile };
+                        const audioPath = this.getBestPlayableSource(altTrack);
+                        if (audioPath) {
+                            console.log(`Trying constructed alternative format: ${altFile}`);
+                            document.getElementById('currentTrackArtist').textContent = `Trying alternative format...`;
+                            this.audio.src = `${audioPath}?v=${Date.now()}`;
+                            this.audio.load();
+                            this.audio.play().catch(() => {});
+                            return;
+                        }
                     }
                 }
+
+                // If no alternative found, show final error
+                document.getElementById('currentTrackArtist').textContent = 'No compatible audio format found for this device';
             }
 
             async togglePlay() {
@@ -1378,7 +1471,7 @@
 
         // Initialize player when page loads
         document.addEventListener('DOMContentLoaded', () => {
-            new MusicPlayer();
+            window.musicPlayer = new MusicPlayer();
         });
 
         // Hamburger menu functionality - FIXED VERSION

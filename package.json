@@ -5,7 +5,8 @@
   "scripts": {
     "build": "echo 'No build step needed for static site'",
     "start": "echo 'Static HTML site - open index.html in browser'",
-    "build-index": "node tools/build-search-index.js"
+    "build-index": "node tools/build-search-index.js",
+    "generate:images": "node tools/generate-image-manifest.js"
   },
   "devDependencies": {
     "cheerio": "^1.0.0-rc.12",
