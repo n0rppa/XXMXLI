@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const fetch = require('node-fetch');
 
 exports.handler = async function(event) {
   // CORS preflight
@@ -24,12 +23,34 @@ exports.handler = async function(event) {
       try { formData = JSON.parse(event.body); } catch(e) { formData = { raw: event.body }; }
     }
 
-    // Persist submission server-side for auditing
-    const submissionsDir = path.join(__dirname, '..', '..', 'data', 'form-submissions');
-    if (!fs.existsSync(submissionsDir)) fs.mkdirSync(submissionsDir, { recursive: true });
-    const filename = 'submission-' + Date.now() + '-' + Math.floor(Math.random()*10000) + '.json';
-    const fp = path.join(submissionsDir, filename);
-    fs.writeFileSync(fp, JSON.stringify({ headers: event.headers, form: formData }, null, 2));
+    // Verify Turnstile (or hCaptcha if configured)
+    const token = formData?.turnstile_token || formData?.['cf-turnstile-response'] || '';
+    const secret = process.env.TURNSTILE_SECRET || process.env.HCAPTCHA_SECRET || '';
+    if (!secret) {
+      // If no secret configured, reject to avoid spam; change to allow if you prefer
+      return { statusCode: 500, headers: CORS_HEADERS, body: 'Captcha not configured' };
+    }
+    const verifyParams = new URLSearchParams();
+    verifyParams.append('secret', secret);
+    verifyParams.append('response', token);
+    const ip = event.headers['client-ip'] || event.headers['x-forwarded-for'] || '';
+    if (ip) verifyParams.append('remoteip', Array.isArray(ip) ? ip[0] : ip);
+    const verifyResp = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: verifyParams.toString()
+    });
+    const verifyJson = await verifyResp.json().catch(()=>({success:false}));
+    if (!verifyJson.success) return { statusCode: 400, headers: CORS_HEADERS, body: 'Captcha failed' };
+
+    // Persist submission server-side for auditing (best-effort; may fail on read-only FS)
+    try {
+      const submissionsDir = path.join(__dirname, '..', '..', 'data', 'form-submissions');
+      if (!fs.existsSync(submissionsDir)) fs.mkdirSync(submissionsDir, { recursive: true });
+      const filename = 'submission-' + Date.now() + '-' + Math.floor(Math.random()*10000) + '.json';
+      const fp = path.join(submissionsDir, filename);
+      fs.writeFileSync(fp, JSON.stringify({ headers: event.headers, form: formData }, null, 2));
+    } catch (e) {
+      console.warn('Skipping submission persistence (likely read-only FS):', e.message);
+    }
 
     // Forward to Formspree endpoint server-side as application/x-www-form-urlencoded
     const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mvgqqyqr';
@@ -43,7 +64,8 @@ exports.handler = async function(event) {
       bodyForForward = params.toString();
     }
 
-    const forwardResp = await fetch(FORMSPREE_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: bodyForForward });
+  // Use native fetch available in Netlify Functions runtime
+  const forwardResp = await fetch(FORMSPREE_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: bodyForForward });
 
     if (!forwardResp.ok && forwardResp.status !== 200 && forwardResp.status !== 204) {
       return { statusCode: 502, headers: CORS_HEADERS, body: 'Forwarding to Formspree failed' };

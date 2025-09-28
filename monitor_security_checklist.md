@@ -1,5 +1,5 @@
 # Predictive Maintenance Checklist for monitor_security.sh
-Generated: Wed Sep 17 07:40:26 EEST 2025
+Generated: Sun Sep 28 03:00:20 UTC 2025
 
 ## Pre-execution Checks
 - [ ] Verify all dependencies are installed
@@ -20,9 +20,9 @@ Generated: Wed Sep 17 07:40:26 EEST 2025
 - [ ] Review log files for warnings
 - [ ] Confirm no temporary files left behind
 
-[31m❌(B[m All search tools failed or timed out for pattern: curl\|wget
-[31m❌(B[m All search tools failed or timed out for pattern: sudo\|root
-[31m❌(B[m All search tools failed or timed out for pattern: rm\|delete\|unlink
+[0;31m❌[0m All search tools failed or timed out for pattern: curl\|wget
+[0;31m❌[0m All search tools failed or timed out for pattern: sudo\|root
+[0;31m❌[0m All search tools failed or timed out for pattern: rm\|delete\|unlink
 ## Maintenance Schedule
 - [ ] Weekly: Review logs and performance
 - [ ] Monthly: Update dependencies

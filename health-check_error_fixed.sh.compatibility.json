@@ -1,0 +1,6 @@
+{
+  "script": "./health-check_error_fixed.sh",
+  "compatibility_issues": [
+
+  ]
+}

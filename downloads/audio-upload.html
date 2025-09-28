@@ -635,7 +635,7 @@
             async loadCurrentTracks() {
                 try {
                     // Try to fetch the tracklist, but handle CORS/fetch errors gracefully
-                    const response = await fetch('../assets/audio/tracklist.json');
+                    const response = await fetch('../assets/audio/tracklist_complete_all.json');
                     
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
