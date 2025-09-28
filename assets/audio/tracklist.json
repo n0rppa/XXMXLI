@@ -12,6 +12,14 @@
     "duration": "4:11"
   },
   {
+    "file": "03.mellow.mp3",
+    "title": "03.mellow.mp3",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
+  },
+  {
     "file": "06.Trippy Instrumental.flac",
     "title": "06.Trippy Instrumental.flac"
   },
@@ -22,6 +30,14 @@
     "album": "",
     "picture": null,
     "duration": "3:58"
+  },
+  {
+    "file": "06.Trippy Instrumental.mp3",
+    "title": "06.Trippy Instrumental.mp3",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
   },
   {
     "file": "07.strange.flac",
@@ -36,6 +52,14 @@
     "duration": "5:50"
   },
   {
+    "file": "07.strange.mp3",
+    "title": "07.strange.mp3",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
+  },
+  {
     "file": "09.swishaz.flac",
     "title": "09.swishaz.flac"
   },
@@ -46,6 +70,14 @@
     "album": "",
     "picture": null,
     "duration": "2:09"
+  },
+  {
+    "file": "09.swishaz.mp3",
+    "title": "09.swishaz.mp3",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
   },
   {
     "file": "13.rain.flac",
@@ -60,6 +92,14 @@
     "duration": "2:01"
   },
   {
+    "file": "13.rain.mp3",
+    "title": "13.rain.mp3",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
+  },
+  {
     "file": "18.alley.flac",
     "title": "18.alley.flac"
   },
@@ -70,6 +110,14 @@
     "album": "",
     "picture": null,
     "duration": "2:13"
+  },
+  {
+    "file": "18.alley.mp3",
+    "title": "18.alley.mp3",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
   },
   {
     "file": "20.cloudy_instrumental.flac",
@@ -84,6 +132,14 @@
     "duration": "1:07"
   },
   {
+    "file": "20.cloudy_instrumental.mp3",
+    "title": "20.cloudy_instrumental.mp3",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
+  },
+  {
     "file": "21.oldschool_hip-hop_beat.flac",
     "title": "21.oldschool_hip-hop_beat.flac"
   },
@@ -94,6 +150,14 @@
     "album": "",
     "picture": null,
     "duration": "0:59"
+  },
+  {
+    "file": "21.oldschool_hip-hop_beat.mp3",
+    "title": "21.oldschool_hip-hop_beat.mp3",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
   },
   {
     "file": "22.Hard trap beat.flac",
@@ -108,12 +172,28 @@
     "duration": "1:11"
   },
   {
+    "file": "22.Hard trap beat.mp3",
+    "title": "22.Hard trap beat.mp3",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
+  },
+  {
     "file": "Drizzle.m4a",
     "title": "Drizzle.m4a",
     "artist": "",
     "album": "",
     "picture": null,
     "duration": "3:34"
+  },
+  {
+    "file": "Drizzle.mp3",
+    "title": "Drizzle.mp3",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
   },
   {
     "file": "Rain (1).flac",
@@ -128,12 +208,28 @@
     "duration": "2:01"
   },
   {
+    "file": "Rain (1).mp3",
+    "title": "Rain (1).mp3",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
+  },
+  {
     "file": "cloudwave lizard.m4a",
     "title": "cloudwave lizard.m4a",
     "artist": "",
     "album": "",
     "picture": null,
     "duration": "1:57"
+  },
+  {
+    "file": "cloudwave lizard.mp3",
+    "title": "cloudwave lizard.mp3",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
   },
   {
     "file": "cloudwave lizard.wav",
@@ -150,6 +246,14 @@
     "album": "",
     "picture": null,
     "duration": "3:42"
+  },
+  {
+    "file": "freefall.mp3",
+    "title": "freefall.mp3",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
   },
   {
     "file": "freefall.wav",
@@ -172,12 +276,28 @@
     "duration": "1:08"
   },
   {
+    "file": "ganon.mp3",
+    "title": "ganon.mp3",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
+  },
+  {
     "file": "happy days.m4a",
     "title": "happy days.m4a",
     "artist": "",
     "album": "",
     "picture": null,
     "duration": "1:18"
+  },
+  {
+    "file": "happy days.mp3",
+    "title": "happy days.mp3",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
   },
   {
     "file": "happy days.wav",
@@ -196,6 +316,14 @@
     "duration": "3:17"
   },
   {
+    "file": "neo-memphis trappin.mp3",
+    "title": "neo-memphis trappin.mp3",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
+  },
+  {
     "file": "neo-memphis trappin.wav",
     "title": "neo-memphis trappin.wav",
     "artist": "",
@@ -212,6 +340,14 @@
     "duration": "4:01"
   },
   {
+    "file": "reviant.mp3",
+    "title": "reviant.mp3",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
+  },
+  {
     "file": "reviant.wav",
     "title": "reviant.wav",
     "artist": "",
@@ -226,6 +362,14 @@
     "album": "",
     "picture": null,
     "duration": "7:16"
+  },
+  {
+    "file": "tekknobadger.mp3",
+    "title": "tekknobadger.mp3",
+    "artist": "",
+    "album": "",
+    "picture": null,
+    "duration": ""
   },
   {
     "file": "tekknobadger.wav",
