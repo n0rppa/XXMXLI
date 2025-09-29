@@ -4,14 +4,44 @@
   <meta charset="UTF-8">
   <title>XXMXLI - Dropdown Menu Example</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="XXMXLI — digitaalinen studio: musiikki, valokuvaus ja projektit. Tutustu töihini ja ota yhteyttä." />
+  <link rel="canonical" href="https://www.xxmxli.com/" />
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
   <!-- Font Awesome for Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- LazySizes for lazy loading images -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js" async></script>
   <!-- Open Graph -->
   <meta property="og:title" content="XXMXLI" />
-  <meta property="og:description" content="Portfolio and projects by XXMXLI" />
-  <meta property="og:image" content="/images/og-image.png" />
+  <meta property="og:description" content="XXMXLI — digitaalinen studio: musiikki, valokuvaus ja projektit." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.xxmxli.com/" />
+  <meta property="og:site_name" content="XXMXLI" />
+  <meta property="og:image" content="https://www.xxmxli.com/assets/images/IMG_3918.JPG" />
+  <meta property="og:image:alt" content="XXMXLI site preview" />
+  <meta property="og:locale" content="fi_FI" />
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="XXMXLI" />
+  <meta name="twitter:description" content="XXMXLI — digitaalinen studio: musiikki, valokuvaus ja projektit." />
+  <meta name="twitter:image" content="https://www.xxmxli.com/assets/images/IMG_3918.JPG" />
+  
+  <!-- Structured Data: WebSite -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "XXMXLI",
+    "url": "https://www.xxmxli.com/",
+    "inLanguage": "fi",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://www.xxmxli.com/search.html?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
   <style>
     :root {
       --background: #000000;
@@ -603,15 +633,15 @@
 <body>
     <button id="menuToggle" class="hamburger" aria-label="Menu">☰</button>
     <nav id="sideMenu" class="side-menu" aria-label="Site">
-        <a href="index.html"><i class="fas fa-home"></i> Etusivu</a>
-        <a href="music.html"><i class="fas fa-music"></i> Musiikki</a>
-        <a href="photography.html"><i class="fas fa-image"></i> Valokuvaus</a>
-        <a href="projects.html"><i class="fas fa-project-diagram"></i> Projektit</a>
-        <a href="contact.html"><i class="fas fa-envelope"></i> Ota yhteyttä</a>
-        <a href="security.html"><i class="fas fa-shield-alt"></i> Turvallisuus</a>
-        <a href="#cert-section"><i class="fas fa-certificate"></i> CERT Info</a>
-        <a href="admin/login.html"><i class="fas fa-user-shield"></i> Admin Login</a>
-  <a href="downloads.html"><i class="fas fa-download"></i> Lataukset</a>
+        <a href="/"><i class="fas fa-home"></i> Etusivu</a>
+        <a href="/music.html"><i class="fas fa-music"></i> Musiikki</a>
+        <a href="/photography.html"><i class="fas fa-image"></i> Valokuvaus</a>
+        <a href="/projects.html"><i class="fas fa-project-diagram"></i> Projektit</a>
+        <a href="/contact.html"><i class="fas fa-envelope"></i> Ota yhteyttä</a>
+        <a href="/security.html"><i class="fas fa-shield-alt"></i> Turvallisuus</a>
+        <a href="/security.html#certInfo"><i class="fas fa-certificate"></i> CERT Info</a>
+        <a href="/admin/login.html"><i class="fas fa-user-shield"></i> Admin Login</a>
+        <a href="/downloads.html"><i class="fas fa-download"></i> Lataukset</a>
     </nav>
     <main class="main-content">
         <section class="hero">
@@ -680,7 +710,7 @@
                 <!-- Hidden fields -->
                 <input type="hidden" name="_subject" value="Uusi yhteydenotto XXMXLI-sivuilta">
                 <input type="hidden" name="_cc" value="eemelipitkanen55@gmail.com">
-                <input type="hidden" name="_next" value="https://n0rppa.github.io/XXMXLI/">
+                <input type="hidden" name="_next" value="https://www.xxmxli.com/">
 
                 <button type="submit" class="submit-btn">
                     <i class="fas fa-paper-plane"></i> Lähetä viesti
@@ -769,13 +799,21 @@
             } catch(e) { return '[ENCRYPTED]'; }
         }
         
-        // Initialize encryption key (shared secret)
-        let cryptoKey = null;
-        const initCrypto = async () => {
-            const masterKey = prompt('Enter chat encryption passphrase (shared with others):') || 'worldchat2025default';
-            cryptoKey = await generateKey(masterKey);
-        };
-        initCrypto();
+    // Initialize encryption key (shared secret)
+    let cryptoKey = null;
+    const initCrypto = async () => {
+      const masterKey = prompt('Enter chat encryption passphrase (shared with others):') || 'worldchat2025default';
+      cryptoKey = await generateKey(masterKey);
+    };
+    // Lazy-init crypto on first chat interaction to improve FID
+    let cryptoInitRequested = false;
+    const ensureCryptoInit = () => {
+      if (!cryptoInitRequested) {
+        cryptoInitRequested = true;
+        // Defer prompt slightly to avoid blocking input event
+        (window.requestIdleCallback || ((cb)=>setTimeout(cb,1)))(() => initCrypto());
+      }
+    };
         
         let chatHistory = JSON.parse(localStorage.getItem('worldChatHistoryEncrypted')||'[]');
         let bannedUsers = JSON.parse(localStorage.getItem('worldChatBanned')||'[]');
@@ -803,7 +841,10 @@
             chatLog.scrollTop = chatLog.scrollHeight;
         }
         
-        setTimeout(() => renderChat(), 500); // Wait for crypto init
+  setTimeout(() => renderChat(), 500); // Will decrypt if cryptoKey is set later
+  // Trigger crypto init only when user interacts with chat
+  if (chatName) chatName.addEventListener('focus', ensureCryptoInit, { once: true });
+  if (chatMsg) chatMsg.addEventListener('focus', ensureCryptoInit, { once: true });
 
         chatForm.onsubmit = async function(e) {
             e.preventDefault();
@@ -811,6 +852,7 @@
                 alert('Encryption not initialized. Please refresh the page.');
                 return;
             }
+            ensureCryptoInit();
             const name = chatName.value.trim().replace(/</g,'&lt;').replace(/>/g,'&gt;');
             const password = document.getElementById('chatPassword').value;
             const msg = chatMsg.value.trim().replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -1202,15 +1244,18 @@
         };
         
         // Initialize security system and page
-        document.addEventListener('DOMContentLoaded', () => {
-            xxmxliSecurity.init().then(allowed => {
-                if (allowed) {
-                    console.log('✅ XXMXLI Security: Access granted');
-                    console.log('XXMXLI website loaded with comprehensive security');
-                    console.log('Available commands: xxmxli.security.getStats(), xxmxli.exportContacts(), etc.');
-                }
-            });
+    document.addEventListener('DOMContentLoaded', () => {
+      const ric = window.requestIdleCallback || function(cb){ setTimeout(cb, 1); };
+      ric(() => {
+        xxmxliSecurity.init().then(allowed => {
+          if (allowed) {
+            console.log('✅ XXMXLI Security: Access granted');
+            console.log('XXMXLI website loaded with comprehensive security');
+            console.log('Available commands: xxmxli.security.getStats(), xxmxli.exportContacts(), etc.');
+          }
         });
+      });
+    });
 
         // Function to handle clipboard paste
         document.getElementById('pasteButton').addEventListener('click', async () => {
@@ -1286,7 +1331,7 @@
         });
     </script>
   <script src="/js/ads-loader.js" async></script>
-  <script src="/js/gdpr-consent.js"></script>
+  <script src="/js/gdpr-consent.js" defer></script>
   <script src="/js/analytics.js" async></script>
 </body>
 </html>

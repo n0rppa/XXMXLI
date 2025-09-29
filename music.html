@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Musiikki — XXMXLI:n tuotantoa ja äänimaisemia eri projekteihin. Kuuntele kappaleita ja katso visualisaatio." />
+    <link rel="canonical" href="https://www.xxmxli.com/music.html" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; 
         img-src 'self' https: data:; 
         script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; 
@@ -12,6 +14,29 @@
         worker-src blob: 'self';
         connect-src 'self' blob: https:;">
     <title>Musiikki - XXMXLI</title>
+    <!-- Open Graph / Twitter -->
+    <meta property="og:title" content="Musiikki - XXMXLI" />
+    <meta property="og:description" content="XXMXLI:n musiikkiprojekteja ja äänimaisemia — kuuntele kappaleita." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.xxmxli.com/music.html" />
+    <meta property="og:site_name" content="XXMXLI" />
+    <meta property="og:image" content="https://www.xxmxli.com/assets/images/IMG_3918.JPG" />
+    <meta property="og:locale" content="fi_FI" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Musiikki - XXMXLI" />
+    <meta name="twitter:description" content="XXMXLI:n musiikkiprojekteja ja äänimaisemia — kuuntele kappaleita." />
+    <meta name="twitter:image" content="https://www.xxmxli.com/assets/images/IMG_3918.JPG" />
+    <!-- Structured Data: WebPage -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Musiikki - XXMXLI",
+      "url": "https://www.xxmxli.com/music.html",
+      "inLanguage": "fi",
+      "isPartOf": {"@type":"WebSite","name":"XXMXLI","url":"https://www.xxmxli.com/"}
+    }
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
@@ -434,14 +459,14 @@
 <body>
     <button id="menuToggle" class="hamburger" aria-label="Menu">☰</button>
         <nav id="sideMenu" class="side-menu" aria-label="Site">
-        <a href="index.html"><i class="fas fa-home"></i> Etusivu</a>
-        <a href="music.html"><i class="fas fa-music"></i> Musiikki</a>
-        <a href="photography.html"><i class="fas fa-image"></i> Valokuvaus</a>
-        <a href="projects.html"><i class="fas fa-project-diagram"></i> Projektit</a>
-        <a href="contact.html"><i class="fas fa-envelope"></i> Ota yhteyttä</a>
-        <a href="security.html"><i class="fas fa-shield-alt"></i> Turvallisuus</a>
-        <a href="security.html#certInfo"><i class="fas fa-certificate"></i> CERT Info</a>
-        <a href="admin/login.html"><i class="fas fa-user-shield"></i> Admin Login</a>
+        <a href="/"><i class="fas fa-home"></i> Etusivu</a>
+        <a href="/music.html"><i class="fas fa-music"></i> Musiikki</a>
+        <a href="/photography.html"><i class="fas fa-image"></i> Valokuvaus</a>
+        <a href="/projects.html"><i class="fas fa-project-diagram"></i> Projektit</a>
+        <a href="/contact.html"><i class="fas fa-envelope"></i> Ota yhteyttä</a>
+        <a href="/security.html"><i class="fas fa-shield-alt"></i> Turvallisuus</a>
+        <a href="/security.html#certInfo"><i class="fas fa-certificate"></i> CERT Info</a>
+        <a href="/admin/login.html"><i class="fas fa-user-shield"></i> Admin Login</a>
     </nav>
     <main class="main-content">
         <section class="hero">
@@ -508,7 +533,7 @@
     </main>
 
     <!-- Visitor Tracker -->
-    <script src="assets/js/static-visitor-tracker.js"></script>
+    <script src="assets/js/static-visitor-tracker.js" defer></script>
 
     <script>
         // Debug function - users can run this in browser console
