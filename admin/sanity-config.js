@@ -5,10 +5,11 @@
 
 // Configure with your Sanity project ID, dataset, and API version
 const sanityConfig = {
-  projectId: '5njdlic9', // Your provided project ID
+  projectId: '5njdlic9', // Unified project ID
   dataset: 'production',
-  apiVersion: '2023-05-15', // Use today's date or the version you need
+  apiVersion: '2025-09-01', // Pin a recent API version for stability
   useCdn: true,
+  // token: '' // If you need private data, set via runtime, never commit secrets
 };
 
 // Initialize the client

@@ -114,9 +114,9 @@
   <header class="admin-header">
     <h1><i class="fas fa-database"></i> Sanity Studio - XXMXLI</h1>
     <nav class="admin-nav">
-      <a href="index.html"><i class="fas fa-home"></i> Dashboard</a>
-      <a href="supabase.html"><i class="fas fa-server"></i> Supabase</a>
-      <a href="../index.html"><i class="fas fa-arrow-left"></i> Back to Site</a>
+  <a href="/admin/index.html"><i class="fas fa-home"></i> Dashboard</a>
+  <a href="/admin/supabase.html"><i class="fas fa-server"></i> Supabase</a>
+  <a href="/index.html"><i class="fas fa-arrow-left"></i> Back to Site</a>
     </nav>
   </header>
 
@@ -158,13 +158,22 @@
         document.getElementById('sanity-container').appendChild(iframe);
 
         // Handle iframe load
+        let loaded = false;
         iframe.onload = function() {
+          loaded = true;
           console.log('Sanity Studio loaded successfully');
         };
 
         iframe.onerror = function() {
           showError('Failed to load Sanity Studio iframe');
         };
+
+        // Fallback: if not loaded within 6s, suggest opening in new tab
+        setTimeout(() => {
+          if (!loaded) {
+            showError('Studio framing may be blocked. Open in a new tab.');
+          }
+        }, 6000);
 
       } catch (error) {
         console.error('Error initializing Sanity Studio:', error);
@@ -202,6 +211,15 @@
             margin-top: 1rem;
             cursor: pointer;
           ">Retry</button>
+          <button onclick="openSanityStudio()" style="
+            background: #007ac1;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            margin-top: 1rem;
+            margin-left: .5rem;
+            cursor: pointer;
+          "><i class="fas fa-external-link-alt"></i> Open Studio</button>
         </div>
       `;
     }

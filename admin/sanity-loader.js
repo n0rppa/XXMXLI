@@ -35,7 +35,7 @@ function initSanityClient() {
   return window.sanityClient({
     projectId: '5njdlic9',
     dataset: 'production',
-    apiVersion: '2025-05-16',
+    apiVersion: '2025-09-01',
     useCdn: true
   });
 }
