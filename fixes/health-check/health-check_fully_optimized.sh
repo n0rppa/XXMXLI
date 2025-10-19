@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # ================================================================
 # XXMXLI Enhanced Security Script - Fully Optimized
@@ -6,18 +6,62 @@
 # ================================================================
 
 # Enhanced error handling
-set -e          # Exit on any error
-set -u          # Exit on undefined variables  
-set -o pipefail # Exit on pipe failures
+set -Eeuo pipefail # Exit on error, undefined vars; trap ERR; pipefail
+IFS=$'\n\t'                # Safe IFS
 
 # Error trap function
 error_exit() {
     local line_no=$1
     local error_code=$2
     echo "ERROR: Script failed at line $line_no with exit code $error_code" >&2
+    stack_trace >&2 || true
     exit $error_code
 }
 trap 'error_exit ${LINENO} $?' ERR
+
+# Stack trace for diagnostics
+stack_trace() {
+    echo "--- stack trace ---"
+    local i=0
+    while caller $i; do
+        ((i++))
+    done
+}
+
+# Default PATH for cron and non-interactive sessions
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH:-}"
+
+# Cron-safe logging controls
+NO_COLOR="${NO_COLOR:-}"     # Set to any value to disable ANSI colors
+QUIET_MODE="${QUIET_MODE:-false}"  # Set to true to reduce stdout (cron)
+SYSLOG="${SYSLOG:-false}"          # Set true to also log to syslog via logger
+SAFE_MODE="${SAFE_MODE:-false}"    # Set true to simulate (no changes), use run_cmd
+
+# Concurrency control via flock or directory lock
+LOCK_NAME="$(basename "$0").lock"
+LOCK_DIR="/tmp/${LOCK_NAME}"
+LOCK_FD=200
+
+acquire_lock() {
+    if command -v flock >/dev/null 2>&1; then
+        exec {LOCK_FD}>"/tmp/${LOCK_NAME}.flock" || true
+        flock -n "$LOCK_FD" || { echo "Another instance is running" >&2; exit 155; }
+    else
+        if ! mkdir "$LOCK_DIR" 2>/dev/null; then
+            echo "Another instance is running (lock $LOCK_DIR)" >&2
+            exit 155
+        fi
+    fi
+}
+
+release_lock() {
+    if command -v flock >/dev/null 2>&1; then
+        flock -u "$LOCK_FD" || true
+        rm -f "/tmp/${LOCK_NAME}.flock" || true
+    else
+        rmdir "$LOCK_DIR" 2>/dev/null || true
+    fi
+}
 
 # Cross-platform path detection
 detect_paths() {
@@ -44,12 +88,16 @@ log_performance() {
     local message="$2"
     local timestamp=$(date "+%Y-%m-%d %H:%M:%S")
     echo "[$timestamp] [$level] $message" >> "$LOG_FILE" 2>/dev/null || true
+    # Optional syslog
+    if [[ "$SYSLOG" == "true" ]] && command -v logger >/dev/null 2>&1; then
+        logger -t "$(basename "$0")" "[$level] $message" || true
+    fi
     
     case "$level" in
-        "ERROR") echo -e "\033[31m[ERROR]\033[0m $message" >&2 ;;
-        "WARN") echo -e "\033[33m[WARN]\033[0m $message" ;;
-        "INFO") echo -e "\033[32m[INFO]\033[0m $message" ;;
-        "DEBUG") [[ "${DEBUG:-false}" == "true" ]] && echo -e "\033[36m[DEBUG]\033[0m $message" ;;
+        "ERROR") [[ "$QUIET_MODE" != "true" ]] && { [[ -n "$NO_COLOR" ]] && echo "[ERROR] $message" >&2 || echo -e "\033[31m[ERROR]\033[0m $message" >&2; } ;;
+        "WARN") [[ "$QUIET_MODE" != "true" ]] && { [[ -n "$NO_COLOR" ]] && echo "[WARN]  $message" || echo -e "\033[33m[WARN]\033[0m $message"; } ;;
+        "INFO") [[ "$QUIET_MODE" != "true" ]] && { [[ -n "$NO_COLOR" ]] && echo "[INFO]  $message" || echo -e "\033[32m[INFO]\033[0m $message"; } ;;
+        "DEBUG") [[ "${DEBUG:-false}" == "true" && "$QUIET_MODE" != "true" ]] && { [[ -n "$NO_COLOR" ]] && echo "[DEBUG] $message" || echo -e "\033[36m[DEBUG]\033[0m $message"; } ;;
     esac
 }
 
@@ -103,19 +151,9 @@ safe_search() {
         return 1
     fi
     
-    for tool in rg ag awk grep; do
+    for tool in awk grep rg ag; do
         if command -v "$tool" >/dev/null 2>&1; then
             case "$tool" in
-                "rg") 
-                    if run_with_timeout_universal "$timeout" rg --color=never --no-heading -n "$pattern" "$file" 2>/dev/null; then
-                        return 0
-                    fi
-                    ;;
-                "ag") 
-                    if run_with_timeout_universal "$timeout" ag --nocolor --nogroup "$pattern" "$file" 2>/dev/null; then
-                        return 0
-                    fi
-                    ;;
                 "awk") 
                     if run_with_timeout_universal "$timeout" awk "/$pattern/" "$file" 2>/dev/null; then
                         return 0
@@ -123,6 +161,16 @@ safe_search() {
                     ;;
                 "grep") 
                     if run_with_timeout_universal "$timeout" grep -m 100 "$pattern" "$file" 2>/dev/null; then
+                        return 0
+                    fi
+                    ;;
+                "rg") 
+                    if run_with_timeout_universal "$timeout" rg --color=never --no-heading -n "$pattern" "$file" 2>/dev/null; then
+                        return 0
+                    fi
+                    ;;
+                "ag") 
+                    if run_with_timeout_universal "$timeout" ag --nocolor --nogroup "$pattern" "$file" 2>/dev/null; then
                         return 0
                     fi
                     ;;
@@ -165,8 +213,107 @@ time_function() {
     return $exit_code
 }
 
+# Permission helpers
+ensure_executable() { chmod 0755 "$1" 2>/dev/null || true; }
+ensure_umask() { umask "${1:-027}" 2>/dev/null || true; }
+
+# Privilege check with explanation
+require_root_or_sudo() {
+    local reason="${1:-This operation requires administrative privileges.}"
+    if [[ ${EUID:-$(id -u)} -ne 0 ]]; then
+        echo "This action needs admin privileges (root) to proceed." >&2
+        echo "Why: $reason" >&2
+        echo "Examples include: writing to /etc, managing firewall, installing packages, using privileged ports, or writing to /var/log." >&2
+        echo "Re-run with: sudo $0 "$@"" >&2
+        exit 100
+    fi
+}
+
+# Safe execution wrapper obeying SAFE_MODE
+run_cmd() {
+    if [[ "$SAFE_MODE" == "true" ]]; then
+        echo "DRY-RUN: $*"
+        log_performance "INFO" "DRY-RUN: $*"
+        return 0
+    else
+        "$@"
+    fi
+}
+
+# Background helpers
+declare -a __BG_PIDS=()
+run_background() { "$@" & __BG_PIDS+=($!); }
+wait_all() { local p; for p in "${__BG_PIDS[@]}"; do wait "$p"; done; __BG_PIDS=(); }
+
+# AWK helpers
+awk_match() { local pat="$1" file="$2"; awk "/${pat}/" "$file"; }
+awk_extract_field() { local n="$1"; shift; awk -v n="$n" '{print $n}' "$@"; }
+
+# Safe sed in-place (portable)
+safe_sed_inplace() {
+    local script="$1" file="$2" tmp
+    tmp=$(mktemp) && sed -e "$script" "$file" > "$tmp" && mv "$tmp" "$file"
+}
+
+# IP list normalization (stdin -> stdout)
+normalize_ip_list() {
+    awk 'BEGIN{FS="[[:space:]]+"} {gsub(/^\s+|\s+$/, ""); if ($0 ~ /^[0-9]{1,3}(\.[0-9]{1,3}){3}(\/[0-9]{1,2})?$/ || $0 ~ /^[0-9a-fA-F:]+(\/[0-9]{1,3})?$/) print $0}' \
+    | LC_ALL=C sort -u
+}
+
+# JSON helper: jq or python fallback
+json_query() {
+    local file="$1" filter="$2"
+    if command -v jq >/dev/null 2>&1; then
+        jq -r "$filter" "$file"
+    elif command -v python3 >/dev/null 2>&1; then
+        python3 - "$file" "$filter" <<'PY'
+import json,sys
+fn,flt=sys.argv[1],sys.argv[2]
+data=json.load(open(fn))
+if flt.strip()=='.[]':
+    if isinstance(data,list):
+        for x in data: print(x)
+    else:
+        for k,v in (data or {}).items(): print(k)
+else:
+    # Minimal fallback: print entire json
+    print(json.dumps(data))
+PY
+    else
+        echo "ERROR: Need jq or python3 for json_query($file, $filter)" >&2; return 127
+    fi
+}
+
 # Initialize logging
 log_performance "INFO" "Script $(basename "$0") started with enhanced optimizations"
+
+# Acquire lock to prevent overlap
+acquire_lock
+trap 'release_lock' EXIT
+
+# Subcommands: manual and read-log
+show_manual() {
+        cat <<MAN
+Step-by-step manual:
+1) SAFE MODE: export SAFE_MODE=true to simulate changes; commands will be logged not executed.
+2) Logging: file at $LOG_FILE; enable syslog with SYSLOG=true.
+3) Locking: prevents concurrent runs via flock or /tmp lock.
+4) Admin privileges: some actions require root (e.g., /etc edits, firewall). Use sudo.
+5) IP Lists: pipe through normalize_ip_list for dedupe and validation.
+6) Background work: use run_background <cmd> ... then wait_all to synchronize.
+7) Text processing: prefer awk_match/awk_extract_field over grep for portability.
+8) JSON: json_query <file> <filter> uses jq or a Python fallback.
+MAN
+}
+
+read_log() { local n=${1:-200}; tail -n "$n" "$LOG_FILE" 2>/dev/null || echo "No logs yet."; }
+
+# Quick CLI interceptors
+case "${1:-}" in
+    manual) show_manual; exit 0 ;;
+    read-log) shift; read_log "${1:-200}"; exit 0 ;;
+esac
 
 
 # ================================================================

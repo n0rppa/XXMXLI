@@ -1,29 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<url><loc>https://n0rppa.github.io/XXMXLI/404.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/audio-test.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/blocked.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/contact.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/donate.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/downloads.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/gallery.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/incident-reporter.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/index.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/login.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/music-player-demo.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/music.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/photography-fixed.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/photography.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/projects-final.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/projects.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/search.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/security.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/status.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/test-analytics.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/test-full-url.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/test-github-pages.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/test-local-photo.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/test-mime.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/test-photo.html</loc></url>
-<url><loc>https://n0rppa.github.io/XXMXLI/videos.html</loc></url>
+	<url><loc>https://www.xxmxli.com/</loc></url>
+	<url><loc>https://www.xxmxli.com/music.html</loc></url>
+	<url><loc>https://www.xxmxli.com/photography.html</loc></url>
+	<url><loc>https://www.xxmxli.com/projects.html</loc></url>
+	<url><loc>https://www.xxmxli.com/contact.html</loc></url>
+	<url><loc>https://www.xxmxli.com/security.html</loc></url>
+	<url><loc>https://www.xxmxli.com/privacy-policy.html</loc></url>
+	<url><loc>https://www.xxmxli.com/downloads.html</loc></url>
+	<url><loc>https://www.xxmxli.com/status.html</loc></url>
+	<url><loc>https://www.xxmxli.com/404.html</loc></url>
 </urlset>

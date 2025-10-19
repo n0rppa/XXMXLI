@@ -6,7 +6,7 @@
         <meta name="description" content="Valokuvaus — XXMXLI:n galleria. Uusimmat valokuvat päivittyvät automaattisesti." />
         <link rel="canonical" href="https://www.xxmxli.com/photography.html" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://api.ipify.org https://ipapi.co https://api.my-ip.io https://httpbin.org;">
-    <title>XXMXLI - Valokuvaus</title>
+    <title>XXMXLI — Valokuvaus</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/visitor-tracker.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js" async></script>
@@ -15,12 +15,14 @@
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.xxmxli.com/photography.html" />
         <meta property="og:site_name" content="XXMXLI" />
-        <meta property="og:image" content="https://www.xxmxli.com/assets/images/IMG_3914.JPG" />
+    <meta property="og:image" content="https://www.xxmxli.com/assets/images/IMG_3914.JPG" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
         <meta property="og:locale" content="fi_FI" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Valokuvaus - XXMXLI" />
         <meta name="twitter:description" content="XXMXLI:n valokuvagalleria — uudet kuvat ilmestyvät automaattisesti." />
-        <meta name="twitter:image" content="https://www.xxmxli.com/assets/images/IMG_3914.JPG" />
+    <meta name="twitter:image" content="https://www.xxmxli.com/assets/images/IMG_3914.JPG" />
         <!-- Structured Data: WebPage -->
         <script type="application/ld+json">
         {
@@ -952,43 +954,7 @@
             console.log('Initializing gallery lightbox...');
             window.photoGallery = new PhotoGallery();
             
-            // Add test button for debugging
-            const testButton = document.createElement('button');
-            testButton.textContent = 'Test Modal';
-            testButton.style.position = 'fixed';
-            testButton.style.top = '20px';
-            testButton.style.right = '20px';
-            testButton.style.zIndex = '9999';
-            testButton.style.padding = '10px 15px';
-            testButton.style.background = '#00ff00';
-            testButton.style.color = '#000';
-            testButton.style.border = '2px solid #00ff00';
-            testButton.style.borderRadius = '5px';
-            testButton.style.cursor = 'pointer';
-            testButton.style.fontFamily = 'Courier New, monospace';
-            testButton.style.fontSize = '12px';
-            document.body.appendChild(testButton);
-            
-            testButton.addEventListener('click', function() {
-                console.log('Test button clicked!');
-                const modal = document.getElementById('imageModal');
-                const modalImage = document.getElementById('modalImage');
-                const modalFilename = document.getElementById('modalFilename');
-                const modalDetails = document.getElementById('modalDetails');
-                
-                console.log('Modal found:', !!modal);
-                console.log('Modal display before:', getComputedStyle(modal).display);
-                
-                if (modal && modalImage) {
-                    modalImage.src = 'assets/images/1.jpg';
-                    modalFilename.textContent = 'Test Image';
-                    modalDetails.textContent = 'Test modal functionality';
-                    modal.style.display = 'flex';
-                    modal.classList.add('active');
-                    console.log('Modal display after:', getComputedStyle(modal).display);
-                    console.log('Modal has active class:', modal.classList.contains('active'));
-                }
-            });
+            // Debug button removed for production cleanliness
         });
     </script>
     <script src="assets/js/visitor-tracker.js" defer></script>

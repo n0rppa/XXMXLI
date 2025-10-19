@@ -1,4 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+# Strict mode for this fixer itself
+set -Eeuo pipefail
+IFS=$'\n\t'
 
 # ================================================================
 # XXMXLI Advanced Script Performance Fixer v2.0
@@ -61,6 +65,26 @@ run_with_timeout_universal() {
     fi
 }
 
+# Ensure a robust shebang at top of a target script
+ensure_shebang() {
+    local script_file="$1"
+    local desired='#!/usr/bin/env bash'
+    # Read first line safely
+    local first_line
+    first_line=$(head -n1 "$script_file" 2>/dev/null || true)
+    if [[ "$first_line" != "${desired}" ]]; then
+        local tmp
+        tmp=$(mktemp)
+        {
+            echo "$desired"
+            # Skip existing shebang if present
+            tail -n +2 "$script_file" 2>/dev/null || true
+        } > "$tmp"
+        mv "$tmp" "$script_file"
+        chmod +x "$script_file" || true
+    fi
+}
+
 # Ultra-safe search function that won't hang
 safe_search() {
     local pattern="$1"
@@ -119,14 +143,16 @@ fix_function_error_handling() {
     
     # Copy original
     cp "$script_file" "$fixed_file"
+
+    # Normalize shebang in the fixed file
+    ensure_shebang "$fixed_file"
     
     # Add strict error handling at the top
     if ! safe_search "set -e" "$fixed_file" 5; then
         sed -i '2i\
 # Enhanced error handling\
-set -e          # Exit on any error\
-set -u          # Exit on undefined variables\
-set -o pipefail # Exit on pipe failures\
+set -Eeuo pipefail # Exit on error, undefined vars; trap ERR; pipefail\
+IFS=$'"'\''\n\t'"'\''                # Safe IFS\
 \
 # Error trap function\
 error_exit() {\
@@ -143,9 +169,8 @@ trap '\''error_exit ${LINENO} $?'\'' ERR\
                 head -1 "$fixed_file"
                 cat << 'EOF'
 # Enhanced error handling
-set -e          # Exit on any error
-set -u          # Exit on undefined variables
-set -o pipefail # Exit on pipe failures
+set -Eeuo pipefail # Exit on error, undefined vars; trap ERR; pipefail
+IFS=$'\n\t'                # Safe IFS
 
 # Error trap function
 error_exit() {
@@ -327,6 +352,8 @@ add_performance_logging() {
         sed -i '40i\
 # Performance logging functions\
 LOG_FILE="${LOG_PATH:-/var/log}/$(basename "$0" .sh)_performance.log"\
+NO_COLOR="${NO_COLOR:-}"\
+QUIET_MODE="${QUIET_MODE:-false}"\
 \
 log_performance() {\
     local level="$1"\
@@ -336,10 +363,10 @@ log_performance() {\
     \
     # Also output to console with colors if available\
     case "$level" in\
-        "ERROR") echo -e "\033[31m[ERROR]\033[0m $message" >&2 ;;\
-        "WARN") echo -e "\033[33m[WARN]\033[0m $message" ;;\
-        "INFO") echo -e "\033[32m[INFO]\033[0m $message" ;;\
-        "DEBUG") [[ "${DEBUG:-false}" == "true" ]] && echo -e "\033[36m[DEBUG]\033[0m $message" ;;\
+        "ERROR") [[ "$QUIET_MODE" != "true" ]] && { [[ -n "$NO_COLOR" ]] && echo "[ERROR] $message" >&2 || echo -e "\033[31m[ERROR]\033[0m $message" >&2; } ;;\
+        "WARN") [[ "$QUIET_MODE" != "true" ]] && { [[ -n "$NO_COLOR" ]] && echo "[WARN]  $message" || echo -e "\033[33m[WARN]\033[0m $message"; } ;;\
+        "INFO") [[ "$QUIET_MODE" != "true" ]] && { [[ -n "$NO_COLOR" ]] && echo "[INFO]  $message" || echo -e "\033[32m[INFO]\033[0m $message"; } ;;\
+        "DEBUG") [[ "${DEBUG:-false}" == "true" && "$QUIET_MODE" != "true" ]] && { [[ -n "$NO_COLOR" ]] && echo "[DEBUG] $message" || echo -e "\033[36m[DEBUG]\033[0m $message"; } ;;\
     esac\
 }\
 \
@@ -388,18 +415,23 @@ create_function_tester() {
         fi
     done < "$script_file"
     
-    # Create test script
-    cat > "$test_file" << EOF
-#!/bin/bash
+    # Create test script header with safe injection of target script path
+    local quoted_target
+    quoted_target=$(printf '%q' "$script_file")
+    {
+        echo "#!/usr/bin/env bash"
+        echo "# Automated Function Tester"
+        echo "# Generated at runtime"
+        echo "TARGET_SCRIPT=$quoted_target"
+        echo ""
+        echo 'source "$TARGET_SCRIPT" 2>/dev/null || {'
+        echo '    echo "ERROR: Could not source $TARGET_SCRIPT"'
+        echo '    exit 1'
+        echo '}'
+    } > "$test_file"
 
-# Automated Function Tester for $(basename "$script_file")
-# Generated: $(date)
-
-# Source the original script
-source "$script_file" 2>/dev/null || {
-    echo "ERROR: Could not source $script_file"
-    exit 1
-}
+    # Append the rest of the tester using a literal heredoc to avoid outer-shell expansion issues
+    cat >> "$test_file" << 'EOF'
 
 # Test results
 TOTAL_TESTS=0
@@ -464,14 +496,14 @@ test_function_syntax() {
     fi
 }
 
-echo "🧪 Testing functions in $(basename "$script_file")"
+echo "🧪 Testing functions in $(basename "$TARGET_SCRIPT")"
 echo "=================================================="
 
 EOF
 
     # Add tests for each function
     for func in "${functions[@]}"; do
-        cat >> "$test_file" << EOF
+        cat >> "$test_file" << 'EOF'
 # Test $func
 test_log "INFO" "Testing function: $func"
 test_function_exists "$func"
@@ -482,7 +514,7 @@ EOF
     done
     
     # Add summary
-    cat >> "$test_file" << EOF
+    cat >> "$test_file" << 'EOF'
 # Test Summary
 echo "📊 Test Summary"
 echo "=============="
@@ -512,6 +544,20 @@ fix_script_comprehensively() {
     local script_file="$1"
     local script_name=$(basename "$script_file" .sh)
     local fixes_subdir="$FIXES_DIR/$script_name"
+    
+    # Skip test harness scripts
+    if [[ "$script_name" == *_test ]]; then
+        echo "⏭️  Skipping test script: $script_file"
+        return 0
+    fi
+    
+    # Validate original syntax before proceeding
+    if command -v bash >/dev/null 2>&1; then
+        if ! bash -n "$script_file" 2>/dev/null; then
+            echo "⚠️  Skipping due to syntax errors in source: $script_file" >&2
+            return 1
+        fi
+    fi
     
     echo ""
     echo "🔧 COMPREHENSIVE FIXING: $script_file"
@@ -545,7 +591,7 @@ fix_script_comprehensively() {
     
     # Apply all fixes to final version
     cat << 'EOF' > "$final_file"
-#!/bin/bash
+#!/usr/bin/env bash
 
 # ================================================================
 # XXMXLI Enhanced Security Script - Fully Optimized
@@ -553,18 +599,62 @@ fix_script_comprehensively() {
 # ================================================================
 
 # Enhanced error handling
-set -e          # Exit on any error
-set -u          # Exit on undefined variables  
-set -o pipefail # Exit on pipe failures
+set -Eeuo pipefail # Exit on error, undefined vars; trap ERR; pipefail
+IFS=$'\n\t'                # Safe IFS
 
 # Error trap function
 error_exit() {
     local line_no=$1
     local error_code=$2
     echo "ERROR: Script failed at line $line_no with exit code $error_code" >&2
+    stack_trace >&2 || true
     exit $error_code
 }
 trap 'error_exit ${LINENO} $?' ERR
+
+# Stack trace for diagnostics
+stack_trace() {
+    echo "--- stack trace ---"
+    local i=0
+    while caller $i; do
+        ((i++))
+    done
+}
+
+# Default PATH for cron and non-interactive sessions
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH:-}"
+
+# Cron-safe logging controls
+NO_COLOR="${NO_COLOR:-}"     # Set to any value to disable ANSI colors
+QUIET_MODE="${QUIET_MODE:-false}"  # Set to true to reduce stdout (cron)
+SYSLOG="${SYSLOG:-false}"          # Set true to also log to syslog via logger
+SAFE_MODE="${SAFE_MODE:-false}"    # Set true to simulate (no changes), use run_cmd
+
+# Concurrency control via flock or directory lock
+LOCK_NAME="$(basename "$0").lock"
+LOCK_DIR="/tmp/${LOCK_NAME}"
+LOCK_FD=200
+
+acquire_lock() {
+    if command -v flock >/dev/null 2>&1; then
+        exec {LOCK_FD}>"/tmp/${LOCK_NAME}.flock" || true
+        flock -n "$LOCK_FD" || { echo "Another instance is running" >&2; exit 155; }
+    else
+        if ! mkdir "$LOCK_DIR" 2>/dev/null; then
+            echo "Another instance is running (lock $LOCK_DIR)" >&2
+            exit 155
+        fi
+    fi
+}
+
+release_lock() {
+    if command -v flock >/dev/null 2>&1; then
+        flock -u "$LOCK_FD" || true
+        rm -f "/tmp/${LOCK_NAME}.flock" || true
+    else
+        rmdir "$LOCK_DIR" 2>/dev/null || true
+    fi
+}
 
 # Cross-platform path detection
 detect_paths() {
@@ -591,12 +681,16 @@ log_performance() {
     local message="$2"
     local timestamp=$(date "+%Y-%m-%d %H:%M:%S")
     echo "[$timestamp] [$level] $message" >> "$LOG_FILE" 2>/dev/null || true
+    # Optional syslog
+    if [[ "$SYSLOG" == "true" ]] && command -v logger >/dev/null 2>&1; then
+        logger -t "$(basename "$0")" "[$level] $message" || true
+    fi
     
     case "$level" in
-        "ERROR") echo -e "\033[31m[ERROR]\033[0m $message" >&2 ;;
-        "WARN") echo -e "\033[33m[WARN]\033[0m $message" ;;
-        "INFO") echo -e "\033[32m[INFO]\033[0m $message" ;;
-        "DEBUG") [[ "${DEBUG:-false}" == "true" ]] && echo -e "\033[36m[DEBUG]\033[0m $message" ;;
+        "ERROR") [[ "$QUIET_MODE" != "true" ]] && { [[ -n "$NO_COLOR" ]] && echo "[ERROR] $message" >&2 || echo -e "\033[31m[ERROR]\033[0m $message" >&2; } ;;
+        "WARN") [[ "$QUIET_MODE" != "true" ]] && { [[ -n "$NO_COLOR" ]] && echo "[WARN]  $message" || echo -e "\033[33m[WARN]\033[0m $message"; } ;;
+        "INFO") [[ "$QUIET_MODE" != "true" ]] && { [[ -n "$NO_COLOR" ]] && echo "[INFO]  $message" || echo -e "\033[32m[INFO]\033[0m $message"; } ;;
+        "DEBUG") [[ "${DEBUG:-false}" == "true" && "$QUIET_MODE" != "true" ]] && { [[ -n "$NO_COLOR" ]] && echo "[DEBUG] $message" || echo -e "\033[36m[DEBUG]\033[0m $message"; } ;;
     esac
 }
 
@@ -650,19 +744,9 @@ safe_search() {
         return 1
     fi
     
-    for tool in rg ag awk grep; do
+    for tool in awk grep rg ag; do
         if command -v "$tool" >/dev/null 2>&1; then
             case "$tool" in
-                "rg") 
-                    if run_with_timeout_universal "$timeout" rg --color=never --no-heading -n "$pattern" "$file" 2>/dev/null; then
-                        return 0
-                    fi
-                    ;;
-                "ag") 
-                    if run_with_timeout_universal "$timeout" ag --nocolor --nogroup "$pattern" "$file" 2>/dev/null; then
-                        return 0
-                    fi
-                    ;;
                 "awk") 
                     if run_with_timeout_universal "$timeout" awk "/$pattern/" "$file" 2>/dev/null; then
                         return 0
@@ -670,6 +754,16 @@ safe_search() {
                     ;;
                 "grep") 
                     if run_with_timeout_universal "$timeout" grep -m 100 "$pattern" "$file" 2>/dev/null; then
+                        return 0
+                    fi
+                    ;;
+                "rg") 
+                    if run_with_timeout_universal "$timeout" rg --color=never --no-heading -n "$pattern" "$file" 2>/dev/null; then
+                        return 0
+                    fi
+                    ;;
+                "ag") 
+                    if run_with_timeout_universal "$timeout" ag --nocolor --nogroup "$pattern" "$file" 2>/dev/null; then
                         return 0
                     fi
                     ;;
@@ -712,8 +806,107 @@ time_function() {
     return $exit_code
 }
 
+# Permission helpers
+ensure_executable() { chmod 0755 "$1" 2>/dev/null || true; }
+ensure_umask() { umask "${1:-027}" 2>/dev/null || true; }
+
+# Privilege check with explanation
+require_root_or_sudo() {
+    local reason="${1:-This operation requires administrative privileges.}"
+    if [[ ${EUID:-$(id -u)} -ne 0 ]]; then
+        echo "This action needs admin privileges (root) to proceed." >&2
+        echo "Why: $reason" >&2
+        echo "Examples include: writing to /etc, managing firewall, installing packages, using privileged ports, or writing to /var/log." >&2
+        echo "Re-run with: sudo $0 "$@"" >&2
+        exit 100
+    fi
+}
+
+# Safe execution wrapper obeying SAFE_MODE
+run_cmd() {
+    if [[ "$SAFE_MODE" == "true" ]]; then
+        echo "DRY-RUN: $*"
+        log_performance "INFO" "DRY-RUN: $*"
+        return 0
+    else
+        "$@"
+    fi
+}
+
+# Background helpers
+declare -a __BG_PIDS=()
+run_background() { "$@" & __BG_PIDS+=($!); }
+wait_all() { local p; for p in "${__BG_PIDS[@]}"; do wait "$p"; done; __BG_PIDS=(); }
+
+# AWK helpers
+awk_match() { local pat="$1" file="$2"; awk "/${pat}/" "$file"; }
+awk_extract_field() { local n="$1"; shift; awk -v n="$n" '{print $n}' "$@"; }
+
+# Safe sed in-place (portable)
+safe_sed_inplace() {
+    local script="$1" file="$2" tmp
+    tmp=$(mktemp) && sed -e "$script" "$file" > "$tmp" && mv "$tmp" "$file"
+}
+
+# IP list normalization (stdin -> stdout)
+normalize_ip_list() {
+    awk 'BEGIN{FS="[[:space:]]+"} {gsub(/^\s+|\s+$/, ""); if ($0 ~ /^[0-9]{1,3}(\.[0-9]{1,3}){3}(\/[0-9]{1,2})?$/ || $0 ~ /^[0-9a-fA-F:]+(\/[0-9]{1,3})?$/) print $0}' \
+    | LC_ALL=C sort -u
+}
+
+# JSON helper: jq or python fallback
+json_query() {
+    local file="$1" filter="$2"
+    if command -v jq >/dev/null 2>&1; then
+        jq -r "$filter" "$file"
+    elif command -v python3 >/dev/null 2>&1; then
+        python3 - "$file" "$filter" <<'PY'
+import json,sys
+fn,flt=sys.argv[1],sys.argv[2]
+data=json.load(open(fn))
+if flt.strip()=='.[]':
+    if isinstance(data,list):
+        for x in data: print(x)
+    else:
+        for k,v in (data or {}).items(): print(k)
+else:
+    # Minimal fallback: print entire json
+    print(json.dumps(data))
+PY
+    else
+        echo "ERROR: Need jq or python3 for json_query($file, $filter)" >&2; return 127
+    fi
+}
+
 # Initialize logging
 log_performance "INFO" "Script $(basename "$0") started with enhanced optimizations"
+
+# Acquire lock to prevent overlap
+acquire_lock
+trap 'release_lock' EXIT
+
+# Subcommands: manual and read-log
+show_manual() {
+        cat <<MAN
+Step-by-step manual:
+1) SAFE MODE: export SAFE_MODE=true to simulate changes; commands will be logged not executed.
+2) Logging: file at $LOG_FILE; enable syslog with SYSLOG=true.
+3) Locking: prevents concurrent runs via flock or /tmp lock.
+4) Admin privileges: some actions require root (e.g., /etc edits, firewall). Use sudo.
+5) IP Lists: pipe through normalize_ip_list for dedupe and validation.
+6) Background work: use run_background <cmd> ... then wait_all to synchronize.
+7) Text processing: prefer awk_match/awk_extract_field over grep for portability.
+8) JSON: json_query <file> <filter> uses jq or a Python fallback.
+MAN
+}
+
+read_log() { local n=${1:-200}; tail -n "$n" "$LOG_FILE" 2>/dev/null || echo "No logs yet."; }
+
+# Quick CLI interceptors
+case "${1:-}" in
+    manual) show_manual; exit 0 ;;
+    read-log) shift; read_log "${1:-200}"; exit 0 ;;
+esac
 
 EOF
     
@@ -721,6 +914,25 @@ EOF
     tail -n +2 "$script_file" | grep -v "^set -[euo]" | grep -v "^set -o pipefail" >> "$final_file"
     
     chmod +x "$final_file"
+
+    # Syntax check the generated script; if invalid, mark as .invalid
+    if command -v bash >/dev/null 2>&1; then
+        if ! bash -n "$final_file" 2>/dev/null; then
+            echo "⚠️  Warning: Syntax issues detected in generated file $final_file" >&2
+            mv "$final_file" "${final_file}.invalid" 2>/dev/null || true
+        fi
+    fi
+
+    # Produce a SAFE edition with SAFE_MODE enabled
+    local safe_file="${final_file%.sh}_safe.sh"
+    {
+        echo "#!/usr/bin/env bash"
+        echo "SAFE_MODE=true"
+        # Skip original shebang in final_file and include remainder
+        tail -n +2 "$final_file" 2>/dev/null || true
+    } > "$safe_file"
+    chmod +x "$safe_file" || true
+    if command -v bash >/dev/null 2>/dev/null; then bash -n "$safe_file" 2>/dev/null || true; fi
     
     echo ""
     echo "✅ COMPREHENSIVE FIXING COMPLETED"
@@ -733,7 +945,7 @@ EOF
     # Test the functions in the fixed script
     if [[ -f "$fixes_subdir/${script_name}_test.sh" ]]; then
         echo "🧪 Running function tests..."
-        "$fixes_subdir/${script_name}_test.sh" || true
+            "$fixes_subdir/${script_name}_test.sh" || true
     fi
     
     return 0
@@ -748,15 +960,44 @@ main() {
     mkdir -p "$CONFIG_DIR" "$LOG_DIR" "$FIXES_DIR"
     
     if [[ $# -eq 0 ]]; then
-        echo "Usage: $0 [script_file] [--all-security]"
+        echo "Usage: $0 [script_file] [--all-security] [--all] [--quiet]"
         echo ""
         echo "Options:"
         echo "  script_file      Fix specific script"
         echo "  --all-security   Fix all security scripts"
+        echo "  --all            Fix all .sh scripts in repo"
+        echo "  --quiet          Reduce console output (cron-friendly)"
         echo ""
         exit 1
     fi
     
+    # Parse simple flags
+    local fix_all=false
+    local fix_all_security=false
+    local quiet=false
+    local target_file=""
+    for arg in "$@"; do
+        case "$arg" in
+            --all)
+                fix_all=true
+                ;;
+            --all-security)
+                fix_all_security=true
+                ;;
+            --quiet)
+                quiet=true
+                ;;
+            *)
+                if [[ -z "$target_file" ]]; then target_file="$arg"; fi
+                ;;
+        esac
+    done
+
+    if [[ "$quiet" == true ]]; then
+        export QUIET_MODE=true
+        export NO_COLOR=1
+    fi
+
     if [[ "$1" == "--all-security" ]]; then
         echo "🔍 Finding all security scripts..."
         local security_scripts=()
@@ -774,11 +1015,22 @@ main() {
                 fix_script_comprehensively "$script"
             fi
         done
-        
-    elif [[ -f "$1" ]]; then
-        fix_script_comprehensively "$1"
+    elif [[ "$fix_all" == true ]]; then
+        echo "🔍 Finding all .sh scripts..."
+        local all_scripts=()
+        while IFS= read -r -d '' script; do
+            all_scripts+=("$script")
+        done < <(find . -type f -name "*.sh" -not -path "*/fixes/*" -print0 2>/dev/null)
+        echo "📋 Found ${#all_scripts[@]} scripts to fix"
+        for script in "${all_scripts[@]}"; do
+            if [[ ! "$script" =~ _fixed\.|_optimized\.|_test\. ]]; then
+                fix_script_comprehensively "$script"
+            fi
+        done
+    elif [[ -n "$target_file" && -f "$target_file" ]]; then
+        fix_script_comprehensively "$target_file"
     else
-        echo "❌ Error: File not found: $1"
+        echo "❌ Error: File not found or invalid options"
         exit 1
     fi
     

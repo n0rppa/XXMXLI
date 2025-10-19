@@ -13,6 +13,9 @@ import os
 import sys
 import subprocess
 import platform
+import shlex
+from typing import List, Tuple
+from tkinter import filedialog
 
 # Try to import tkinter, but make it optional
 try:
@@ -21,6 +24,64 @@ try:
     HAS_GUI = True
 except ImportError:
     HAS_GUI = False
+
+def _python_exec() -> str:
+    """Return the preferred python executable path (robust on Windows)."""
+    # Prefer the running interpreter to avoid PATH ambiguity
+    return sys.executable or 'python'
+
+def _incident_script_path() -> str:
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "automated_incident_reporter.py")
+
+def _validate_environment() -> Tuple[bool, str]:
+    """Check that required files and directories exist and are writable."""
+    script_path = _incident_script_path()
+    if not os.path.isfile(script_path):
+        return False, f"Missing required script: {script_path}"
+    reports_dir = os.path.join(os.path.dirname(script_path), 'reports')
+    try:
+        os.makedirs(reports_dir, exist_ok=True)
+        test_file = os.path.join(reports_dir, '.write_test')
+        with open(test_file, 'w') as f: f.write('ok')
+        os.remove(test_file)
+    except Exception as e:
+        return False, f"Cannot write to reports directory: {e}"
+    return True, "Environment OK"
+
+def _build_command(base_args: List[str]) -> List[str]:
+    """Return a sanitized command list (never include empty strings)."""
+    return [arg for arg in base_args if isinstance(arg, str) and arg.strip()]
+
+def _run_command(cmd: List[str]) -> Tuple[int, str, str]:
+    """Execute a command capturing stdout/stderr. Returns (code, out, err)."""
+    try:
+        completed = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        return completed.returncode, completed.stdout, completed.stderr
+    except FileNotFoundError as e:
+        return 127, '', f"Executable not found: {e}"
+    except Exception as e:
+        return 1, '', f"Unexpected error launching command: {e}"
+
+def _pretty_error_dialog(title: str, body: str):
+    if HAS_GUI:
+        try:
+            messagebox.showerror(title, body)
+            return
+        except Exception:
+            pass
+    print(f"[ERROR] {title}:\n{body}")
+
+def _report_incident_cli(incident_type: str, severity: int, description: str) -> Tuple[bool, str]:
+    script = _incident_script_path()
+    cmd = _build_command([_python_exec(), script, 'report', '--type', incident_type.upper(), '--severity', str(severity), '--description', description])
+    code, out, err = _run_command(cmd)
+    if code == 0:
+        return True, out or 'Incident reported.'
+    # Detect argument parsing error (exit 2 typical from argparse for bad usage)
+    hint = ''
+    if code == 2 or 'usage:' in err.lower():
+        hint = '\nHint: Required flags --type --severity --description must all be provided and severity 1-10.'
+    return False, f"Command failed (exit {code}).\nCMD: {' '.join(shlex.quote(c) for c in cmd)}\nSTDOUT:\n{out}\nSTDERR:\n{err}{hint}"
 
 def show_gui_launcher():
     """Show a simple GUI launcher for non-technical users"""
@@ -64,16 +125,18 @@ any suspicious activity to the appropriate authorities."""
                                    "Continue?")
         if result:
             try:
-                # Run the Python incident reporter
-                incident_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "automated_incident_reporter.py")
-                subprocess.run([sys.executable, incident_path], check=True)
-                messagebox.showinfo("Success", "Security monitoring has been set up!\n"
-                                              "Your system is now protected.")
-            except subprocess.CalledProcessError as e:
-                messagebox.showerror("Error", f"Failed to set up monitoring:\n{e}")
-            except FileNotFoundError:
-                messagebox.showerror("Error", "automated_incident_reporter.py not found!\n"
-                                            "Please ensure all files are in the same folder.")
+                ok, msg = _validate_environment()
+                if not ok:
+                    _pretty_error_dialog("Environment Error", msg)
+                else:
+                    cmd = _build_command([_python_exec(), _incident_script_path(), 'setup'])
+                    code, out, err = _run_command(cmd)
+                    if code == 0:
+                        messagebox.showinfo("Success", "Security monitoring has been set up!\nYour system is now protected.")
+                    else:
+                        _pretty_error_dialog("Setup Failed", f"Exit {code}\nSTDOUT:\n{out}\nSTDERR:\n{err}")
+            except Exception as e:
+                _pretty_error_dialog("Unexpected", str(e))
         root.quit()
     
     def report_incident():
@@ -95,26 +158,33 @@ any suspicious activity to the appropriate authorities."""
         if not description:
             return
         
-        try:
-            # Run the incident reporter with parameters
-            incident_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "automated_incident_reporter.py")
-            cmd = [sys.executable, incident_path, "report",
-                   "--type", incident_type.upper(),
-                   "--severity", str(severity),
-                   "--description", description]
-            result = subprocess.run(
-                cmd,
-                check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                universal_newlines=True
-            )
-            
-            messagebox.showinfo("Success", f"Incident reported successfully!\n\n{result.stdout}")
-        except subprocess.CalledProcessError as e:
-            messagebox.showerror("Error", f"Failed to report incident:\n{e}")
-        except FileNotFoundError:
-            messagebox.showerror("Error", "automated_incident_reporter.py not found!")
+        ok, msg = _validate_environment()
+        if not ok:
+            _pretty_error_dialog("Environment Error", msg)
+            return
+        # Ask for evidence files (optional)
+        evidence_files = []
+        if messagebox.askyesno("Evidence", "Attach evidence files (logs, screenshots)?"):
+            files = filedialog.askopenfilenames(title="Select evidence files")
+            evidence_files = list(files)
+
+        # Dry run?
+        dry_run = messagebox.askyesno("Dry Run", "Perform a dry run (no submission)?")
+
+        # Extend command manually to pass evidence & dry-run since _report_incident_cli currently encapsulates logic
+        script = _incident_script_path()
+        base_cmd = [_python_exec(), script, 'report', '--type', incident_type.upper(), '--severity', str(severity), '--description', description]
+        for ev in evidence_files:
+            base_cmd += ['--evidence', ev]
+        if dry_run:
+            base_cmd.append('--dry-run')
+        code, out, err = _run_command(base_cmd)
+        success = code == 0
+        info = out if success else f"Exit {code}\nSTDOUT:\n{out}\nSTDERR:\n{err}"
+        if success:
+            messagebox.showinfo("Success", info)
+        else:
+            _pretty_error_dialog("Failed to Report", info)
         
         root.quit()
     
@@ -192,33 +262,45 @@ def show_cli_launcher():
             return
         elif choice == '1':
             print("Setting up security monitoring...")
-            try:
-                incident_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "automated_incident_reporter.py")
-                subprocess.run([sys.executable, incident_path], check=True)
-                print("Security monitoring set up successfully!")
-            except subprocess.CalledProcessError as e:
-                print(f"Error setting up monitoring: {e}")
-            except FileNotFoundError:
-                print("Error: automated_incident_reporter.py not found!")
+            ok, msg = _validate_environment()
+            if not ok:
+                print(f"Environment error: {msg}")
+            else:
+                code, out, err = _run_command(_build_command([_python_exec(), _incident_script_path(), 'setup']))
+                if code == 0:
+                    print("Security monitoring set up successfully!")
+                else:
+                    print(f"Setup failed (exit {code})\nSTDOUT:\n{out}\nSTDERR:\n{err}")
             return
         elif choice == '2':
             print("Manual incident reporting...")
             incident_type = input("Incident type (malware/intrusion/ddos/phishing/other): ").strip()
             severity = input("Severity (1-10): ").strip()
             description = input("Description: ").strip()
+            add_evidence = input("Add evidence files? (y/N): ").strip().lower() == 'y'
+            evidence_args = []
+            if add_evidence:
+                print("Enter evidence file paths (blank line to finish):")
+                while True:
+                    p = input("Evidence path: ").strip()
+                    if not p:
+                        break
+                    evidence_args += ['--evidence', p]
+            dry_run = input("Dry run (no submission)? (y/N): ").strip().lower() == 'y'
             
-            try:
-                incident_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "automated_incident_reporter.py")
-                cmd = [sys.executable, incident_path, "report",
-                       "--type", incident_type.upper(),
-                       "--severity", severity,
-                       "--description", description]
-                subprocess.run(cmd, check=True)
-                print("Incident reported successfully!")
-            except subprocess.CalledProcessError as e:
-                print(f"Error reporting incident: {e}")
-            except FileNotFoundError:
-                print("Error: automated_incident_reporter.py not found!")
+            ok, msg = _validate_environment()
+            if not ok:
+                print(f"Environment error: {msg}")
+            else:
+                cmd = [_python_exec(), _incident_script_path(), 'report', '--type', incident_type.upper(), '--severity', severity, '--description', description]
+                cmd += evidence_args
+                if dry_run:
+                    cmd.append('--dry-run')
+                code, out, err = _run_command(cmd)
+                if code == 0:
+                    print("Incident reported successfully!\n" + out)
+                else:
+                    print(f"Report failed (exit {code})\nSTDOUT:\n{out}\nSTDERR:\n{err}")
             return
         elif choice == '3':
             print("\nXXMXLI Incident Reporter Help")

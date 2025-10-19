@@ -23,6 +23,9 @@ import json
 import time
 import argparse
 import platform
+import hashlib
+import logging
+from logging.handlers import RotatingFileHandler
 from datetime import datetime, timezone
 
 # Ensure we're working from the script's directory
@@ -33,16 +36,35 @@ class IncidentReporter:
     def __init__(self):
         self.base_dir = SCRIPT_DIR
         self.reports_dir = os.path.join(self.base_dir, 'reports')
+        self.evidence_dir = os.path.join(self.reports_dir, 'evidence')
+        self.logs_dir = os.path.join(self.base_dir, 'logs')
         self.ensure_directories()
+        self._init_logging()
         
     def ensure_directories(self):
         """Create necessary directories"""
         os.makedirs(self.reports_dir, exist_ok=True)
+        os.makedirs(self.evidence_dir, exist_ok=True)
+        os.makedirs(self.logs_dir, exist_ok=True)
+
+    def _init_logging(self):
+        log_file = os.path.join(self.logs_dir, 'incident_reporter.log')
+        self.logger = logging.getLogger('incident_reporter')
+        if not self.logger.handlers:
+            self.logger.setLevel(logging.INFO)
+            handler = RotatingFileHandler(log_file, maxBytes=512_000, backupCount=3, encoding='utf-8')
+            fmt = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+            handler.setFormatter(fmt)
+            self.logger.addHandler(handler)
+        self.logger.info('Logger initialized')
         
     def log(self, message):
         """Log message with timestamp"""
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        print(f"[{timestamp}] {message}")
+        line = f"[{timestamp}] {message}"
+        print(line)
+        if hasattr(self, 'logger'):
+            self.logger.info(message)
         
     def collect_system_info(self):
         """Collect system information for incident context"""
@@ -112,6 +134,35 @@ class IncidentReporter:
             
         self.log(f"Incident {incident_id} successfully submitted to all agencies")
         return True
+
+    def process_evidence(self, evidence_paths):
+        """Process evidence files: compute hashes, sizes, copy (optional)."""
+        processed = []
+        for p in evidence_paths:
+            if not p:
+                continue
+            abs_p = os.path.abspath(p)
+            if not os.path.isfile(abs_p):
+                self.log(f"Evidence not found: {abs_p}")
+                processed.append({'path': abs_p, 'error': 'NOT_FOUND'})
+                continue
+            try:
+                sha256 = hashlib.sha256()
+                size = 0
+                with open(abs_p, 'rb') as f:
+                    for chunk in iter(lambda: f.read(8192), b''):
+                        sha256.update(chunk)
+                        size += len(chunk)
+                # Do not copy large files automatically; just reference.
+                processed.append({
+                    'original_path': abs_p,
+                    'sha256': sha256.hexdigest(),
+                    'size_bytes': size,
+                    'filename': os.path.basename(abs_p)
+                })
+            except Exception as e:
+                processed.append({'path': abs_p, 'error': str(e)})
+        return processed
         
     def setup_monitoring(self):
         """Set up automated security monitoring"""
@@ -186,6 +237,8 @@ def main():
     parser.add_argument('--type', help='Incident type')
     parser.add_argument('--severity', type=int, help='Severity level (1-10)')
     parser.add_argument('--description', help='Incident description')
+    parser.add_argument('--dry-run', action='store_true', help='Create report but skip submission')
+    parser.add_argument('--evidence', action='append', help='Path to evidence file (can repeat)', default=[])
     
     args = parser.parse_args()
     
@@ -196,11 +249,22 @@ def main():
         
     elif args.command == 'report':
         if args.type and args.severity and args.description:
+            if not (1 <= args.severity <= 10):
+                print("Error: --severity must be between 1 and 10")
+                sys.exit(2)
+            evidence_meta = reporter.process_evidence(args.evidence) if args.evidence else []
             incident_id, report = reporter.create_incident_report(
-                args.type, args.severity, args.description
+                args.type, args.severity, args.description, evidence=evidence_meta
             )
-            reporter.submit_report(incident_id, report)
-            print(f"Incident {incident_id} reported successfully")
+            if args.dry_run:
+                report['status'] = 'DRY_RUN'
+                report_file = os.path.join(reporter.reports_dir, f"{incident_id}.json")
+                with open(report_file, 'w') as f:
+                    json.dump(report, f, indent=2)
+                print(f"[DRY-RUN] Incident {incident_id} prepared (no submission). Report saved.")
+            else:
+                reporter.submit_report(incident_id, report)
+                print(f"Incident {incident_id} reported successfully")
         else:
             print("Error: --type, --severity, and --description are required for report command")
             sys.exit(1)

@@ -30,3 +30,30 @@ assets/audio/freefall2.wav
 assets/audio/tekknobadger.wav
 assets/audio/track4.flac
 search-index.json
+
+# Generated artifacts (analysis/compatibility, logs, reports, backups)
+*.analysis.json
+*.compatibility.json
+reports/**
+logs/**
+backups/**
+backups_*/**
+
+# Bulk generated shell variants (keep curated ones under fixes/ only)
+lataukset/**
+*_error_fixed*.sh
+*_grep_fixed*.sh
+*_paths_fixed*.sh
+*_logged*.sh
+*_test*.sh
+*_vars_fixed*.sh
+*_performance_optimized*.sh
+
+# Ignore everything under fixes/ except final curated outputs and docs
+fixes/**
+!fixes/README_FIXES.md
+!fixes/**/
+!fixes/**/*_fully_optimized*.sh
+
+# Build outputs
+dist_executables/**
