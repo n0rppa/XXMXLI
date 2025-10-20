@@ -33,6 +33,9 @@ INFO="ℹ️"
 # Interactive mode flag
 INTERACTIVE_MODE=true
 
+# Resolved W folder (global)
+RESOLVED_W_FOLDER=""
+
 # Show beautiful banner
 show_banner() {
     clear
@@ -74,6 +77,130 @@ warn() {
 # Info message function
 info() {
     echo -e "${CYAN}${INFO}${NC} $1"
+}
+
+# Emit IPs (one per line) from a JSON array file using jq if present or Python fallback
+list_ips_from_json() {
+    local file="$1"
+    if command -v jq >/dev/null 2>&1; then
+        jq -r '.[]' "$file"
+    elif command -v python3 >/dev/null 2>&1; then
+        python3 - "$file" <<'PY'
+import json, sys
+path = sys.argv[1]
+with open(path, 'r', encoding='utf-8') as f:
+    data = json.load(f)
+for item in data:
+    print(item)
+PY
+    else
+        # No parser available
+        return 1
+    fi
+}
+
+# Return length of JSON array file, or 'unknown' if no parser
+json_array_length() {
+    local file="$1"
+    if command -v jq >/dev/null 2>&1; then
+        jq length "$file" 2>/dev/null || echo "unknown"
+    elif command -v python3 >/dev/null 2>&1; then
+        python3 - "$file" <<'PY'
+import json, sys
+try:
+    with open(sys.argv[1], 'r', encoding='utf-8') as f:
+        print(len(json.load(f)))
+except Exception:
+    print('unknown')
+PY
+    else
+        echo "unknown"
+    fi
+}
+
+# Resolve W folder with safe fallbacks and export to environment
+resolve_w_folder() {
+    # Priority: env W_FOLDER (if dir) > hardcoded > ./w > script_dir/w
+    local hardcoded="/home/kodachi/Desktop/kotisivu/w"
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+    if [[ -n "${W_FOLDER:-}" && -d "${W_FOLDER}" ]]; then
+        RESOLVED_W_FOLDER="${W_FOLDER}"
+    elif [[ -d "${hardcoded}" ]]; then
+        RESOLVED_W_FOLDER="${hardcoded}"
+    elif [[ -d "./w" ]]; then
+        RESOLVED_W_FOLDER="$(cd ./w && pwd)"
+    elif [[ -d "${script_dir}/w" ]]; then
+        RESOLVED_W_FOLDER="${script_dir}/w"
+    else
+        # Default to hardcoded path even if missing; we will warn later
+        RESOLVED_W_FOLDER="${hardcoded}"
+    fi
+
+    export W_FOLDER="${RESOLVED_W_FOLDER}"
+    info "W folder resolved to: ${W_FOLDER}"
+
+    if [[ ! -d "${W_FOLDER}" ]]; then
+        warn "Resolved W folder does not exist: ${W_FOLDER}"
+        warn "Set W_FOLDER to override, e.g.: export W_FOLDER=/path/to/w"
+    fi
+}
+
+# Ensure assets/security/blocked_ips.json exists; build from W folder if missing
+ensure_blacklist_json() {
+    local json_path="assets/security/blocked_ips.json"
+    if [[ -f "${json_path}" && -s "${json_path}" ]]; then
+        return 0
+    fi
+
+    info "Blacklist JSON missing; attempting to generate from W folder: ${W_FOLDER}"
+
+    # Prefer Python processor if available
+    if command -v python3 >/dev/null 2>&1 && [[ -f "process_w_blacklists.py" ]]; then
+        info "Running Python generator: process_w_blacklists.py"
+        if W_FOLDER="${W_FOLDER}" python3 process_w_blacklists.py >/dev/null 2>&1; then
+            if [[ -f "${json_path}" && -s "${json_path}" ]]; then
+                success "Generated ${json_path} via Python processor"
+                return 0
+            fi
+        else
+            warn "Python processor failed; falling back to shell-based generator"
+        fi
+    fi
+
+    # Fallback shell-based generator: scrape IPv4s from W folder and write JSON array
+    if [[ -d "${W_FOLDER}" ]]; then
+        info "Building minimal JSON from IPv4s found under ${W_FOLDER}"
+        mkdir -p "$(dirname "${json_path}")"
+        # Collect unique IPv4 addresses with basic octet bounds check
+        mapfile -t ips < <(grep -RhoE "([0-9]{1,3}\.){3}[0-9]{1,3}" "${W_FOLDER}" 2>/dev/null \
+            | awk -F. '$1<256 && $2<256 && $3<256 && $4<256' \
+            | sort -u)
+
+        {
+            echo "["
+            if [[ ${#ips[@]} -gt 0 ]]; then
+                for ((i=0; i<${#ips[@]}; i++)); do
+                    ip="${ips[$i]}"
+                    if [[ $i -lt $((${#ips[@]}-1)) ]]; then
+                        echo "  \"${ip}\"," 
+                    else
+                        echo "  \"${ip}\""
+                    fi
+                done
+            fi
+            echo "]"
+        } > "${json_path}"
+
+        if [[ -s "${json_path}" ]]; then
+            success "Generated ${json_path} via shell fallback"
+            return 0
+        fi
+    fi
+
+    error "Unable to generate ${json_path}. Provide it or set W_FOLDER correctly."
+    return 1
 }
 
 # Interactive menu function
@@ -126,7 +253,7 @@ ADMIN_BLOCKS="admin/.htaccess_ip_blocks"
 check_environment() {
     info "Checking environment and dependencies..."
     
-    if [ ! -f "index.html" ] || [ ! -f "assets/security/blocked_ips.json" ]; then
+    if [ ! -f "index.html" ]; then
         error "Run this script from the XXMXLI root directory"
         echo ""
         info "Expected directory structure:"
@@ -134,6 +261,14 @@ check_environment() {
         echo "  - assets/security/blocked_ips.json (IP blacklist)"
         echo "  - admin/ directory"
         echo ""
+        exit 1
+    fi
+
+    # Resolve W folder and ensure blacklist JSON is present (generate if needed)
+    resolve_w_folder
+    if ! ensure_blacklist_json; then
+        echo ""
+        error "Blacklist JSON is required for deployment."
         exit 1
     fi
     
@@ -153,7 +288,7 @@ safe_deploy_blocking() {
     
     # Show what will be deployed
     if [ -f "assets/security/blocked_ips.json" ]; then
-        local ip_count=$(jq length assets/security/blocked_ips.json 2>/dev/null || echo "unknown")
+        local ip_count=$(json_array_length assets/security/blocked_ips.json)
         info "Found $ip_count IPs in blacklist to deploy"
     fi
     
@@ -245,11 +380,25 @@ deploy_ip_blocks() {
         echo "" >> "$MAIN_HTACCESS"
         
         # Add blocked IPs
-        jq -r '.[]' assets/security/blocked_ips.json | while read -r ip; do
-            if [[ $ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                echo "Require not ip $ip" >> "$MAIN_HTACCESS"
+        if ips_output=$(list_ips_from_json "assets/security/blocked_ips.json" 2>/dev/null); then
+            while IFS= read -r ip; do
+                if [[ $ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                    echo "Require not ip $ip" >> "$MAIN_HTACCESS"
+                fi
+            done <<< "$ips_output"
+        else
+            warn "No JSON parser available; falling back to scanning W folder for IPv4s"
+            if [[ -d "${W_FOLDER:-}" ]]; then
+                grep -RhoE "([0-9]{1,3}\.){3}[0-9]{1,3}" "${W_FOLDER}" 2>/dev/null \
+                | awk -F. '$1<256 && $2<256 && $3<256 && $4<256' \
+                | sort -u \
+                | while read -r ip; do
+                    echo "Require not ip $ip" >> "$MAIN_HTACCESS"
+                done
+            else
+                error "Cannot enumerate IPs: W_FOLDER not set or directory missing"
             fi
-        done
+        fi
         
         echo "" >> "$MAIN_HTACCESS"
         echo "# Default allow" >> "$MAIN_HTACCESS"
@@ -266,11 +415,25 @@ deploy_ip_blocks() {
         
         # Copy blocking rules to admin
         if [ -f "assets/security/blocked_ips.json" ]; then
-            jq -r '.[]' assets/security/blocked_ips.json | while read -r ip; do
-                if [[ $ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                    echo "Require not ip $ip" >> "$ADMIN_HTACCESS"
+            if ips_output=$(list_ips_from_json "assets/security/blocked_ips.json" 2>/dev/null); then
+                while IFS= read -r ip; do
+                    if [[ $ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                        echo "Require not ip $ip" >> "$ADMIN_HTACCESS"
+                    fi
+                done <<< "$ips_output"
+            else
+                warn "No JSON parser available; falling back to scanning W folder for IPv4s"
+                if [[ -d "${W_FOLDER:-}" ]]; then
+                    grep -RhoE "([0-9]{1,3}\.){3}[0-9]{1,3}" "${W_FOLDER}" 2>/dev/null \
+                    | awk -F. '$1<256 && $2<256 && $3<256 && $4<256' \
+                    | sort -u \
+                    | while read -r ip; do
+                        echo "Require not ip $ip" >> "$ADMIN_HTACCESS"
+                    done
+                else
+                    error "Cannot enumerate IPs: W_FOLDER not set or directory missing"
                 fi
-            done
+            fi
         fi
         
         echo "" >> "$ADMIN_HTACCESS"
@@ -563,12 +726,34 @@ validate_blacklist() {
     info "Validating blacklist file..."
     
     if [ -f "assets/security/blocked_ips.json" ]; then
-        if jq empty assets/security/blocked_ips.json 2>/dev/null; then
-            success "Blacklist JSON is valid"
-            local ip_count=$(jq length assets/security/blocked_ips.json)
-            info "Contains $ip_count IP addresses"
+        if command -v jq >/dev/null 2>&1; then
+            if jq empty assets/security/blocked_ips.json 2>/dev/null; then
+                success "Blacklist JSON is valid"
+                local ip_count=$(json_array_length assets/security/blocked_ips.json)
+                info "Contains $ip_count IP addresses"
+            else
+                error "Blacklist JSON is invalid"
+            fi
+        elif command -v python3 >/dev/null 2>&1; then
+            if python3 - <<'PY'
+import json,sys
+try:
+    with open('assets/security/blocked_ips.json','r',encoding='utf-8') as f:
+        data=json.load(f)
+    assert isinstance(data, list)
+    print('OK')
+except Exception as e:
+    sys.exit(1)
+PY
+            then
+                success "Blacklist JSON is valid"
+                local ip_count=$(json_array_length assets/security/blocked_ips.json)
+                info "Contains $ip_count IP addresses"
+            else
+                error "Blacklist JSON is invalid"
+            fi
         else
-            error "Blacklist JSON is invalid"
+            warn "Neither jq nor python3 is available to validate JSON"
         fi
     else
         error "Blacklist file not found"
