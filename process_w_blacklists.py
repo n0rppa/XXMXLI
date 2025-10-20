@@ -22,7 +22,46 @@ from pathlib import Path
 from datetime import datetime
 
 # Configuration
-BLACKLIST_SOURCE_DIR = Path('w')  # Your blacklist folder
+# Hardcoded default W folder with safe fallbacks and env override
+SCRIPT_DIR = Path(__file__).parent.resolve()
+REPO_ROOT = SCRIPT_DIR
+try:
+    # Try to detect repo root by common markers
+    for p in [SCRIPT_DIR, *SCRIPT_DIR.parents]:
+        if (p / '.git').exists() or (p / 'README.md').exists():
+            REPO_ROOT = p
+            break
+except Exception:
+    pass
+
+HARDCODED_W_FOLDER = Path('/home/kodachi/Desktop/kotisivu/w')
+
+def resolve_w_folder() -> Path:
+    # 1) Explicit env override
+    env_path = os.environ.get('W_FOLDER')
+    if env_path:
+        p = Path(env_path).expanduser().resolve()
+        if p.exists():
+            return p
+    # 2) Hardcoded absolute path (requested)
+    if HARDCODED_W_FOLDER.exists():
+        return HARDCODED_W_FOLDER
+    # 3) Repo-root w
+    p = (REPO_ROOT / 'w').resolve()
+    if p.exists():
+        return p
+    # 4) Script-dir w
+    p = (SCRIPT_DIR / 'w').resolve()
+    if p.exists():
+        return p
+    # 5) Parent dir w
+    p = (SCRIPT_DIR.parent / 'w').resolve()
+    if p.exists():
+        return p
+    # Fallback to repo-root w even if missing (we'll warn)
+    return (REPO_ROOT / 'w').resolve()
+
+BLACKLIST_SOURCE_DIR = resolve_w_folder()
 OUTPUT_DIR = Path('assets/security')
 JS_OUTPUT = OUTPUT_DIR / 'blocked_ips.js'
 JSON_OUTPUT = OUTPUT_DIR / 'blocked_ips.json'
@@ -473,6 +512,9 @@ def main():
     """Main processing function"""
     print("🚀 Starting comprehensive IP blacklist processing...")
     print("📂 Processing blacklist directory:", BLACKLIST_SOURCE_DIR.absolute())
+    if not BLACKLIST_SOURCE_DIR.exists():
+        print(f"⚠️  Warning: Resolved W folder does not exist: {BLACKLIST_SOURCE_DIR}")
+        print("    Set W_FOLDER env var to override, e.g., export W_FOLDER=/path/to/w")
     
     start_time = datetime.now()
     

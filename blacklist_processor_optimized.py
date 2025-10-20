@@ -208,6 +208,35 @@ class BlacklistProcessor:
         self.stats = ProcessingStats()
         self.ip_set: Set[str] = set()
         self.source_info: Dict[str, dict] = {}
+        # Hardcode/default W folder path for any local file-based sources to use
+        self.DEFAULT_W_FOLDER = self._resolve_w_folder()
+        os.environ.setdefault('W_FOLDER', str(self.DEFAULT_W_FOLDER))
+        self.logger.info(f"W folder set to: {self.DEFAULT_W_FOLDER}", Colors.CYAN)
+
+    def _resolve_w_folder(self) -> Path:
+        script_dir = Path(__file__).parent.resolve()
+        repo_root = script_dir
+        try:
+            for p in [script_dir, *script_dir.parents]:
+                if (p / '.git').exists() or (p / 'README.md').exists():
+                    repo_root = p
+                    break
+        except Exception:
+            pass
+        hardcoded = Path('/home/kodachi/Desktop/kotisivu/w')
+        # Priority: env > hardcoded > repo_root/w > script_dir/w > parent/w
+        env_val = os.environ.get('W_FOLDER')
+        if env_val and Path(env_val).expanduser().exists():
+            return Path(env_val).expanduser().resolve()
+        if hardcoded.exists():
+            return hardcoded.resolve()
+        if (repo_root / 'w').exists():
+            return (repo_root / 'w').resolve()
+        if (script_dir / 'w').exists():
+            return (script_dir / 'w').resolve()
+        if (script_dir.parent / 'w').exists():
+            return (script_dir.parent / 'w').resolve()
+        return (repo_root / 'w').resolve()
         
     async def download_source(self, session: aiohttp.ClientSession, source: dict) -> Tuple[str, List[str]]:
         """Download a single blacklist source with retries"""

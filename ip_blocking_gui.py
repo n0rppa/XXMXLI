@@ -35,6 +35,29 @@ from datetime import datetime
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(SCRIPT_DIR)
 
+# Hardcoded default W folder with safe fallbacks
+HARDCODED_W_FOLDER = '/home/kodachi/Desktop/kotisivu/w'
+def _resolve_w_folder():
+    # 1) env override
+    env_val = os.environ.get('W_FOLDER')
+    if env_val and os.path.exists(os.path.expanduser(env_val)):
+        return os.path.abspath(os.path.expanduser(env_val))
+    # 2) hardcoded
+    if os.path.exists(HARDCODED_W_FOLDER):
+        return HARDCODED_W_FOLDER
+    # 3) repo/script fallbacks
+    for candidate in [
+        os.path.join(SCRIPT_DIR, 'w'),
+        os.path.join(os.path.dirname(SCRIPT_DIR), 'w')
+    ]:
+        if os.path.exists(candidate):
+            return os.path.abspath(candidate)
+    # fallback return even if missing
+    return HARDCODED_W_FOLDER
+
+DEFAULT_W_FOLDER = _resolve_w_folder()
+os.environ.setdefault('W_FOLDER', DEFAULT_W_FOLDER)
+
 # GUI imports with fallback
 try:
     import tkinter as tk
@@ -169,6 +192,9 @@ class IPBlockingGUI:
         subtitle_label = ttk.Label(header_frame, text="Advanced Firewall & IP Blocking Management System",
                                   style='Info.TLabel')
         subtitle_label.pack(anchor='w', padx=5)
+        # Show resolved W folder path for clarity
+        w_label = ttk.Label(header_frame, text=f"W folder: {DEFAULT_W_FOLDER}", style='Info.TLabel')
+        w_label.pack(anchor='w', padx=5)
         
     def create_status_panel(self):
         """Create deployment status overview panel"""
@@ -1096,6 +1122,8 @@ For technical support, contact the XXMXLI Security Team."""
         script_path = os.path.join(SCRIPT_DIR, script_name)
         system = platform.system()
         env = os.environ.copy()
+        # Ensure W_FOLDER is exported to child processes
+        env.setdefault('W_FOLDER', DEFAULT_W_FOLDER)
         try:
             if system == 'Windows':
                 if script_name.endswith('.sh'):
