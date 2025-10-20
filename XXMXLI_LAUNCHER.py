@@ -452,20 +452,35 @@ class XXMXLILauncher:
         print()
         
         try:
-            # Make script executable if it's a shell script
+            # Build command with OS-aware handling and capture stdout/stderr for diagnostics
+            cmd = None
             if script_path.endswith('.sh'):
                 os.chmod(script_path, 0o755)
-                result = subprocess.run(['bash', script_path], check=False, cwd=self.base_dir)
+                cmd = ['bash', script_path]
             elif script_path.endswith('.py'):
-                result = subprocess.run([sys.executable, script_path], check=False, cwd=self.base_dir)
+                cmd = [sys.executable or 'python3', script_path]
+            elif script_path.endswith('.ps1'):
+                # PowerShell script on Windows
+                if platform.system().lower().startswith('win'):
+                    cmd = ['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script_path]
+                else:
+                    self.error("PowerShell scripts are only supported on Windows")
+                    input("Press Enter to return to menu...")
+                    return
             else:
-                result = subprocess.run([script_path], check=False, cwd=self.base_dir)
+                cmd = [script_path]
+
+            result = subprocess.run(cmd, cwd=self.base_dir, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             
             print()
             if result.returncode == 0:
                 self.success(f"{description} completed successfully")
             else:
                 self.warn(f"{description} exited with code {result.returncode}")
+                if result.stdout:
+                    print(f"\n{Colors.CYAN}STDOUT:{Colors.NC}\n{result.stdout}")
+                if result.stderr:
+                    print(f"\n{Colors.YELLOW}STDERR:{Colors.NC}\n{result.stderr}")
                 
         except Exception as e:
             self.error(f"Failed to launch {description}: {str(e)}")
