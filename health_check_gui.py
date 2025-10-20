@@ -25,8 +25,17 @@ import subprocess
 import platform
 import threading
 import time
-import psutil
+import shutil
+import shlex
 from datetime import datetime
+
+# Optional psutil import with graceful fallback
+try:
+    import psutil  # type: ignore
+    HAS_PSUTIL = True
+except Exception:
+    psutil = None  # type: ignore
+    HAS_PSUTIL = False
 
 # Ensure we're working from the script's directory
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -94,6 +103,16 @@ class HealthCheckGUI:
         # Initialize interface
         self.setup_styles()
         self.create_interface()
+        # Notify if psutil is missing (reduced capabilities)
+        if not HAS_PSUTIL:
+            try:
+                messagebox.showwarning(
+                    "Limited Metrics",
+                    "Python psutil package isn't available. The health monitor will run with limited metrics.\n\n"
+                    "Install with: pip install psutil"
+                )
+            except Exception:
+                pass
         self.start_monitoring()
         
     def setup_styles(self):
@@ -548,43 +567,75 @@ class HealthCheckGUI:
         """Update system health data"""
         if self.monitoring_active:
             try:
-                # Get system metrics using psutil
-                self.health_data['cpu_usage'] = psutil.cpu_percent(interval=1)
-                self.health_data['memory_usage'] = psutil.virtual_memory().percent
-                self.health_data['disk_usage'] = psutil.disk_usage('/').percent
-                
-                # Network usage (simplified)
-                net_io = psutil.net_io_counters()
-                self.health_data['network_usage'] = (net_io.bytes_sent + net_io.bytes_recv) / (1024 * 1024)
-                
-                # System load
-                if hasattr(os, 'getloadavg'):
-                    self.health_data['system_load'] = round(os.getloadavg()[0], 2)
+                if HAS_PSUTIL:
+                    # Get system metrics using psutil
+                    self.health_data['cpu_usage'] = psutil.cpu_percent(interval=0.2)
+                    self.health_data['memory_usage'] = psutil.virtual_memory().percent
+                    # Disk usage using root (best effort if non-root on Windows)
+                    root_path = os.path.abspath(os.sep)
+                    self.health_data['disk_usage'] = psutil.disk_usage(root_path).percent
+                    # Network usage (simplified)
+                    try:
+                        net_io = psutil.net_io_counters()
+                        self.health_data['network_usage'] = (net_io.bytes_sent + net_io.bytes_recv) / (1024 * 1024)
+                    except Exception:
+                        self.health_data['network_usage'] = 0
+                    # System load
+                    if hasattr(os, 'getloadavg'):
+                        try:
+                            self.health_data['system_load'] = round(os.getloadavg()[0], 2)
+                        except Exception:
+                            self.health_data['system_load'] = round(self.health_data['cpu_usage'] / 100, 2)
+                    else:
+                        self.health_data['system_load'] = round(self.health_data['cpu_usage'] / 100, 2)
+                    # Temperature (if available)
+                    try:
+                        if hasattr(psutil, 'sensors_temperatures'):
+                            temps = psutil.sensors_temperatures()
+                            if temps:
+                                temp_values = []
+                                for _, entries in temps.items():
+                                    for entry in entries:
+                                        if getattr(entry, 'current', None) is not None:
+                                            temp_values.append(entry.current)
+                                if temp_values:
+                                    self.health_data['temperature'] = round(sum(temp_values) / len(temp_values), 1)
+                                else:
+                                    self.health_data['temperature'] = 0
+                    except Exception:
+                        self.health_data['temperature'] = 0
+                    # Uptime
+                    try:
+                        boot_time = psutil.boot_time()
+                        uptime_seconds = time.time() - boot_time
+                        self.health_data['uptime'] = round(uptime_seconds / 3600, 1)
+                    except Exception:
+                        self.health_data['uptime'] = None
+                    # Process count
+                    try:
+                        self.health_data['processes'] = len(psutil.pids())
+                    except Exception:
+                        self.health_data['processes'] = None
                 else:
-                    self.health_data['system_load'] = self.health_data['cpu_usage'] / 100
-                
-                # Temperature (if available)
-                try:
-                    if hasattr(psutil, 'sensors_temperatures'):
-                        temps = psutil.sensors_temperatures()
-                        if temps:
-                            temp_values = []
-                            for name, entries in temps.items():
-                                for entry in entries:
-                                    if entry.current:
-                                        temp_values.append(entry.current)
-                            if temp_values:
-                                self.health_data['temperature'] = round(sum(temp_values) / len(temp_values), 1)
-                except:
+                    # Fallbacks without psutil (best-effort, may be limited)
+                    self.health_data['cpu_usage'] = self._fallback_cpu_percent()
+                    self.health_data['memory_usage'] = self._fallback_memory_percent()
+                    try:
+                        du = shutil.disk_usage(os.path.abspath(os.sep))
+                        self.health_data['disk_usage'] = round((du.used / du.total) * 100, 1) if du.total else None
+                    except Exception:
+                        self.health_data['disk_usage'] = None
+                    self.health_data['network_usage'] = 0
+                    if hasattr(os, 'getloadavg'):
+                        try:
+                            self.health_data['system_load'] = round(os.getloadavg()[0], 2)
+                        except Exception:
+                            self.health_data['system_load'] = 0
+                    else:
+                        self.health_data['system_load'] = 0
                     self.health_data['temperature'] = 0
-                
-                # Uptime
-                boot_time = psutil.boot_time()
-                uptime_seconds = time.time() - boot_time
-                self.health_data['uptime'] = round(uptime_seconds / 3600, 1)
-                
-                # Process count
-                self.health_data['processes'] = len(psutil.pids())
+                    self.health_data['uptime'] = self._fallback_uptime_hours()
+                    self.health_data['processes'] = self._fallback_process_count()
                 
                 # Calculate overall health score
                 self.calculate_health_score()
@@ -637,7 +688,7 @@ class HealthCheckGUI:
                 ('cpu', self.health_data['cpu_usage'], '%'),
                 ('memory', self.health_data['memory_usage'], '%'),
                 ('disk', self.health_data['disk_usage'], '%'),
-                ('network', round(self.health_data['network_usage'], 1), 'MB'),
+                ('network', None if self.health_data.get('network_usage') is None else round(self.health_data['network_usage'], 1), 'MB'),
                 ('load', self.health_data['system_load'], ''),
                 ('temp', self.health_data['temperature'], '°C'),
                 ('uptime', self.health_data['uptime'], 'hrs'),
@@ -647,11 +698,16 @@ class HealthCheckGUI:
             for name, value, unit in metrics:
                 widget = getattr(self, f'metric_{name}_value', None)
                 if widget:
-                    display_value = f"{value}{unit}" if unit else str(value)
+                    if value is None:
+                        display_value = 'N/A'
+                    else:
+                        display_value = f"{value}{unit}" if unit else str(value)
                     widget.config(text=display_value)
                     
                     # Update color based on health
-                    if name == 'cpu':
+                    if value is None:
+                        color = self.colors['dim_text']
+                    elif name == 'cpu':
                         color = self.get_health_color(value, 60, 80)
                     elif name == 'memory':
                         color = self.get_health_color(value, 75, 90)
@@ -687,6 +743,8 @@ class HealthCheckGUI:
             
     def get_health_color(self, value, warning_threshold, critical_threshold):
         """Get color based on health thresholds"""
+        if value is None:
+            return self.colors['dim_text']
         if value >= critical_threshold:
             return self.colors['critical']
         elif value >= warning_threshold:
@@ -803,15 +861,9 @@ class HealthCheckGUI:
     def _quick_health_check_worker(self):
         """Background worker for quick health check"""
         try:
-            result = subprocess.run(
-                ['bash', 'health-check.sh', '1'],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                universal_newlines=True,
-                timeout=30
-            )
-            
-            self.root.after(0, self._health_check_complete, result.stdout)
+            stdout, stderr, rc = self._run_script_cross_platform('health-check.sh', ['1'], timeout=60)
+            output = stdout if stdout else stderr
+            self.root.after(0, self._health_check_complete, output)
         except Exception as e:
             self.root.after(0, self._health_check_error, str(e))
             
@@ -839,20 +891,126 @@ class HealthCheckGUI:
         try:
             # Run multiple health check modules
             for i in range(1, 10):
-                result = subprocess.run(
-                    ['bash', 'health-check.sh', str(i)],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    universal_newlines=True,
-                    timeout=60
-                )
-                
-                self.root.after(0, self._deep_scan_progress, f"Module {i}", result.stdout)
+                stdout, stderr, rc = self._run_script_cross_platform('health-check.sh', [str(i)], timeout=90)
+                output = stdout if stdout else stderr
+                self.root.after(0, self._deep_scan_progress, f"Module {i}", output)
                 time.sleep(1)
                 
             self.root.after(0, self._deep_scan_complete)
         except Exception as e:
             self.root.after(0, self._deep_scan_error, str(e))
+
+    # ---------- Cross-platform helpers and fallbacks ----------
+    def _run_script_cross_platform(self, script_name, args=None, timeout=60):
+        """Run a script across OSs safely. Returns (stdout, stderr, returncode)."""
+        args = args or []
+        script_path = os.path.join(SCRIPT_DIR, script_name)
+        system = platform.system()
+        env = os.environ.copy()
+        try:
+            if system == 'Windows':
+                # Prefer PowerShell variant for security monitor if available
+                if script_name == 'monitor_security.sh':
+                    ps1 = os.path.join(SCRIPT_DIR, 'monitor_security.ps1')
+                    if os.path.exists(ps1):
+                        cmd = ['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ps1] + args
+                        proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                              universal_newlines=True, timeout=timeout, env=env)
+                        return proc.stdout, proc.stderr, proc.returncode
+                # Try bash from PATH (Git Bash) if .sh
+                if script_name.endswith('.sh'):
+                    bash_exe = shutil.which('bash')
+                    if bash_exe:
+                        cmd = [bash_exe, script_path] + args
+                        proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                              universal_newlines=True, timeout=timeout, env=env)
+                        return proc.stdout, proc.stderr, proc.returncode
+                    # Try WSL
+                    if shutil.which('wsl'):
+                        # Build WSL command to cd and run
+                        joined_args = ' '.join(shlex.quote(a) for a in args)
+                        wsl_cmd = f"cd {shlex.quote(SCRIPT_DIR)} && bash -lc {shlex.quote('./' + script_name + ' ' + joined_args)}"
+                        proc = subprocess.run(['wsl', 'bash', '-lc', wsl_cmd], stdout=subprocess.PIPE,
+                                              stderr=subprocess.PIPE, universal_newlines=True, timeout=timeout, env=env)
+                        return proc.stdout, proc.stderr, proc.returncode
+                    raise FileNotFoundError("No bash found on Windows. Install Git Bash or enable WSL.")
+                # Unknown extension: attempt to run via Python
+                if script_name.endswith('.py'):
+                    py = sys.executable or 'python'
+                    cmd = [py, script_path] + args
+                    proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                          universal_newlines=True, timeout=timeout, env=env)
+                    return proc.stdout, proc.stderr, proc.returncode
+                # Final fallback: PowerShell execute
+                cmd = ['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', script_path] + args
+                proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                      universal_newlines=True, timeout=timeout, env=env)
+                return proc.stdout, proc.stderr, proc.returncode
+            else:
+                # POSIX systems
+                if script_name.endswith('.sh'):
+                    cmd = ['bash', script_path] + args
+                elif script_name.endswith('.py'):
+                    cmd = [sys.executable or 'python3', script_path] + args
+                else:
+                    cmd = [script_path] + args
+                proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                      universal_newlines=True, timeout=timeout, env=env)
+                return proc.stdout, proc.stderr, proc.returncode
+        except Exception as e:
+            return '', f"Execution error: {e}", 1
+
+    def _fallback_cpu_percent(self):
+        """Best-effort CPU percent without psutil."""
+        try:
+            if hasattr(os, 'getloadavg'):
+                load1 = os.getloadavg()[0]
+                cpus = os.cpu_count() or 1
+                # Approximate: load1 per CPU mapped to % (cap at 100)
+                return max(0, min(100, round((load1 / cpus) * 100, 1)))
+        except Exception:
+            pass
+        return None
+
+    def _fallback_memory_percent(self):
+        """Best-effort memory usage percent without psutil."""
+        try:
+            if os.path.exists('/proc/meminfo'):
+                meminfo = {}
+                with open('/proc/meminfo') as f:
+                    for line in f:
+                        parts = line.split(':')
+                        if len(parts) >= 2:
+                            key = parts[0].strip()
+                            val = parts[1].strip().split()[0]
+                            meminfo[key] = float(val)
+                total = meminfo.get('MemTotal')
+                available = meminfo.get('MemAvailable') or (meminfo.get('MemFree') or 0)
+                if total:
+                    used = total - available
+                    return round((used / total) * 100, 1)
+        except Exception:
+            pass
+        return None
+
+    def _fallback_uptime_hours(self):
+        try:
+            if os.path.exists('/proc/uptime'):
+                with open('/proc/uptime') as f:
+                    seconds = float(f.read().split()[0])
+                    return round(seconds / 3600, 1)
+        except Exception:
+            pass
+        return None
+
+    def _fallback_process_count(self):
+        try:
+            proc_dir = '/proc'
+            if os.path.isdir(proc_dir):
+                return sum(1 for name in os.listdir(proc_dir) if name.isdigit())
+        except Exception:
+            pass
+        return None
             
     def _deep_scan_progress(self, module, output):
         """Handle deep scan progress update"""

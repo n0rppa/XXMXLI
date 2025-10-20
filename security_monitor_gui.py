@@ -26,6 +26,8 @@ import platform
 import threading
 import time
 import json
+import shutil
+import shlex
 from datetime import datetime
 
 # Ensure we're working from the script's directory
@@ -617,13 +619,9 @@ class SecurityMonitorGUI:
     def _run_security_scan_worker(self):
         """Background worker for security scan"""
         try:
-            result = subprocess.run(
-                ['bash', 'monitor_security.sh', '1'],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                universal_newlines=True, timeout=30
-            )
-            
-            self.root.after(0, self._security_scan_complete, result.stdout)
+            stdout, stderr, rc = self._run_script_cross_platform('monitor_security.sh', ['1'], timeout=60)
+            output = stdout if stdout else stderr
+            self.root.after(0, self._security_scan_complete, output)
         except Exception as e:
             self.root.after(0, self._security_scan_error, str(e))
             
@@ -645,13 +643,9 @@ class SecurityMonitorGUI:
     def _check_ip_blocking_worker(self):
         """Background worker for IP blocking check"""
         try:
-            result = subprocess.run(
-                ['bash', 'monitor_security.sh', '3'],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                universal_newlines=True, timeout=30
-            )
-            
-            self.root.after(0, self._ip_blocking_complete, result.stdout)
+            stdout, stderr, rc = self._run_script_cross_platform('monitor_security.sh', ['3'], timeout=60)
+            output = stdout if stdout else stderr
+            self.root.after(0, self._ip_blocking_complete, output)
         except Exception as e:
             self.root.after(0, self._ip_blocking_error, str(e))
             
@@ -752,15 +746,65 @@ RECOMMENDATIONS:
     def _admin_audit_worker(self):
         """Background worker for admin audit"""
         try:
-            result = subprocess.run(
-                ['bash', 'monitor_security.sh', '6'],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                universal_newlines=True, timeout=60
-            )
-            
-            self.root.after(0, self._admin_audit_complete, result.stdout)
+            stdout, stderr, rc = self._run_script_cross_platform('monitor_security.sh', ['6'], timeout=90)
+            output = stdout if stdout else stderr
+            self.root.after(0, self._admin_audit_complete, output)
         except Exception as e:
             self.root.after(0, self._admin_audit_error, str(e))
+
+    # ---------- Cross-platform helpers ----------
+    def _run_script_cross_platform(self, script_name, args=None, timeout=60):
+        """Run a script across OSs safely. Returns (stdout, stderr, returncode)."""
+        args = args or []
+        script_path = os.path.join(SCRIPT_DIR, script_name)
+        system = platform.system()
+        env = os.environ.copy()
+        try:
+            if system == 'Windows':
+                # Prefer PowerShell variant if available
+                if script_name == 'monitor_security.sh':
+                    ps1 = os.path.join(SCRIPT_DIR, 'monitor_security.ps1')
+                    if os.path.exists(ps1):
+                        cmd = ['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ps1] + args
+                        proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                              universal_newlines=True, timeout=timeout, env=env)
+                        return proc.stdout, proc.stderr, proc.returncode
+                if script_name.endswith('.sh'):
+                    bash_exe = shutil.which('bash')
+                    if bash_exe:
+                        cmd = [bash_exe, script_path] + args
+                        proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                              universal_newlines=True, timeout=timeout, env=env)
+                        return proc.stdout, proc.stderr, proc.returncode
+                    if shutil.which('wsl'):
+                        joined_args = ' '.join(shlex.quote(a) for a in args)
+                        wsl_cmd = f"cd {shlex.quote(SCRIPT_DIR)} && bash -lc {shlex.quote('./' + script_name + ' ' + joined_args)}"
+                        proc = subprocess.run(['wsl', 'bash', '-lc', wsl_cmd], stdout=subprocess.PIPE,
+                                              stderr=subprocess.PIPE, universal_newlines=True, timeout=timeout, env=env)
+                        return proc.stdout, proc.stderr, proc.returncode
+                    raise FileNotFoundError("No bash found on Windows. Install Git Bash or enable WSL.")
+                if script_name.endswith('.py'):
+                    py = sys.executable or 'python'
+                    cmd = [py, script_path] + args
+                    proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                          universal_newlines=True, timeout=timeout, env=env)
+                    return proc.stdout, proc.stderr, proc.returncode
+                cmd = ['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', script_path] + args
+                proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                      universal_newlines=True, timeout=timeout, env=env)
+                return proc.stdout, proc.stderr, proc.returncode
+            else:
+                if script_name.endswith('.sh'):
+                    cmd = ['bash', script_path] + args
+                elif script_name.endswith('.py'):
+                    cmd = [sys.executable or 'python3', script_path] + args
+                else:
+                    cmd = [script_path] + args
+                proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                      universal_newlines=True, timeout=timeout, env=env)
+                return proc.stdout, proc.stderr, proc.returncode
+        except Exception as e:
+            return '', f"Execution error: {e}", 1
             
     def _admin_audit_complete(self, output):
         """Handle admin audit completion"""

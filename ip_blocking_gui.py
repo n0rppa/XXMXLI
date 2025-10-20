@@ -26,6 +26,8 @@ import platform
 import threading
 import time
 import json
+import shutil
+import shlex
 import re
 from datetime import datetime
 
@@ -528,15 +530,9 @@ class IPBlockingGUI:
         try:
             # Check if deployment script exists and get status
             if os.path.exists('deploy_ip_blocking.sh'):
-                result = subprocess.run(
-                    ['bash', 'deploy_ip_blocking.sh', '8'],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    universal_newlines=True,
-                    timeout=10
-                )
-                
-                if 'DEPLOYED' in result.stdout.upper():
+                stdout, stderr, rc = self._run_script_cross_platform('deploy_ip_blocking.sh', ['8'], timeout=20)
+                output = (stdout or '') + ("\n" + stderr if stderr else '')
+                if 'DEPLOYED' in output.upper():
                     self.deployment_data['status'] = 'Deployed'
                     self.deployment_data['deployment_active'] = True
                     self.deployment_indicator.config(text="DEPLOYED", bg=self.colors['allowed'])
@@ -564,15 +560,9 @@ class IPBlockingGUI:
     def _system_check_worker(self):
         """Background worker for system check"""
         try:
-            result = subprocess.run(
-                ['bash', 'deploy_ip_blocking.sh', '1'],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                universal_newlines=True,
-                timeout=30
-            )
-            
-            self.root.after(0, self._system_check_complete, result.stdout)
+            stdout, stderr, rc = self._run_script_cross_platform('deploy_ip_blocking.sh', ['1'], timeout=45)
+            output = stdout if stdout else stderr
+            self.root.after(0, self._system_check_complete, output)
         except Exception as e:
             self.root.after(0, self._system_check_error, str(e))
             
@@ -594,15 +584,9 @@ class IPBlockingGUI:
     def _backup_worker(self):
         """Background worker for backup"""
         try:
-            result = subprocess.run(
-                ['bash', 'deploy_ip_blocking.sh', '2'],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                universal_newlines=True,
-                timeout=30
-            )
-            
-            self.root.after(0, self._backup_complete, result.stdout)
+            stdout, stderr, rc = self._run_script_cross_platform('deploy_ip_blocking.sh', ['2'], timeout=45)
+            output = stdout if stdout else stderr
+            self.root.after(0, self._backup_complete, output)
         except Exception as e:
             self.root.after(0, self._backup_error, str(e))
             
@@ -626,15 +610,9 @@ class IPBlockingGUI:
     def _deploy_worker(self):
         """Background worker for deployment"""
         try:
-            result = subprocess.run(
-                ['bash', 'deploy_ip_blocking.sh', '3'],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                universal_newlines=True,
-                timeout=60
-            )
-            
-            self.root.after(0, self._deploy_complete, result.stdout)
+            stdout, stderr, rc = self._run_script_cross_platform('deploy_ip_blocking.sh', ['3'], timeout=90)
+            output = stdout if stdout else stderr
+            self.root.after(0, self._deploy_complete, output)
         except Exception as e:
             self.root.after(0, self._deploy_error, str(e))
             
@@ -657,15 +635,9 @@ class IPBlockingGUI:
     def _test_worker(self):
         """Background worker for testing"""
         try:
-            result = subprocess.run(
-                ['bash', 'deploy_ip_blocking.sh', '4'],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                universal_newlines=True,
-                timeout=30
-            )
-            
-            self.root.after(0, self._test_complete, result.stdout)
+            stdout, stderr, rc = self._run_script_cross_platform('deploy_ip_blocking.sh', ['4'], timeout=60)
+            output = stdout if stdout else stderr
+            self.root.after(0, self._test_complete, output)
         except Exception as e:
             self.root.after(0, self._test_error, str(e))
             
@@ -686,15 +658,9 @@ class IPBlockingGUI:
     def _activate_worker(self):
         """Background worker for activation"""
         try:
-            result = subprocess.run(
-                ['bash', 'deploy_ip_blocking.sh', '5'],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                universal_newlines=True,
-                timeout=30
-            )
-            
-            self.root.after(0, self._activate_complete, result.stdout)
+            stdout, stderr, rc = self._run_script_cross_platform('deploy_ip_blocking.sh', ['5'], timeout=60)
+            output = stdout if stdout else stderr
+            self.root.after(0, self._activate_complete, output)
         except Exception as e:
             self.root.after(0, self._activate_error, str(e))
             
@@ -715,15 +681,9 @@ class IPBlockingGUI:
     def _verify_worker(self):
         """Background worker for verification"""
         try:
-            result = subprocess.run(
-                ['bash', 'deploy_ip_blocking.sh', '6'],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                universal_newlines=True,
-                timeout=30
-            )
-            
-            self.root.after(0, self._verify_complete, result.stdout)
+            stdout, stderr, rc = self._run_script_cross_platform('deploy_ip_blocking.sh', ['6'], timeout=60)
+            output = stdout if stdout else stderr
+            self.root.after(0, self._verify_complete, output)
         except Exception as e:
             self.root.after(0, self._verify_error, str(e))
             
@@ -758,17 +718,10 @@ class IPBlockingGUI:
         for step_name, step_num in steps:
             try:
                 self.root.after(0, self.log_message, f"Running {step_name}...")
-                
-                result = subprocess.run(
-                    ['bash', 'deploy_ip_blocking.sh', step_num],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    universal_newlines=True,
-                    timeout=60
-                )
-                
+                stdout, stderr, rc = self._run_script_cross_platform('deploy_ip_blocking.sh', [step_num], timeout=90)
+                output = stdout if stdout else stderr
                 self.root.after(0, self.log_message, f"{step_name} completed")
-                self.root.after(0, self._update_deployment_output, result.stdout)
+                self.root.after(0, self._update_deployment_output, output)
                 
                 time.sleep(2)  # Brief pause between steps
                 
@@ -805,14 +758,7 @@ class IPBlockingGUI:
         """Background worker for emergency stop"""
         try:
             # Stop IP blocking
-            result = subprocess.run(
-                ['bash', 'deploy_ip_blocking.sh', '7'],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                universal_newlines=True,
-                timeout=30
-            )
-            
+            stdout, stderr, rc = self._run_script_cross_platform('deploy_ip_blocking.sh', ['7'], timeout=60)
             self.root.after(0, self.log_message, "EMERGENCY STOP COMPLETED")
             self.root.after(0, self._update_deployment_status, False)
             
@@ -831,14 +777,7 @@ class IPBlockingGUI:
         """Background worker for rollback"""
         try:
             # Rollback deployment
-            result = subprocess.run(
-                ['bash', 'deploy_ip_blocking.sh', '0'],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                universal_newlines=True,
-                timeout=30
-            )
-            
+            stdout, stderr, rc = self._run_script_cross_platform('deploy_ip_blocking.sh', ['0'], timeout=60)
             self.root.after(0, self.log_message, "Rollback completed")
             self.root.after(0, self._update_deployment_status, False)
             
@@ -1149,6 +1088,52 @@ For technical support, contact the XXMXLI Security Team."""
     def run(self):
         """Start the GUI application"""
         self.root.mainloop()
+
+    # ---------- Cross-platform helpers ----------
+    def _run_script_cross_platform(self, script_name, args=None, timeout=60):
+        """Run a script across OSs safely. Returns (stdout, stderr, returncode)."""
+        args = args or []
+        script_path = os.path.join(SCRIPT_DIR, script_name)
+        system = platform.system()
+        env = os.environ.copy()
+        try:
+            if system == 'Windows':
+                if script_name.endswith('.sh'):
+                    bash_exe = shutil.which('bash')
+                    if bash_exe:
+                        cmd = [bash_exe, script_path] + args
+                        proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                              universal_newlines=True, timeout=timeout, env=env)
+                        return proc.stdout, proc.stderr, proc.returncode
+                    if shutil.which('wsl'):
+                        joined_args = ' '.join(shlex.quote(a) for a in args)
+                        wsl_cmd = f"cd {shlex.quote(SCRIPT_DIR)} && bash -lc {shlex.quote('./' + script_name + ' ' + joined_args)}"
+                        proc = subprocess.run(['wsl', 'bash', '-lc', wsl_cmd], stdout=subprocess.PIPE,
+                                              stderr=subprocess.PIPE, universal_newlines=True, timeout=timeout, env=env)
+                        return proc.stdout, proc.stderr, proc.returncode
+                    raise FileNotFoundError("No bash found on Windows. Install Git Bash or enable WSL.")
+                if script_name.endswith('.py'):
+                    py = sys.executable or 'python'
+                    cmd = [py, script_path] + args
+                    proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                          universal_newlines=True, timeout=timeout, env=env)
+                    return proc.stdout, proc.stderr, proc.returncode
+                cmd = ['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', script_path] + args
+                proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                      universal_newlines=True, timeout=timeout, env=env)
+                return proc.stdout, proc.stderr, proc.returncode
+            else:
+                if script_name.endswith('.sh'):
+                    cmd = ['bash', script_path] + args
+                elif script_name.endswith('.py'):
+                    cmd = [sys.executable or 'python3', script_path] + args
+                else:
+                    cmd = [script_path] + args
+                proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                      universal_newlines=True, timeout=timeout, env=env)
+                return proc.stdout, proc.stderr, proc.returncode
+        except Exception as e:
+            return '', f"Execution error: {e}", 1
 
 def main():
     """Main function"""
