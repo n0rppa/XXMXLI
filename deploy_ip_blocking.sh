@@ -120,19 +120,21 @@ PY
 
 # Resolve W folder with safe fallbacks and export to environment
 resolve_w_folder() {
-    # Priority: env W_FOLDER (if dir) > hardcoded > ./w > script_dir/w
+    # Priority: env W_FOLDER (if dir) > ./w > script_dir/w > parent/w > hardcoded
     local hardcoded="/home/kodachi/Desktop/kotisivu/w"
     local script_dir
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
     if [[ -n "${W_FOLDER:-}" && -d "${W_FOLDER}" ]]; then
         RESOLVED_W_FOLDER="${W_FOLDER}"
-    elif [[ -d "${hardcoded}" ]]; then
-        RESOLVED_W_FOLDER="${hardcoded}"
     elif [[ -d "./w" ]]; then
         RESOLVED_W_FOLDER="$(cd ./w && pwd)"
     elif [[ -d "${script_dir}/w" ]]; then
         RESOLVED_W_FOLDER="${script_dir}/w"
+    elif [[ -d "${script_dir%/*}/w" ]]; then
+        RESOLVED_W_FOLDER="${script_dir%/*}/w"
+    elif [[ -d "${hardcoded}" ]]; then
+        RESOLVED_W_FOLDER="${hardcoded}"
     else
         # Default to hardcoded path even if missing; we will warn later
         RESOLVED_W_FOLDER="${hardcoded}"

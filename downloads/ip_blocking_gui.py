@@ -31,20 +31,45 @@ import shlex
 import re
 from datetime import datetime
 
-# Hardcoded default W folder with safe fallbacks
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 HARDCODED_W_FOLDER = '/home/kodachi/Desktop/kotisivu/w'
+
+_USER_CFG_DIR = os.path.join(os.path.expanduser('~'), '.xxmxli')
+_USER_CFG_FILE = os.path.join(_USER_CFG_DIR, 'config.json')
+
+def _load_saved_w_folder():
+    try:
+        if os.path.isfile(_USER_CFG_FILE):
+            with open(_USER_CFG_FILE, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                p = data.get('W_FOLDER')
+                if p and os.path.isdir(os.path.expanduser(p)):
+                    return os.path.abspath(os.path.expanduser(p))
+    except Exception:
+        pass
+    return None
+
+def _save_w_folder(path: str):
+    try:
+        os.makedirs(_USER_CFG_DIR, exist_ok=True)
+        with open(_USER_CFG_FILE, 'w', encoding='utf-8') as f:
+            json.dump({'W_FOLDER': path}, f)
+    except Exception:
+        pass
+
 def _resolve_w_folder():
+    saved = _load_saved_w_folder()
+    if saved:
+        return saved
     env_val = os.environ.get('W_FOLDER')
-    if env_val and os.path.exists(os.path.expanduser(env_val)):
+    if env_val and os.path.isdir(os.path.expanduser(env_val)):
         return os.path.abspath(os.path.expanduser(env_val))
-    if os.path.exists(HARDCODED_W_FOLDER):
-        return HARDCODED_W_FOLDER
     for candidate in [
         os.path.join(SCRIPT_DIR, 'w'),
+        os.path.join(os.getcwd(), 'w'),
         os.path.join(os.path.dirname(SCRIPT_DIR), 'w')
     ]:
-        if os.path.exists(candidate):
+        if os.path.isdir(candidate):
             return os.path.abspath(candidate)
     return HARDCODED_W_FOLDER
 
@@ -106,10 +131,31 @@ class IPBlockingGUI:
         self.blocked_ips = []
         self.whitelisted_ips = []
         
+        # Ensure W folder exists or prompt user to select
+        self._ensure_w_folder()
+
         # Initialize interface
         self.setup_styles()
         self.create_interface()
         self.load_deployment_status()
+
+    def _ensure_w_folder(self):
+        global DEFAULT_W_FOLDER
+        if not os.path.isdir(DEFAULT_W_FOLDER):
+            try:
+                messagebox.showinfo("Select W Folder", "W folder not found. Please select the 'w' folder containing blacklists.")
+                folder = filedialog.askdirectory(title="Select W Folder")
+                if folder and os.path.isdir(folder):
+                    DEFAULT_W_FOLDER = os.path.abspath(folder)
+                    os.environ['W_FOLDER'] = DEFAULT_W_FOLDER
+                    try:
+                        _save_w_folder(DEFAULT_W_FOLDER)
+                    except Exception:
+                        pass
+                else:
+                    messagebox.showwarning("W Folder Not Set", "Proceeding without a valid W folder may limit functionality.")
+            except Exception:
+                pass
         
     def setup_styles(self):
         """Configure GUI styles for IP blocking theme"""
