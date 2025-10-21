@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+# Pre-commit guardrails for XXMXLI
+# - Block committing Python bytecode and __pycache__
+# - Warn if new exact duplicate files are introduced (SHA256)
+
+set -euo pipefail
+
+# 1) Block Python bytecode
+if git diff --cached --name-only | grep -E '\\.pyc$|__pycache__' >/dev/null 2>&1; then
+  echo "[FAIL] Python bytecode or __pycache__ detected in commit. Please remove them." >&2
+  git diff --cached --name-only | grep -E '\\.pyc$|__pycache__' || true
+  exit 1
+fi
+
+# 2) Duplicate detector (fast): only analyze staged files and compare to repo
+staged_files=$(git diff --cached --name-only --diff-filter=ACM | tr '\n' ' ')
+[ -z "${staged_files}" ] && exit 0
+
+temp_map=$(mktemp)
+trap 'rm -f "$temp_map"' EXIT
+
+duplicate_found=false
+
+# Build hash map for existing repo (tracked, excluding staged deletions)
+git ls-files -z | while IFS= read -r -d '' f; do
+  [ -f "$f" ] || continue
+  sha=$(sha256sum "$f" | awk '{print $1}')
+  echo "$sha $f" >> "$temp_map"
+done
+
+# Check staged files' content against map
+for f in ${staged_files}; do
+  [ -f "$f" ] || continue
+  sha=$(sha256sum "$f" | awk '{print $1}')
+  if grep -q "^${sha} " "$temp_map"; then
+    # If the only match is itself, ignore; else warn
+    matches=$(grep "^${sha} " "$temp_map" | awk '{print $2}')
+    # shellcheck disable=SC2086
+    if echo "$matches" | grep -v "^$f$" >/dev/null 2>&1; then
+      echo "[WARN] Exact duplicate content detected for: $f" >&2
+      echo "       Matches existing file(s):" >&2
+      echo "$matches" | grep -v "^$f$" >&2 || true
+      duplicate_found=true
+    fi
+  fi
+done
+
+if [ "$duplicate_found" = true ]; then
+  echo "[INFO] Consider removing duplicates or referencing canonical files before committing." >&2
+fi
+
+exit 0
