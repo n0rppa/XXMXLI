@@ -1,550 +1,359 @@
-# XXMXLI Windows System Information and Diagnostics
-# Comprehensive system analysis and security reporting
+<#
+XXMXLI Windows Security Suite - All-in-One
+Combines: Firewall rules, Registry hardening, User account security, Windows Defender config, and System diagnostics
+Single entry point so you can download/run one script only
+#>
 
 # Ensure we're running from the script directory
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $ScriptDir
 
-Write-Host "================================================================" -ForegroundColor Blue
-Write-Host "XXMXLI System Information and Security Diagnostics" -ForegroundColor Blue
-Write-Host "================================================================" -ForegroundColor Blue
-Write-Host ""
+# Global: check admin
+function Test-Administrator {
+    $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = New-Object Security.Principal.WindowsPrincipal($currentUser)
+    return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
 
-function Show-Menu {
-    Write-Host "System Information and Diagnostics Options:" -ForegroundColor Cyan
-    Write-Host "  1. System overview and specifications"
-    Write-Host "  2. Security configuration status"
-    Write-Host "  3. Network configuration and security"
-    Write-Host "  4. Installed software audit"
-    Write-Host "  5. Running processes and services"
-    Write-Host "  6. Event log security analysis"
-    Write-Host "  7. Generate comprehensive report"
-    Write-Host "  8. Export findings to file"
-    Write-Host "  9. Exit"
+if (-not (Test-Administrator)) {
+    Write-Host "ERROR: This script requires administrator privileges" -ForegroundColor Red
+    Write-Host "Please run PowerShell as Administrator and try again" -ForegroundColor Yellow
+    Read-Host "Press Enter to exit"
+    exit 1
+}
+
+# ===== Shared UI helpers =====
+function Pause-Clear {
+    Write-Host ""
+    Read-Host "Press Enter to continue"
+    Clear-Host
+}
+
+function Write-Section($title, $color = 'Blue') {
+    Write-Host "================================================================" -ForegroundColor $color
+    Write-Host $title -ForegroundColor $color
+    Write-Host "================================================================" -ForegroundColor $color
     Write-Host ""
 }
 
-function Get-SystemOverview {
-    Write-Host "System Overview and Specifications:" -ForegroundColor Yellow
-    Write-Host "==================================" -ForegroundColor Yellow
-    
-    # Basic system information
-    $computerInfo = Get-ComputerInfo
-    $os = Get-CimInstance -ClassName Win32_OperatingSystem
-    $cpu = Get-CimInstance -ClassName Win32_Processor
-    $memory = Get-CimInstance -ClassName Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum
-    
-    Write-Host ""
-    Write-Host "Computer Name: $($computerInfo.CsName)" -ForegroundColor Cyan
-    Write-Host "Domain/Workgroup: $($computerInfo.CsDomain)"
-    Write-Host "OS: $($os.Caption) $($os.Version)"
-    Write-Host "Architecture: $($os.OSArchitecture)"
-    Write-Host "Install Date: $($os.InstallDate)"
-    Write-Host "Last Boot: $($os.LastBootUpTime)"
-    Write-Host "CPU: $($cpu.Name)"
-    Write-Host "CPU Cores: $($cpu.NumberOfCores)"
-    Write-Host "Total RAM: $([math]::Round($memory.Sum / 1GB, 2)) GB"
-    Write-Host "Current User: $($env:USERNAME)"
-    Write-Host "User Domain: $($env:USERDOMAIN)"
-    Write-Host ""
-    
-    # Windows features status
-    Write-Host "Windows Features Status:" -ForegroundColor Cyan
-    $features = @(
-        @{Name="Windows Defender"; Service="WinDefend"},
-        @{Name="Windows Firewall"; Service="MpsSvc"},
-        @{Name="Windows Update"; Service="wuauserv"},
-        @{Name="Remote Desktop"; Registry="HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server"; Value="fDenyTSConnections"}
+# ===== Module: Firewall Rules =====
+function Enable-FirewallProfiles {
+    try {
+        Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled True
+        Set-NetFirewallProfile -Profile Domain,Public,Private -DefaultInboundAction Block
+        Set-NetFirewallProfile -Profile Domain,Public,Private -DefaultOutboundAction Allow
+        Write-Host "✓ Windows Firewall enabled for all profiles (Inbound=Block, Outbound=Allow)" -ForegroundColor Green
+    } catch { Write-Host "× Error enabling firewall: $($_.Exception.Message)" -ForegroundColor Red }
+}
+
+function Configure-SecurityRules {
+    try {
+        $attackPorts = @(135,139,445,1433,1434,3389,5985,5986)
+        foreach ($port in $attackPorts) {
+            $name = "XXMXLI_Block_Port_$port"
+            if (-not (Get-NetFirewallRule -DisplayName $name -ErrorAction SilentlyContinue)) {
+                New-NetFirewallRule -DisplayName $name -Direction Inbound -Protocol TCP -LocalPort $port -Action Block | Out-Null
+                Write-Host "  ✓ Blocked inbound TCP $port" -ForegroundColor Green
+            }
+        }
+        $essential = @(
+            @{Name="XXMXLI_Allow_HTTP"; Proto="TCP"; Port=80; Dir="Outbound"},
+            @{Name="XXMXLI_Allow_HTTPS"; Proto="TCP"; Port=443; Dir="Outbound"},
+            @{Name="XXMXLI_Allow_DNS"; Proto="UDP"; Port=53; Dir="Outbound"}
+        )
+        foreach ($r in $essential) {
+            if (-not (Get-NetFirewallRule -DisplayName $r.Name -ErrorAction SilentlyContinue)) {
+                New-NetFirewallRule -DisplayName $r.Name -Direction $r.Dir -Protocol $r.Proto -LocalPort $r.Port -Action Allow | Out-Null
+                Write-Host "  ✓ Allowed $($r.Dir) $($r.Proto) $($r.Port)" -ForegroundColor Green
+            }
+        }
+        Write-Host "✓ Security rules configured" -ForegroundColor Green
+    } catch { Write-Host "× Error: $($_.Exception.Message)" -ForegroundColor Red }
+}
+
+function Block-SuspiciousPorts {
+    $ports = @(
+        @{Port=23; Protocol="TCP"; Desc="Telnet"},
+        @{Port=69; Protocol="UDP"; Desc="TFTP"},
+        @{Port=135; Protocol="TCP"; Desc="RPC"},
+        @{Port=139; Protocol="TCP"; Desc="NetBIOS"},
+        @{Port=445; Protocol="TCP"; Desc="SMB"},
+        @{Port=1433; Protocol="TCP"; Desc="SQL Server"},
+        @{Port=1434; Protocol="UDP"; Desc="SQL Browser"},
+        @{Port=3389; Protocol="TCP"; Desc="RDP (external)"},
+        @{Port=5985; Protocol="TCP"; Desc="WinRM HTTP"},
+        @{Port=5986; Protocol="TCP"; Desc="WinRM HTTPS"}
     )
-    
-    foreach ($feature in $features) {
-        if ($feature.Service) {
-            $service = Get-Service -Name $feature.Service -ErrorAction SilentlyContinue
-            if ($service) {
-                $status = $service.Status
-                $color = if ($status -eq "Running") { "Green" } else { "Red" }
-                Write-Host "  $($feature.Name): $status" -ForegroundColor $color
-            }
-        } elseif ($feature.Registry) {
-            try {
-                $regValue = Get-ItemProperty -Path $feature.Registry -Name $feature.Value -ErrorAction SilentlyContinue
-                $rdpStatus = if ($regValue.($feature.Value) -eq 0) { "Enabled" } else { "Disabled" }
-                $color = if ($rdpStatus -eq "Disabled") { "Green" } else { "Yellow" }
-                Write-Host "  $($feature.Name): $rdpStatus" -ForegroundColor $color
-            } catch {
-                Write-Host "  $($feature.Name): Unable to check" -ForegroundColor Yellow
+    try {
+        foreach ($p in $ports) {
+            $name = "XXMXLI_Block_$($p.Desc)_$($p.Port)"
+            if (-not (Get-NetFirewallRule -DisplayName $name -ErrorAction SilentlyContinue)) {
+                New-NetFirewallRule -DisplayName $name -Direction Inbound -Protocol $p.Protocol -LocalPort $p.Port -Action Block | Out-Null
+                Write-Host "  ✓ Blocked $($p.Desc) $($p.Port)/$($p.Protocol)" -ForegroundColor Green
             }
         }
-    }
+        Write-Host "✓ Suspicious ports blocked" -ForegroundColor Green
+    } catch { Write-Host "× Error: $($_.Exception.Message)" -ForegroundColor Red }
 }
 
-function Get-SecurityStatus {
-    Write-Host "Security Configuration Status:" -ForegroundColor Yellow
-    Write-Host "=============================" -ForegroundColor Yellow
-    Write-Host ""
-    
-    # UAC Status
-    try {
-        $uacStatus = Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableLUA" -ErrorAction SilentlyContinue
-        $uacEnabled = $uacStatus.EnableLUA -eq 1
-        Write-Host "User Account Control: $(if ($uacEnabled) { 'Enabled' } else { 'Disabled' })" -ForegroundColor $(if ($uacEnabled) { "Green" } else { "Red" })
-    } catch {
-        Write-Host "User Account Control: Unable to check" -ForegroundColor Yellow
+function Show-FirewallStatus {
+    $profiles = Get-NetFirewallProfile
+    foreach ($profile in $profiles) {
+        $status = if ($profile.Enabled) { "ENABLED" } else { "DISABLED" }
+        $color = if ($profile.Enabled) { "Green" } else { "Red" }
+        Write-Host "$($profile.Name) Profile: $status" -ForegroundColor $color
+        Write-Host "  Default Inbound: $($profile.DefaultInboundAction) | Default Outbound: $($profile.DefaultOutboundAction)"
     }
-    
-    # Windows Defender status
-    try {
-        $defenderStatus = Get-MpComputerStatus
-        Write-Host "Windows Defender Real-time Protection: $(if ($defenderStatus.RealTimeProtectionEnabled) { 'Enabled' } else { 'Disabled' })" -ForegroundColor $(if ($defenderStatus.RealTimeProtectionEnabled) { "Green" } else { "Red" })
-        Write-Host "Windows Defender Signatures: Last updated $($defenderStatus.AntivirusSignatureLastUpdated)"
-    } catch {
-        Write-Host "Windows Defender: Unable to check status" -ForegroundColor Yellow
-    }
-    
-    # Firewall status
-    try {
-        $firewallProfiles = Get-NetFirewallProfile
-        Write-Host ""
-        Write-Host "Firewall Profiles:" -ForegroundColor Cyan
-        foreach ($profile in $firewallProfiles) {
-            $status = if ($profile.Enabled) { "Enabled" } else { "Disabled" }
-            $color = if ($profile.Enabled) { "Green" } else { "Red" }
-            Write-Host "  $($profile.Name): $status" -ForegroundColor $color
-        }
-    } catch {
-        Write-Host "Firewall: Unable to check status" -ForegroundColor Yellow
-    }
-    
-    # BitLocker status
-    Write-Host ""
-    Write-Host "BitLocker Status:" -ForegroundColor Cyan
-    try {
-        $bitLockerVolumes = Get-BitLockerVolume
-        foreach ($volume in $bitLockerVolumes) {
-            $status = $volume.ProtectionStatus
-            $color = if ($status -eq "On") { "Green" } elseif ($status -eq "Off") { "Red" } else { "Yellow" }
-            Write-Host "  Drive $($volume.MountPoint): $status" -ForegroundColor $color
-        }
-    } catch {
-        Write-Host "  BitLocker: Not available or unable to check" -ForegroundColor Yellow
-    }
-    
-    # Password policy
-    Write-Host ""
-    Write-Host "Password Policy:" -ForegroundColor Cyan
-    try {
-        $secPolicy = net accounts
-        Write-Host "  $($secPolicy -join "`n  ")"
-    } catch {
-        Write-Host "  Unable to retrieve password policy" -ForegroundColor Yellow
-    }
+    $rules = Get-NetFirewallRule | Where-Object { $_.DisplayName -like "XXMXLI_*" }
+    if ($rules) { Write-Host "XXMXLI Custom Rules:" -ForegroundColor Yellow; $rules | Select DisplayName,Direction,Action,Enabled | Format-Table -AutoSize }
 }
 
-function Get-NetworkSecurity {
-    Write-Host "Network Configuration and Security:" -ForegroundColor Yellow
-    Write-Host "==================================" -ForegroundColor Yellow
-    Write-Host ""
-    
-    # Network adapters
-    Write-Host "Network Adapters:" -ForegroundColor Cyan
-    $adapters = Get-NetAdapter | Where-Object { $_.Status -eq "Up" }
-    foreach ($adapter in $adapters) {
-        Write-Host "  $($adapter.Name) ($($adapter.InterfaceDescription))" -ForegroundColor Green
-        
-        # Get IP configuration
-        $ipConfig = Get-NetIPAddress -InterfaceIndex $adapter.ifIndex -ErrorAction SilentlyContinue
-        foreach ($ip in $ipConfig) {
-            if ($ip.AddressFamily -eq "IPv4") {
-                Write-Host "    IPv4: $($ip.IPAddress)/$($ip.PrefixLength)" -ForegroundColor Cyan
-            }
-        }
-    }
-    
-    # Active network connections
-    Write-Host ""
-    Write-Host "Active Network Connections (listening ports):" -ForegroundColor Cyan
-    $connections = Get-NetTCPConnection | Where-Object { $_.State -eq "Listen" } | Select-Object LocalAddress, LocalPort, OwningProcess | Sort-Object LocalPort
-    
-    foreach ($conn in $connections[0..19]) {  # Show first 20
+function Reset-FirewallRules {
+    $c = Read-Host "Remove XXMXLI rules and reset firewall to defaults? (y/N)"
+    if ($c -match '^(y|Y)$') {
         try {
-            $process = Get-Process -Id $conn.OwningProcess -ErrorAction SilentlyContinue
-            $processName = if ($process) { $process.ProcessName } else { "Unknown" }
-            Write-Host "  $($conn.LocalAddress):$($conn.LocalPort) - $processName (PID: $($conn.OwningProcess))"
-        } catch {
-            Write-Host "  $($conn.LocalAddress):$($conn.LocalPort) - Unknown process"
-        }
-    }
-    
-    if ($connections.Count -gt 20) {
-        Write-Host "  ... and $($connections.Count - 20) more connections" -ForegroundColor Yellow
-    }
-    
-    # DNS configuration
-    Write-Host ""
-    Write-Host "DNS Configuration:" -ForegroundColor Cyan
-    $dnsServers = Get-DnsClientServerAddress | Where-Object { $_.AddressFamily -eq 2 -and $_.ServerAddresses }
-    foreach ($dns in $dnsServers) {
-        Write-Host "  Interface: $($dns.InterfaceAlias)"
-        Write-Host "    DNS Servers: $($dns.ServerAddresses -join ', ')"
+            Get-NetFirewallRule | Where-Object { $_.DisplayName -like "XXMXLI_*" } | Remove-NetFirewallRule -ErrorAction SilentlyContinue
+            netsh advfirewall reset | Out-Null
+            Write-Host "✓ Firewall reset" -ForegroundColor Green
+        } catch { Write-Host "× Error: $($_.Exception.Message)" -ForegroundColor Red }
     }
 }
 
-function Get-InstalledSoftware {
-    Write-Host "Installed Software Audit:" -ForegroundColor Yellow
-    Write-Host "========================" -ForegroundColor Yellow
-    Write-Host ""
-    
-    # Get installed programs from registry
-    $software = @()
-    
-    # 64-bit programs
-    $software += Get-ItemProperty "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*" -ErrorAction SilentlyContinue |
-        Where-Object { $_.DisplayName } |
-        Select-Object DisplayName, DisplayVersion, Publisher, InstallDate, EstimatedSize
-    
-    # 32-bit programs on 64-bit systems
-    if ([Environment]::Is64BitOperatingSystem) {
-        $software += Get-ItemProperty "HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*" -ErrorAction SilentlyContinue |
-            Where-Object { $_.DisplayName } |
-            Select-Object DisplayName, DisplayVersion, Publisher, InstallDate, EstimatedSize
-    }
-    
-    # Remove duplicates and sort
-    $uniqueSoftware = $software | Sort-Object DisplayName -Unique | Sort-Object DisplayName
-    
-    Write-Host "Total installed programs: $($uniqueSoftware.Count)" -ForegroundColor Cyan
-    Write-Host ""
-    
-    # Show potentially risky software
-    $riskyKeywords = @("Remote", "VNC", "TeamViewer", "AnyDesk", "Telnet", "FTP", "Torrent", "P2P")
-    $riskySoftware = $uniqueSoftware | Where-Object { 
-        $name = $_.DisplayName
-        $riskyKeywords | ForEach-Object { if ($name -like "*$_*") { return $true } }
-    }
-    
-    if ($riskySoftware) {
-        Write-Host "Potentially risky software found:" -ForegroundColor Red
-        foreach ($risky in $riskySoftware) {
-            Write-Host "  ⚠️  $($risky.DisplayName) - $($risky.Publisher)" -ForegroundColor Yellow
+function Module-Firewall {
+    Write-Section "XXMXLI Windows Firewall Configuration"
+    do {
+        Write-Host "1) Enable firewall (all profiles)"
+        Write-Host "2) Configure security rules"
+        Write-Host "3) Block suspicious ports"
+        Write-Host "4) Show current firewall status"
+        Write-Host "5) Reset to default rules"
+        Write-Host "0) Back"
+        $ch = Read-Host "Choose"
+        switch ($ch) {
+            '1' { Enable-FirewallProfiles; Pause-Clear }
+            '2' { Configure-SecurityRules; Pause-Clear }
+            '3' { Block-SuspiciousPorts; Pause-Clear }
+            '4' { Show-FirewallStatus; Pause-Clear }
+            '5' { Reset-FirewallRules; Pause-Clear }
+            '0' { break }
+            default { Write-Host "Invalid" -ForegroundColor Red }
         }
-        Write-Host ""
-    }
-    
-    # Show recently installed software (last 30 days)
-    $recentSoftware = $uniqueSoftware | Where-Object { 
-        $_.InstallDate -and 
-        [datetime]::ParseExact($_.InstallDate, "yyyyMMdd", $null) -gt (Get-Date).AddDays(-30)
-    } | Sort-Object InstallDate -Descending
-    
-    if ($recentSoftware) {
-        Write-Host "Recently installed software (last 30 days):" -ForegroundColor Cyan
-        foreach ($recent in $recentSoftware[0..9]) {  # Show first 10
-            $installDate = [datetime]::ParseExact($recent.InstallDate, "yyyyMMdd", $null).ToString("yyyy-MM-dd")
-            Write-Host "  $installDate - $($recent.DisplayName)" -ForegroundColor Green
-        }
-    }
+    } while ($true)
 }
 
-function Get-ProcessesAndServices {
-    Write-Host "Running Processes and Services Analysis:" -ForegroundColor Yellow
-    Write-Host "=======================================" -ForegroundColor Yellow
-    Write-Host ""
-    
-    # High CPU/Memory processes
-    Write-Host "Top 10 CPU/Memory consuming processes:" -ForegroundColor Cyan
-    $processes = Get-Process | Sort-Object CPU -Descending | Select-Object -First 10
-    foreach ($proc in $processes) {
-        $cpu = if ($proc.CPU) { [math]::Round($proc.CPU, 2) } else { 0 }
-        $memory = [math]::Round($proc.WorkingSet / 1MB, 2)
-        Write-Host "  $($proc.Name) (PID: $($proc.Id)) - CPU: $cpu s, Memory: $memory MB"
-    }
-    
-    # Suspicious processes (common malware names)
-    Write-Host ""
-    Write-Host "Checking for suspicious process names:" -ForegroundColor Cyan
-    $suspiciousNames = @("svchost", "csrss", "winlogon", "explorer") # These are normal but often mimicked
-    $allProcesses = Get-Process
-    
-    foreach ($suspName in $suspiciousNames) {
-        $matchingProcs = $allProcesses | Where-Object { $_.Name -like "$suspName*" }
-        if ($matchingProcs.Count -gt 1) {
-            Write-Host "  Multiple $suspName processes found ($($matchingProcs.Count)) - investigate if unusual" -ForegroundColor Yellow
-        }
-    }
-    
-    # Services analysis
-    Write-Host ""
-    Write-Host "Critical Services Status:" -ForegroundColor Cyan
-    $criticalServices = @("Winmgmt", "EventLog", "PlugPlay", "RpcSs", "Dhcp", "Dnscache", "MpsSvc", "WinDefend")
-    
-    foreach ($serviceName in $criticalServices) {
-        $service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
-        if ($service) {
-            $color = if ($service.Status -eq "Running") { "Green" } else { "Red" }
-            Write-Host "  $($service.DisplayName): $($service.Status)" -ForegroundColor $color
-        }
-    }
-    
-    # Stopped services that should be running
-    Write-Host ""
-    Write-Host "Important stopped services:" -ForegroundColor Yellow
-    $stoppedCritical = Get-Service | Where-Object { 
-        $_.Status -eq "Stopped" -and 
-        $criticalServices -contains $_.Name 
-    }
-    
-    foreach ($stopped in $stoppedCritical) {
-        Write-Host "  ⚠️  $($stopped.DisplayName) is stopped" -ForegroundColor Red
-    }
-}
-
-function Get-EventLogAnalysis {
-    Write-Host "Event Log Security Analysis:" -ForegroundColor Yellow
-    Write-Host "============================" -ForegroundColor Yellow
-    Write-Host ""
-    
-    # Security event analysis (last 24 hours)
-    $yesterday = (Get-Date).AddDays(-1)
-    
-    Write-Host "Security Events (last 24 hours):" -ForegroundColor Cyan
-    
+# ===== Module: Registry Hardening =====
+function Set-RegistryValue {
+    param([string]$Path,[string]$Name,[object]$Value,[string]$Type="DWORD",[string]$Description="")
     try {
-        # Failed logon attempts
-        $failedLogons = Get-WinEvent -FilterHashtable @{LogName='Security'; ID=4625; StartTime=$yesterday} -ErrorAction SilentlyContinue
-        if ($failedLogons) {
-            Write-Host "  Failed logon attempts: $($failedLogons.Count)" -ForegroundColor $(if ($failedLogons.Count -gt 10) { "Red" } else { "Yellow" })
-            
-            # Group by user account
-            $failedByUser = $failedLogons | ForEach-Object {
-                [xml]$xml = $_.ToXml()
-                $xml.Event.EventData.Data | Where-Object { $_.Name -eq "TargetUserName" } | Select-Object -ExpandProperty '#text'
-            } | Group-Object | Sort-Object Count -Descending
-            
-            foreach ($user in $failedByUser[0..4]) {  # Top 5
-                Write-Host "    $($user.Name): $($user.Count) attempts" -ForegroundColor Red
-            }
-        } else {
-            Write-Host "  Failed logon attempts: 0" -ForegroundColor Green
-        }
-        
-        # Successful logons
-        $successfulLogons = Get-WinEvent -FilterHashtable @{LogName='Security'; ID=4624; StartTime=$yesterday} -ErrorAction SilentlyContinue
-        if ($successfulLogons) {
-            Write-Host "  Successful logons: $($successfulLogons.Count)" -ForegroundColor Green
-        }
-        
-        # Account lockouts
-        $lockouts = Get-WinEvent -FilterHashtable @{LogName='Security'; ID=4740; StartTime=$yesterday} -ErrorAction SilentlyContinue
-        if ($lockouts) {
-            Write-Host "  Account lockouts: $($lockouts.Count)" -ForegroundColor Red
-        } else {
-            Write-Host "  Account lockouts: 0" -ForegroundColor Green
-        }
-        
-    } catch {
-        Write-Host "  Unable to access Security event log" -ForegroundColor Yellow
-    }
-    
-    # System event analysis
-    Write-Host ""
-    Write-Host "System Events (last 24 hours):" -ForegroundColor Cyan
-    
-    try {
-        $systemErrors = Get-WinEvent -FilterHashtable @{LogName='System'; Level=1,2; StartTime=$yesterday} -ErrorAction SilentlyContinue
-        if ($systemErrors) {
-            Write-Host "  System errors/critical: $($systemErrors.Count)" -ForegroundColor $(if ($systemErrors.Count -gt 5) { "Red" } else { "Yellow" })
-            
-            # Show most common errors
-            $errorGroups = $systemErrors | Group-Object Id | Sort-Object Count -Descending
-            foreach ($error in $errorGroups[0..2]) {  # Top 3
-                $sample = $systemErrors | Where-Object { $_.Id -eq $error.Name } | Select-Object -First 1
-                Write-Host "    Event ID $($error.Name): $($error.Count) occurrences - $($sample.LevelDisplayName)" -ForegroundColor Yellow
-            }
-        } else {
-            Write-Host "  System errors/critical: 0" -ForegroundColor Green
-        }
-        
-    } catch {
-        Write-Host "  Unable to access System event log" -ForegroundColor Yellow
-    }
+        if (-not (Test-Path $Path)) { New-Item -Path $Path -Force | Out-Null }
+        Set-ItemProperty -Path $Path -Name $Name -Value $Value -Type $Type
+        if ($Description) { Write-Host "  ✓ $Description" -ForegroundColor Green } else { Write-Host "  ✓ $Path\$Name=$Value" -ForegroundColor Green }
+    } catch { Write-Host "  × Error setting $Path\$Name: $($_.Exception.Message)" -ForegroundColor Red }
 }
 
-function Generate-ComprehensiveReport {
-    Write-Host "Generating Comprehensive Security Report..." -ForegroundColor Yellow
-    Write-Host ""
-    
-    $reportData = @{
-        Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-        ComputerName = $env:COMPUTERNAME
-        User = $env:USERNAME
-        SystemInfo = @{}
-        SecurityStatus = @{}
-        NetworkInfo = @{}
-        Recommendations = @()
-    }
-    
-    # Collect system information
-    try {
-        $os = Get-CimInstance -ClassName Win32_OperatingSystem
-        $reportData.SystemInfo = @{
-            OS = $os.Caption
-            Version = $os.Version
-            LastBoot = $os.LastBootUpTime
-            Architecture = $os.OSArchitecture
-        }
-    } catch {
-        $reportData.SystemInfo.Error = "Unable to collect system information"
-    }
-    
-    # Security status checks
-    $securityChecks = @(
-        @{Name="UAC"; Path="HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"; Value="EnableLUA"; Expected=1},
-        @{Name="WindowsDefender"; Service="WinDefend"},
-        @{Name="Firewall"; Service="MpsSvc"},
-        @{Name="RemoteDesktop"; Path="HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server"; Value="fDenyTSConnections"; Expected=1}
+function Create-RegistryBackup {
+    $BackupPath = Join-Path $ScriptDir "registry_backup_$(Get-Date -Format 'yyyyMMdd_HHmmss').reg"
+    try { reg export HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies "$BackupPath" | Out-Null; Write-Host "✓ Backup: $BackupPath" -ForegroundColor Green; return $BackupPath } catch { Write-Host "× Backup failed: $($_.Exception.Message)" -ForegroundColor Red; return $null }
+}
+
+function Disable-DangerousFeatures {
+    Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" "NoDriveTypeAutoRun" 255 "Disabled AutoRun (system)"
+    Set-RegistryValue "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" "NoDriveTypeAutoRun" 255 "Disabled AutoRun (user)"
+    Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\Windows Script Host\Settings" "Enabled" 0 "Disabled Windows Script Host"
+    Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds\Microsoft.PowerShell" "ExecutionPolicy" "RemoteSigned" "Set PS execution policy RemoteSigned"
+    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Installer" "AlwaysInstallElevated" 0 "Disabled AlwaysInstallElevated"
+    Set-RegistryValue "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Installer" "AlwaysInstallElevated" 0 "Disabled AlwaysInstallElevated (user)"
+    Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "limitblankpassworduse" 1 "Limit blank password use"
+}
+
+function Harden-SecurityPolicies {
+    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" "DisableAntiSpyware" 0 "Enable Defender Anti-Spyware"
+    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" "DisableRealtimeMonitoring" 0 "Enable Real-Time Protection"
+    Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" "RequireSecuritySignature" 1 "Require SMB server signing"
+    Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters" "RequireSecuritySignature" 1 "Require SMB client signing"
+    Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "LmCompatibilityLevel" 5 "NTLMv2 only"
+    Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "EnableLUA" 1 "Enable UAC"
+    Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "ConsentPromptBehaviorAdmin" 2 "UAC prompt for consent"
+    Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "RestrictAnonymous" 1 "Restrict anonymous"
+    Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "RestrictAnonymousSAM" 1 "Restrict anonymous SAM"
+    Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" "MaximumPasswordAge" 42 "Max password age 42 days"
+}
+
+function Disable-UnnecessaryServices {
+    $svc = @(
+        @{Path="HKLM:\SYSTEM\CurrentControlSet\Services\Fax"; Desc="Fax Service"},
+        @{Path="HKLM:\SYSTEM\CurrentControlSet\Services\TlntSvr"; Desc="Telnet Server"},
+        @{Path="HKLM:\SYSTEM\CurrentControlSet\Services\SSDPSRV"; Desc="SSDP Discovery"},
+        @{Path="HKLM:\SYSTEM\CurrentControlSet\Services\upnphost"; Desc="UPnP Device Host"},
+        @{Path="HKLM:\SYSTEM\CurrentControlSet\Services\RemoteAccess"; Desc="Routing and Remote Access"}
     )
-    
-    foreach ($check in $securityChecks) {
-        try {
-            if ($check.Service) {
-                $service = Get-Service -Name $check.Service -ErrorAction SilentlyContinue
-                $status = if ($service -and $service.Status -eq "Running") { "OK" } else { "FAIL" }
-            } else {
-                $regValue = Get-ItemProperty -Path $check.Path -Name $check.Value -ErrorAction SilentlyContinue
-                $status = if ($regValue -and $regValue.($check.Value) -eq $check.Expected) { "OK" } else { "FAIL" }
-            }
-            $reportData.SecurityStatus[$check.Name] = $status
-        } catch {
-            $reportData.SecurityStatus[$check.Name] = "ERROR"
-        }
-    }
-    
-    # Generate recommendations
-    foreach ($checkName in $reportData.SecurityStatus.Keys) {
-        if ($reportData.SecurityStatus[$checkName] -eq "FAIL") {
-            switch ($checkName) {
-                "UAC" { $reportData.Recommendations += "Enable User Account Control (UAC)" }
-                "WindowsDefender" { $reportData.Recommendations += "Start Windows Defender service" }
-                "Firewall" { $reportData.Recommendations += "Enable Windows Firewall" }
-                "RemoteDesktop" { $reportData.Recommendations += "Consider disabling Remote Desktop if not needed" }
-            }
-        }
-    }
-    
-    # Display summary
-    Write-Host "Security Report Summary:" -ForegroundColor Cyan
-    Write-Host "=======================" -ForegroundColor Cyan
-    Write-Host "Computer: $($reportData.ComputerName)"
-    Write-Host "Generated: $($reportData.Timestamp)"
-    Write-Host ""
-    
-    Write-Host "Security Status:" -ForegroundColor Yellow
-    foreach ($status in $reportData.SecurityStatus.GetEnumerator()) {
-        $color = switch ($status.Value) {
-            "OK" { "Green" }
-            "FAIL" { "Red" }
-            "ERROR" { "Yellow" }
-        }
-        Write-Host "  $($status.Key): $($status.Value)" -ForegroundColor $color
-    }
-    
-    if ($reportData.Recommendations.Count -gt 0) {
-        Write-Host ""
-        Write-Host "Recommendations:" -ForegroundColor Yellow
-        foreach ($rec in $reportData.Recommendations) {
-            Write-Host "  • $rec" -ForegroundColor Red
-        }
-    }
-    
-    return $reportData
+    foreach ($s in $svc) { if (Test-Path $s.Path) { Set-RegistryValue $s.Path "Start" 4 "Disabled $($s.Desc)" } }
+    Write-Host "Note: Service changes take effect after reboot" -ForegroundColor Yellow
 }
 
-function Export-Findings {
-    param($ReportData = $null)
-    
-    if (-not $ReportData) {
-        Write-Host "Generating fresh report data..." -ForegroundColor Yellow
-        $ReportData = Generate-ComprehensiveReport
-    }
-    
-    $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-    $reportFile = Join-Path $ScriptDir "XXMXLI_Security_Report_$timestamp.txt"
-    $jsonFile = Join-Path $ScriptDir "XXMXLI_Security_Report_$timestamp.json"
-    
-    # Export as human-readable text
-    $textReport = @"
-================================================================
-XXMXLI SECURITY REPORT
-================================================================
-Generated: $($ReportData.Timestamp)
-Computer: $($ReportData.ComputerName)
-User: $($ReportData.User)
+function Configure-PrivacySettings {
+    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "AllowTelemetry" 0 "Disable telemetry"
+    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting" "Disabled" 1 "Disable Error Reporting"
+    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" "DisableLocation" 1 "Disable location services"
+    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" "SubmitSamplesConsent" 2 "Disable Defender sample submission"
+    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization" "DODownloadMode" 0 "Disable Update P2P delivery"
+}
 
-SYSTEM INFORMATION:
-OS: $($ReportData.SystemInfo.OS)
-Version: $($ReportData.SystemInfo.Version)
-Architecture: $($ReportData.SystemInfo.Architecture)
-Last Boot: $($ReportData.SystemInfo.LastBoot)
-
-SECURITY STATUS:
-"@
-    
-    foreach ($status in $ReportData.SecurityStatus.GetEnumerator()) {
-        $textReport += "`n$($status.Key): $($status.Value)"
+function Show-SecurityStatus-Registry {
+    $checks = @(
+        @{Path="HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"; Name="NoDriveTypeAutoRun"; Expected=255; Desc="AutoRun Disabled"},
+        @{Path="HKLM:\SOFTWARE\Microsoft\Windows Script Host\Settings"; Name="Enabled"; Expected=0; Desc="Script Host Disabled"},
+        @{Path="HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"; Name="EnableLUA"; Expected=1; Desc="UAC Enabled"},
+        @{Path="HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"; Name="RestrictAnonymous"; Expected=1; Desc="Anonymous Restricted"},
+        @{Path="HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection"; Name="AllowTelemetry"; Expected=0; Desc="Telemetry Disabled"}
+    )
+    foreach ($c in $checks) {
+        try { $v = Get-ItemProperty -Path $c.Path -Name $c.Name -ErrorAction SilentlyContinue; if ($v -and $v.($c.Name) -eq $c.Expected) { Write-Host "✓ $($c.Desc)" -ForegroundColor Green } else { Write-Host "× $($c.Desc)" -ForegroundColor Red } } catch { Write-Host "? $($c.Desc) - Unable to check" -ForegroundColor Yellow }
     }
-    
-    if ($ReportData.Recommendations.Count -gt 0) {
-        $textReport += "`n`nRECOMMENDATIONS:"
-        foreach ($rec in $ReportData.Recommendations) {
-            $textReport += "`n• $rec"
+}
+
+function Module-Registry {
+    Write-Section "XXMXLI Registry Security Configuration"
+    do {
+        Write-Host "1) Create registry backup"
+        Write-Host "2) Disable dangerous features"
+        Write-Host "3) Harden security policies"
+        Write-Host "4) Disable unnecessary services (registry)"
+        Write-Host "5) Configure privacy settings"
+        Write-Host "6) Show current security status"
+        Write-Host "0) Back"
+        $ch = Read-Host "Choose"
+        switch ($ch) {
+            '1' { Create-RegistryBackup | Out-Null; Pause-Clear }
+            '2' { Disable-DangerousFeatures; Pause-Clear }
+            '3' { Harden-SecurityPolicies; Pause-Clear }
+            '4' { Disable-UnnecessaryServices; Pause-Clear }
+            '5' { Configure-PrivacySettings; Pause-Clear }
+            '6' { Show-SecurityStatus-Registry; Pause-Clear }
+            '0' { break }
+            default { Write-Host "Invalid" -ForegroundColor Red }
         }
-    }
-    
-    $textReport += "`n`nReport generated by XXMXLI Security Suite"
-    $textReport += "`nFor more information, visit the XXMXLI documentation"
-    
+    } while ($true)
+}
+
+# ===== Module: Windows Defender =====
+function Module-Defender {
+    Write-Section "XXMXLI Windows Defender Configuration"
     try {
-        $textReport | Out-File -FilePath $reportFile -Encoding UTF8
-        $ReportData | ConvertTo-Json -Depth 3 | Out-File -FilePath $jsonFile -Encoding UTF8
-        
-        Write-Host "✓ Reports exported successfully:" -ForegroundColor Green
-        Write-Host "  Text report: $reportFile" -ForegroundColor Cyan
-        Write-Host "  JSON report: $jsonFile" -ForegroundColor Cyan
-        
-    } catch {
-        Write-Host "✗ Error exporting reports: $($_.Exception.Message)" -ForegroundColor Red
-    }
+        Set-MpPreference -DisableRealtimeMonitoring $false
+        Write-Host "✓ Real-time protection enabled" -ForegroundColor Green
+        Set-MpPreference -MAPSReporting Advanced
+        Set-MpPreference -SubmitSamplesConsent SendAllSamples
+        Write-Host "✓ Cloud protection configured" -ForegroundColor Green
+        Set-MpPreference -ScanAvgCPULoadFactor 50
+        Set-MpPreference -ScanPurgeItemsAfterDelay 30
+        Write-Host "✓ Scan settings optimized" -ForegroundColor Green
+        Set-MpPreference -EnableNetworkProtection Enabled
+        Write-Host "✓ Network protection enabled" -ForegroundColor Green
+        Write-Host "Updating virus definitions..." -ForegroundColor Yellow
+        Update-MpSignature
+        Write-Host "✓ Definitions updated" -ForegroundColor Green
+    } catch { Write-Host "× Error configuring Defender: $($_.Exception.Message)" -ForegroundColor Red }
+    Pause-Clear
 }
 
-# Main loop
-$reportData = $null
+# ===== Module: User Account Security =====
+function Audit-UserAccounts {
+    $localUsers = Get-LocalUser
+    foreach ($u in $localUsers) {
+        $status = if ($u.Enabled) { "ENABLED" } else { "DISABLED" }
+        $color = if ($u.Enabled) { if ($u.Name -in @('Guest','DefaultAccount')) { 'Red' } else { 'Green' } } else { 'Yellow' }
+        Write-Host "User: $($u.Name)" -ForegroundColor $color
+        Write-Host "  Status: $status"; Write-Host "  Last Logon: $($u.LastLogon)"; Write-Host "  Password Last Set: $($u.PasswordLastSet)"; Write-Host "  Password Required: $($u.PasswordRequired)"; Write-Host ""
+    }
+    try { $admins = Get-LocalGroupMember -Group Administrators; Write-Host "Administrators:" -ForegroundColor Cyan; foreach ($a in $admins) { Write-Host "  $($a.Name) ($($a.ObjectClass))" -ForegroundColor (if ($a.ObjectClass -eq 'User') { 'Red' } else { 'Yellow' }) } } catch { Write-Host "Error getting Administrators" -ForegroundColor Red }
+}
 
-do {
-    Show-Menu
-    $choice = Read-Host "Select option (1-9)"
-    
-    switch ($choice) {
-        "1" { Get-SystemOverview }
-        "2" { Get-SecurityStatus }
-        "3" { Get-NetworkSecurity }
-        "4" { Get-InstalledSoftware }
-        "5" { Get-ProcessesAndServices }
-        "6" { Get-EventLogAnalysis }
-        "7" { $reportData = Generate-ComprehensiveReport }
-        "8" { Export-Findings -ReportData $reportData }
-        "9" { 
-            Write-Host "Thank you for using XXMXLI System Diagnostics" -ForegroundColor Blue
-            break 
-        }
-        default { 
-            Write-Host "Invalid choice. Please select 1-9." -ForegroundColor Red 
-        }
+function Configure-PasswordPolicies {
+    $c = Read-Host "Apply password policies (minlen 12, max age 90, min age 1, history 12)? (y/N)"
+    if ($c -match '^(y|Y)$') { try { & net accounts /minpwlen:12; & net accounts /maxpwage:90; & net accounts /minpwage:1; & net accounts /uniquepw:12; Write-Host "✓ Basic password policies applied" -ForegroundColor Green } catch { Write-Host "× Error: $($_.Exception.Message)" -ForegroundColor Red } }
+}
+
+function Manage-UserAccounts {
+    foreach ($name in @('Guest','DefaultAccount')) {
+        try { $acct = Get-LocalUser -Name $name -ErrorAction SilentlyContinue; if ($acct) { $status = if ($acct.Enabled) { 'ENABLED (RISK!)' } else { 'DISABLED (OK)' }; Write-Host "  $name: $status" -ForegroundColor (if ($acct.Enabled) { 'Red' } else { 'Green' }); if ($acct.Enabled) { $d = Read-Host "Disable $name? (y/N)"; if ($d -match '^(y|Y)$') { Disable-LocalUser -Name $name; Write-Host "  ✓ $name disabled" -ForegroundColor Green } } } } catch { Write-Host "  $name: error" -ForegroundColor Yellow }
     }
-    
-    if ($choice -ne "9") {
-        Write-Host ""
-        Read-Host "Press Enter to continue"
-        Clear-Host
+    $mk = Read-Host "Create a new administrator account? (y/N)"; if ($mk -match '^(y|Y)$') { $n = Read-Host "New admin username"; if ($n) { try { $pw = Read-Host "Password for $n" -AsSecureString; New-LocalUser -Name $n -Password $pw -FullName "XXMXLI Administrator" -Description "Created by XXMXLI Security Suite"; Add-LocalGroupMember -Group Administrators -Member $n; Write-Host "✓ Admin '$n' created" -ForegroundColor Green } catch { Write-Host "× Error: $($_.Exception.Message)" -ForegroundColor Red } } }
+}
+
+function Configure-UserRights {
+    try { $reg = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"; Set-ItemProperty -Path $reg -Name DisableCAD -Value 0 -Type DWORD; Set-ItemProperty -Path $reg -Name DontDisplayLastUserName -Value 1 -Type DWORD; Write-Host "✓ Enabled Ctrl+Alt+Del and hide last username" -ForegroundColor Green } catch { Write-Host "× Error configuring logon requirements: $($_.Exception.Message)" -ForegroundColor Red }
+    $ln = Read-Host "Set legal notice for logon? (y/N)"; if ($ln -match '^(y|Y)$') { try { Set-ItemProperty -Path $reg -Name LegalNoticeCaption -Value "AUTHORIZED USE ONLY" -Type String; Set-ItemProperty -Path $reg -Name LegalNoticeText -Value "This system is for authorized users only. All activities are monitored." -Type String; Write-Host "✓ Legal notice configured" -ForegroundColor Green } catch { Write-Host "× Error: $($_.Exception.Message)" -ForegroundColor Red } }
+}
+
+function Configure-AccountLockout { try { & net accounts /lockoutthreshold:5; & net accounts /lockoutduration:30; & net accounts /lockoutwindow:30; Write-Host "✓ Account lockout policies applied" -ForegroundColor Green } catch { Write-Host "× Error: $($_.Exception.Message)" -ForegroundColor Red } }
+
+function Module-UserSecurity {
+    Write-Section "XXMXLI User Account Security"
+    do {
+        Write-Host "1) Audit user accounts"
+        Write-Host "2) Configure password policies"
+        Write-Host "3) Disable/Enable accounts"
+        Write-Host "4) Configure user rights"
+        Write-Host "5) Configure account lockout"
+        Write-Host "0) Back"
+        $ch = Read-Host "Choose"
+        switch ($ch) {
+            '1' { Audit-UserAccounts; Pause-Clear }
+            '2' { Configure-PasswordPolicies; Pause-Clear }
+            '3' { Manage-UserAccounts; Pause-Clear }
+            '4' { Configure-UserRights; Pause-Clear }
+            '5' { Configure-AccountLockout; Pause-Clear }
+            '0' { break }
+            default { Write-Host "Invalid" -ForegroundColor Red }
+        }
+    } while ($true)
+}
+
+# ===== Module: Diagnostics =====
+function Module-Diagnostics {
+    Write-Section "XXMXLI System Diagnostics"
+    try {
+        $os = Get-CimInstance Win32_OperatingSystem
+        Write-Host "Computer: $env:COMPUTERNAME" -ForegroundColor Cyan
+        Write-Host "OS: $($os.Caption) $($os.Version) ($($os.OSArchitecture))"
+        Write-Host "Last Boot: $($os.LastBootUpTime)"
+        $def = $null; try { $def = Get-MpComputerStatus } catch {}
+        if ($def) { Write-Host "Defender RTP: $(if ($def.RealTimeProtectionEnabled){'Enabled'} else {'Disabled'})" }
+        $fw = Get-NetFirewallProfile; foreach ($p in $fw){ Write-Host "Firewall $($p.Name): $(if($p.Enabled){'Enabled'}else{'Disabled'})" }
+    } catch { Write-Host "× Diagnostic error: $($_.Exception.Message)" -ForegroundColor Red }
+    $exp = Read-Host "Export quick report to files? (y/N)"; if ($exp -match '^(y|Y)$') { $ts = Get-Date -Format "yyyyMMdd_HHmmss"; $txt = Join-Path $ScriptDir "XXMXLI_Security_Report_$ts.txt"; $json = Join-Path $ScriptDir "XXMXLI_Security_Report_$ts.json"; $data = @{ Timestamp=(Get-Date); Computer=$env:COMPUTERNAME; User=$env:USERNAME }; try { ($data | Out-String) | Out-File -FilePath $txt -Encoding UTF8; $data | ConvertTo-Json -Depth 3 | Out-File -FilePath $json -Encoding UTF8; Write-Host "✓ Exported: $txt, $json" -ForegroundColor Green } catch { Write-Host "× Export failed: $($_.Exception.Message)" -ForegroundColor Red } }
+    Pause-Clear
+}
+
+# ===== Main Menu =====
+Clear-Host
+Write-Section "XXMXLI Windows Security Suite - All-in-One"
+
+$logFile = Join-Path $ScriptDir "xxmxli_security_suite.log"
+
+while ($true) {
+    Write-Host "1) Firewall configuration"
+    Write-Host "2) Registry hardening"
+    Write-Host "3) Windows Defender configuration"
+    Write-Host "4) User account security"
+    Write-Host "5) System diagnostics and reports"
+    Write-Host "0) Exit"
+    $choice = Read-Host "Select option"
+    $ts = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    try {
+        switch ($choice) {
+            '1' { Module-Firewall }
+            '2' { Module-Registry }
+            '3' { Module-Defender }
+            '4' { Module-UserSecurity }
+            '5' { Module-Diagnostics }
+            '0' { Write-Host "Exiting..." -ForegroundColor Cyan; break }
+            default { Write-Host "Invalid choice" -ForegroundColor Red }
+        }
+    } finally {
+        # lightweight session logging
+        $entry = @{ Timestamp=$ts; User=$env:USERNAME; Computer=$env:COMPUTERNAME; Action=$choice }
+        try { $entry | ConvertTo-Json | Add-Content -Path $logFile } catch {}
     }
-    
-} while ($choice -ne "9")
+}

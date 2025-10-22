@@ -16,6 +16,7 @@ import platform
 import shlex
 from typing import List, Tuple
 from tkinter import filedialog
+import argparse
 
 # Try to import tkinter, but make it optional
 try:
@@ -312,20 +313,35 @@ def show_cli_launcher():
         else:
             print("Invalid choice. Please enter 0-3.")
 
-def main():
-    """Main launcher function"""
+def main(argv: List[str] = None):
+    """Main launcher function with -h/--help support and fast exit"""
+    argv = list(argv) if argv is not None else sys.argv[1:]
+    parser = argparse.ArgumentParser(
+        description="XXMXLI Incident Reporter - Easy Launcher",
+        add_help=True,
+    )
+    parser.add_argument("--cli", action="store_true", help="Force CLI mode (no GUI)")
+    parser.add_argument("--version", action="store_true", help="Print version and exit")
+    # Parse known args only to avoid blocking on unknowns
+    args, _ = parser.parse_known_args(argv)
+
+    if args.version:
+        print("XXMXLI EASY_LAUNCHER 1.0")
+        return
+
+    # If only -h/--help was requested, argparse already printed it and exited
+    # Proceed with normal behavior otherwise
     script_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(script_dir)
-    
+
     print("XXMXLI Incident Reporter - Cross-Platform Launcher")
     print("====================================================")
     print()
-    
-    # Check command line arguments
-    if len(sys.argv) > 1 and sys.argv[1] == "--cli":
+
+    if args.cli:
         show_cli_launcher()
         return
-    
+
     # Try GUI first if available
     if HAS_GUI:
         try:
@@ -334,7 +350,7 @@ def main():
         except Exception as e:
             print(f"GUI failed: {e}")
             print("Falling back to command-line mode...")
-    
+
     # Fallback to CLI
     show_cli_launcher()
 

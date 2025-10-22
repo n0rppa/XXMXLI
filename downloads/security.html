@@ -1985,9 +1985,9 @@ change_ip() {
             }
 
             generateWindowsPowerShellScript() {
-                // Download the PowerShell script file
+                // Download the PowerShell script file (root-level path)
                 const a = document.createElement('a');
-                a.href = 'lataukset/mac_ip_changer.ps1';
+                a.href = 'mac_ip_changer.ps1';
                 a.download = 'mac_ip_changer.ps1';
                 document.body.appendChild(a);
                 a.click();
@@ -1995,9 +1995,9 @@ change_ip() {
             }
 
             generateWindowsBatchScript() {
-                // Download the Batch script file
+                // Download the Batch script file (root-level path)
                 const a = document.createElement('a');
-                a.href = 'lataukset/mac_ip_changer.bat';
+                a.href = 'mac_ip_changer.bat';
                 a.download = 'mac_ip_changer.bat';
                 document.body.appendChild(a);
                 a.click();

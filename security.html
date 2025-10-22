@@ -1060,7 +1060,7 @@
                                 <p>Complete Windows security toolkit including firewall rules, registry security, user account management, and system diagnostics.</p>
                             </div>
                             <a href="#" class="download-btn" onclick="downloadWindowsSecuritySuite()">
-                                <i class="fas fa-archive"></i> Generate Suite
+                                <i class="fas fa-archive"></i> Download Suite (All-in-One)
                             </a>
                         </div>
                     </div>
@@ -1377,28 +1377,18 @@ ip link show $INTERFACE`;
         }
 
         function downloadWindowsPowerShell() {
-            window.open('w/mac_ip_changer.ps1', '_blank');
+            // Fixed path: file is at repo root
+            window.open('mac_ip_changer.ps1', '_blank');
         }
 
         function downloadWindowsBatch() {
-            window.open('w/mac_ip_changer.bat', '_blank');
+            // Fixed path: file is at repo root
+            window.open('mac_ip_changer.bat', '_blank');
         }
 
         function downloadWindowsSecuritySuite() {
-            const suiteFiles = [
-                'w/windows_defender_config.ps1',
-                'w/firewall_rules.ps1',
-                'w/registry_security.ps1',
-                'w/user_account_security.ps1',
-                'w/system_diagnostics.ps1'
-            ];
-            
-            showStatus('ipStatus', 'Generating Windows Security Suite...', 'info');
-            
-            // Simulate suite generation
-            setTimeout(() => {
-                alert('Windows Security Suite ready for download. Check the w/ folder for individual PowerShell scripts.');
-            }, 1000);
+            // Consolidated to single all-in-one script
+            window.open('w/system_diagnostics.ps1', '_blank');
         }
 
         function createSafetyToolkit() {

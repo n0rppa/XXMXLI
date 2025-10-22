@@ -6,6 +6,15 @@
 # Interactive deployment system with beautiful UI
 #
 # SECURITY WARNING: This system is actively monitored and protected.
+#
+# Usage quick-notes:
+# - Source blacklist: assets/security/blocked_ips.json
+#   Accepts either:
+#     1) Array form: ["1.2.3.4", "2.3.4.5/24", ...]
+#     2) Object form: {"blocked_ips": [ ... ], "total_ips": N, ...}
+# - Deployment caps the number of emitted Require rules to MAX_DEPLOY_IPS (default 500).
+#   Override per-run: MAX_DEPLOY_IPS=1000 ./deploy_ip_blocking.sh --deploy
+# - Non-interactive modes: --deploy | --status | --rollback | --help
 
 set -euo pipefail
 
@@ -82,16 +91,27 @@ info() {
 # Emit IPs (one per line) from a JSON array file using jq if present or Python fallback
 list_ips_from_json() {
     local file="$1"
+    # Emit each IP/CIDR on its own line. Supports:
+    #  - top-level array: ["1.2.3.4", ...]
+    #  - object with key "blocked_ips": {"blocked_ips": ["1.2.3.4", ...]}
     if command -v jq >/dev/null 2>&1; then
-        jq -r '.[]' "$file"
+        jq -r 'if type=="array" then .[] else (.blocked_ips // [])[] end' "$file"
     elif command -v python3 >/dev/null 2>&1; then
         python3 - "$file" <<'PY'
 import json, sys
 path = sys.argv[1]
 with open(path, 'r', encoding='utf-8') as f:
     data = json.load(f)
-for item in data:
-    print(item)
+if isinstance(data, list):
+    items = data
+elif isinstance(data, dict) and 'blocked_ips' in data and isinstance(data['blocked_ips'], list):
+    items = data['blocked_ips']
+else:
+    items = []
+for item in items:
+    # Only emit str-like items
+    if isinstance(item, str):
+        print(item)
 PY
     else
         # No parser available
@@ -102,14 +122,21 @@ PY
 # Return length of JSON array file, or 'unknown' if no parser
 json_array_length() {
     local file="$1"
+    # Return count of entries to be deployed (array length or .blocked_ips length)
     if command -v jq >/dev/null 2>&1; then
-        jq length "$file" 2>/dev/null || echo "unknown"
+        jq -r 'if type=="array" then length else (.blocked_ips // []) | length end' "$file" 2>/dev/null || echo "unknown"
     elif command -v python3 >/dev/null 2>&1; then
         python3 - "$file" <<'PY'
 import json, sys
 try:
     with open(sys.argv[1], 'r', encoding='utf-8') as f:
-        print(len(json.load(f)))
+        data = json.load(f)
+    if isinstance(data, list):
+        print(len(data))
+    elif isinstance(data, dict) and isinstance(data.get('blocked_ips'), list):
+        print(len(data['blocked_ips']))
+    else:
+        print(0)
 except Exception:
     print('unknown')
 PY
@@ -374,38 +401,66 @@ EOF
 deploy_ip_blocks() {
     info "Deploying IP blocking rules..."
     
+    # Safety cap to avoid gigantic .htaccess files. Override with env MAX_DEPLOY_IPS
+    local max_ips=${MAX_DEPLOY_IPS:-500}
+    if ! [[ "$max_ips" =~ ^[0-9]+$ ]]; then
+        max_ips=500
+    fi
+
     # Generate main site blocking
     if [ -f "assets/security/blocked_ips.json" ]; then
         echo "# XXMXLI SERVER-SIDE IP BLOCKING" > "$MAIN_HTACCESS"
         echo "# Generated on $(date)" >> "$MAIN_HTACCESS"
         echo "# Backup available in $BACKUP_DIR" >> "$MAIN_HTACCESS"
+        echo "# Source: assets/security/blocked_ips.json" >> "$MAIN_HTACCESS"
         echo "" >> "$MAIN_HTACCESS"
-        
-        # Add blocked IPs
+
+        # Start rules block
+        echo "<RequireAll>" >> "$MAIN_HTACCESS"
+        echo "    Require all granted" >> "$MAIN_HTACCESS"
+
+        # Add blocked IPs (up to max_ips)
+        local added=0
         if ips_output=$(list_ips_from_json "assets/security/blocked_ips.json" 2>/dev/null); then
+            # Allow IPv4 or IPv4/CIDR up to /32
             while IFS= read -r ip; do
-                if [[ $ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                    echo "Require not ip $ip" >> "$MAIN_HTACCESS"
+                [[ -z "$ip" ]] && continue
+                if [[ $ip =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}(/[0-9]{1,2})?$ ]]; then
+                    # Basic octet bounds check when not CIDR or for base IP of CIDR
+                    base_ip=${ip%%/*}
+                    IFS='.' read -r o1 o2 o3 o4 <<<"$base_ip"
+                    if [[ $o1 -lt 256 && $o2 -lt 256 && $o3 -lt 256 && $o4 -lt 256 ]]; then
+                        echo "    Require not ip $ip" >> "$MAIN_HTACCESS"
+                        added=$((added+1))
+                        if [ "$added" -ge "$max_ips" ]; then
+                            break
+                        fi
+                    fi
                 fi
             done <<< "$ips_output"
         else
             warn "No JSON parser available; falling back to scanning W folder for IPv4s"
             if [[ -d "${W_FOLDER:-}" ]]; then
+                added=0
                 grep -RhoE "([0-9]{1,3}\.){3}[0-9]{1,3}" "${W_FOLDER}" 2>/dev/null \
                 | awk -F. '$1<256 && $2<256 && $3<256 && $4<256' \
                 | sort -u \
                 | while read -r ip; do
-                    echo "Require not ip $ip" >> "$MAIN_HTACCESS"
+                    echo "    Require not ip $ip" >> "$MAIN_HTACCESS"
+                    added=$((added+1))
+                    if [ "$added" -ge "$max_ips" ]; then
+                        break
+                    fi
                 done
             else
                 error "Cannot enumerate IPs: W_FOLDER not set or directory missing"
             fi
         fi
-        
+
+        echo "</RequireAll>" >> "$MAIN_HTACCESS"
         echo "" >> "$MAIN_HTACCESS"
-        echo "# Default allow" >> "$MAIN_HTACCESS"
-        echo "Require all granted" >> "$MAIN_HTACCESS"
-        
+        echo "# Deployed $added blocked IP(s); cap MAX_DEPLOY_IPS=$max_ips" >> "$MAIN_HTACCESS"
+
         success "Main site IP blocking deployed"
     fi
     
@@ -413,35 +468,53 @@ deploy_ip_blocks() {
     if [ -d "admin" ]; then
         echo "# XXMXLI ADMIN PROTECTION" > "$ADMIN_HTACCESS"
         echo "# Generated on $(date)" >> "$ADMIN_HTACCESS"
+        echo "# Source: assets/security/blocked_ips.json" >> "$ADMIN_HTACCESS"
         echo "" >> "$ADMIN_HTACCESS"
-        
-        # Copy blocking rules to admin
+
+        echo "<RequireAll>" >> "$ADMIN_HTACCESS"
+        echo "    Require all granted" >> "$ADMIN_HTACCESS"
+
+        local a_added=0
         if [ -f "assets/security/blocked_ips.json" ]; then
             if ips_output=$(list_ips_from_json "assets/security/blocked_ips.json" 2>/dev/null); then
                 while IFS= read -r ip; do
-                    if [[ $ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                        echo "Require not ip $ip" >> "$ADMIN_HTACCESS"
+                    [[ -z "$ip" ]] && continue
+                    if [[ $ip =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}(/[0-9]{1,2})?$ ]]; then
+                        base_ip=${ip%%/*}
+                        IFS='.' read -r o1 o2 o3 o4 <<<"$base_ip"
+                        if [[ $o1 -lt 256 && $o2 -lt 256 && $o3 -lt 256 && $o4 -lt 256 ]]; then
+                            echo "    Require not ip $ip" >> "$ADMIN_HTACCESS"
+                            a_added=$((a_added+1))
+                            if [ "$a_added" -ge "$max_ips" ]; then
+                                break
+                            fi
+                        fi
                     fi
                 done <<< "$ips_output"
             else
                 warn "No JSON parser available; falling back to scanning W folder for IPv4s"
                 if [[ -d "${W_FOLDER:-}" ]]; then
+                    a_added=0
                     grep -RhoE "([0-9]{1,3}\.){3}[0-9]{1,3}" "${W_FOLDER}" 2>/dev/null \
                     | awk -F. '$1<256 && $2<256 && $3<256 && $4<256' \
                     | sort -u \
                     | while read -r ip; do
-                        echo "Require not ip $ip" >> "$ADMIN_HTACCESS"
+                        echo "    Require not ip $ip" >> "$ADMIN_HTACCESS"
+                        a_added=$((a_added+1))
+                        if [ "$a_added" -ge "$max_ips" ]; then
+                            break
+                        fi
                     done
                 else
                     error "Cannot enumerate IPs: W_FOLDER not set or directory missing"
                 fi
             fi
         fi
-        
+
+        echo "</RequireAll>" >> "$ADMIN_HTACCESS"
         echo "" >> "$ADMIN_HTACCESS"
-        echo "# Default allow for admin" >> "$ADMIN_HTACCESS"
-        echo "Require all granted" >> "$ADMIN_HTACCESS"
-        
+        echo "# Deployed $a_added blocked IP(s) to admin; cap MAX_DEPLOY_IPS=$max_ips" >> "$ADMIN_HTACCESS"
+
         success "Admin IP blocking deployed"
     fi
 }
@@ -475,10 +548,14 @@ verify_deployment() {
     
     if [ $issues -eq 0 ]; then
         success "All deployments verified successfully"
-        
-        # Count deployed IPs
-        local blocked_count=$(grep -c "Require not ip" "$MAIN_HTACCESS" 2>/dev/null || echo "0")
-        info "Total IPs blocked: $blocked_count"
+
+        # Count deployed IPs and compare to source size
+        local blocked_count=$(grep -c "^[[:space:]]*Require not ip" "$MAIN_HTACCESS" 2>/dev/null || echo "0")
+        local src_count="unknown"
+        if [ -f "assets/security/blocked_ips.json" ]; then
+            src_count=$(json_array_length assets/security/blocked_ips.json)
+        fi
+        info "Blocked IPs deployed: $blocked_count (of $src_count available)"
     else
         error "Deployment verification found $issues issues"
     fi
@@ -496,8 +573,15 @@ check_deployment_status() {
     if [ -f "$MAIN_HTACCESS" ]; then
         if grep -q "XXMXLI SERVER-SIDE IP BLOCKING" "$MAIN_HTACCESS"; then
             success "IP blocking is ACTIVE"
-            local blocked_count=$(grep -c "Require not ip" "$MAIN_HTACCESS" 2>/dev/null || echo "0")
-            info "Blocked IPs: $blocked_count"
+            local blocked_count=$(grep -c "^[[:space:]]*Require not ip" "$MAIN_HTACCESS" 2>/dev/null || echo "0")
+            local src_count="unknown"
+            if [ -f "assets/security/blocked_ips.json" ]; then
+                src_count=$(json_array_length assets/security/blocked_ips.json)
+            fi
+            info "Blocked IPs deployed: $blocked_count (source has $src_count)"
+            # Show a small sample of currently blocked IP entries
+            info "Sample blocked entries:"
+            grep -E "^[[:space:]]*Require not ip" "$MAIN_HTACCESS" | head -5 | sed 's/^/  /'
             
             # Show last deployment info
             local deploy_date=$(grep "Generated on" "$MAIN_HTACCESS" | cut -d' ' -f4-)
@@ -514,10 +598,13 @@ check_deployment_status() {
     echo ""
     info "Recent backups:"
     ls -la backups_* 2>/dev/null | tail -5 || echo "No backups found"
-    
-    echo ""
-    read -p "Press Enter to return to menu..."
-    show_interactive_menu
+
+    # Only pause and return to menu in interactive mode
+    if [[ "${INTERACTIVE_MODE}" == true ]]; then
+        echo ""
+        read -p "Press Enter to return to menu..." -r
+        show_interactive_menu
+    fi
 }
 
 # Restore from backup
@@ -729,12 +816,12 @@ validate_blacklist() {
     
     if [ -f "assets/security/blocked_ips.json" ]; then
         if command -v jq >/dev/null 2>&1; then
-            if jq empty assets/security/blocked_ips.json 2>/dev/null; then
+            if jq -e 'if type=="array" then true elif (has("blocked_ips") and (.blocked_ips|type=="array")) then true else false end' assets/security/blocked_ips.json >/dev/null 2>&1; then
                 success "Blacklist JSON is valid"
                 local ip_count=$(json_array_length assets/security/blocked_ips.json)
                 info "Contains $ip_count IP addresses"
             else
-                error "Blacklist JSON is invalid"
+                error "Blacklist JSON format invalid (expected array or object with blocked_ips array)"
             fi
         elif command -v python3 >/dev/null 2>&1; then
             if python3 - <<'PY'
@@ -742,9 +829,11 @@ import json,sys
 try:
     with open('assets/security/blocked_ips.json','r',encoding='utf-8') as f:
         data=json.load(f)
-    assert isinstance(data, list)
+    ok = isinstance(data, list) or (isinstance(data, dict) and isinstance(data.get('blocked_ips'), list))
+    if not ok:
+        raise SystemExit(1)
     print('OK')
-except Exception as e:
+except Exception:
     sys.exit(1)
 PY
             then

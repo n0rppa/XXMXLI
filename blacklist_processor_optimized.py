@@ -15,7 +15,11 @@ Features:
 
 import asyncio
 import json
-import yaml
+# Optional third-party modules; allow --help to work without them
+try:
+    import yaml  # type: ignore
+except Exception:  # pragma: no cover - optional dependency
+    yaml = None
 import sys
 import os
 import time
@@ -25,9 +29,20 @@ from datetime import datetime
 from typing import List, Dict, Set, Optional, Tuple
 from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import aiohttp
-import aiofiles
-from tqdm import tqdm
+# Optional async/http/file/progress deps; lazily handled at runtime
+try:
+    import aiohttp  # type: ignore
+except Exception:
+    aiohttp = None  # will be checked when used
+try:
+    import aiofiles  # type: ignore
+except Exception:
+    aiofiles = None
+try:
+    from tqdm import tqdm  # type: ignore
+except Exception:
+    def tqdm(iterable=None, total=None, desc=None, bar_format=None):  # minimal fallback
+        return iterable if iterable is not None else []
 import logging
 import argparse
 
@@ -96,9 +111,9 @@ class ConfigManager:
             except Exception as e:
                 print(f"{Colors.YELLOW}⚠{Colors.END} JSON config error: {e}")
         
-        # Try YAML
+        # Try YAML (only if PyYAML is available)
         yaml_config = self.config_dir / "blacklist_processor.yaml"
-        if yaml_config.exists():
+        if yaml is not None and yaml_config.exists():
             try:
                 with open(yaml_config, 'r') as f:
                     config = yaml.safe_load(f)
@@ -238,7 +253,7 @@ class BlacklistProcessor:
             return (script_dir.parent / 'w').resolve()
         return (repo_root / 'w').resolve()
         
-    async def download_source(self, session: aiohttp.ClientSession, source: dict) -> Tuple[str, List[str]]:
+    async def download_source(self, session, source: dict) -> Tuple[str, List[str]]:
         """Download a single blacklist source with retries"""
         source_name = source['name']
         url = source['url']
@@ -380,9 +395,10 @@ class BlacklistProcessor:
                 return await self.download_source(session, source)
         
         # Download all sources concurrently
+        if aiohttp is None:
+            raise RuntimeError("aiohttp is required to download sources. Install with: pip install aiohttp tqdm aiofiles pyyaml")
         connector = aiohttp.TCPConnector(limit=max_concurrent)
         timeout = aiohttp.ClientTimeout(total=60)
-        
         async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
             tasks = [download_with_semaphore(session, source) for source in sources]
             
@@ -606,47 +622,103 @@ if (typeof window !== 'undefined') {{
         
         print("")
 
-async def main():
-    """Main entry point"""
-    parser = argparse.ArgumentParser(description="XXMXLI Enhanced IP Blacklist Processor v2.0")
-    parser.add_argument("--config-dir", type=Path, help="Configuration directory path")
-    parser.add_argument("--debug", action="store_true", help="Enable debug logging")
-    parser.add_argument("--no-colors", action="store_true", help="Disable colored output")
-    
-    args = parser.parse_args()
-    
-    if args.no_colors:
+async def run_pipeline(config_dir: Optional[Path], debug: bool, no_colors: bool) -> int:
+    """Run the download/process/output pipeline and return an exit code."""
+    if no_colors:
         Colors.disable()
-    
-    if args.debug:
+    if debug:
         logging.getLogger().setLevel(logging.DEBUG)
-    
     print(f"{Colors.PURPLE}{Colors.BOLD}")
     print("╔══════════════════════════════════════════════════════════════╗")
     print("║              XXMXLI IP BLACKLIST PROCESSOR v2.0              ║")
     print("║          Enhanced Performance • Better Error Handling        ║")
     print("╚══════════════════════════════════════════════════════════════╝")
     print(f"{Colors.END}\n")
-    
-    try:
-        processor = BlacklistProcessor(args.config_dir)
-        
-        # Process sources
-        stats = await processor.process_sources()
-        
-        # Generate outputs
-        processor.generate_outputs()
-        
-        # Print statistics
-        processor.print_statistics()
-        
-        if stats.failed_sources > 0:
-            print(f"{Colors.YELLOW}⚠ Warning: {stats.failed_sources} sources failed to download{Colors.END}")
-            return 1
-        else:
-            print(f"{Colors.GREEN}🎉 All processing completed successfully!{Colors.END}")
+    processor = BlacklistProcessor(config_dir)
+    stats = await processor.process_sources()
+    processor.generate_outputs()
+    processor.print_statistics()
+    if stats.failed_sources > 0:
+        print(f"{Colors.YELLOW}⚠ Warning: {stats.failed_sources} sources failed to download{Colors.END}")
+        return 1
+    print(f"{Colors.GREEN}🎉 All processing completed successfully!{Colors.END}")
+    return 0
+
+def check_dependencies() -> None:
+    """Print a quick dependency status overview."""
+    deps = {
+        'aiohttp': aiohttp is not None,
+        'aiofiles': aiofiles is not None,
+        'tqdm': hasattr(tqdm, '__call__') is False,  # our fallback returns iterable, no call attr; treat as missing
+        'PyYAML': yaml is not None,
+    }
+    print("Dependency status:")
+    for name, ok in deps.items():
+        print(f" - {name}: {'OK' if ok else 'MISSING'}")
+    if not all(deps.values()):
+        print("\nInstall missing with:")
+        print("  pip install aiohttp tqdm aiofiles pyyaml")
+
+def show_menu(config_dir: Optional[Path]) -> int:
+    """Interactive menu for non-technical users (synchronous wrapper)."""
+    while True:
+        print("\nXXMXLI IP Blacklist Processor - Menu")
+        print("=====================================")
+        print("1) Quick Start (download + process + output)")
+        print("2) Check dependencies")
+        print("3) Show config directory")
+        print("4) Change config directory")
+        print("0) Exit")
+        choice = input("Select an option [0-4]: ").strip()
+        if choice == '1':
+            # Run the async pipeline with current settings
+            try:
+                runner = getattr(asyncio, 'run', None)
+                if runner is not None:
+                    return runner(run_pipeline(config_dir, debug=False, no_colors=False))
+                else:
+                    loop = asyncio.get_event_loop()
+                    return loop.run_until_complete(run_pipeline(config_dir, debug=False, no_colors=False))
+            except RuntimeError as e:
+                print(f"Runtime error: {e}")
+                return 1
+        elif choice == '2':
+            check_dependencies()
+        elif choice == '3':
+            print(f"Config directory: {config_dir or '(default)'}")
+        elif choice == '4':
+            new_dir = input("Enter new config directory path (blank to cancel): ").strip()
+            if new_dir:
+                p = Path(new_dir).expanduser()
+                if p.exists() and p.is_dir():
+                    config_dir = p
+                    print(f"Set config directory to: {p}")
+                else:
+                    print("Path does not exist or is not a directory.")
+        elif choice == '0':
+            print("Goodbye!")
             return 0
-            
+        else:
+            print("Invalid selection. Please choose 0-4.")
+
+async def main():
+    """Main entry point"""
+    parser = argparse.ArgumentParser(description="XXMXLI Enhanced IP Blacklist Processor v2.0")
+    parser.add_argument("--config-dir", type=Path, help="Configuration directory path")
+    parser.add_argument("--debug", action="store_true", help="Enable debug logging")
+    parser.add_argument("--no-colors", action="store_true", help="Disable colored output")
+    parser.add_argument("--menu", action="store_true", help="Launch interactive menu")
+    args = parser.parse_args()
+
+    # Menu path (synchronous wrapper); return code handled by caller
+    if args.menu:
+        # Run menu in sync context, then return its code
+        code = show_menu(args.config_dir)
+        return code
+
+    # Regular pipeline execution
+    try:
+        return await run_pipeline(args.config_dir, args.debug, args.no_colors)
     except KeyboardInterrupt:
         print(f"\n{Colors.YELLOW}⚠ Operation cancelled by user{Colors.END}")
         return 130
@@ -655,6 +727,19 @@ async def main():
         return 1
 
 if __name__ == "__main__":
-    # Run the async main function
-    exit_code = asyncio.run(main())
+    # Run the async main function with compatibility for older Python
+    try:
+        runner = asyncio.run  # type: ignore[attr-defined]
+    except AttributeError:
+        runner = None
+    if runner is not None:
+        exit_code = runner(main())
+    else:
+        loop = asyncio.get_event_loop()
+        try:
+            exit_code = loop.run_until_complete(main())
+        finally:
+            if loop.is_running():
+                loop.stop()
+            loop.close()
     sys.exit(exit_code)

@@ -18,12 +18,12 @@ error_exit() {
 }
 trap 'error_exit ${LINENO} $?' ERR
 
-# Default PATH for cron and non-interactive sessions
+# Default PATH for non-interactive sessions
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH:-}"
 
 # Cron-safe logging controls
-NO_COLOR="${NO_COLOR:-}"     # Set to any value to disable ANSI colors
-QUIET_MODE="${QUIET_MODE:-false}"  # Set to true to reduce stdout (cron)
+NO_COLOR="${NO_COLOR:-}"
+QUIET_MODE="${QUIET_MODE:-false}"
 
 # Concurrency control via flock or directory lock
 LOCK_NAME="$(basename "$0").lock"
@@ -70,6 +70,10 @@ detect_paths
 
 # Performance logging
 LOG_FILE="${LOG_PATH}/$(basename "$0" .sh)_performance.log"
+# Fallback to /tmp if not writable (avoid permission errors when not root)
+if ! ( : >>"$LOG_FILE" ) 2>/dev/null; then
+    LOG_FILE="/tmp/$(basename "$0" .sh)_performance.log"
+fi
 
 log_performance() {
     local level="$1"
@@ -250,7 +254,7 @@ optimized_search() {
     echo "    Real-time Network Monitoring and Intrusion Detection"
     echo "    Educational and Authorized Use Only"
     echo -e "${NC}"
-}lysis Tool
+}
 # Real-time Network Traffic Monitoring and Security Analysis
 # Author: XXMXLI Security Tools
 # WARNING: Use only for legitimate purposes and with proper authorization
@@ -389,8 +393,8 @@ monitor_connections() {
         echo -e "${MAGENTA}Press Ctrl+C to return to menu${NC}"
         sleep $SCAN_INTERVAL
     done
+# Close function block for monitor_connections
 }
-
 # Function to monitor bandwidth
 monitor_bandwidth() {
     echo -e "${CYAN}📊 Bandwidth Monitoring${NC}"
