@@ -131,6 +131,8 @@ function Block-SuspiciousPorts {
 function Show-FirewallStatus {
     $profiles = Get-NetFirewallProfile
     foreach ($profile in $profiles) {
+        $status = ''
+        $color = 'White'
         if ($profile.Enabled) { $status = "ENABLED"; $color = "Green" } else { $status = "DISABLED"; $color = "Red" }
         Write-Host "$($profile.Name) Profile: $status" -ForegroundColor $color
         Write-Host "  Default Inbound: $($profile.DefaultInboundAction) | Default Outbound: $($profile.DefaultOutboundAction)"
@@ -300,6 +302,8 @@ function Module-Defender {
 function Audit-UserAccounts {
     $localUsers = Get-LocalUser
     foreach ($u in $localUsers) {
+        $status = ''
+        $color = 'White'
         if ($u.Enabled) {
             $status = 'ENABLED'
             if ($u.Name -in @('Guest','DefaultAccount')) { $color = 'Red' } else { $color = 'Green' }
@@ -315,6 +319,7 @@ function Audit-UserAccounts {
         $admins = Get-LocalGroupMember -Group Administrators
         Write-Host "Administrators:" -ForegroundColor Cyan
         foreach ($a in $admins) {
+            $fg = 'White'
             if ($a.ObjectClass -eq 'User') { $fg = 'Red' } else { $fg = 'Yellow' }
             Write-Host "  $($a.Name) ($($a.ObjectClass))" -ForegroundColor $fg
         }
@@ -331,6 +336,8 @@ function Manage-UserAccounts {
         try {
             $acct = Get-LocalUser -Name $name -ErrorAction SilentlyContinue
             if ($acct) {
+                $status = ''
+                $fg = 'White'
                 if ($acct.Enabled) { $status = 'ENABLED (RISK!)'; $fg = 'Red' } else { $status = 'DISABLED (OK)'; $fg = 'Green' }
                 Write-Host "  $name: $status" -ForegroundColor $fg
                 if ($acct.Enabled) {
@@ -344,8 +351,20 @@ function Manage-UserAccounts {
 }
 
 function Configure-UserRights {
-    try { $reg = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"; Set-ItemProperty -Path $reg -Name DisableCAD -Value 0 -Type DWORD -ErrorAction Stop; Set-ItemProperty -Path $reg -Name DontDisplayLastUserName -Value 1 -Type DWORD -ErrorAction Stop; Log-Success "Enabled Ctrl+Alt+Del and hide last username" } catch { Log-Error ("Error configuring logon requirements: " + $_.Exception.Message) }
-    $ln = Read-Host "Set legal notice for logon? (y/N)"; if ($ln -match '^(y|Y)$') { try { Set-ItemProperty -Path $reg -Name LegalNoticeCaption -Value "AUTHORIZED USE ONLY" -Type String -ErrorAction Stop; Set-ItemProperty -Path $reg -Name LegalNoticeText -Value "This system is for authorized users only. All activities are monitored." -Type String -ErrorAction Stop; Log-Success "Legal notice configured" } catch { Log-Error ("Error setting legal notice: " + $_.Exception.Message) } }
+    $reg = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+    try {
+        Set-ItemProperty -Path $reg -Name DisableCAD -Value 0 -Type DWORD -ErrorAction Stop
+        Set-ItemProperty -Path $reg -Name DontDisplayLastUserName -Value 1 -Type DWORD -ErrorAction Stop
+        Log-Success "Enabled Ctrl+Alt+Del and hide last username"
+    } catch { Log-Error ("Error configuring logon requirements: " + $_.Exception.Message) }
+    $ln = Read-Host "Set legal notice for logon? (y/N)"
+    if ($ln -match '^(y|Y)$') {
+        try {
+            Set-ItemProperty -Path $reg -Name LegalNoticeCaption -Value "AUTHORIZED USE ONLY" -Type String -ErrorAction Stop
+            Set-ItemProperty -Path $reg -Name LegalNoticeText -Value "This system is for authorized users only. All activities are monitored." -Type String -ErrorAction Stop
+            Log-Success "Legal notice configured"
+        } catch { Log-Error ("Error setting legal notice: " + $_.Exception.Message) }
+    }
 }
 
 function Configure-AccountLockout { try { & net accounts /lockoutthreshold:5; & net accounts /lockoutduration:30; & net accounts /lockoutwindow:30; Log-Success "Account lockout policies applied" } catch { Log-Error ("Error configuring lockout policies: " + $_.Exception.Message) } }
@@ -382,11 +401,13 @@ function Module-Diagnostics {
         Write-Host "Last Boot: $($os.LastBootUpTime)"
         $def = $null; try { $def = Get-MpComputerStatus -ErrorAction Stop } catch {}
         if ($def) {
+            $rtp = 'Unknown'
             if ($def.RealTimeProtectionEnabled) { $rtp = 'Enabled' } else { $rtp = 'Disabled' }
             Write-Host "Defender RTP: $rtp"
         }
         $fw = Get-NetFirewallProfile -ErrorAction Stop
         foreach ($p in $fw) {
+            $fwStatus = 'Unknown'
             if ($p.Enabled) { $fwStatus = 'Enabled' } else { $fwStatus = 'Disabled' }
             Write-Host "Firewall $($p.Name): $fwStatus"
         }
