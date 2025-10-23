@@ -8,6 +8,37 @@ Single entry point so you can download/run one script only
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $ScriptDir
 
+# Harden defaults and enable robust error handling
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+$PSDefaultParameterValues['*:ErrorAction'] = 'Stop'
+
+# Centralized logging
+$logFile = Join-Path $ScriptDir "xxmxli_security_suite.log"
+function Write-Log {
+    param(
+        [Parameter(Mandatory)][string]$Message,
+        [ValidateSet('INFO','WARN','ERROR','SUCCESS')][string]$Level = 'INFO'
+    )
+    try {
+        $ts = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+        Add-Content -Path $logFile -Value ("$ts [$Level] $Message") -Encoding UTF8
+    } catch { }
+}
+function Log-Info { param([string]$Message) Write-Host $Message -ForegroundColor Cyan; Write-Log -Message $Message -Level 'INFO' }
+function Log-Success { param([string]$Message) Write-Host $Message -ForegroundColor Green; Write-Log -Message $Message -Level 'SUCCESS' }
+function Log-Warn { param([string]$Message) Write-Host $Message -ForegroundColor Yellow; Write-Log -Message $Message -Level 'WARN' }
+function Log-Error { param([string]$Message) Write-Host $Message -ForegroundColor Red; Write-Log -Message $Message -Level 'ERROR' }
+
+# Capture full console transcript (best-effort)
+try { Start-Transcript -Path $logFile -Append -ErrorAction SilentlyContinue | Out-Null } catch {}
+
+# Global trap to log unexpected errors without crashing the session
+trap {
+    Log-Error ("Unhandled error: " + $_.Exception.Message)
+    continue
+}
+
 # Global: check admin
 function Test-Administrator {
     $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -16,8 +47,8 @@ function Test-Administrator {
 }
 
 if (-not (Test-Administrator)) {
-    Write-Host "ERROR: This script requires administrator privileges" -ForegroundColor Red
-    Write-Host "Please run PowerShell as Administrator and try again" -ForegroundColor Yellow
+    Log-Error "This script requires administrator privileges"
+    Log-Warn "Please run PowerShell as Administrator and try again"
     Read-Host "Press Enter to exit"
     exit 1
 }
@@ -34,16 +65,17 @@ function Write-Section($title, $color = 'Blue') {
     Write-Host $title -ForegroundColor $color
     Write-Host "================================================================" -ForegroundColor $color
     Write-Host ""
+    Write-Log -Message ("SECTION: " + $title) -Level 'INFO'
 }
 
 # ===== Module: Firewall Rules =====
 function Enable-FirewallProfiles {
     try {
-        Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled True
-        Set-NetFirewallProfile -Profile Domain,Public,Private -DefaultInboundAction Block
-        Set-NetFirewallProfile -Profile Domain,Public,Private -DefaultOutboundAction Allow
-        Write-Host "✓ Windows Firewall enabled for all profiles (Inbound=Block, Outbound=Allow)" -ForegroundColor Green
-    } catch { Write-Host "× Error enabling firewall: $($_.Exception.Message)" -ForegroundColor Red }
+        Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled True -ErrorAction Stop
+        Set-NetFirewallProfile -Profile Domain,Public,Private -DefaultInboundAction Block -ErrorAction Stop
+        Set-NetFirewallProfile -Profile Domain,Public,Private -DefaultOutboundAction Allow -ErrorAction Stop
+        Log-Success "Windows Firewall enabled for all profiles (Inbound=Block, Outbound=Allow)"
+    } catch { Log-Error ("Error enabling firewall: " + $_.Exception.Message) }
 }
 
 function Configure-SecurityRules {
@@ -52,8 +84,8 @@ function Configure-SecurityRules {
         foreach ($port in $attackPorts) {
             $name = "XXMXLI_Block_Port_$port"
             if (-not (Get-NetFirewallRule -DisplayName $name -ErrorAction SilentlyContinue)) {
-                New-NetFirewallRule -DisplayName $name -Direction Inbound -Protocol TCP -LocalPort $port -Action Block | Out-Null
-                Write-Host "  ✓ Blocked inbound TCP $port" -ForegroundColor Green
+                New-NetFirewallRule -DisplayName $name -Direction Inbound -Protocol TCP -LocalPort $port -Action Block -ErrorAction Stop | Out-Null
+                Log-Success "Blocked inbound TCP $port"
             }
         }
         $essential = @(
@@ -63,12 +95,12 @@ function Configure-SecurityRules {
         )
         foreach ($r in $essential) {
             if (-not (Get-NetFirewallRule -DisplayName $r.Name -ErrorAction SilentlyContinue)) {
-                New-NetFirewallRule -DisplayName $r.Name -Direction $r.Dir -Protocol $r.Proto -LocalPort $r.Port -Action Allow | Out-Null
-                Write-Host "  ✓ Allowed $($r.Dir) $($r.Proto) $($r.Port)" -ForegroundColor Green
+                New-NetFirewallRule -DisplayName $r.Name -Direction $r.Dir -Protocol $r.Proto -LocalPort $r.Port -Action Allow -ErrorAction Stop | Out-Null
+                Log-Success "Allowed $($r.Dir) $($r.Proto) $($r.Port)"
             }
         }
-        Write-Host "✓ Security rules configured" -ForegroundColor Green
-    } catch { Write-Host "× Error: $($_.Exception.Message)" -ForegroundColor Red }
+        Log-Success "Security rules configured"
+    } catch { Log-Error ("Error configuring security rules: " + $_.Exception.Message) }
 }
 
 function Block-SuspiciousPorts {
@@ -88,12 +120,12 @@ function Block-SuspiciousPorts {
         foreach ($p in $ports) {
             $name = "XXMXLI_Block_$($p.Desc)_$($p.Port)"
             if (-not (Get-NetFirewallRule -DisplayName $name -ErrorAction SilentlyContinue)) {
-                New-NetFirewallRule -DisplayName $name -Direction Inbound -Protocol $p.Protocol -LocalPort $p.Port -Action Block | Out-Null
-                Write-Host "  ✓ Blocked $($p.Desc) $($p.Port)/$($p.Protocol)" -ForegroundColor Green
+                New-NetFirewallRule -DisplayName $name -Direction Inbound -Protocol $p.Protocol -LocalPort $p.Port -Action Block -ErrorAction Stop | Out-Null
+                Log-Success "Blocked $($p.Desc) $($p.Port)/$($p.Protocol)"
             }
         }
-        Write-Host "✓ Suspicious ports blocked" -ForegroundColor Green
-    } catch { Write-Host "× Error: $($_.Exception.Message)" -ForegroundColor Red }
+        Log-Success "Suspicious ports blocked"
+    } catch { Log-Error ("Error blocking ports: " + $_.Exception.Message) }
 }
 
 function Show-FirewallStatus {
@@ -104,7 +136,7 @@ function Show-FirewallStatus {
         Write-Host "  Default Inbound: $($profile.DefaultInboundAction) | Default Outbound: $($profile.DefaultOutboundAction)"
     }
     $rules = Get-NetFirewallRule | Where-Object { $_.DisplayName -like "XXMXLI_*" }
-    if ($rules) { Write-Host "XXMXLI Custom Rules:" -ForegroundColor Yellow; $rules | Select DisplayName,Direction,Action,Enabled | Format-Table -AutoSize }
+    if ($rules) { Log-Warn "XXMXLI Custom Rules:"; $rules | Select DisplayName,Direction,Action,Enabled | Format-Table -AutoSize }
 }
 
 function Reset-FirewallRules {
@@ -112,9 +144,10 @@ function Reset-FirewallRules {
     if ($c -match '^(y|Y)$') {
         try {
             Get-NetFirewallRule | Where-Object { $_.DisplayName -like "XXMXLI_*" } | Remove-NetFirewallRule -ErrorAction SilentlyContinue
-            netsh advfirewall reset | Out-Null
-            Write-Host "✓ Firewall reset" -ForegroundColor Green
-        } catch { Write-Host "× Error: $($_.Exception.Message)" -ForegroundColor Red }
+            & netsh advfirewall reset | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw "netsh advfirewall reset failed with exit code $LASTEXITCODE" }
+            Log-Success "Firewall reset"
+        } catch { Log-Error ("Error resetting firewall: " + $_.Exception.Message) }
     }
 }
 
@@ -144,15 +177,19 @@ function Module-Firewall {
 function Set-RegistryValue {
     param([string]$Path,[string]$Name,[object]$Value,[string]$Type="DWORD",[string]$Description="")
     try {
-        if (-not (Test-Path $Path)) { New-Item -Path $Path -Force | Out-Null }
-        Set-ItemProperty -Path $Path -Name $Name -Value $Value -Type $Type
-        if ($Description) { Write-Host "  ✓ $Description" -ForegroundColor Green } else { Write-Host "  ✓ $Path\$Name=$Value" -ForegroundColor Green }
-    } catch { Write-Host "  × Error setting $Path\$Name: $($_.Exception.Message)" -ForegroundColor Red }
+        if (-not (Test-Path $Path)) { New-Item -Path $Path -Force -ErrorAction Stop | Out-Null }
+        Set-ItemProperty -Path $Path -Name $Name -Value $Value -Type $Type -ErrorAction Stop
+        if ($Description) { Log-Success $Description } else { Log-Success "$Path\$Name=$Value" }
+    } catch { Log-Error ("Error setting $Path\$Name: " + $_.Exception.Message) }
 }
 
 function Create-RegistryBackup {
     $BackupPath = Join-Path $ScriptDir "registry_backup_$(Get-Date -Format 'yyyyMMdd_HHmmss').reg"
-    try { reg export HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies "$BackupPath" | Out-Null; Write-Host "✓ Backup: $BackupPath" -ForegroundColor Green; return $BackupPath } catch { Write-Host "× Backup failed: $($_.Exception.Message)" -ForegroundColor Red; return $null }
+    try {
+        & reg export HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies "$BackupPath" | Out-Null
+        if ($LASTEXITCODE -ne 0) { throw "reg export failed with exit code $LASTEXITCODE" }
+        Log-Success "Backup: $BackupPath"; return $BackupPath
+    } catch { Log-Error ("Backup failed: " + $_.Exception.Message); return $null }
 }
 
 function Disable-DangerousFeatures {
@@ -187,7 +224,7 @@ function Disable-UnnecessaryServices {
         @{Path="HKLM:\SYSTEM\CurrentControlSet\Services\RemoteAccess"; Desc="Routing and Remote Access"}
     )
     foreach ($s in $svc) { if (Test-Path $s.Path) { Set-RegistryValue $s.Path "Start" 4 "Disabled $($s.Desc)" } }
-    Write-Host "Note: Service changes take effect after reboot" -ForegroundColor Yellow
+    Log-Warn "Note: Service changes take effect after reboot"
 }
 
 function Configure-PrivacySettings {
@@ -207,7 +244,10 @@ function Show-SecurityStatus-Registry {
         @{Path="HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection"; Name="AllowTelemetry"; Expected=0; Desc="Telemetry Disabled"}
     )
     foreach ($c in $checks) {
-        try { $v = Get-ItemProperty -Path $c.Path -Name $c.Name -ErrorAction SilentlyContinue; if ($v -and $v.($c.Name) -eq $c.Expected) { Write-Host "✓ $($c.Desc)" -ForegroundColor Green } else { Write-Host "× $($c.Desc)" -ForegroundColor Red } } catch { Write-Host "? $($c.Desc) - Unable to check" -ForegroundColor Yellow }
+        try {
+            $v = Get-ItemProperty -Path $c.Path -Name $c.Name -ErrorAction SilentlyContinue
+            if ($v -and $v.($c.Name) -eq $c.Expected) { Log-Success $c.Desc } else { Log-Error $c.Desc }
+        } catch { Log-Warn ("Unable to check: " + $c.Desc) }
     }
 }
 
@@ -230,7 +270,7 @@ function Module-Registry {
             '5' { Configure-PrivacySettings; Pause-Clear }
             '6' { Show-SecurityStatus-Registry; Pause-Clear }
             '0' { break }
-            default { Write-Host "Invalid" -ForegroundColor Red }
+            default { Log-Warn "Invalid choice in Registry module" }
         }
     } while ($true)
 }
@@ -239,20 +279,20 @@ function Module-Registry {
 function Module-Defender {
     Write-Section "XXMXLI Windows Defender Configuration"
     try {
-        Set-MpPreference -DisableRealtimeMonitoring $false
-        Write-Host "✓ Real-time protection enabled" -ForegroundColor Green
-        Set-MpPreference -MAPSReporting Advanced
-        Set-MpPreference -SubmitSamplesConsent SendAllSamples
-        Write-Host "✓ Cloud protection configured" -ForegroundColor Green
-        Set-MpPreference -ScanAvgCPULoadFactor 50
-        Set-MpPreference -ScanPurgeItemsAfterDelay 30
-        Write-Host "✓ Scan settings optimized" -ForegroundColor Green
-        Set-MpPreference -EnableNetworkProtection Enabled
-        Write-Host "✓ Network protection enabled" -ForegroundColor Green
-        Write-Host "Updating virus definitions..." -ForegroundColor Yellow
-        Update-MpSignature
-        Write-Host "✓ Definitions updated" -ForegroundColor Green
-    } catch { Write-Host "× Error configuring Defender: $($_.Exception.Message)" -ForegroundColor Red }
+        Set-MpPreference -DisableRealtimeMonitoring $false -ErrorAction Stop
+        Log-Success "Real-time protection enabled"
+        Set-MpPreference -MAPSReporting Advanced -ErrorAction Stop
+        Set-MpPreference -SubmitSamplesConsent SendAllSamples -ErrorAction Stop
+        Log-Success "Cloud protection configured"
+        Set-MpPreference -ScanAvgCPULoadFactor 50 -ErrorAction Stop
+        Set-MpPreference -ScanPurgeItemsAfterDelay 30 -ErrorAction Stop
+        Log-Success "Scan settings optimized"
+        Set-MpPreference -EnableNetworkProtection Enabled -ErrorAction Stop
+        Log-Success "Network protection enabled"
+        Log-Warn "Updating virus definitions..."
+        Update-MpSignature -ErrorAction Stop
+        Log-Success "Definitions updated"
+    } catch { Log-Error ("Error configuring Defender: " + $_.Exception.Message) }
     Pause-Clear
 }
 
@@ -269,6 +309,7 @@ function Audit-UserAccounts {
         }
         Write-Host "User: $($u.Name)" -ForegroundColor $color
         Write-Host "  Status: $status"; Write-Host "  Last Logon: $($u.LastLogon)"; Write-Host "  Password Last Set: $($u.PasswordLastSet)"; Write-Host "  Password Required: $($u.PasswordRequired)"; Write-Host ""
+        Write-Log -Message ("AUDIT USER: " + $u.Name + ", Status=" + $status) -Level 'INFO'
     }
     try {
         $admins = Get-LocalGroupMember -Group Administrators
@@ -277,12 +318,12 @@ function Audit-UserAccounts {
             if ($a.ObjectClass -eq 'User') { $fg = 'Red' } else { $fg = 'Yellow' }
             Write-Host "  $($a.Name) ($($a.ObjectClass))" -ForegroundColor $fg
         }
-    } catch { Write-Host "Error getting Administrators" -ForegroundColor Red }
+    } catch { Log-Error "Error getting Administrators" }
 }
 
 function Configure-PasswordPolicies {
     $c = Read-Host "Apply password policies (minlen 12, max age 90, min age 1, history 12)? (y/N)"
-    if ($c -match '^(y|Y)$') { try { & net accounts /minpwlen:12; & net accounts /maxpwage:90; & net accounts /minpwage:1; & net accounts /uniquepw:12; Write-Host "✓ Basic password policies applied" -ForegroundColor Green } catch { Write-Host "× Error: $($_.Exception.Message)" -ForegroundColor Red } }
+    if ($c -match '^(y|Y)$') { try { & net accounts /minpwlen:12; & net accounts /maxpwage:90; & net accounts /minpwage:1; & net accounts /uniquepw:12; Log-Success "Basic password policies applied" } catch { Log-Error ("Error configuring password policies: " + $_.Exception.Message) } }
 }
 
 function Manage-UserAccounts {
@@ -294,20 +335,20 @@ function Manage-UserAccounts {
                 Write-Host "  $name: $status" -ForegroundColor $fg
                 if ($acct.Enabled) {
                     $d = Read-Host "Disable $name? (y/N)"
-                    if ($d -match '^(y|Y)$') { Disable-LocalUser -Name $name; Write-Host "  ✓ $name disabled" -ForegroundColor Green }
+                    if ($d -match '^(y|Y)$') { Disable-LocalUser -Name $name -ErrorAction Stop; Log-Success ("$name disabled") }
                 }
             }
-        } catch { Write-Host "  $name: error" -ForegroundColor Yellow }
+        } catch { Log-Warn ("$name: error - " + $_.Exception.Message) }
     }
-    $mk = Read-Host "Create a new administrator account? (y/N)"; if ($mk -match '^(y|Y)$') { $n = Read-Host "New admin username"; if ($n) { try { $pw = Read-Host "Password for $n" -AsSecureString; New-LocalUser -Name $n -Password $pw -FullName "XXMXLI Administrator" -Description "Created by XXMXLI Security Suite"; Add-LocalGroupMember -Group Administrators -Member $n; Write-Host "✓ Admin '$n' created" -ForegroundColor Green } catch { Write-Host "× Error: $($_.Exception.Message)" -ForegroundColor Red } } }
+    $mk = Read-Host "Create a new administrator account? (y/N)"; if ($mk -match '^(y|Y)$') { $n = Read-Host "New admin username"; if ($n) { try { $pw = Read-Host "Password for $n" -AsSecureString; New-LocalUser -Name $n -Password $pw -FullName "XXMXLI Administrator" -Description "Created by XXMXLI Security Suite" -ErrorAction Stop; Add-LocalGroupMember -Group Administrators -Member $n -ErrorAction Stop; Log-Success ("Admin '"+$n+"' created") } catch { Log-Error ("Error creating admin: " + $_.Exception.Message) } } }
 }
 
 function Configure-UserRights {
-    try { $reg = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"; Set-ItemProperty -Path $reg -Name DisableCAD -Value 0 -Type DWORD; Set-ItemProperty -Path $reg -Name DontDisplayLastUserName -Value 1 -Type DWORD; Write-Host "✓ Enabled Ctrl+Alt+Del and hide last username" -ForegroundColor Green } catch { Write-Host "× Error configuring logon requirements: $($_.Exception.Message)" -ForegroundColor Red }
-    $ln = Read-Host "Set legal notice for logon? (y/N)"; if ($ln -match '^(y|Y)$') { try { Set-ItemProperty -Path $reg -Name LegalNoticeCaption -Value "AUTHORIZED USE ONLY" -Type String; Set-ItemProperty -Path $reg -Name LegalNoticeText -Value "This system is for authorized users only. All activities are monitored." -Type String; Write-Host "✓ Legal notice configured" -ForegroundColor Green } catch { Write-Host "× Error: $($_.Exception.Message)" -ForegroundColor Red } }
+    try { $reg = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"; Set-ItemProperty -Path $reg -Name DisableCAD -Value 0 -Type DWORD -ErrorAction Stop; Set-ItemProperty -Path $reg -Name DontDisplayLastUserName -Value 1 -Type DWORD -ErrorAction Stop; Log-Success "Enabled Ctrl+Alt+Del and hide last username" } catch { Log-Error ("Error configuring logon requirements: " + $_.Exception.Message) }
+    $ln = Read-Host "Set legal notice for logon? (y/N)"; if ($ln -match '^(y|Y)$') { try { Set-ItemProperty -Path $reg -Name LegalNoticeCaption -Value "AUTHORIZED USE ONLY" -Type String -ErrorAction Stop; Set-ItemProperty -Path $reg -Name LegalNoticeText -Value "This system is for authorized users only. All activities are monitored." -Type String -ErrorAction Stop; Log-Success "Legal notice configured" } catch { Log-Error ("Error setting legal notice: " + $_.Exception.Message) } }
 }
 
-function Configure-AccountLockout { try { & net accounts /lockoutthreshold:5; & net accounts /lockoutduration:30; & net accounts /lockoutwindow:30; Write-Host "✓ Account lockout policies applied" -ForegroundColor Green } catch { Write-Host "× Error: $($_.Exception.Message)" -ForegroundColor Red } }
+function Configure-AccountLockout { try { & net accounts /lockoutthreshold:5; & net accounts /lockoutduration:30; & net accounts /lockoutwindow:30; Log-Success "Account lockout policies applied" } catch { Log-Error ("Error configuring lockout policies: " + $_.Exception.Message) } }
 
 function Module-UserSecurity {
     Write-Section "XXMXLI User Account Security"
@@ -326,7 +367,7 @@ function Module-UserSecurity {
             '4' { Configure-UserRights; Pause-Clear }
             '5' { Configure-AccountLockout; Pause-Clear }
             '0' { break }
-            default { Write-Host "Invalid" -ForegroundColor Red }
+            default { Log-Warn "Invalid choice in User Account Security module" }
         }
     } while ($true)
 }
@@ -335,30 +376,28 @@ function Module-UserSecurity {
 function Module-Diagnostics {
     Write-Section "XXMXLI System Diagnostics"
     try {
-        $os = Get-CimInstance Win32_OperatingSystem
+        $os = Get-CimInstance Win32_OperatingSystem -ErrorAction Stop
         Write-Host "Computer: $env:COMPUTERNAME" -ForegroundColor Cyan
         Write-Host "OS: $($os.Caption) $($os.Version) ($($os.OSArchitecture))"
         Write-Host "Last Boot: $($os.LastBootUpTime)"
-        $def = $null; try { $def = Get-MpComputerStatus } catch {}
+        $def = $null; try { $def = Get-MpComputerStatus -ErrorAction Stop } catch {}
         if ($def) {
             if ($def.RealTimeProtectionEnabled) { $rtp = 'Enabled' } else { $rtp = 'Disabled' }
             Write-Host "Defender RTP: $rtp"
         }
-        $fw = Get-NetFirewallProfile
+        $fw = Get-NetFirewallProfile -ErrorAction Stop
         foreach ($p in $fw) {
             if ($p.Enabled) { $fwStatus = 'Enabled' } else { $fwStatus = 'Disabled' }
             Write-Host "Firewall $($p.Name): $fwStatus"
         }
-    } catch { Write-Host "× Diagnostic error: $($_.Exception.Message)" -ForegroundColor Red }
-    $exp = Read-Host "Export quick report to files? (y/N)"; if ($exp -match '^(y|Y)$') { $ts = Get-Date -Format "yyyyMMdd_HHmmss"; $txt = Join-Path $ScriptDir "XXMXLI_Security_Report_$ts.txt"; $json = Join-Path $ScriptDir "XXMXLI_Security_Report_$ts.json"; $data = @{ Timestamp=(Get-Date); Computer=$env:COMPUTERNAME; User=$env:USERNAME }; try { ($data | Out-String) | Out-File -FilePath $txt -Encoding UTF8; $data | ConvertTo-Json -Depth 3 | Out-File -FilePath $json -Encoding UTF8; Write-Host "✓ Exported: $txt, $json" -ForegroundColor Green } catch { Write-Host "× Export failed: $($_.Exception.Message)" -ForegroundColor Red } }
+    } catch { Log-Error ("Diagnostic error: " + $_.Exception.Message) }
+    $exp = Read-Host "Export quick report to files? (y/N)"; if ($exp -match '^(y|Y)$') { $ts = Get-Date -Format "yyyyMMdd_HHmmss"; $txt = Join-Path $ScriptDir "XXMXLI_Security_Report_$ts.txt"; $json = Join-Path $ScriptDir "XXMXLI_Security_Report_$ts.json"; $data = @{ Timestamp=(Get-Date); Computer=$env:COMPUTERNAME; User=$env:USERNAME }; try { ($data | Out-String) | Out-File -FilePath $txt -Encoding UTF8; $data | ConvertTo-Json -Depth 3 | Out-File -FilePath $json -Encoding UTF8; Log-Success "Exported: $txt, $json" } catch { Log-Error ("Export failed: " + $_.Exception.Message) } }
     Pause-Clear
 }
 
 # ===== Main Menu =====
 Clear-Host
 Write-Section "XXMXLI Windows Security Suite - All-in-One"
-
-$logFile = Join-Path $ScriptDir "xxmxli_security_suite.log"
 
 while ($true) {
     Write-Host "1) Firewall configuration"
@@ -376,8 +415,8 @@ while ($true) {
             '3' { Module-Defender }
             '4' { Module-UserSecurity }
             '5' { Module-Diagnostics }
-            '0' { Write-Host "Exiting..." -ForegroundColor Cyan; break }
-            default { Write-Host "Invalid choice" -ForegroundColor Red }
+            '0' { Log-Info "Exiting..."; break }
+            default { Log-Warn "Invalid choice in Main Menu" }
         }
     } finally {
         # lightweight session logging
@@ -385,3 +424,6 @@ while ($true) {
         try { $entry | ConvertTo-Json | Add-Content -Path $logFile } catch {}
     }
 }
+
+# Stop transcript if started
+try { Stop-Transcript -ErrorAction SilentlyContinue | Out-Null } catch {}
