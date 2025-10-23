@@ -99,8 +99,7 @@ function Block-SuspiciousPorts {
 function Show-FirewallStatus {
     $profiles = Get-NetFirewallProfile
     foreach ($profile in $profiles) {
-        $status = if ($profile.Enabled) { "ENABLED" } else { "DISABLED" }
-        $color = if ($profile.Enabled) { "Green" } else { "Red" }
+        if ($profile.Enabled) { $status = "ENABLED"; $color = "Green" } else { $status = "DISABLED"; $color = "Red" }
         Write-Host "$($profile.Name) Profile: $status" -ForegroundColor $color
         Write-Host "  Default Inbound: $($profile.DefaultInboundAction) | Default Outbound: $($profile.DefaultOutboundAction)"
     }
@@ -261,12 +260,24 @@ function Module-Defender {
 function Audit-UserAccounts {
     $localUsers = Get-LocalUser
     foreach ($u in $localUsers) {
-        $status = if ($u.Enabled) { "ENABLED" } else { "DISABLED" }
-        $color = if ($u.Enabled) { if ($u.Name -in @('Guest','DefaultAccount')) { 'Red' } else { 'Green' } } else { 'Yellow' }
+        if ($u.Enabled) {
+            $status = 'ENABLED'
+            if ($u.Name -in @('Guest','DefaultAccount')) { $color = 'Red' } else { $color = 'Green' }
+        } else {
+            $status = 'DISABLED'
+            $color = 'Yellow'
+        }
         Write-Host "User: $($u.Name)" -ForegroundColor $color
         Write-Host "  Status: $status"; Write-Host "  Last Logon: $($u.LastLogon)"; Write-Host "  Password Last Set: $($u.PasswordLastSet)"; Write-Host "  Password Required: $($u.PasswordRequired)"; Write-Host ""
     }
-    try { $admins = Get-LocalGroupMember -Group Administrators; Write-Host "Administrators:" -ForegroundColor Cyan; foreach ($a in $admins) { Write-Host "  $($a.Name) ($($a.ObjectClass))" -ForegroundColor (if ($a.ObjectClass -eq 'User') { 'Red' } else { 'Yellow' }) } } catch { Write-Host "Error getting Administrators" -ForegroundColor Red }
+    try {
+        $admins = Get-LocalGroupMember -Group Administrators
+        Write-Host "Administrators:" -ForegroundColor Cyan
+        foreach ($a in $admins) {
+            if ($a.ObjectClass -eq 'User') { $fg = 'Red' } else { $fg = 'Yellow' }
+            Write-Host "  $($a.Name) ($($a.ObjectClass))" -ForegroundColor $fg
+        }
+    } catch { Write-Host "Error getting Administrators" -ForegroundColor Red }
 }
 
 function Configure-PasswordPolicies {
@@ -276,7 +287,17 @@ function Configure-PasswordPolicies {
 
 function Manage-UserAccounts {
     foreach ($name in @('Guest','DefaultAccount')) {
-        try { $acct = Get-LocalUser -Name $name -ErrorAction SilentlyContinue; if ($acct) { $status = if ($acct.Enabled) { 'ENABLED (RISK!)' } else { 'DISABLED (OK)' }; Write-Host "  $name: $status" -ForegroundColor (if ($acct.Enabled) { 'Red' } else { 'Green' }); if ($acct.Enabled) { $d = Read-Host "Disable $name? (y/N)"; if ($d -match '^(y|Y)$') { Disable-LocalUser -Name $name; Write-Host "  ✓ $name disabled" -ForegroundColor Green } } } } catch { Write-Host "  $name: error" -ForegroundColor Yellow }
+        try {
+            $acct = Get-LocalUser -Name $name -ErrorAction SilentlyContinue
+            if ($acct) {
+                if ($acct.Enabled) { $status = 'ENABLED (RISK!)'; $fg = 'Red' } else { $status = 'DISABLED (OK)'; $fg = 'Green' }
+                Write-Host "  $name: $status" -ForegroundColor $fg
+                if ($acct.Enabled) {
+                    $d = Read-Host "Disable $name? (y/N)"
+                    if ($d -match '^(y|Y)$') { Disable-LocalUser -Name $name; Write-Host "  ✓ $name disabled" -ForegroundColor Green }
+                }
+            }
+        } catch { Write-Host "  $name: error" -ForegroundColor Yellow }
     }
     $mk = Read-Host "Create a new administrator account? (y/N)"; if ($mk -match '^(y|Y)$') { $n = Read-Host "New admin username"; if ($n) { try { $pw = Read-Host "Password for $n" -AsSecureString; New-LocalUser -Name $n -Password $pw -FullName "XXMXLI Administrator" -Description "Created by XXMXLI Security Suite"; Add-LocalGroupMember -Group Administrators -Member $n; Write-Host "✓ Admin '$n' created" -ForegroundColor Green } catch { Write-Host "× Error: $($_.Exception.Message)" -ForegroundColor Red } } }
 }
@@ -319,8 +340,15 @@ function Module-Diagnostics {
         Write-Host "OS: $($os.Caption) $($os.Version) ($($os.OSArchitecture))"
         Write-Host "Last Boot: $($os.LastBootUpTime)"
         $def = $null; try { $def = Get-MpComputerStatus } catch {}
-        if ($def) { Write-Host "Defender RTP: $(if ($def.RealTimeProtectionEnabled){'Enabled'} else {'Disabled'})" }
-        $fw = Get-NetFirewallProfile; foreach ($p in $fw){ Write-Host "Firewall $($p.Name): $(if($p.Enabled){'Enabled'}else{'Disabled'})" }
+        if ($def) {
+            if ($def.RealTimeProtectionEnabled) { $rtp = 'Enabled' } else { $rtp = 'Disabled' }
+            Write-Host "Defender RTP: $rtp"
+        }
+        $fw = Get-NetFirewallProfile
+        foreach ($p in $fw) {
+            if ($p.Enabled) { $fwStatus = 'Enabled' } else { $fwStatus = 'Disabled' }
+            Write-Host "Firewall $($p.Name): $fwStatus"
+        }
     } catch { Write-Host "× Diagnostic error: $($_.Exception.Message)" -ForegroundColor Red }
     $exp = Read-Host "Export quick report to files? (y/N)"; if ($exp -match '^(y|Y)$') { $ts = Get-Date -Format "yyyyMMdd_HHmmss"; $txt = Join-Path $ScriptDir "XXMXLI_Security_Report_$ts.txt"; $json = Join-Path $ScriptDir "XXMXLI_Security_Report_$ts.json"; $data = @{ Timestamp=(Get-Date); Computer=$env:COMPUTERNAME; User=$env:USERNAME }; try { ($data | Out-String) | Out-File -FilePath $txt -Encoding UTF8; $data | ConvertTo-Json -Depth 3 | Out-File -FilePath $json -Encoding UTF8; Write-Host "✓ Exported: $txt, $json" -ForegroundColor Green } catch { Write-Host "× Export failed: $($_.Exception.Message)" -ForegroundColor Red } }
     Pause-Clear
