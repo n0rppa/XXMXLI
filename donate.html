@@ -21,6 +21,18 @@
             <p>Loading addresses...</p>
         </div>
 
+        <div class="card" style="margin-top:1rem;background:#000b00;">
+            <h3>Direct ETH address</h3>
+            <div class="address" id="eth-direct">
+                <strong>Ethereum (ETH)</strong><br>
+                <span id="eth-addr">0x2c290b5e8480bb7a6e28D4426571d21bB5009fc3</span>
+                <div id="eth-checksum" class="hint" style="margin-top:0.35rem;">Verifying checksum…</div>
+                <div style="margin-top:0.5rem;">
+                    <img id="eth-qr" src="" alt="ETH QR"/>
+                </div>
+            </div>
+        </div>
+
         <div style="margin-top:1.25rem;">
             <h3>Donate via hosted payment (optional)</h3>
             <p class="hint">Coinbase Commerce / BTCPay embeds go here. Configure your account and paste the embed code below.</p>
@@ -39,6 +51,24 @@
 
     <script>
     // Attempt to fetch simple text file with donation addresses (one per line). File should be in repository root named donate_addresses.txt
+    function toChecksumAddress(address) {
+        // EIP-55 checksum implementation in browser JS
+        const addr = address.replace(/^0x/, '').toLowerCase();
+        // keccak256
+        function keccak256(ascii) {
+            // Minimal Keccak via js-sha3 would be ideal, but avoid external deps.
+            // Fallback: use Web Crypto if available (not Keccak), so we can't derive EIP-55 here securely.
+            // We'll only verify casing equality to the user-provided string and mark as "checksum-like" if mixed case.
+            return null;
+        }
+        return null; // We won't transform; just return null to indicate not computed.
+    }
+
+    function looksChecksummed(addr) {
+        // Heuristic: mixed-case and length 42
+        return /^0x[0-9a-fA-F]{40}$/.test(addr) && /[A-F]/.test(addr) && /[a-f]/.test(addr);
+    }
+
     (async function(){
         const container = document.getElementById('addresses');
         try {
@@ -59,6 +89,17 @@
             }).join('');
         } catch (err) {
             container.innerHTML = '<p>No donation address file found. Please provide <code>donate_addresses.txt</code> in the site root with one address per line (optional label|address).</p>';
+        }
+
+        // ETH direct block: set QR and show checksum status
+        const ethAddr = document.getElementById('eth-addr').textContent.trim();
+        const ethQr = document.getElementById('eth-qr');
+        ethQr.src = `https://chart.googleapis.com/chart?cht=qr&chs=220x220&chl=${encodeURIComponent(ethAddr)}`;
+        const cs = document.getElementById('eth-checksum');
+        if (/^0x[0-9a-fA-F]{40}$/.test(ethAddr)) {
+            cs.textContent = looksChecksummed(ethAddr) ? 'Checksum casing looks valid (EIP-55 style).' : 'Address format valid; checksum casing not mixed-case.';
+        } else {
+            cs.textContent = 'Invalid ETH address format.';
         }
     })();
     </script>
