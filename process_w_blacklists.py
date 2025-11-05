@@ -240,10 +240,11 @@ def is_valid_public_ip(ip_str):
     except:
         return False
 
-def generate_javascript_output(ip_list, sources, errors):
+def generate_javascript_output(ip_list, sources, errors, total_count: int = None):
     """Generate JavaScript file with all blocked IPs"""
     
-    # Sort IPs for better organization and binary search
+    # Sort IPs (subset) for better organization and binary search
+    # Note: ip_list can be a pre-selected subset for performance
     sorted_ips = sorted(ip_list, key=lambda x: ipaddress.ip_address(x))
     
     # Limit for performance - keep most recent/relevant
@@ -253,9 +254,11 @@ def generate_javascript_output(ip_list, sources, errors):
         step = len(sorted_ips) // max_ips
         sorted_ips = sorted_ips[::step][:max_ips]
     
+    db_total = total_count if total_count is not None else len(ip_list)
+
     js_content = f'''// XXMXLI Comprehensive IP Blacklist - Auto Generated
 // Generated: {datetime.now().isoformat()}
-// Total IPs in database: {len(ip_list):,}
+// Total IPs in database: {db_total:,}
 // Loaded IPs: {len(sorted_ips):,}
 // Sources: {len(sources)} files
 // Performance optimized for web deployment
@@ -264,11 +267,11 @@ const BLOCKED_IPS = {json.dumps(sorted_ips, indent=2)};
 
 const BLACKLIST_CONFIG = {{
     generated: "{datetime.now().isoformat()}",
-    database_total: {len(ip_list)},
+    database_total: {db_total},
     loaded_count: {len(sorted_ips)},
     sources_count: {len(sources)},
     has_errors: {len(errors) > 0},
-    performance_optimized: {len(ip_list) > max_ips},
+    performance_optimized: {db_total > max_ips},
     version: "1.0.0"
 }};
 
@@ -446,44 +449,57 @@ if (BLACKLIST_CONFIG.performance_optimized) {{
 
     return js_content
 
-def save_outputs(ip_list, sources, errors):
-    """Save all output files"""
-    # Create output directory
+def save_outputs(ip_list, sources, errors, started_at: datetime):
+    """Save all output files using an optimized approach (no full sort of the dataset)."""
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    
-    # Convert set to sorted list
-    sorted_ips = sorted(ip_list, key=lambda x: ipaddress.ip_address(x))
-    
-    # Generate and save JavaScript
-    js_content = generate_javascript_output(sorted_ips, sources, errors)
+
+    # Convert to list once
+    ips_list = list(ip_list)
+    total_count = len(ips_list)
+
+    # JS subset cap for client-side usage; selecting with step to keep spread
+    max_js_ips = 100_000
+    if total_count > max_js_ips:
+        step = max(1, total_count // max_js_ips)
+        js_subset = ips_list[::step][:max_js_ips]
+    else:
+        js_subset = ips_list
+
+    # Generate JavaScript content (function sorts the subset)
+    js_content = generate_javascript_output(js_subset, sources, errors, total_count=total_count)
     with open(JS_OUTPUT, 'w', encoding='utf-8') as f:
         f.write(js_content)
     print(f"✅ JavaScript saved: {JS_OUTPUT}")
-    
-    # Save complete JSON data
+
+    # JSON: limit to top 10k of the sorted subset
+    from_head = min(10_000, len(js_subset))
+    json_blocked_ips = sorted(js_subset, key=lambda x: ipaddress.ip_address(x))[:from_head]
+
+    distribution = get_ip_distribution(ips_list)
+
     json_data = {
         'generated': datetime.now().isoformat(),
-        'total_ips': len(sorted_ips),
-        'blocked_ips': sorted_ips[:10000],  # Limit JSON size
-        'ip_count_by_first_octet': get_ip_distribution(sorted_ips),
+        'total_ips': total_count,
+        'blocked_ips': json_blocked_ips,
+        'ip_count_by_first_octet': distribution,
         'sources': sources,
         'errors': errors,
         'statistics': {
             'files_processed': len(sources),
             'total_file_size': sum(s.get('size_bytes', 0) for s in sources.values()),
             'largest_source': max(sources.items(), key=lambda x: x[1]['count']) if sources else None,
-            'processing_time': datetime.now().isoformat()
+            'processing_time_seconds': (datetime.now() - started_at).total_seconds(),
         }
     }
-    
+
     with open(JSON_OUTPUT, 'w', encoding='utf-8') as f:
         json.dump(json_data, f, indent=2)
     print(f"✅ JSON saved: {JSON_OUTPUT}")
-    
-    # Save statistics summary
+
+    # Stats file
     stats_summary = {
         'last_update': datetime.now().isoformat(),
-        'total_blocked_ips': len(sorted_ips),
+        'total_blocked_ips': total_count,
         'source_files': len(sources),
         'top_sources': sorted(
             [(name, data['count']) for name, data in sources.items()],
@@ -491,9 +507,9 @@ def save_outputs(ip_list, sources, errors):
             reverse=True
         )[:10],
         'errors_count': len(errors),
-        'distribution': get_ip_distribution(sorted_ips)
+        'distribution': distribution,
     }
-    
+
     with open(STATS_OUTPUT, 'w', encoding='utf-8') as f:
         json.dump(stats_summary, f, indent=2)
     print(f"✅ Stats saved: {STATS_OUTPUT}")
@@ -522,37 +538,25 @@ def main():
     all_ips, sources, errors = load_all_blacklists()
     
     if all_ips:
-        # Save outputs
-        save_outputs(all_ips, sources, errors)
-        
+        # Save outputs (optimized)
+        save_outputs(all_ips, sources, errors, started_at=start_time)
+
+        # Print completion summary
         end_time = datetime.now()
         processing_time = (end_time - start_time).total_seconds()
-        
         print(f"\n🎉 Processing completed in {processing_time:.2f} seconds!")
         print(f"📈 Results:")
         print(f"   • {len(all_ips):,} unique IPs blocked")
         print(f"   • {len(sources)} source files processed")
         print(f"   • {len(errors)} errors encountered")
-        
+
         if errors:
             print(f"\n⚠️  Errors (showing first 5):")
             for error in errors[:5]:
                 print(f"   • {error}")
             if len(errors) > 5:
                 print(f"   • ... and {len(errors) - 5} more errors")
-        
-        # Show top sources
-        if sources:
-            print(f"\n📊 Top Sources:")
-            top_sources = sorted(sources.items(), key=lambda x: x[1]['count'], reverse=True)[:5]
-            for name, data in top_sources:
-                print(f"   • {name}: {data['count']:,} IPs")
-        
-        print(f"\n🔒 Blacklist ready for deployment!")
-        print(f"   Output directory: {OUTPUT_DIR.absolute()}")
-        print(f"   JavaScript file: {JS_OUTPUT.name}")
-        print(f"   JSON data: {JSON_OUTPUT.name}")
-        
+
     else:
         print("❌ No IPs were processed. Check your source directory and file formats.")
         print(f"   Expected directory: {BLACKLIST_SOURCE_DIR.absolute()}")
