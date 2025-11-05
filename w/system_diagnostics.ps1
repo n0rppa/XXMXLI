@@ -177,10 +177,41 @@ function Module-Firewall {
 
 # ===== Module: Registry Hardening =====
 function Set-RegistryValue {
-    param([string]$Path,[string]$Name,[object]$Value,[string]$Type="DWORD",[string]$Description="")
+    param(
+        [Parameter(Mandatory)][string]$Path,
+        [Parameter(Mandatory)][string]$Name,
+        [Parameter(Mandatory)][object]$Value,
+        [string]$Type = "DWORD",
+        [string]$Description = ""
+    )
     try {
-        if (-not (Test-Path $Path)) { New-Item -Path $Path -Force -ErrorAction Stop | Out-Null }
-        Set-ItemProperty -Path $Path -Name $Name -Value $Value -Type $Type -ErrorAction Stop
+        if (-not (Test-Path $Path)) {
+            New-Item -Path $Path -Force -ErrorAction Stop | Out-Null
+        }
+
+        # Normalize PropertyType for New-ItemProperty (valid: String, ExpandString, Binary, DWord, MultiString, QWord)
+        $propType = $null
+        switch -Regex ($Type) {
+            '^(dword|DWORD|DWord)$' { $propType = 'DWord' }
+            '^(qword|QWORD|QWord)$' { $propType = 'QWord' }
+            '^(string|STRING)$' { $propType = 'String' }
+            '^(expandstring|EXPANDSTRING)$' { $propType = 'ExpandString' }
+            '^(binary|BINARY)$' { $propType = 'Binary' }
+            '^(multistring|MULTISTRING)$' { $propType = 'MultiString' }
+            default { $propType = 'String' }
+        }
+
+        $existing = $null
+        try { $existing = Get-ItemProperty -Path $Path -Name $Name -ErrorAction Stop } catch { $existing = $null }
+
+        if ($null -ne $existing) {
+            # Property exists: only set the value (Set-ItemProperty doesn't accept -Type)
+            Set-ItemProperty -Path $Path -Name $Name -Value $Value -ErrorAction Stop | Out-Null
+        } else {
+            # Property doesn't exist: create with explicit PropertyType
+            New-ItemProperty -Path $Path -Name $Name -Value $Value -PropertyType $propType -Force -ErrorAction Stop | Out-Null
+        }
+
         if ($Description) { Log-Success $Description } else { Log-Success "$Path\$Name=$Value" }
     } catch { Log-Error ("Error setting $Path\$Name: " + $_.Exception.Message) }
 }
@@ -353,15 +384,15 @@ function Manage-UserAccounts {
 function Configure-UserRights {
     $reg = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
     try {
-        Set-ItemProperty -Path $reg -Name DisableCAD -Value 0 -Type DWORD -ErrorAction Stop
-        Set-ItemProperty -Path $reg -Name DontDisplayLastUserName -Value 1 -Type DWORD -ErrorAction Stop
-        Log-Success "Enabled Ctrl+Alt+Del and hide last username"
+        Set-RegistryValue -Path $reg -Name DisableCAD -Value 0 -Type DWORD -Description "Enabled Ctrl+Alt+Del at logon"
+        Set-RegistryValue -Path $reg -Name DontDisplayLastUserName -Value 1 -Type DWORD -Description "Hide last username at logon"
+        Log-Success "Core logon requirements configured"
     } catch { Log-Error ("Error configuring logon requirements: " + $_.Exception.Message) }
     $ln = Read-Host "Set legal notice for logon? (y/N)"
     if ($ln -match '^(y|Y)$') {
         try {
-            Set-ItemProperty -Path $reg -Name LegalNoticeCaption -Value "AUTHORIZED USE ONLY" -Type String -ErrorAction Stop
-            Set-ItemProperty -Path $reg -Name LegalNoticeText -Value "This system is for authorized users only. All activities are monitored." -Type String -ErrorAction Stop
+            Set-RegistryValue -Path $reg -Name LegalNoticeCaption -Value "AUTHORIZED USE ONLY" -Type String -Description "Set logon legal notice caption"
+            Set-RegistryValue -Path $reg -Name LegalNoticeText -Value "This system is for authorized users only. All activities are monitored." -Type String -Description "Set logon legal notice text"
             Log-Success "Legal notice configured"
         } catch { Log-Error ("Error setting legal notice: " + $_.Exception.Message) }
     }

@@ -470,7 +470,14 @@ class XXMXLILauncher:
             else:
                 cmd = [script_path]
 
-            result = subprocess.run(cmd, cwd=self.base_dir, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            # Use universal_newlines for Python 3.6 compatibility (text=True requires 3.7+)
+            result = subprocess.run(
+                cmd,
+                cwd=self.base_dir,
+                universal_newlines=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
             
             print()
             if result.returncode == 0:
@@ -604,18 +611,23 @@ class XXMXLILauncher:
             if os.path.isfile(log_path):
                 found_logs.append(log_path)
         
-        if not found_logs:
+        # Always offer a blocked IPs viewer shortcut here
+        print(f"{Colors.CYAN}Options:{Colors.NC}")
+        print(f"  B) View Blocked IPs Database (assets/security/blocked_ips.json)")
+        if found_logs:
+            print(f"  {Colors.CYAN}Available log files:{Colors.NC}")
+            for i, log_file in enumerate(found_logs, 1):
+                print(f"  {i}) {os.path.basename(log_file)}")
+        else:
             self.warn("No security log files found in current directory")
-            input("Press Enter to continue...")
-            return
-        
-        print(f"{Colors.CYAN}Available log files:{Colors.NC}")
-        for i, log_file in enumerate(found_logs, 1):
-            print(f"  {i}) {os.path.basename(log_file)}")
         print()
         
         try:
-            choice = input(f"{Colors.YELLOW}Select log file to view [1-{len(found_logs)}]: {Colors.NC}").strip()
+            prompt_range = f"[1-{len(found_logs)}]" if found_logs else "(or 'B')"
+            choice = input(f"{Colors.YELLOW}Select option {prompt_range} or 'B' for Blocked IPs: {Colors.NC}").strip()
+            if choice.lower() == 'b':
+                self.view_blocked_ips()
+                return
             choice_idx = int(choice) - 1
             
             if 0 <= choice_idx < len(found_logs):
@@ -636,6 +648,92 @@ class XXMXLILauncher:
             self.error("Invalid input")
         
         input("\nPress Enter to continue...")
+
+    def view_blocked_ips(self):
+        """Display blocked IPs summary and a sample list, with optional search."""
+        self.show_banner()
+        print(f"{Colors.PURPLE}{Symbols.SHIELD} BLOCKED IPs DATABASE VIEWER{Colors.NC}")
+        print("================================================================")
+        print()
+
+        json_path = os.path.join(self.base_dir, 'assets', 'security', 'blocked_ips.json')
+        js_path = os.path.join(self.base_dir, 'assets', 'security', 'blocked_ips.js')
+
+        if not os.path.isfile(json_path) and not os.path.isfile(js_path):
+            self.error("No blocked IPs database found. Generate it via the blacklist processor.")
+            print("Expected at: assets/security/blocked_ips.json")
+            input("Press Enter to return...")
+            return
+
+        total = None
+        sample = []
+        # Prefer JSON file
+        if os.path.isfile(json_path):
+            try:
+                with open(json_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                total = data.get('total_ips') or (len(data.get('blocked_ips') or []) or None)
+                # Show up to 100 sample IPs
+                sample = (data.get('blocked_ips') or [])[:100]
+            except Exception as e:
+                self.warn(f"Failed to read JSON: {e}")
+        # Fallback minimal parse of JS (extract array with a simple heuristic)
+        if total is None and os.path.isfile(js_path):
+            try:
+                with open(js_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    content = f.read()
+                # Heuristic: find "const BLOCKED_IPS = [ ... ];"
+                start = content.find('const BLOCKED_IPS =')
+                if start != -1:
+                    start = content.find('[', start)
+                    end = content.find('];', start)
+                    if start != -1 and end != -1:
+                        array_text = content[start:end+1]
+                        # Try to turn into JSON list
+                        arr = json.loads(array_text)
+                        total = len(arr)
+                        sample = arr[:100]
+            except Exception:
+                pass
+
+        if total is None:
+            self.error("Could not determine blocked IPs count.")
+        else:
+            self.success(f"Total blocked IPs: {total:,}")
+
+        if sample:
+            print()
+            print(f"{Colors.CYAN}Sample (first {len(sample)}):{Colors.NC}")
+            for ip in sample:
+                print(f"  - {ip}")
+
+        print()
+        # Simple lookup
+        lookup = input(f"{Colors.YELLOW}Lookup an IP (leave empty to skip): {Colors.NC}").strip()
+        if lookup:
+            found = False
+            # Try efficient membership using JSON list head (small) and JS file scan if needed
+            try:
+                if os.path.isfile(json_path):
+                    with open(json_path, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                    blocked = set(data.get('blocked_ips') or [])
+                    found = lookup in blocked
+            except Exception:
+                pass
+            if not found and os.path.isfile(js_path):
+                # Caution: JS can be large; do a substring check as heuristic
+                try:
+                    with open(js_path, 'r', encoding='utf-8', errors='ignore') as f:
+                        found = (f"\"{lookup}\"" in f.read())
+                except Exception:
+                    pass
+            if found:
+                self.success(f"{lookup} appears in the blocked list (subset check)")
+            else:
+                self.warn(f"{lookup} not found in sampled/JS data (may still be blocked if not in subset)")
+        
+        input("\nPress Enter to return...")
     
     def open_analytics_dashboard(self):
         """Open analytics dashboard in browser"""
