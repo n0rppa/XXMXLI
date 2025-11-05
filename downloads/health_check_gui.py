@@ -856,7 +856,8 @@ class HealthCheckGUI:
     def _quick_health_check_worker(self):
         """Background worker for quick health check"""
         try:
-            stdout, stderr, rc = self._run_script_cross_platform('health-check.sh', ['1'], timeout=60)
+            # Prefer non-interactive full check flag when available
+            stdout, stderr, rc = self._run_script_cross_platform('health-check.sh', ['--full'], timeout=120)
             output = stdout if stdout else stderr
             self.root.after(0, self._health_check_complete, output)
         except Exception as e:
@@ -884,25 +885,57 @@ class HealthCheckGUI:
     def _deep_scan_worker(self):
         """Background worker for deep system scan"""
         try:
-            # Run multiple health check modules
-            for i in range(1, 10):
-                stdout, stderr, rc = self._run_script_cross_platform('health-check.sh', [str(i)], timeout=90)
-                output = stdout if stdout else stderr
-                self.root.after(0, self._deep_scan_progress, f"Module {i}", output)
-                time.sleep(1)
-                
+            # Execute the comprehensive run in one go using the CLI flag
+            stdout, stderr, rc = self._run_script_cross_platform('health-check.sh', ['--full'], timeout=300)
+            output = stdout if stdout else stderr
+            self.root.after(0, self._deep_scan_progress, "Comprehensive Scan", output)
             self.root.after(0, self._deep_scan_complete)
         except Exception as e:
             self.root.after(0, self._deep_scan_error, str(e))
 
     # ---------- Cross-platform helpers and fallbacks ----------
     def _run_script_cross_platform(self, script_name, args=None, timeout=60):
-        """Run a script across OSs safely. Returns (stdout, stderr, returncode)."""
+        """Run a script across OSs safely. Returns (stdout, stderr, returncode).
+        This will try multiple likely roots and set cwd to the project root
+        (containing index.html) so that health-check.sh environment checks pass.
+        """
         args = args or []
-        SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-        script_path = os.path.join(SCRIPT_DIR, script_name)
+        # Candidate roots to locate script and choose cwd
+        here = os.path.dirname(os.path.abspath(__file__))
+        candidates = [
+            here,
+            os.path.normpath(os.path.join(here, '..')),
+            os.path.normpath(os.path.join(here, '..', 'kotisivu')),
+            os.path.normpath(os.path.join(here, 'downloads')),
+            os.path.normpath(os.path.join(here, 'lataukset')),
+        ]
+        script_path = None
+        cwd_root = None
+        for root in candidates:
+            try:
+                cand = os.path.join(root, script_name)
+                if os.path.isfile(cand):
+                    script_path = cand
+                # Prefer a directory with index.html as cwd
+                if os.path.isfile(os.path.join(root, 'index.html')) and cwd_root is None:
+                    cwd_root = root
+            except Exception:
+                continue
+        # Fallbacks
+        if script_path is None:
+            # Last resort: assume alongside current file
+            script_path = os.path.join(here, script_name)
+        if cwd_root is None:
+            # If no index.html found, use directory containing script
+            cwd_root = os.path.dirname(script_path)
         system = platform.system()
         env = os.environ.copy()
+        # Provide simple stdin automation for interactive scripts
+        input_data = None
+        if script_name == 'health-check.sh':
+            # After completing a flagged action, script prompts to return to menu and then awaits a menu choice.
+            # Send Enter to continue and 0 to exit cleanly.
+            input_data = "\n0\n"
         try:
             if system == 'Windows':
                 # Prefer PowerShell variant for security monitor if available
@@ -947,8 +980,8 @@ class HealthCheckGUI:
                     cmd = [sys.executable or 'python3', script_path] + args
                 else:
                     cmd = [script_path] + args
-                proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                      universal_newlines=True, timeout=timeout, env=env)
+                proc = subprocess.run(cmd, cwd=cwd_root, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                      universal_newlines=True, timeout=timeout, env=env, input=input_data)
                 return proc.stdout, proc.stderr, proc.returncode
         except Exception as e:
             return '', f"Execution error: {e}", 1
@@ -1020,43 +1053,56 @@ class HealthCheckGUI:
     def resource_analysis(self):
         """Run resource usage analysis"""
         self.status_label.config(text="Analyzing resource usage...")
-        
+        # Safe accessors for possibly-None values
+        def pct(v):
+            return 'N/A' if v is None else f"{v}%"
+        def val(v, unit=''):
+            return 'N/A' if v is None else f"{v}{unit}"
+
+        cpu = self.health_data.get('cpu_usage')
+        mem = self.health_data.get('memory_usage')
+        disk = self.health_data.get('disk_usage')
+        load = self.health_data.get('system_load')
+        uptime = self.health_data.get('uptime')
+        procs = self.health_data.get('processes')
+        temp = self.health_data.get('temperature')
+
         analysis = f"""
 RESOURCE USAGE ANALYSIS
 Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
 CPU ANALYSIS:
-- Current Usage: {self.health_data['cpu_usage']}%
-- System Load: {self.health_data['system_load']}
-- Status: {'Critical' if self.health_data['cpu_usage'] > 80 else 'Normal'}
+- Current Usage: {pct(cpu)}
+- System Load: {val(load)}
+- Status: {('Critical' if (cpu is not None and cpu > 80) else 'Normal')}
 
 MEMORY ANALYSIS:
-- Used: {self.health_data['memory_usage']}%
-- Available: {100 - self.health_data['memory_usage']}%
-- Status: {'Critical' if self.health_data['memory_usage'] > 90 else 'Normal'}
+- Used: {pct(mem)}
+- Available: {('N/A' if mem is None else f"{round(100 - mem, 1)}%")}
+- Status: {('Critical' if (mem is not None and mem > 90) else 'Normal')}
 
 DISK ANALYSIS:
-- Used: {self.health_data['disk_usage']}%
-- Available: {100 - self.health_data['disk_usage']}%
-- Status: {'Critical' if self.health_data['disk_usage'] > 95 else 'Normal'}
+- Used: {pct(disk)}
+- Available: {('N/A' if disk is None else f"{round(100 - disk, 1)}%")}
+- Status: {('Critical' if (disk is not None and disk > 95) else 'Normal')}
 
 PROCESS ANALYSIS:
-- Total Processes: {self.health_data['processes']}
-- System Uptime: {self.health_data['uptime']} hours
+- Total Processes: {val(procs)}
+- System Uptime: {val(uptime, ' hours')}
 
 RECOMMENDATIONS:
 """
         
-        if self.health_data['cpu_usage'] > 80:
+        if cpu is not None and cpu > 80:
             analysis += "- High CPU usage detected - check running processes\n"
-        if self.health_data['memory_usage'] > 90:
+        if mem is not None and mem > 90:
             analysis += "- High memory usage - consider closing applications\n"
-        if self.health_data['disk_usage'] > 95:
+        if disk is not None and disk > 95:
             analysis += "- Disk space critical - free up space immediately\n"
-        if self.health_data['temperature'] > 80:
+        if temp is not None and temp > 80:
             analysis += "- High temperature detected - check cooling system\n"
-            
-        if self.health_data['overall_health'] >= 80:
+        
+        if (self.health_data.get('overall_health') or 0) >= 80:
             analysis += "- System is operating normally\n"
             
         self.diagnostic_output.insert('end', analysis)

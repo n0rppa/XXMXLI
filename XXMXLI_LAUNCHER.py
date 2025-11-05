@@ -501,6 +501,8 @@ class XXMXLILauncher:
         roots.append(self.base_dir)
         # Common subdir for packaged downloads
         roots.append(os.path.join(self.base_dir, 'lataukset'))
+        # Also support English-named downloads folder
+        roots.append(os.path.join(self.base_dir, 'downloads'))
         # If user placed launcher on Desktop, prefer sibling 'kotisivu' repo
         roots.append(os.path.normpath(os.path.join(self.base_dir, 'kotisivu')))
         roots.append(os.path.normpath(os.path.join(self.base_dir, '..', 'kotisivu')))
@@ -677,7 +679,11 @@ class XXMXLILauncher:
     
     def launch_health_check(self):
         """Launch the health check system"""
-        script = self.find_script(['health_check_gui.py', 'health-check.sh', 'health_check.py'])
+        # On POSIX, prefer shell script to avoid tkinter dependency issues
+        if platform.system().lower() != 'windows':
+            script = self.find_script(['health-check.sh', 'health_check_gui.py', 'health_check.py'])
+        else:
+            script = self.find_script(['health_check_gui.py', 'health-check.sh', 'health_check.py'])
         if not script and platform.system() == 'Windows':
             script = self.find_script(['health_check.ps1'])
         if not script:
