@@ -1,6 +1,1 @@
-{
-  "script": "./lataukset/network_monitor.sh",
-  "compatibility_issues": [
-
-  ]
-}
+{"compatibility_issues":[],"script":"./lataukset/network_monitor.sh"}

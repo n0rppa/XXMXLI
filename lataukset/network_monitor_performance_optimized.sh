@@ -3,14 +3,14 @@ set -e
 set -u
 set -o pipefail
 
-# Network M# Function to display banner
-show_banner() {
-    echo -e "${CYAN}"
-    echo " ███╗   ██╗███████╗████████╗██╗    ██╗ ██████╗ ██████╗ ██╗  ██╗"
-    echo " ████╗  ██║██╔════╝╚══██╔══╝██║    ██║██╔═══██╗██╔══██╗██║ ██╔╝"
-    echo " ██╔██╗ ██║█████╗     ██║   ██║ █╗ ██║██║   ██║██████╔╝█████╔╝ "
-    echo " ██║╚██╗██║██╔══╝     ██║   ██║███╗██║██║   ██║██╔══██╗██╔═██╗ "
-    echo " ██║ ╚████║███████╗   ██║   ╚███╔███╔╝╚██████╔╝██║  ██║██║  ██╗"
+# Network Monitoring and Security Analysis Tool
+# Real-time Network Traffic Monitoring and Security Analysis
+# Author: XXMXLI Security Tools
+# WARNING: Use only for legitimate purposes and with proper authorization
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
 
 # Optimized search function with timeout protection
 optimized_search() {
@@ -31,27 +31,6 @@ optimized_search() {
     return 1
 }
 
-    echo " ╚═╝  ╚═══╝╚══════╝   ╚═╝    ╚══╝╚══╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝"
-    echo ""
-    echo " ██╗  ██╗██╗  ██╗███╗   ███╗██╗  ██╗██╗     ██╗"
-    echo " ╚██╗██╔╝╚██╗██╔╝████╗ ████║╚██╗██╔╝██║     ██║"
-    echo "  ╚███╔╝  ╚███╔╝ ██╔████╔██║ ╚███╔╝ ██║     ██║"
-    echo "  ██╔██╗  ██╔██╗ ██║╚██╔╝██║ ██╔██╗ ██║     ██║"
-    echo " ██╔╝ ██╗██╔╝ ██╗██║ ╚═╝ ██║██╔╝ ██╗███████╗██║"
-    echo " ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝"
-    echo ""
-    echo "    Network Traffic Monitor & Security Analysis Tool"
-    echo "    Real-time Network Monitoring and Intrusion Detection"
-    echo "    Educational and Authorized Use Only"
-    echo -e "${NC}"
-}lysis Tool
-# Real-time Network Traffic Monitoring and Security Analysis
-# Author: XXMXLI Security Tools
-# WARNING: Use only for legitimate purposes and with proper authorization
-
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 WHITE='\033[1;37m'

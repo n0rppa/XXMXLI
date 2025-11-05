@@ -226,7 +226,7 @@ FAILED_TESTS=0
 test_log() {
     local level="\$1"
     local message="\$2"
-    local timestamp=\$(date '+%H:%M:%S')
+    local timestamp=$(date '+%H:%M:%S')
     
     case "\$level" in
         "PASS") echo -e "[\$timestamp] \\033[32m✅ PASS\\033[0m \$message" ;;
@@ -258,7 +258,7 @@ test_function_syntax() {
     ((TOTAL_TESTS++))
     
     # Try to get function definition and check for basic syntax issues
-    local func_def=\$(declare -f "\$func_name" 2>/dev/null)
+    local func_def=$(declare -f "$func_name" 2>/dev/null)
     
     if [[ -n "\$func_def" ]]; then
         # Check for common syntax issues

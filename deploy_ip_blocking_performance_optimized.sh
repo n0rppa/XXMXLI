@@ -9,8 +9,8 @@ set -o pipefail
 # Interactive deployment system with beautiful UI
 #
 # SECURITY WARNING: This system is actively monitored and protected.
-
-set -euo pipefail
+#
+# Usage quick-notes:
 
 # Optimized search function with timeout protection
 optimized_search() {
@@ -31,6 +31,15 @@ optimized_search() {
     return 1
 }
 
+# - Source blacklist: assets/security/blocked_ips.json
+#   Accepts either:
+#     1) Array form: ["1.2.3.4", "2.3.4.5/24", ...]
+#     2) Object form: {"blocked_ips": [ ... ], "total_ips": N, ...}
+# - Deployment caps the number of emitted Require rules to MAX_DEPLOY_IPS (default 500).
+#   Override per-run: MAX_DEPLOY_IPS=1000 ./deploy_ip_blocking.sh --deploy
+# - Non-interactive modes: --deploy | --status | --rollback | --help
+
+set -euo pipefail
 
 # Color definitions for beautiful UI
 RED='\033[0;31m'
@@ -55,6 +64,9 @@ INFO="ℹ️"
 
 # Interactive mode flag
 INTERACTIVE_MODE=true
+
+# Resolved W folder (global)
+RESOLVED_W_FOLDER=""
 
 # Show beautiful banner
 show_banner() {
@@ -97,6 +109,150 @@ warn() {
 # Info message function
 info() {
     echo -e "${CYAN}${INFO}${NC} $1"
+}
+
+# Emit IPs (one per line) from a JSON array file using jq if present or Python fallback
+list_ips_from_json() {
+    local file="$1"
+    # Emit each IP/CIDR on its own line. Supports:
+    #  - top-level array: ["1.2.3.4", ...]
+    #  - object with key "blocked_ips": {"blocked_ips": ["1.2.3.4", ...]}
+    if command -v jq >/dev/null 2>&1; then
+        jq -r 'if type=="array" then .[] else (.blocked_ips // [])[] end' "$file"
+    elif command -v python3 >/dev/null 2>&1; then
+        python3 - "$file" <<'PY'
+import json, sys
+path = sys.argv[1]
+with open(path, 'r', encoding='utf-8') as f:
+    data = json.load(f)
+if isinstance(data, list):
+    items = data
+elif isinstance(data, dict) and 'blocked_ips' in data and isinstance(data['blocked_ips'], list):
+    items = data['blocked_ips']
+else:
+    items = []
+for item in items:
+    # Only emit str-like items
+    if isinstance(item, str):
+        print(item)
+PY
+    else
+        # No parser available
+        return 1
+    fi
+}
+
+# Return length of JSON array file, or 'unknown' if no parser
+json_array_length() {
+    local file="$1"
+    # Return count of entries to be deployed (array length or .blocked_ips length)
+    if command -v jq >/dev/null 2>&1; then
+        jq -r 'if type=="array" then length else (.blocked_ips // []) | length end' "$file" 2>/dev/null || echo "unknown"
+    elif command -v python3 >/dev/null 2>&1; then
+        python3 - "$file" <<'PY'
+import json, sys
+try:
+    with open(sys.argv[1], 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    if isinstance(data, list):
+        print(len(data))
+    elif isinstance(data, dict) and isinstance(data.get('blocked_ips'), list):
+        print(len(data['blocked_ips']))
+    else:
+        print(0)
+except Exception:
+    print('unknown')
+PY
+    else
+        echo "unknown"
+    fi
+}
+
+# Resolve W folder with safe fallbacks and export to environment
+resolve_w_folder() {
+    # Priority: env W_FOLDER (if dir) > ./w > script_dir/w > parent/w > hardcoded
+    local hardcoded="/home/kodachi/Desktop/kotisivu/w"
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+    if [[ -n "${W_FOLDER:-}" && -d "${W_FOLDER}" ]]; then
+        RESOLVED_W_FOLDER="${W_FOLDER}"
+    elif [[ -d "./w" ]]; then
+        RESOLVED_W_FOLDER="$(cd ./w && pwd)"
+    elif [[ -d "${script_dir}/w" ]]; then
+        RESOLVED_W_FOLDER="${script_dir}/w"
+    elif [[ -d "${script_dir%/*}/w" ]]; then
+        RESOLVED_W_FOLDER="${script_dir%/*}/w"
+    elif [[ -d "${hardcoded}" ]]; then
+        RESOLVED_W_FOLDER="${hardcoded}"
+    else
+        # Default to hardcoded path even if missing; we will warn later
+        RESOLVED_W_FOLDER="${hardcoded}"
+    fi
+
+    export W_FOLDER="${RESOLVED_W_FOLDER}"
+    info "W folder resolved to: ${W_FOLDER}"
+
+    if [[ ! -d "${W_FOLDER}" ]]; then
+        warn "Resolved W folder does not exist: ${W_FOLDER}"
+        warn "Set W_FOLDER to override, e.g.: export W_FOLDER=/path/to/w"
+    fi
+}
+
+# Ensure assets/security/blocked_ips.json exists; build from W folder if missing
+ensure_blacklist_json() {
+    local json_path="assets/security/blocked_ips.json"
+    if [[ -f "${json_path}" && -s "${json_path}" ]]; then
+        return 0
+    fi
+
+    info "Blacklist JSON missing; attempting to generate from W folder: ${W_FOLDER}"
+
+    # Prefer Python processor if available
+    if command -v python3 >/dev/null 2>&1 && [[ -f "process_w_blacklists.py" ]]; then
+        info "Running Python generator: process_w_blacklists.py"
+        if W_FOLDER="${W_FOLDER}" python3 process_w_blacklists.py >/dev/null 2>&1; then
+            if [[ -f "${json_path}" && -s "${json_path}" ]]; then
+                success "Generated ${json_path} via Python processor"
+                return 0
+            fi
+        else
+            warn "Python processor failed; falling back to shell-based generator"
+        fi
+    fi
+
+    # Fallback shell-based generator: scrape IPv4s from W folder and write JSON array
+    if [[ -d "${W_FOLDER}" ]]; then
+        info "Building minimal JSON from IPv4s found under ${W_FOLDER}"
+        mkdir -p "$(dirname "${json_path}")"
+        # Collect unique IPv4 addresses with basic octet bounds check
+        mapfile -t ips < <(grep -RhoE "([0-9]{1,3}\.){3}[0-9]{1,3}" "${W_FOLDER}" 2>/dev/null \
+            | awk -F. '$1<256 && $2<256 && $3<256 && $4<256' \
+            | sort -u)
+
+        {
+            echo "["
+            if [[ ${#ips[@]} -gt 0 ]]; then
+                for ((i=0; i<${#ips[@]}; i++)); do
+                    ip="${ips[$i]}"
+                    if [[ $i -lt $((${#ips[@]}-1)) ]]; then
+                        echo "  \"${ip}\"," 
+                    else
+                        echo "  \"${ip}\""
+                    fi
+                done
+            fi
+            echo "]"
+        } > "${json_path}"
+
+        if [[ -s "${json_path}" ]]; then
+            success "Generated ${json_path} via shell fallback"
+            return 0
+        fi
+    fi
+
+    error "Unable to generate ${json_path}. Provide it or set W_FOLDER correctly."
+    return 1
 }
 
 # Interactive menu function
@@ -149,11 +305,7 @@ ADMIN_BLOCKS="admin/.htaccess_ip_blocks"
 check_environment() {
     info "Checking environment and dependencies..."
     
-    if [ ! -f "index.html" ] || [ ! -f "assets/security/blocked_ips.json" ]; then
-check_environment() {
-    info "Checking environment and dependencies..."
-    
-    if [ ! -f "index.html" ] || [ ! -f "assets/security/blocked_ips.json" ]; then
+    if [ ! -f "index.html" ]; then
         error "Run this script from the XXMXLI root directory"
         echo ""
         info "Expected directory structure:"
@@ -161,6 +313,14 @@ check_environment() {
         echo "  - assets/security/blocked_ips.json (IP blacklist)"
         echo "  - admin/ directory"
         echo ""
+        exit 1
+    fi
+
+    # Resolve W folder and ensure blacklist JSON is present (generate if needed)
+    resolve_w_folder
+    if ! ensure_blacklist_json; then
+        echo ""
+        error "Blacklist JSON is required for deployment."
         exit 1
     fi
     
@@ -180,7 +340,7 @@ safe_deploy_blocking() {
     
     # Show what will be deployed
     if [ -f "assets/security/blocked_ips.json" ]; then
-        local ip_count=$(jq length assets/security/blocked_ips.json 2>/dev/null || echo "unknown")
+        local ip_count=$(json_array_length assets/security/blocked_ips.json)
         info "Found $ip_count IPs in blacklist to deploy"
     fi
     
@@ -264,24 +424,66 @@ EOF
 deploy_ip_blocks() {
     info "Deploying IP blocking rules..."
     
+    # Safety cap to avoid gigantic .htaccess files. Override with env MAX_DEPLOY_IPS
+    local max_ips=${MAX_DEPLOY_IPS:-500}
+    if ! [[ "$max_ips" =~ ^[0-9]+$ ]]; then
+        max_ips=500
+    fi
+
     # Generate main site blocking
     if [ -f "assets/security/blocked_ips.json" ]; then
         echo "# XXMXLI SERVER-SIDE IP BLOCKING" > "$MAIN_HTACCESS"
         echo "# Generated on $(date)" >> "$MAIN_HTACCESS"
         echo "# Backup available in $BACKUP_DIR" >> "$MAIN_HTACCESS"
+        echo "# Source: assets/security/blocked_ips.json" >> "$MAIN_HTACCESS"
         echo "" >> "$MAIN_HTACCESS"
-        
-        # Add blocked IPs
-        jq -r '.[]' assets/security/blocked_ips.json | while read -r ip; do
-            if [[ $ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                echo "Require not ip $ip" >> "$MAIN_HTACCESS"
+
+        # Start rules block
+        echo "<RequireAll>" >> "$MAIN_HTACCESS"
+        echo "    Require all granted" >> "$MAIN_HTACCESS"
+
+        # Add blocked IPs (up to max_ips)
+        local added=0
+        if ips_output=$(list_ips_from_json "assets/security/blocked_ips.json" 2>/dev/null); then
+            # Allow IPv4 or IPv4/CIDR up to /32
+            while IFS= read -r ip; do
+                [[ -z "$ip" ]] && continue
+                if [[ $ip =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}(/[0-9]{1,2})?$ ]]; then
+                    # Basic octet bounds check when not CIDR or for base IP of CIDR
+                    base_ip=${ip%%/*}
+                    IFS='.' read -r o1 o2 o3 o4 <<<"$base_ip"
+                    if [[ $o1 -lt 256 && $o2 -lt 256 && $o3 -lt 256 && $o4 -lt 256 ]]; then
+                        echo "    Require not ip $ip" >> "$MAIN_HTACCESS"
+                        added=$((added+1))
+                        if [ "$added" -ge "$max_ips" ]; then
+                            break
+                        fi
+                    fi
+                fi
+            done <<< "$ips_output"
+        else
+            warn "No JSON parser available; falling back to scanning W folder for IPv4s"
+            if [[ -d "${W_FOLDER:-}" ]]; then
+                added=0
+                grep -RhoE "([0-9]{1,3}\.){3}[0-9]{1,3}" "${W_FOLDER}" 2>/dev/null \
+                | awk -F. '$1<256 && $2<256 && $3<256 && $4<256' \
+                | sort -u \
+                | while read -r ip; do
+                    echo "    Require not ip $ip" >> "$MAIN_HTACCESS"
+                    added=$((added+1))
+                    if [ "$added" -ge "$max_ips" ]; then
+                        break
+                    fi
+                done
+            else
+                error "Cannot enumerate IPs: W_FOLDER not set or directory missing"
             fi
-        done
-        
+        fi
+
+        echo "</RequireAll>" >> "$MAIN_HTACCESS"
         echo "" >> "$MAIN_HTACCESS"
-        echo "# Default allow" >> "$MAIN_HTACCESS"
-        echo "Require all granted" >> "$MAIN_HTACCESS"
-        
+        echo "# Deployed $added blocked IP(s); cap MAX_DEPLOY_IPS=$max_ips" >> "$MAIN_HTACCESS"
+
         success "Main site IP blocking deployed"
     fi
     
@@ -289,21 +491,53 @@ deploy_ip_blocks() {
     if [ -d "admin" ]; then
         echo "# XXMXLI ADMIN PROTECTION" > "$ADMIN_HTACCESS"
         echo "# Generated on $(date)" >> "$ADMIN_HTACCESS"
+        echo "# Source: assets/security/blocked_ips.json" >> "$ADMIN_HTACCESS"
         echo "" >> "$ADMIN_HTACCESS"
-        
-        # Copy blocking rules to admin
+
+        echo "<RequireAll>" >> "$ADMIN_HTACCESS"
+        echo "    Require all granted" >> "$ADMIN_HTACCESS"
+
+        local a_added=0
         if [ -f "assets/security/blocked_ips.json" ]; then
-            jq -r '.[]' assets/security/blocked_ips.json | while read -r ip; do
-                if [[ $ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                    echo "Require not ip $ip" >> "$ADMIN_HTACCESS"
+            if ips_output=$(list_ips_from_json "assets/security/blocked_ips.json" 2>/dev/null); then
+                while IFS= read -r ip; do
+                    [[ -z "$ip" ]] && continue
+                    if [[ $ip =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}(/[0-9]{1,2})?$ ]]; then
+                        base_ip=${ip%%/*}
+                        IFS='.' read -r o1 o2 o3 o4 <<<"$base_ip"
+                        if [[ $o1 -lt 256 && $o2 -lt 256 && $o3 -lt 256 && $o4 -lt 256 ]]; then
+                            echo "    Require not ip $ip" >> "$ADMIN_HTACCESS"
+                            a_added=$((a_added+1))
+                            if [ "$a_added" -ge "$max_ips" ]; then
+                                break
+                            fi
+                        fi
+                    fi
+                done <<< "$ips_output"
+            else
+                warn "No JSON parser available; falling back to scanning W folder for IPv4s"
+                if [[ -d "${W_FOLDER:-}" ]]; then
+                    a_added=0
+                    grep -RhoE "([0-9]{1,3}\.){3}[0-9]{1,3}" "${W_FOLDER}" 2>/dev/null \
+                    | awk -F. '$1<256 && $2<256 && $3<256 && $4<256' \
+                    | sort -u \
+                    | while read -r ip; do
+                        echo "    Require not ip $ip" >> "$ADMIN_HTACCESS"
+                        a_added=$((a_added+1))
+                        if [ "$a_added" -ge "$max_ips" ]; then
+                            break
+                        fi
+                    done
+                else
+                    error "Cannot enumerate IPs: W_FOLDER not set or directory missing"
                 fi
-            done
+            fi
         fi
-        
+
+        echo "</RequireAll>" >> "$ADMIN_HTACCESS"
         echo "" >> "$ADMIN_HTACCESS"
-        echo "# Default allow for admin" >> "$ADMIN_HTACCESS"
-        echo "Require all granted" >> "$ADMIN_HTACCESS"
-        
+        echo "# Deployed $a_added blocked IP(s) to admin; cap MAX_DEPLOY_IPS=$max_ips" >> "$ADMIN_HTACCESS"
+
         success "Admin IP blocking deployed"
     fi
 }
@@ -337,10 +571,14 @@ verify_deployment() {
     
     if [ $issues -eq 0 ]; then
         success "All deployments verified successfully"
-        
-        # Count deployed IPs
-        local blocked_count=$(grep -c "Require not ip" "$MAIN_HTACCESS" 2>/dev/null || echo "0")
-        info "Total IPs blocked: $blocked_count"
+
+        # Count deployed IPs and compare to source size
+        local blocked_count=$(grep -c "^[[:space:]]*Require not ip" "$MAIN_HTACCESS" 2>/dev/null || echo "0")
+        local src_count="unknown"
+        if [ -f "assets/security/blocked_ips.json" ]; then
+            src_count=$(json_array_length assets/security/blocked_ips.json)
+        fi
+        info "Blocked IPs deployed: $blocked_count (of $src_count available)"
     else
         error "Deployment verification found $issues issues"
     fi
@@ -358,8 +596,15 @@ check_deployment_status() {
     if [ -f "$MAIN_HTACCESS" ]; then
         if grep -q "XXMXLI SERVER-SIDE IP BLOCKING" "$MAIN_HTACCESS"; then
             success "IP blocking is ACTIVE"
-            local blocked_count=$(grep -c "Require not ip" "$MAIN_HTACCESS" 2>/dev/null || echo "0")
-            info "Blocked IPs: $blocked_count"
+            local blocked_count=$(grep -c "^[[:space:]]*Require not ip" "$MAIN_HTACCESS" 2>/dev/null || echo "0")
+            local src_count="unknown"
+            if [ -f "assets/security/blocked_ips.json" ]; then
+                src_count=$(json_array_length assets/security/blocked_ips.json)
+            fi
+            info "Blocked IPs deployed: $blocked_count (source has $src_count)"
+            # Show a small sample of currently blocked IP entries
+            info "Sample blocked entries:"
+            grep -E "^[[:space:]]*Require not ip" "$MAIN_HTACCESS" | head -5 | sed 's/^/  /'
             
             # Show last deployment info
             local deploy_date=$(grep "Generated on" "$MAIN_HTACCESS" | cut -d' ' -f4-)
@@ -376,10 +621,13 @@ check_deployment_status() {
     echo ""
     info "Recent backups:"
     ls -la backups_* 2>/dev/null | tail -5 || echo "No backups found"
-    
-    echo ""
-    read -p "Press Enter to return to menu..."
-    show_interactive_menu
+
+    # Only pause and return to menu in interactive mode
+    if [[ "${INTERACTIVE_MODE}" == true ]]; then
+        echo ""
+        read -p "Press Enter to return to menu..." -r
+        show_interactive_menu
+    fi
 }
 
 # Restore from backup
@@ -590,12 +838,36 @@ validate_blacklist() {
     info "Validating blacklist file..."
     
     if [ -f "assets/security/blocked_ips.json" ]; then
-        if jq empty assets/security/blocked_ips.json 2>/dev/null; then
-            success "Blacklist JSON is valid"
-            local ip_count=$(jq length assets/security/blocked_ips.json)
-            info "Contains $ip_count IP addresses"
+        if command -v jq >/dev/null 2>&1; then
+            if jq -e 'if type=="array" then true elif (has("blocked_ips") and (.blocked_ips|type=="array")) then true else false end' assets/security/blocked_ips.json >/dev/null 2>&1; then
+                success "Blacklist JSON is valid"
+                local ip_count=$(json_array_length assets/security/blocked_ips.json)
+                info "Contains $ip_count IP addresses"
+            else
+                error "Blacklist JSON format invalid (expected array or object with blocked_ips array)"
+            fi
+        elif command -v python3 >/dev/null 2>&1; then
+            if python3 - <<'PY'
+import json,sys
+try:
+    with open('assets/security/blocked_ips.json','r',encoding='utf-8') as f:
+        data=json.load(f)
+    ok = isinstance(data, list) or (isinstance(data, dict) and isinstance(data.get('blocked_ips'), list))
+    if not ok:
+        raise SystemExit(1)
+    print('OK')
+except Exception:
+    sys.exit(1)
+PY
+            then
+                success "Blacklist JSON is valid"
+                local ip_count=$(json_array_length assets/security/blocked_ips.json)
+                info "Contains $ip_count IP addresses"
+            else
+                error "Blacklist JSON is invalid"
+            fi
         else
-            error "Blacklist JSON is invalid"
+            warn "Neither jq nor python3 is available to validate JSON"
         fi
     else
         error "Blacklist file not found"
@@ -712,168 +984,3 @@ main() {
 
 # Run main function with all arguments
 main "$@"
-    exit 1
-fi
-
-# Create backup directory
-echo "📦 Creating backup directory: $BACKUP_DIR"
-mkdir -p "$BACKUP_DIR"
-
-# Backup existing files
-echo "💾 Backing up existing configuration..."
-
-if [ -f "$MAIN_HTACCESS" ]; then
-    cp "$MAIN_HTACCESS" "$BACKUP_DIR/htaccess_main_backup"
-    echo "✅ Backed up main .htaccess"
-else
-    echo "⚠️  No existing main .htaccess found"
-fi
-
-if [ -f "$ADMIN_HTACCESS" ]; then
-    cp "$ADMIN_HTACCESS" "$BACKUP_DIR/htaccess_admin_backup"
-    echo "✅ Backed up admin .htaccess"
-else
-    echo "⚠️  No existing admin .htaccess found"
-fi
-
-# Check if generated blocks exist
-if [ ! -f "$GENERATED_BLOCKS" ]; then
-    echo "❌ Error: Generated blocking rules not found. Run ./setup_ip_blocking.sh first"
-    exit 1
-fi
-
-echo ""
-echo "🔍 DEPLOYMENT PREVIEW:"
-echo "====================="
-echo "📁 Main .htaccess: $(wc -l < "$GENERATED_BLOCKS") lines will be added"
-echo "📁 Admin protection: New admin IP blocking rules"
-echo "🚫 Blocked IPs: 100 high-priority threats"
-echo ""
-
-# Ask for confirmation
-read -p "🚀 Deploy server-side IP blocking? (y/N): " -r
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "❌ Deployment cancelled"
-    exit 0
-fi
-
-echo ""
-echo "🚀 Deploying server-side IP blocking..."
-
-# Deploy main .htaccess rules
-echo "📝 Adding IP blocking rules to main .htaccess..."
-if [ -f "$MAIN_HTACCESS" ]; then
-    # Add a separator and the new rules
-    echo "" >> "$MAIN_HTACCESS"
-    echo "# ========================================" >> "$MAIN_HTACCESS"
-    echo "# XXMXLI SERVER-SIDE IP BLOCKING - Added $(date)" >> "$MAIN_HTACCESS"
-    echo "# ========================================" >> "$MAIN_HTACCESS"
-    cat "$GENERATED_BLOCKS" >> "$MAIN_HTACCESS"
-else
-    # Create new .htaccess file
-    cp "$GENERATED_BLOCKS" "$MAIN_HTACCESS"
-fi
-echo "✅ Main .htaccess updated"
-
-# Deploy admin protection
-echo "🔒 Setting up admin area protection..."
-mkdir -p admin
-if [ -f "$ADMIN_BLOCKS" ]; then
-    if [ -f "$ADMIN_HTACCESS" ]; then
-        # Backup and replace
-        echo "" >> "$ADMIN_HTACCESS"
-        echo "# ========================================" >> "$ADMIN_HTACCESS"
-        echo "# XXMXLI ADMIN IP BLOCKING - Added $(date)" >> "$ADMIN_HTACCESS"
-        echo "# ========================================" >> "$ADMIN_HTACCESS"
-        cat "$ADMIN_BLOCKS" >> "$ADMIN_HTACCESS"
-    else
-        cp "$ADMIN_BLOCKS" "$ADMIN_HTACCESS"
-    fi
-    echo "✅ Admin protection deployed"
-else
-    echo "⚠️  Admin blocking rules not found, skipping admin protection"
-fi
-
-# Create deployment log
-cat > "$BACKUP_DIR/deployment_log.txt" << EOF
-========================================
-XXMXLI IP BLOCKING DEPLOYMENT LOG
-========================================
-Deployment Time: $(date)
-Backup Directory: $BACKUP_DIR
-
-DEPLOYED COMPONENTS:
-- Server-side IP blocking (100 high-priority IPs)
-- Admin area enhanced protection
-- Backup of original configuration
-
-ROLLBACK INSTRUCTIONS:
-If you need to rollback this deployment:
-1. cp $BACKUP_DIR/htaccess_main_backup .htaccess
-2. cp $BACKUP_DIR/htaccess_admin_backup admin/.htaccess
-
-MONITORING:
-- Check server logs for blocked attempts
-- Monitor site performance
-- Verify legitimate users can access
-
-FILES MODIFIED:
-- $MAIN_HTACCESS (IP blocking rules added)
-- $ADMIN_HTACCESS (admin protection added)
-
-EMERGENCY CONTACT:
-If the site becomes inaccessible, remove the IP blocking
-section from .htaccess or restore from backup.
-EOF
-
-echo ""
-echo "🎉 DEPLOYMENT COMPLETE!"
-echo "======================="
-echo "✅ Server-side IP blocking is now ACTIVE"
-echo "✅ 100 high-priority threat IPs are blocked at server level"
-echo "✅ Admin area has enhanced protection"
-echo "✅ All original files backed up to: $BACKUP_DIR"
-echo ""
-echo "📊 WHAT'S NOW BLOCKED:"
-echo "- Malicious IPs from your blacklist (server-side)"
-echo "- Suspicious user agents"
-echo "- Empty user agents"
-echo "- Attack patterns in requests"
-echo ""
-echo "🔍 MONITORING:"
-echo "- Watch your server access logs"
-echo "- Check for 403 errors from blocked IPs"
-echo "- Monitor site performance"
-echo ""
-echo "⚠️  IMPORTANT REMINDERS:"
-echo "1. Test your site immediately to ensure it's accessible"
-echo "2. Check admin area access"
-echo "3. Monitor logs for legitimate users being blocked"
-echo "4. Keep backup directory: $BACKUP_DIR"
-echo ""
-echo "🆘 ROLLBACK if needed:"
-echo "   cp $BACKUP_DIR/htaccess_main_backup .htaccess"
-echo ""
-echo "🛡️  Your website now has REAL server-side IP protection!"
-
-# Test if the site is still accessible
-echo ""
-echo "🧪 QUICK ACCESS TEST:"
-if command -v curl &> /dev/null; then
-    echo "Testing site accessibility..."
-    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -L "http://localhost:8000/" 2>/dev/null || echo "000")
-    if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "301" ] || [ "$HTTP_CODE" = "302" ]; then
-        echo "✅ Site appears accessible (HTTP $HTTP_CODE)"
-    else
-        echo "⚠️  Site test returned HTTP $HTTP_CODE - check manually"
-    fi
-else
-    echo "⚠️  curl not available - please test site manually"
-fi
-
-echo ""
-echo "🎯 NEXT STEPS:"
-echo "1. Open your website in a browser to verify it works"
-echo "2. Check admin panel access"
-echo "3. Review server logs: tail -f /var/log/apache2/access.log"
-echo "4. Monitor for blocked attempts in the coming hours"

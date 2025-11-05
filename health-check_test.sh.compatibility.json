@@ -1,6 +1,1 @@
-{
-  "script": "./health-check_test.sh",
-  "compatibility_issues": [
-
-  ]
-}
+{"compatibility_issues":[],"script":"./health-check_test.sh"}

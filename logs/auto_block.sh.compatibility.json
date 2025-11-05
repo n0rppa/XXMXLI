@@ -1,6 +1,1 @@
-{
-  "script": "./logs/auto_block.sh",
-  "compatibility_issues": [
-
-  ]
-}
+{"compatibility_issues":[],"script":"./logs/auto_block.sh"}

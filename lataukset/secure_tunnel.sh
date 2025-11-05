@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Secure # Function to display banner
+# Secure Tunneling & SSH Management Tool
 show_banner() {
     echo -e "${CYAN}"
     echo " ████████╗██╗   ██╗███╗   ██╗███╗   ██╗███████╗██╗     "
@@ -21,7 +21,7 @@ show_banner() {
     echo "    SSH Tunnels, SOCKS Proxy & VPN Management"
     echo "    Educational and Authorized Use Only"
     echo -e "${NC}"
-} Management Tool
+}
 # SSH Tunnels, VPN Connections, and Secure Proxy Management
 # Author: XXMXLI Security Tools
 # WARNING: Use only for legitimate purposes and with proper authorization

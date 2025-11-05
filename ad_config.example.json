@@ -1,11 +1,1 @@
-{
-  "provider": "adsense",
-  "adsense_publisher_id": "ca-pub-XXXXXXXXXXXXXXXX",
-  "ad_units": [
-    {
-      "slot": "homepage_footer",
-      "format": "auto",
-      "class": "ad-unit--footer"
-    }
-  ]
-}
+{"ad_units":[{"class":"ad-unit--footer","format":"auto","slot":"homepage_footer"}],"adsense_publisher_id":"ca-pub-XXXXXXXXXXXXXXXX","provider":"adsense"}

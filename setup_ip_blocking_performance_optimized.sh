@@ -54,8 +54,26 @@ fi
 
 echo "📊 Analyzing blacklist data..."
 
-# Extract total IP count
-TOTAL_IPS=$(grep -o '"total_ips": [0-9]*' "$BLACKLIST_FILE" | grep -o '[0-9]*')
+# Extract total IP count from JSON if present, else compute from blocked_ips length
+if command -v jq >/dev/null 2>&1; then
+    TOTAL_IPS=$(jq -r 'if has("total_ips") then .total_ips else (.blocked_ips // []) | length end' "$BLACKLIST_FILE" 2>/dev/null || echo 0)
+else
+    TOTAL_IPS=$(python3 - <<'PY'
+import json
+try:
+    with open('assets/security/blocked_ips.json','r',encoding='utf-8') as f:
+        data=json.load(f)
+    if isinstance(data, dict):
+        print(data.get('total_ips') or len(data.get('blocked_ips') or []))
+    elif isinstance(data, list):
+        print(len(data))
+    else:
+        print(0)
+except Exception:
+    print(0)
+PY
+)
+fi
 echo "📈 Total IPs in blacklist: $TOTAL_IPS"
 
 # Create high-priority server-side blocking rules
@@ -87,8 +105,11 @@ import sys
 try:
     with open('$BLACKLIST_FILE', 'r') as f:
         data = json.load(f)
-    
-    ips = data.get('blocked_ips', [])[:$HIGH_PRIORITY_COUNT]
+    # Support both object with blocked_ips and plain array
+    if isinstance(data, dict):
+        ips = (data.get('blocked_ips') or [])[:$HIGH_PRIORITY_COUNT]
+    else:
+        ips = (data or [])[:$HIGH_PRIORITY_COUNT]
     
     for ip in ips:
         print(f"    Require not ip {ip}")
@@ -106,8 +127,10 @@ import json
 try:
     with open('$BLACKLIST_FILE', 'r') as f:
         data = json.load(f)
-    
-    ips = data.get('blocked_ips', [])[:$HIGH_PRIORITY_COUNT]
+    if isinstance(data, dict):
+        ips = (data.get('blocked_ips') or [])[:$HIGH_PRIORITY_COUNT]
+    else:
+        ips = (data or [])[:$HIGH_PRIORITY_COUNT]
     
     for ip in ips:
         print(f"    Require not ip {ip}")

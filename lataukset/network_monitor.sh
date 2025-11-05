@@ -1,27 +1,6 @@
 #!/bin/bash
 
-# Network M# Function to display banner
-show_banner() {
-    echo -e "${CYAN}"
-    echo " ███╗   ██╗███████╗████████╗██╗    ██╗ ██████╗ ██████╗ ██╗  ██╗"
-    echo " ████╗  ██║██╔════╝╚══██╔══╝██║    ██║██╔═══██╗██╔══██╗██║ ██╔╝"
-    echo " ██╔██╗ ██║█████╗     ██║   ██║ █╗ ██║██║   ██║██████╔╝█████╔╝ "
-    echo " ██║╚██╗██║██╔══╝     ██║   ██║███╗██║██║   ██║██╔══██╗██╔═██╗ "
-    echo " ██║ ╚████║███████╗   ██║   ╚███╔███╔╝╚██████╔╝██║  ██║██║  ██╗"
-    echo " ╚═╝  ╚═══╝╚══════╝   ╚═╝    ╚══╝╚══╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝"
-    echo ""
-    echo " ██╗  ██╗██╗  ██╗███╗   ███╗██╗  ██╗██╗     ██╗"
-    echo " ╚██╗██╔╝╚██╗██╔╝████╗ ████║╚██╗██╔╝██║     ██║"
-    echo "  ╚███╔╝  ╚███╔╝ ██╔████╔██║ ╚███╔╝ ██║     ██║"
-    echo "  ██╔██╗  ██╔██╗ ██║╚██╔╝██║ ██╔██╗ ██║     ██║"
-    echo " ██╔╝ ██╗██╔╝ ██╗██║ ╚═╝ ██║██╔╝ ██╗███████╗██║"
-    echo " ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝"
-    echo ""
-    echo "    Network Traffic Monitor & Security Analysis Tool"
-    echo "    Real-time Network Monitoring and Intrusion Detection"
-    echo "    Educational and Authorized Use Only"
-    echo -e "${NC}"
-}lysis Tool
+# Network Monitoring and Security Analysis Tool
 # Real-time Network Traffic Monitoring and Security Analysis
 # Author: XXMXLI Security Tools
 # WARNING: Use only for legitimate purposes and with proper authorization
