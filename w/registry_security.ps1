@@ -64,28 +64,47 @@ function Show-Menu {
 
 function Set-RegistryValue {
     param(
-        [string]$Path,
-        [string]$Name,
-        [object]$Value,
+        [Parameter(Mandatory)][string]$Path,
+        [Parameter(Mandatory)][string]$Name,
+        [Parameter(Mandatory)][object]$Value,
         [string]$Type = "DWORD",
         [string]$Description = ""
     )
-    
+
     try {
-        # Create the registry path if it doesn't exist
+        # Ensure the parent key exists
         if (-not (Test-Path $Path)) {
-            New-Item -Path $Path -Force | Out-Null
+            New-Item -Path $Path -Force -ErrorAction Stop | Out-Null
         }
-        
-        # Set the registry value
-        Set-ItemProperty -Path $Path -Name $Name -Value $Value -Type $Type
-        
+
+        # Map incoming Type hint to valid PropertyType for New-ItemProperty
+        $propertyType = switch -Regex ($Type) {
+            '^(dword|DWORD|DWord)$' { 'DWord' }
+            '^(qword|QWORD|QWord)$' { 'QWord' }
+            '^(string|STRING)$' { 'String' }
+            '^(expandstring|EXPANDSTRING)$' { 'ExpandString' }
+            '^(binary|BINARY)$' { 'Binary' }
+            '^(multistring|MULTISTRING)$' { 'MultiString' }
+            default { 'String' }
+        }
+
+        $existing = $null
+        try { $existing = Get-ItemProperty -Path $Path -Name $Name -ErrorAction Stop } catch { $existing = $null }
+
+        if ($null -ne $existing) {
+            # Update existing value (Set-ItemProperty has no -Type parameter)
+            Set-ItemProperty -Path $Path -Name $Name -Value $Value -ErrorAction Stop | Out-Null
+        } else {
+            # Create new value with explicit property type
+            New-ItemProperty -Path $Path -Name $Name -Value $Value -PropertyType $propertyType -Force -ErrorAction Stop | Out-Null
+        }
+
         if ($Description) {
             Write-Host "  ✓ $Description" -ForegroundColor Green
         } else {
             Write-Host "  ✓ Set $Path\$Name = $Value" -ForegroundColor Green
         }
-        
+
     } catch {
         Write-Host "  ✗ Error setting $Path\$Name: $($_.Exception.Message)" -ForegroundColor Red
     }
