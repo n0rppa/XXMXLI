@@ -389,7 +389,7 @@ function New-EncryptedVault {
             Created = Get-Date
             Description = "Encrypted file vault"
             Warning = "Do not modify this file"
-        } | ConvertTo-Json
+        } | ConvertTo-Json -Compress
         
         $vaultInfo | Out-File "$vaultPath\.vault_info.json"
         

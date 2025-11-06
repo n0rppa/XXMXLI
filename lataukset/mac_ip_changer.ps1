@@ -219,7 +219,7 @@ function Backup-Configuration {
         $backup += $adapterInfo
     }
     
-    $backup | ConvertTo-Json -Depth 3 | Out-File -FilePath $backupFile -Encoding UTF8
+    $backup | ConvertTo-Json -Depth 3 -Compress | Out-File -FilePath $backupFile -Encoding UTF8
     Write-Host "✅ Backup saved to: $backupFile" -ForegroundColor $Color.Green
 }
 

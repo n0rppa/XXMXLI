@@ -212,7 +212,7 @@ function New-Configuration {
         }
     }
     
-    $Config | ConvertTo-Json -Depth 10 | Set-Content -Path $ConfigFile
+    $Config | ConvertTo-Json -Depth 10 -Compress | Set-Content -Path $ConfigFile
 }
 
 # Load configuration

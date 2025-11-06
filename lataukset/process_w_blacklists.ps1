@@ -164,12 +164,12 @@ $JSONOutput = Join-Path $OutputDir "blocked_ips.json"
 @{
     "blocked_ips" = $UniqueIPs
     "statistics" = $Statistics
-} | ConvertTo-Json -Depth 10 | Out-File -FilePath $JSONOutput -Encoding UTF8
+} | ConvertTo-Json -Depth 10 -Compress | Out-File -FilePath $JSONOutput -Encoding UTF8
 Write-Host "✅ JSON file created: $JSONOutput" -ForegroundColor Green
 
 # Generate statistics file
 $StatsOutput = Join-Path $OutputDir "blacklist_stats.json"
-$Statistics | ConvertTo-Json -Depth 10 | Out-File -FilePath $StatsOutput -Encoding UTF8
+$Statistics | ConvertTo-Json -Depth 10 -Compress | Out-File -FilePath $StatsOutput -Encoding UTF8
 Write-Host "✅ Statistics file created: $StatsOutput" -ForegroundColor Green
 
 # Generate Windows Firewall rules if requested

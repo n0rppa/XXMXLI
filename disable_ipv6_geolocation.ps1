@@ -73,7 +73,7 @@ $LogEntry = @{
 }
 
 $LogFile = Join-Path $ScriptDir "privacy_settings.log"
-$LogEntry | ConvertTo-Json | Add-Content $LogFile
+$LogEntry | ConvertTo-Json -Compress | Add-Content $LogFile
 
 Write-Host ""
 Write-Host "================================================================" -ForegroundColor Green

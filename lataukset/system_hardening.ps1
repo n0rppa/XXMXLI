@@ -44,6 +44,42 @@ function Write-Log {
     Add-Content -Path $LogFile -Value $logEntry
 }
 
+# Robust registry setter (create-or-set; Set-ItemProperty without -Type, New-ItemProperty with PropertyType)
+function Set-RegistryValue {
+    param(
+        [Parameter(Mandatory)][string]$Path,
+        [Parameter(Mandatory)][string]$Name,
+        [Parameter(Mandatory)][object]$Value,
+        [string]$Type = "DWORD"
+    )
+    try {
+        if (-not (Test-Path $Path)) { New-Item -Path $Path -Force | Out-Null }
+
+        $propType = switch -Regex ($Type) {
+            '^(dword|DWORD|DWord)$' { 'DWord' }
+            '^(qword|QWORD|QWord)$' { 'QWord' }
+            '^(string|STRING)$' { 'String' }
+            '^(expandstring|EXPANDSTRING)$' { 'ExpandString' }
+            '^(binary|BINARY)$' { 'Binary' }
+            '^(multistring|MULTISTRING)$' { 'MultiString' }
+            default { 'String' }
+        }
+
+        $exists = $false
+        try { Get-ItemProperty -Path $Path -Name $Name -ErrorAction Stop | Out-Null; $exists = $true } catch { $exists = $false }
+
+        if ($exists) {
+            Set-ItemProperty -Path $Path -Name $Name -Value $Value -ErrorAction Stop | Out-Null
+        } else {
+            New-ItemProperty -Path $Path -Name $Name -Value $Value -PropertyType $propType -Force -ErrorAction Stop | Out-Null
+        }
+        return $true
+    } catch {
+        Write-Log "Registry write failed for $Path\\$Name: $($_.Exception.Message)" "Red"
+        return $false
+    }
+}
+
 # Banner
 function Show-Banner {
     Write-Host ""
@@ -108,7 +144,7 @@ function New-SystemBackup {
             ComputerName = $env:COMPUTERNAME
             WindowsVersion = [System.Environment]::OSVersion.VersionString
             PowerShellVersion = $PSVersionTable.PSVersion.ToString()
-        } | ConvertTo-Json | Out-File "$backupPath\backup_info.json"
+        } | ConvertTo-Json -Compress | Out-File "$backupPath\backup_info.json"
         
         Write-Log "Backup created: $backupPath" "Green"
         return $backupPath
@@ -196,25 +232,25 @@ function Set-RegistryHardening {
     Write-Log "Configuring registry security settings..." "Yellow"
     
     try {
-        # Disable SMBv1
-        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "SMB1" -Value 0 -Type DWord -ErrorAction SilentlyContinue
+    # Disable SMBv1
+    $null = Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "SMB1" -Value 0 -Type "DWord"
         Write-Log "SMBv1 disabled" "Green"
         
         # Enable DEP
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer" -Name "NoDataExecutionPrevention" -Value 0 -Type DWord -ErrorAction SilentlyContinue
+    $null = Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer" -Name "NoDataExecutionPrevention" -Value 0 -Type "DWord"
         Write-Log "Data Execution Prevention enabled" "Green"
         
         # Disable AutoRun
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoDriveTypeAutoRun" -Value 255 -Type DWord -ErrorAction SilentlyContinue
+    $null = Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoDriveTypeAutoRun" -Value 255 -Type "DWord"
         Write-Log "AutoRun disabled" "Green"
         
         # Enable UAC
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "ConsentPromptBehaviorAdmin" -Value 2 -Type DWord -ErrorAction SilentlyContinue
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableLUA" -Value 1 -Type DWord -ErrorAction SilentlyContinue
+    $null = Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "ConsentPromptBehaviorAdmin" -Value 2 -Type "DWord"
+    $null = Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableLUA" -Value 1 -Type "DWord"
         Write-Log "UAC configured" "Green"
         
         # Disable Remote Desktop
-        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 1 -Type DWord -ErrorAction SilentlyContinue
+    $null = Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 1 -Type "DWord"
         Write-Log "Remote Desktop disabled" "Green"
         
         # Configure password policy
@@ -238,10 +274,10 @@ function Set-WindowsUpdateHardening {
             New-Item -Path $updatePath -Force | Out-Null
         }
         
-        Set-ItemProperty -Path $updatePath -Name "NoAutoUpdate" -Value 0 -Type DWord
-        Set-ItemProperty -Path $updatePath -Name "AUOptions" -Value 4 -Type DWord
-        Set-ItemProperty -Path $updatePath -Name "ScheduledInstallDay" -Value 0 -Type DWord
-        Set-ItemProperty -Path $updatePath -Name "ScheduledInstallTime" -Value 3 -Type DWord
+    $null = Set-RegistryValue -Path $updatePath -Name "NoAutoUpdate" -Value 0 -Type "DWord"
+    $null = Set-RegistryValue -Path $updatePath -Name "AUOptions" -Value 4 -Type "DWord"
+    $null = Set-RegistryValue -Path $updatePath -Name "ScheduledInstallDay" -Value 0 -Type "DWord"
+    $null = Set-RegistryValue -Path $updatePath -Name "ScheduledInstallTime" -Value 3 -Type "DWord"
         
         Write-Log "Windows Updates configured for automatic installation" "Green"
     }
@@ -283,13 +319,13 @@ function Set-NetworkHardening {
         }
         Write-Log "NetBIOS over TCP/IP disabled" "Green"
         
-        # Disable LLMNR
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" -Name "EnableMulticast" -Value 0 -Type DWord -ErrorAction SilentlyContinue
+    # Disable LLMNR
+    $null = Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" -Name "EnableMulticast" -Value 0 -Type "DWord"
         Write-Log "LLMNR disabled" "Green"
         
         # Configure TCP/IP security
-        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" -Name "SynAttackProtect" -Value 1 -Type DWord -ErrorAction SilentlyContinue
-        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" -Name "EnableICMPRedirect" -Value 0 -Type DWord -ErrorAction SilentlyContinue
+    $null = Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" -Name "SynAttackProtect" -Value 1 -Type "DWord"
+    $null = Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" -Name "EnableICMPRedirect" -Value 0 -Type "DWord"
         Write-Log "TCP/IP security configured" "Green"
         
     }

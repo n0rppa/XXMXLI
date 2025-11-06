@@ -235,4 +235,4 @@ $LogEntry = @{
 }
 
 $LogFile = Join-Path $ScriptDir "network_changes.log"
-$LogEntry | ConvertTo-Json | Add-Content $LogFile
+$LogEntry | ConvertTo-Json -Compress | Add-Content $LogFile

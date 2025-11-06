@@ -21,6 +21,42 @@ $Color = @{
     Magenta = "Magenta"
 }
 
+# Robust registry setter (handles create-or-set and correct PropertyType)
+function Set-RegistryValue {
+    param(
+        [Parameter(Mandatory)][string]$Path,
+        [Parameter(Mandatory)][string]$Name,
+        [Parameter(Mandatory)][object]$Value,
+        [string]$Type = "DWORD"
+    )
+    try {
+        if (-not (Test-Path $Path)) { New-Item -Path $Path -Force | Out-Null }
+
+        $propType = switch -Regex ($Type) {
+            '^(dword|DWORD|DWord)$' { 'DWord' }
+            '^(qword|QWORD|QWord)$' { 'QWord' }
+            '^(string|STRING)$' { 'String' }
+            '^(expandstring|EXPANDSTRING)$' { 'ExpandString' }
+            '^(binary|BINARY)$' { 'Binary' }
+            '^(multistring|MULTISTRING)$' { 'MultiString' }
+            default { 'String' }
+        }
+
+        $exists = $false
+        try { Get-ItemProperty -Path $Path -Name $Name -ErrorAction Stop | Out-Null; $exists = $true } catch { $exists = $false }
+
+        if ($exists) {
+            Set-ItemProperty -Path $Path -Name $Name -Value $Value -ErrorAction Stop | Out-Null
+        } else {
+            New-ItemProperty -Path $Path -Name $Name -Value $Value -PropertyType $propType -Force -ErrorAction Stop | Out-Null
+        }
+        return $true
+    } catch {
+        Write-Host ("Registry write failed for {0}\\{1}: {2}" -f $Path, $Name, $_.Exception.Message) -ForegroundColor $Color.Red
+        return $false
+    }
+}
+
 function Write-Banner {
     Write-Host "
  ██╗██████╗ ██╗   ██╗ ██████╗      ██████╗ ███████╗ ██████╗ 
@@ -77,7 +113,7 @@ function Backup-CurrentSettings {
             RegistrySettings = $registrySettings
         }
         
-        $backup | ConvertTo-Json -Depth 3 | Out-File -FilePath $backupFile -Encoding UTF8
+    $backup | ConvertTo-Json -Depth 3 -Compress | Out-File -FilePath $backupFile -Encoding UTF8
         Write-Host "✅ Backup saved to: $backupFile" -ForegroundColor $Color.Green
         return $backupFile
         
@@ -93,7 +129,7 @@ function Disable-IPv6 {
     try {
         # Method 1: Registry modification (most effective)
         Write-Host "📝 Updating registry to disable IPv6..." -ForegroundColor $Color.Cyan
-        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters" -Name "DisabledComponents" -Value 0xffffffff -Type DWord -Force
+    $null = Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters" -Name "DisabledComponents" -Value ([uint32]0xFFFFFFFF) -Type "DWord"
         
         # Method 2: Disable IPv6 on all network adapters
         Write-Host "🔧 Disabling IPv6 on network adapters..." -ForegroundColor $Color.Cyan
@@ -128,7 +164,7 @@ function Enable-IPv6 {
     try {
         # Restore registry setting
         Write-Host "📝 Updating registry to enable IPv6..." -ForegroundColor $Color.Cyan
-        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters" -Name "DisabledComponents" -Value 0x0 -Type DWord -Force
+    $null = Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters" -Name "DisabledComponents" -Value ([uint32]0x0) -Type "DWord"
         
         # Enable IPv6 on all network adapters
         Write-Host "🔧 Enabling IPv6 on network adapters..." -ForegroundColor $Color.Cyan
@@ -190,7 +226,7 @@ function Disable-GeolocationService {
         if (!(Test-Path $sensorPath)) {
             New-Item -Path $sensorPath -Force | Out-Null
         }
-        Set-ItemProperty -Path $sensorPath -Name "SensorPermissionState" -Value 0 -Type DWord -Force
+    $null = Set-RegistryValue -Path $sensorPath -Name "SensorPermissionState" -Value 0 -Type "DWord"
         Write-Host "  ✓ Location sensors disabled" -ForegroundColor $Color.Green
         
         # Disable location scripting
@@ -233,7 +269,7 @@ function Enable-GeolocationService {
         # Enable location sensors
         $sensorPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Sensor\Overrides\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}"
         if (Test-Path $sensorPath) {
-            Set-ItemProperty -Path $sensorPath -Name "SensorPermissionState" -Value 1 -Type DWord -Force
+            $null = Set-RegistryValue -Path $sensorPath -Name "SensorPermissionState" -Value 1 -Type "DWord"
             Write-Host "  ✓ Location sensors enabled" -ForegroundColor $Color.Green
         }
         

@@ -185,7 +185,7 @@ function New-DNSBackup {
             }
         }
         
-        $dnsSettings | ConvertTo-Json -Depth 3 | Out-File "$backupPath\dns_settings.json"
+    $dnsSettings | ConvertTo-Json -Depth 3 -Compress | Out-File "$backupPath\dns_settings.json"
         
         # Backup hosts file
         if (Test-Path "$env:SystemRoot\System32\drivers\etc\hosts") {

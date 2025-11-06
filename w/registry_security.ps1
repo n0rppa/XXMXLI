@@ -310,4 +310,4 @@ $LogEntry = @{
 }
 
 $LogFile = Join-Path $ScriptDir "registry_changes.log"
-$LogEntry | ConvertTo-Json | Add-Content $LogFile
+$LogEntry | ConvertTo-Json -Compress | Add-Content $LogFile

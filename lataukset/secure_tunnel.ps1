@@ -82,7 +82,7 @@ function Show-Banner {
 
 # Save active tunnels
 function Save-ActiveTunnels {
-    $Global:ActiveTunnels | ConvertTo-Json | Out-File $ActiveTunnelsFile
+    $Global:ActiveTunnels | ConvertTo-Json -Compress | Out-File $ActiveTunnelsFile
 }
 
 # Create SSH key pair

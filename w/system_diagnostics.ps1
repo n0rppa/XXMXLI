@@ -443,7 +443,7 @@ function Module-Diagnostics {
             Write-Host "Firewall $($p.Name): $fwStatus"
         }
     } catch { Log-Error ("Diagnostic error: " + $_.Exception.Message) }
-    $exp = Read-Host "Export quick report to files? (y/N)"; if ($exp -match '^(y|Y)$') { $ts = Get-Date -Format "yyyyMMdd_HHmmss"; $txt = Join-Path $ScriptDir "XXMXLI_Security_Report_$ts.txt"; $json = Join-Path $ScriptDir "XXMXLI_Security_Report_$ts.json"; $data = @{ Timestamp=(Get-Date); Computer=$env:COMPUTERNAME; User=$env:USERNAME }; try { ($data | Out-String) | Out-File -FilePath $txt -Encoding UTF8; $data | ConvertTo-Json -Depth 3 | Out-File -FilePath $json -Encoding UTF8; Log-Success "Exported: $txt, $json" } catch { Log-Error ("Export failed: " + $_.Exception.Message) } }
+    $exp = Read-Host "Export quick report to files? (y/N)"; if ($exp -match '^(y|Y)$') { $ts = Get-Date -Format "yyyyMMdd_HHmmss"; $txt = Join-Path $ScriptDir "XXMXLI_Security_Report_$ts.txt"; $json = Join-Path $ScriptDir "XXMXLI_Security_Report_$ts.json"; $data = @{ Timestamp=(Get-Date); Computer=$env:COMPUTERNAME; User=$env:USERNAME }; try { ($data | Out-String) | Out-File -FilePath $txt -Encoding UTF8; $data | ConvertTo-Json -Depth 3 -Compress | Out-File -FilePath $json -Encoding UTF8; Log-Success "Exported: $txt, $json" } catch { Log-Error ("Export failed: " + $_.Exception.Message) } }
     Pause-Clear
 }
 
@@ -473,7 +473,7 @@ while ($true) {
     } finally {
         # lightweight session logging
         $entry = @{ Timestamp=$ts; User=$env:USERNAME; Computer=$env:COMPUTERNAME; Action=$choice }
-        try { $entry | ConvertTo-Json | Add-Content -Path $logFile } catch {}
+    try { $entry | ConvertTo-Json -Compress | Add-Content -Path $logFile } catch {}
     }
 }
 

@@ -176,26 +176,48 @@ function Configure-UserRights {
     
     if ($confirm -eq 'y' -or $confirm -eq 'Y') {
         try {
-            # Configure interactive logon requirements
             $regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
-            Set-ItemProperty -Path $regPath -Name "DisableCAD" -Value 0 -Type DWORD
-            Write-Host "✓ Enabled Ctrl+Alt+Del requirement for logon" -ForegroundColor Green
-            
-            # Hide last username
-            Set-ItemProperty -Path $regPath -Name "DontDisplayLastUserName" -Value 1 -Type DWORD
-            Write-Host "✓ Enabled hiding of last logged on username" -ForegroundColor Green
-            
-            # Configure logon message
+            # Helper ensures key exists and sets value with proper PropertyType
+            if (-not (Get-Command Set-RegistryValue -ErrorAction SilentlyContinue)) {
+                function Set-RegistryValue {
+                    param(
+                        [Parameter(Mandatory)][string]$Path,
+                        [Parameter(Mandatory)][string]$Name,
+                        [Parameter(Mandatory)][object]$Value,
+                        [string]$Type = "DWORD",
+                        [string]$Description = ""
+                    )
+                    try {
+                        if (-not (Test-Path $Path)) { New-Item -Path $Path -Force -ErrorAction Stop | Out-Null }
+                        $propertyType = switch -Regex ($Type) {
+                            '^(dword|DWORD|DWord)$' { 'DWord' }
+                            '^(qword|QWORD|QWord)$' { 'QWord' }
+                            '^(string|STRING)$' { 'String' }
+                            '^(expandstring|EXPANDSTRING)$' { 'ExpandString' }
+                            '^(binary|BINARY)$' { 'Binary' }
+                            '^(multistring|MULTISTRING)$' { 'MultiString' }
+                            default { 'String' }
+                        }
+                        $existing = $null
+                        try { $existing = Get-ItemProperty -Path $Path -Name $Name -ErrorAction Stop } catch { $existing = $null }
+                        if ($null -ne $existing) {
+                            Set-ItemProperty -Path $Path -Name $Name -Value $Value -ErrorAction Stop | Out-Null
+                        } else {
+                            New-ItemProperty -Path $Path -Name $Name -Value $Value -PropertyType $propertyType -Force -ErrorAction Stop | Out-Null
+                        }
+                        if ($Description) { Write-Host "  ✓ $Description" -ForegroundColor Green } else { Write-Host "  ✓ Set $Path\$Name = $Value" -ForegroundColor Green }
+                    } catch { Write-Host "  ✗ Error setting $Path\$Name: $($_.Exception.Message)" -ForegroundColor Red }
+                }
+            }
+            Set-RegistryValue -Path $regPath -Name "DisableCAD" -Value 0 -Type DWORD -Description "Enabled Ctrl+Alt+Del requirement for logon"
+            Set-RegistryValue -Path $regPath -Name "DontDisplayLastUserName" -Value 1 -Type DWORD -Description "Hide last logged-on username"
             $legalNotice = Read-Host "Set a legal notice for logon? (y/N)"
             if ($legalNotice -eq 'y' -or $legalNotice -eq 'Y') {
                 $noticeTitle = "AUTHORIZED USE ONLY"
                 $noticeText = "This system is for authorized users only. All activities are monitored and logged. Unauthorized access is prohibited and will be prosecuted to the full extent of the law."
-                
-                Set-ItemProperty -Path $regPath -Name "LegalNoticeCaption" -Value $noticeTitle -Type String
-                Set-ItemProperty -Path $regPath -Name "LegalNoticeText" -Value $noticeText -Type String
-                Write-Host "✓ Legal notice configured for logon screen" -ForegroundColor Green
+                Set-RegistryValue -Path $regPath -Name "LegalNoticeCaption" -Value $noticeTitle -Type String -Description "Configured logon notice caption"
+                Set-RegistryValue -Path $regPath -Name "LegalNoticeText" -Value $noticeText -Type String -Description "Configured logon notice text"
             }
-            
         } catch {
             Write-Host "✗ Error configuring user rights: $($_.Exception.Message)" -ForegroundColor Red
         }
@@ -389,4 +411,4 @@ $LogEntry = @{
 }
 
 $LogFile = Join-Path $ScriptDir "user_security_changes.log"
-$LogEntry | ConvertTo-Json | Add-Content $LogFile
+$LogEntry | ConvertTo-Json -Compress | Add-Content $LogFile
