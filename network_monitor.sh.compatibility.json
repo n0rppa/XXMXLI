@@ -1,1 +1,6 @@
-{"compatibility_issues":[],"script":"./network_monitor.sh"}
+{
+  "script": "./network_monitor.sh",
+  "compatibility_issues": [
+
+  ]
+}

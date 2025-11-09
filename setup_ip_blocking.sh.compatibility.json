@@ -1,1 +1,6 @@
-{"compatibility_issues":[],"script":"./setup_ip_blocking.sh"}
+{
+  "script": "./setup_ip_blocking.sh",
+  "compatibility_issues": [
+
+  ]
+}

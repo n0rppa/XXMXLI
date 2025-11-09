@@ -1,1 +1,6 @@
-{"compatibility_issues":[],"script":"./deploy_ip_blocking.sh"}
+{
+  "script": "./deploy_ip_blocking.sh",
+  "compatibility_issues": [
+
+  ]
+}

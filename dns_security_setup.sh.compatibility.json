@@ -1,1 +1,6 @@
-{"compatibility_issues":[],"script":"./dns_security_setup.sh"}
+{
+  "script": "./dns_security_setup.sh",
+  "compatibility_issues": [
+
+  ]
+}

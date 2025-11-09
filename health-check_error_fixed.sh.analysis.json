@@ -1,1 +1,137 @@
-{"functions_analyzed":26,"issues_found":[{"function":"log","issue":"missing_error_handling","severity":"WARNING"},{"function":"success","issue":"missing_error_handling","severity":"WARNING"},{"function":"error","issue":"missing_error_handling","severity":"WARNING"},{"function":"warn","issue":"missing_error_handling","severity":"WARNING"},{"function":"info","issue":"missing_error_handling","severity":"WARNING"},{"function":"show_banner","issue":"missing_error_handling","severity":"WARNING"},{"function":"show_interactive_menu","issue":"missing_error_handling","severity":"WARNING"},{"function":"check_environment","issue":"missing_error_handling","severity":"WARNING"},{"function":"full_health_check","issue":"missing_error_handling","severity":"WARNING"},{"function":"directory_check","issue":"missing_error_handling","severity":"WARNING"},{"function":"server_api_check","issue":"missing_error_handling","severity":"WARNING"},{"function":"data_validation","issue":"missing_error_handling","severity":"WARNING"},{"function":"github_pages_check","issue":"missing_error_handling","severity":"WARNING"},{"function":"performance_analysis","issue":"missing_error_handling","severity":"WARNING"},{"function":"security_check","issue":"missing_error_handling","severity":"WARNING"},{"function":"generate_health_report","issue":"missing_error_handling","severity":"WARNING"},{"function":"show_help","issue":"missing_error_handling","severity":"WARNING"},{"function":"directory_check_silent","issue":"missing_error_handling","severity":"WARNING"},{"function":"server_check_silent","issue":"missing_error_handling","severity":"WARNING"},{"function":"api_check_silent","issue":"missing_error_handling","severity":"WARNING"},{"function":"data_validation_silent","issue":"missing_error_handling","severity":"WARNING"},{"function":"github_pages_check_silent","issue":"missing_error_handling","severity":"WARNING"},{"function":"performance_check_silent","issue":"missing_error_handling","severity":"WARNING"},{"function":"security_check_silent","issue":"missing_error_handling","severity":"WARNING"},{"function":"exit_program","issue":"missing_error_handling","severity":"WARNING"},{"function":"main","issue":"missing_error_handling","severity":"WARNING"}],"script":"./health-check_error_fixed.sh","timestamp":"2025-11-02T03:00:37+02:00"}
+{
+  "script": "./health-check_error_fixed.sh",
+  "timestamp": "2025-11-09T03:00:44+01:00",
+  "functions_analyzed": 26,
+  "issues_found": [
+    {
+      "severity": "WARNING",
+      "function": "log",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "success",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "error",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "warn",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "info",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "show_banner",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "show_interactive_menu",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "check_environment",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "full_health_check",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "directory_check",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "server_api_check",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "data_validation",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "github_pages_check",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "performance_analysis",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "security_check",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "generate_health_report",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "show_help",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "directory_check_silent",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "server_check_silent",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "api_check_silent",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "data_validation_silent",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "github_pages_check_silent",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "performance_check_silent",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "security_check_silent",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "exit_program",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "main",
+      "issue": "missing_error_handling"
+    }
+  ]
+}

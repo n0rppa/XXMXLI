@@ -1,1 +1,67 @@
-{"functions_analyzed":12,"issues_found":[{"function":"show_banner","issue":"missing_error_handling","severity":"WARNING"},{"function":"check_root","issue":"missing_error_handling","severity":"WARNING"},{"function":"detect_system","issue":"missing_error_handling","severity":"WARNING"},{"function":"backup_dns_settings","issue":"missing_error_handling","severity":"WARNING"},{"function":"configure_secure_dns","issue":"missing_error_handling","severity":"WARNING"},{"function":"configure_doh","issue":"missing_error_handling","severity":"WARNING"},{"function":"configure_dot","issue":"missing_error_handling","severity":"WARNING"},{"function":"configure_traditional_dns","issue":"missing_error_handling","severity":"WARNING"},{"function":"configure_dns_filtering","issue":"missing_error_handling","severity":"WARNING"},{"function":"test_dns_configuration","issue":"missing_error_handling","severity":"WARNING"},{"function":"show_dns_status","issue":"missing_error_handling","severity":"WARNING"},{"function":"show_menu","issue":"missing_error_handling","severity":"WARNING"}],"script":"./lataukset/dns_security_setup.sh","timestamp":"2025-11-02T03:01:18+02:00"}
+{
+  "script": "./lataukset/dns_security_setup.sh",
+  "timestamp": "2025-11-09T03:01:31+01:00",
+  "functions_analyzed": 12,
+  "issues_found": [
+    {
+      "severity": "WARNING",
+      "function": "show_banner",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "check_root",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "detect_system",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "backup_dns_settings",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "configure_secure_dns",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "configure_doh",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "configure_dot",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "configure_traditional_dns",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "configure_dns_filtering",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "test_dns_configuration",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "show_dns_status",
+      "issue": "missing_error_handling"
+    },
+    {
+      "severity": "WARNING",
+      "function": "show_menu",
+      "issue": "missing_error_handling"
+    }
+  ]
+}

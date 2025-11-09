@@ -1,1 +1,6 @@
-{"compatibility_issues":[],"script":"./lataukset/network_monitor.sh"}
+{
+  "script": "./lataukset/network_monitor.sh",
+  "compatibility_issues": [
+
+  ]
+}
