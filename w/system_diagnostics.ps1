@@ -226,26 +226,26 @@ function Create-RegistryBackup {
 }
 
 function Disable-DangerousFeatures {
-    Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" "NoDriveTypeAutoRun" 255 "Disabled AutoRun (system)"
-    Set-RegistryValue "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" "NoDriveTypeAutoRun" 255 "Disabled AutoRun (user)"
-    Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\Windows Script Host\Settings" "Enabled" 0 "Disabled Windows Script Host"
-    Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds\Microsoft.PowerShell" "ExecutionPolicy" "RemoteSigned" "Set PS execution policy RemoteSigned"
-    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Installer" "AlwaysInstallElevated" 0 "Disabled AlwaysInstallElevated"
-    Set-RegistryValue "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Installer" "AlwaysInstallElevated" 0 "Disabled AlwaysInstallElevated (user)"
-    Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "limitblankpassworduse" 1 "Limit blank password use"
+    Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" "NoDriveTypeAutoRun" 255 -Type "DWORD" -Description "Disabled AutoRun (system)"
+    Set-RegistryValue "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" "NoDriveTypeAutoRun" 255 -Type "DWORD" -Description "Disabled AutoRun (user)"
+    Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\Windows Script Host\Settings" "Enabled" 0 -Type "DWORD" -Description "Disabled Windows Script Host"
+    Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds\Microsoft.PowerShell" "ExecutionPolicy" "RemoteSigned" -Type "String" -Description "Set PS execution policy RemoteSigned"
+    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Installer" "AlwaysInstallElevated" 0 -Type "DWORD" -Description "Disabled AlwaysInstallElevated"
+    Set-RegistryValue "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Installer" "AlwaysInstallElevated" 0 -Type "DWORD" -Description "Disabled AlwaysInstallElevated (user)"
+    Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "limitblankpassworduse" 1 -Type "DWORD" -Description "Limit blank password use"
 }
 
 function Harden-SecurityPolicies {
-    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" "DisableAntiSpyware" 0 "Enable Defender Anti-Spyware"
-    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" "DisableRealtimeMonitoring" 0 "Enable Real-Time Protection"
-    Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" "RequireSecuritySignature" 1 "Require SMB server signing"
-    Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters" "RequireSecuritySignature" 1 "Require SMB client signing"
-    Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "LmCompatibilityLevel" 5 "NTLMv2 only"
-    Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "EnableLUA" 1 "Enable UAC"
-    Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "ConsentPromptBehaviorAdmin" 2 "UAC prompt for consent"
-    Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "RestrictAnonymous" 1 "Restrict anonymous"
-    Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "RestrictAnonymousSAM" 1 "Restrict anonymous SAM"
-    Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" "MaximumPasswordAge" 42 "Max password age 42 days"
+    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" "DisableAntiSpyware" 0 -Type "DWORD" -Description "Enable Defender Anti-Spyware"
+    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" "DisableRealtimeMonitoring" 0 -Type "DWORD" -Description "Enable Real-Time Protection"
+    Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" "RequireSecuritySignature" 1 -Type "DWORD" -Description "Require SMB server signing"
+    Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters" "RequireSecuritySignature" 1 -Type "DWORD" -Description "Require SMB client signing"
+    Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "LmCompatibilityLevel" 5 -Type "DWORD" -Description "NTLMv2 only"
+    Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "EnableLUA" 1 -Type "DWORD" -Description "Enable UAC"
+    Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "ConsentPromptBehaviorAdmin" 2 -Type "DWORD" -Description "UAC prompt for consent"
+    Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "RestrictAnonymous" 1 -Type "DWORD" -Description "Restrict anonymous"
+    Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "RestrictAnonymousSAM" 1 -Type "DWORD" -Description "Restrict anonymous SAM"
+    Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" "MaximumPasswordAge" 42 -Type "DWORD" -Description "Max password age 42 days"
 }
 
 function Disable-UnnecessaryServices {
@@ -256,16 +256,21 @@ function Disable-UnnecessaryServices {
         @{Path="HKLM:\SYSTEM\CurrentControlSet\Services\upnphost"; Desc="UPnP Device Host"},
         @{Path="HKLM:\SYSTEM\CurrentControlSet\Services\RemoteAccess"; Desc="Routing and Remote Access"}
     )
-    foreach ($s in $svc) { if (Test-Path $s.Path) { Set-RegistryValue $s.Path "Start" 4 "Disabled $($s.Desc)" } }
+    foreach ($s in $svc) { if (Test-Path $s.Path) { Set-RegistryValue $s.Path "Start" 4 -Type "DWORD" -Description "Disabled $($s.Desc)" } }
     Log-Warn "Note: Service changes take effect after reboot"
 }
 
 function Configure-PrivacySettings {
-    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "AllowTelemetry" 0 "Disable telemetry"
-    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting" "Disabled" 1 "Disable Error Reporting"
-    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" "DisableLocation" 1 "Disable location services"
-    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" "SubmitSamplesConsent" 2 "Disable Defender sample submission"
-    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization" "DODownloadMode" 0 "Disable Update P2P delivery"
+    Set-RegistryValue "HKCU:\Software\Microsoft\Windows\CurrentVersion\Privacy" "TailoredExperiencesWithDiagnosticDataEnabled" 0 -Type "DWORD" -Description "Disable tailored experiences"
+    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo" "DisabledByGroupPolicy" 1 -Type "DWORD" -Description "Disable advertising ID"
+    Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" "AllowTelemetry" 0 -Type "DWORD" -Description "Disable telemetry"
+    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "PublishUserActivities" 0 -Type "DWORD" -Description "Disable activity publishing"
+    Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" "DisableWindowsConsumerFeatures" 1 -Type "DWORD" -Description "Disable consumer features"
+    Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" "AllowOnlineTips" 0 -Type "DWORD" -Description "Disable online tips"
+    Set-RegistryValue "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" "SystemPaneSuggestionsEnabled" 0 -Type "DWORD" -Description "Disable Start menu suggestions"
+    Set-RegistryValue "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" "SilentInstalledAppsEnabled" 0 -Type "DWORD" -Description "Disable silent app installs"
+    Set-RegistryValue "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" "PreInstalledAppsEnabled" 0 -Type "DWORD" -Description "Disable pre-installed apps"
+    Set-RegistryValue "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" "ContentDeliveryAllowed" 0 -Type "DWORD" -Description "Disable content delivery"
 }
 
 function Show-SecurityStatus-Registry {
@@ -473,7 +478,7 @@ while ($true) {
     } finally {
         # lightweight session logging
         $entry = @{ Timestamp=$ts; User=$env:USERNAME; Computer=$env:COMPUTERNAME; Action=$choice }
-    try { $entry | ConvertTo-Json -Compress | Add-Content -Path $logFile } catch {}
+        try { $entry | ConvertTo-Json -Compress | Add-Content -Path $logFile } catch {}
     }
 }
 
