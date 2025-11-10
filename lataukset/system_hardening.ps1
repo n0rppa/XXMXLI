@@ -75,7 +75,7 @@ function Set-RegistryValue {
         }
         return $true
     } catch {
-        Write-Log "Registry write failed for $Path\\$Name: $($_.Exception.Message)" "Red"
+        Write-Log "Registry write failed for ${Path}\\${Name}: $($_.Exception.Message)" "Red"
         return $false
     }
 }

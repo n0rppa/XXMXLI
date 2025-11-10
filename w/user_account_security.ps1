@@ -127,7 +127,7 @@ function Manage-UserAccounts {
             if ($account) {
                 $status = if ($account.Enabled) { "ENABLED (RISK!)" } else { "DISABLED (OK)" }
                 $color = if ($account.Enabled) { "Red" } else { "Green" }
-                Write-Host "  $accountName: $status" -ForegroundColor $color
+                Write-Host "  ${accountName}: $status" -ForegroundColor $color
                 
                 if ($account.Enabled) {
                     $disable = Read-Host "Disable $accountName account? (y/N)"
@@ -138,7 +138,7 @@ function Manage-UserAccounts {
                 }
             }
         } catch {
-            Write-Host "  $accountName: Not found or error checking" -ForegroundColor Yellow
+            Write-Host "  ${accountName}: Not found or error checking" -ForegroundColor Yellow
         }
     }
     
@@ -205,8 +205,8 @@ function Configure-UserRights {
                         } else {
                             New-ItemProperty -Path $Path -Name $Name -Value $Value -PropertyType $propertyType -Force -ErrorAction Stop | Out-Null
                         }
-                        if ($Description) { Write-Host "  ✓ $Description" -ForegroundColor Green } else { Write-Host "  ✓ Set $Path\$Name = $Value" -ForegroundColor Green }
-                    } catch { Write-Host "  ✗ Error setting $Path\$Name: $($_.Exception.Message)" -ForegroundColor Red }
+                        if ($Description) { Write-Host "  ✓ $Description" -ForegroundColor Green } else { Write-Host "  ✓ Set ${Path}\${Name} = $Value" -ForegroundColor Green }
+                    } catch { Write-Host "  ✗ Error setting ${Path}\${Name}: $($_.Exception.Message)" -ForegroundColor Red }
                 }
             }
             Set-RegistryValue -Path $regPath -Name "DisableCAD" -Value 0 -Type DWORD -Description "Enabled Ctrl+Alt+Del requirement for logon"

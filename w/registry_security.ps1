@@ -102,11 +102,11 @@ function Set-RegistryValue {
         if ($Description) {
             Write-Host "  ✓ $Description" -ForegroundColor Green
         } else {
-            Write-Host "  ✓ Set $Path\$Name = $Value" -ForegroundColor Green
+            Write-Host "  ✓ Set ${Path}\${Name} = $Value" -ForegroundColor Green
         }
 
     } catch {
-        Write-Host "  ✗ Error setting $Path\$Name: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "  ✗ Error setting ${Path}\${Name}: $($_.Exception.Message)" -ForegroundColor Red
     }
 }
 
