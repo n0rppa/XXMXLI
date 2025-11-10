@@ -96,6 +96,7 @@ $DNSProviders = @{
         IPv6Primary = "2606:4700:4700::1111"
         IPv6Secondary = "2606:4700:4700::1001"
         DoH = "https://cloudflare-dns.com/dns-query"
+        DoHServerAddress = "1.1.1.1"
     }
     "2" = @{
         Name = "Quad9 (Security-focused)"
@@ -104,6 +105,7 @@ $DNSProviders = @{
         IPv6Primary = "2620:fe::fe"
         IPv6Secondary = "2620:fe::9"
         DoH = "https://dns.quad9.net/dns-query"
+        DoHServerAddress = "9.9.9.9"
     }
     "3" = @{
         Name = "OpenDNS (Content filtering)"
@@ -112,6 +114,7 @@ $DNSProviders = @{
         IPv6Primary = "2620:119:35::35"
         IPv6Secondary = "2620:119:53::53"
         DoH = "https://doh.opendns.com/dns-query"
+        DoHServerAddress = "208.67.222.222"
     }
     "4" = @{
         Name = "Google (Fast, reliable)"
@@ -120,6 +123,7 @@ $DNSProviders = @{
         IPv6Primary = "2001:4860:4860::8888"
         IPv6Secondary = "2001:4860:4860::8844"
         DoH = "https://dns.google/dns-query"
+        DoHServerAddress = "8.8.8.8"
     }
     "5" = @{
         Name = "AdGuard (Ad blocking)"
@@ -128,6 +132,7 @@ $DNSProviders = @{
         IPv6Primary = "2a10:50c0::ad1:ff"
         IPv6Secondary = "2a10:50c0::ad2:ff"
         DoH = "https://dns.adguard.com/dns-query"
+        DoHServerAddress = "94.140.14.14"
     }
     "6" = @{
         Name = "CleanBrowsing (Family safe)"
@@ -136,6 +141,7 @@ $DNSProviders = @{
         IPv6Primary = "2a0d:2a00:1::2"
         IPv6Secondary = "2a0d:2a00:2::2"
         DoH = "https://doh.cleanbrowsing.org/doh/family-filter/"
+        DoHServerAddress = "185.228.168.9"
     }
 }
 
@@ -310,7 +316,11 @@ function Enable-DoH {
     param(
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string]$DoHURL
+        [string]$DoHURL,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$DoHServerAddress
     )
 
     try {
@@ -324,7 +334,7 @@ function Enable-DoH {
         }
 
         # Enable DoH
-        Set-DnsClientDohServerAddress -ServerAddress $DoHURL -DohTemplate $DoHURL -AllowFallbackToUdp $true
+        Set-DnsClientDohServerAddress -ServerAddress $DoHServerAddress -DohTemplate $DoHURL -AllowFallbackToUdp $true
         Write-Log "DNS over HTTPS configured: $DoHURL" "Green"
     }
     catch {
@@ -601,7 +611,7 @@ while ($true) {
             Show-ProviderMenu
             $providerId = Read-Host "Select provider for DoH (1-6)"
             if ($DNSProviders.ContainsKey($providerId)) {
-                Enable-DoH $DNSProviders[$providerId].DoH
+                Enable-DoH $DNSProviders[$providerId].DoH $DNSProviders[$providerId].DoHServerAddress
             } else {
                 Write-Log "Invalid provider selection" "Red"
             }

@@ -486,10 +486,15 @@ function Create-RegistryBackup {
 
     try {
         $BackupPath = Join-Path -Path $ScriptDir -ChildPath "registry_backup_$(Get-Date -Format 'yyyyMMdd_HHmmss').reg"
-        & reg export HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies "$BackupPath" | Out-Null
-        if ($LASTEXITCODE -ne 0) { throw "reg export failed with exit code $LASTEXITCODE" }
-        Log-Success "Backup: $BackupPath"
-        return $BackupPath
+        if (Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies") {
+            & reg export HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies "$BackupPath" | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw "reg export failed with exit code $LASTEXITCODE" }
+            Log-Success "Backup: $BackupPath"
+            return $BackupPath
+        } else {
+            Log-Warn "Registry key HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies does not exist, skipping backup"
+            return $null
+        }
     } catch {
         Log-Error ("Backup failed: " + $_.Exception.Message)
         return $null

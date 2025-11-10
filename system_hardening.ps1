@@ -150,7 +150,8 @@ function New-SystemBackup {
             if (Test-Path $path) {
                 $fileName = ($path -replace "HKLM:\\", "" -replace "\\", "_") + ".reg"
                 $regPath = Join-Path -Path $backupPath -ChildPath $fileName
-                reg export $path $regPath /y | Out-Null
+                $regKey = $path -replace ':\\', '\'
+                reg export $regKey $regPath /y | Out-Null
             }
         }
 
