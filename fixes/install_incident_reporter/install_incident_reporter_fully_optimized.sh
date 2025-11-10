@@ -293,9 +293,13 @@ install_dependencies() {
     
     # Install Python dependencies
     if command_exists pip3; then
-        pip3 install psutil requests python-gnupg >/dev/null 2>&1 || true
+        python3 -c "import psutil" >/dev/null 2>&1 || pip3 install psutil >/dev/null 2>&1 || true
+        python3 -c "import requests" >/dev/null 2>&1 || pip3 install requests >/dev/null 2>&1 || true
+        python3 -c "import gnupg" >/dev/null 2>&1 || pip3 install python-gnupg >/dev/null 2>&1 || true
     elif command_exists pip; then
-        pip install psutil requests python-gnupg >/dev/null 2>&1 || true
+        python3 -c "import psutil" >/dev/null 2>&1 || pip install psutil >/dev/null 2>&1 || true
+        python3 -c "import requests" >/dev/null 2>&1 || pip install requests >/dev/null 2>&1 || true
+        python3 -c "import gnupg" >/dev/null 2>&1 || pip install python-gnupg >/dev/null 2>&1 || true
     fi
     
     echo -e "${GREEN}✅ Dependencies installed${NC}"
