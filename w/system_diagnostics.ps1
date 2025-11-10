@@ -474,7 +474,7 @@ function Set-RegistryValue {
 
         if ($Description) { Log-Success $Description } else { Log-Success "$Path\$Name=$Value" }
     } catch {
-        Log-Error ("Error setting $Path\$Name: " + $_.Exception.Message)
+        Log-Error ("Error setting ${Path}\${Name}: " + $_.Exception.Message)
         throw
     }
 }
@@ -793,7 +793,7 @@ function Manage-UserAccounts {
                     $status = 'DISABLED (OK)'
                     $fg = 'Green'
                 }
-                Write-Host "  $name: $status" -ForegroundColor $fg
+                Write-Host "  ${name}: $status" -ForegroundColor $fg
                 if ($acct.Enabled) {
                     $d = Read-Host "Disable $name? (y/N)"
                     if ($d -match '^(y|Y)$') {
