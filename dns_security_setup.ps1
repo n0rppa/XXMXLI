@@ -220,7 +220,7 @@ function Restore-DNSBackup {
                         Set-DnsClientServerAddress -InterfaceIndex $setting.InterfaceIndex -ServerAddresses $setting.IPv4DNS
                     }
                     if ($setting.IPv6DNS) {
-                        Set-DnsClientServerAddress -InterfaceIndex $setting.InterfaceIndex -ServerAddresses $setting.IPv6DNS -AddressFamily IPv6
+                        Set-DnsClientServerAddress -InterfaceIndex $setting.InterfaceIndex -ServerAddresses $setting.IPv6DNS
                     }
                 }
 
@@ -272,7 +272,7 @@ function Set-DNSProvider {
 
             # Set IPv6 DNS if available
             if ($provider.IPv6Primary) {
-                Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses @($provider.IPv6Primary, $provider.IPv6Secondary) -AddressFamily IPv6
+                Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses @($provider.IPv6Primary, $provider.IPv6Secondary)
             }
         }
 

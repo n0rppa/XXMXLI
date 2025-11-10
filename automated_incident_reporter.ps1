@@ -1123,7 +1123,7 @@ function Invoke-QuickScan {
         Write-Host "[5/5] Generating report..." -ForegroundColor Blue
 
         # Submit automatic report
-        Submit-IncidentReport "AUTOMATED_SCAN" 5 "Routine security scan detected potential issues" "127.0.0.1" "auto"
+        Submit-IncidentReport "INTRUSION" 5 "Routine security scan detected potential issues" "127.0.0.1" "auto"
 
         Write-Host ""
         Write-Host "✓ Scan complete! Report submitted to authorities." -ForegroundColor Green
