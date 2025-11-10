@@ -1,4 +1,4 @@
-# IPv6 & Geolocation Disable Script for Windows
+﻿# IPv6 & Geolocation Disable Script for Windows
 # PowerShell Script for Privacy and Network Configuration
 # Author: XXMXLI Security Tools
 # WARNING: Use only for legitimate purposes and with proper authorization

@@ -1,4 +1,4 @@
-# DNS Security Setup Tool - Windows PowerShell Version
+﻿# DNS Security Setup Tool - Windows PowerShell Version
 # Windows DNS Security and Privacy Configuration
 # Author: XXMXLI Security Tools
 # WARNING: Use only for legitimate purposes and with proper authorization

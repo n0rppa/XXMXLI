@@ -1,4 +1,4 @@
-# System Hardening Tool - Windows PowerShell Version
+﻿# System Hardening Tool - Windows PowerShell Version
 # Windows Security Hardening and Configuration
 # Author: XXMXLI Security Tools
 # WARNING: Use only for legitimate purposes and with proper authorization

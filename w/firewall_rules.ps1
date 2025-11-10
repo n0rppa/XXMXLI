@@ -1,4 +1,4 @@
-# Windows Firewall Rules Configuration
+﻿# Windows Firewall Rules Configuration
 # XXMXLI Advanced Firewall Security Configuration
 
 # Ensure we're running from the script directory

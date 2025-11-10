@@ -1,4 +1,4 @@
-# ================================================================
+﻿# ================================================================
 # WARNING: This system is actively monitored and protected.
 #
 # Any unauthorized access attempts, network scanning, intrusion, or 
@@ -28,11 +28,13 @@
 # Version: 2.0
 # License: MIT
 
+#Requires -Modules NetSecurity, Defender
+#Requires -Version 5.1
+
 param(
     [string]$Action = "interactive",
     [string]$IncidentType = "",
     [string]$Severity = "medium",
-    [string]$Description = "",
     [switch]$Test,
     [switch]$Monitor,
     [switch]$Status,
@@ -52,29 +54,45 @@ if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     if ($Description) { $arguments += " -Description `"$Description`"" }
     if ($SourceIP) { $arguments += " -SourceIP $SourceIP" }
     if ($TargetIP) { $arguments += " -TargetIP $TargetIP" }
-    
+
     Start-Process PowerShell -ArgumentList $arguments -Verb RunAs
     exit
 }
 
+# Configuration
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$LogDir = Join-Path -Path $ScriptDir -ChildPath "SecurityLogs"
+$ReportDir = Join-Path -Path $LogDir -ChildPath "Reports"
+$ConfigFile = Join-Path -Path $LogDir -ChildPath "incident_reporter.json"
+$EvidenceDir = Join-Path -Path $LogDir -ChildPath "Evidence"
+$TempDir = Join-Path -Path $env:TEMP -ChildPath "IncidentReports"
+
 # Auto-install required PowerShell modules
 function Install-RequiredModules {
-    Write-Log "Checking and installing required modules..." -Color Blue
-    
-    $requiredModules = @()
-    
-    foreach ($module in $requiredModules) {
-        if (!(Get-Module -ListAvailable -Name $module)) {
-            try {
-                Write-Log "Installing module: $module" -Color Yellow
-                Install-Module -Name $module -Force -AllowClobber -Scope AllUsers -ErrorAction Stop
-            } catch {
-                Write-Log "Failed to install module $module`: $($_.Exception.Message)" -Color Yellow
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Log "Checking and installing required modules..." -Color Blue
+
+        $requiredModules = @()
+
+        foreach ($module in $requiredModules) {
+            if (!(Get-Module -ListAvailable -Name $module)) {
+                try {
+                    Write-Log "Installing module: $module" -Color Yellow
+                    Install-Module -Name $module -Force -AllowClobber -Scope AllUsers -ErrorAction Stop
+                } catch {
+                    Write-Log "Failed to install module $module`: $($_.Exception.Message)" -Color Yellow
+                }
             }
         }
+
+        Write-Log "Module check completed" -Color Green
+    } catch {
+        Log-Error ("Error installing required modules: " + $_.Exception.Message)
+        throw
     }
-    
-    Write-Log "Module check completed" -Color Green
 }
 
 # Configuration
@@ -97,54 +115,76 @@ $Colors = @{
 
 # Improved logging function with auto-creation
 function Write-Log {
+    [CmdletBinding()]
     param([string]$Message, [string]$Color = "White")
-    $Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    $LogMessage = "[$Timestamp] $Message"
-    Write-Host $LogMessage -ForegroundColor $Color
-    
-    # Ensure directory exists
-    if (!(Test-Path $LogDir)) {
-        New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
-    }
-    
-    # Write to log file with error handling
+
     try {
-        Add-Content -Path "$LogDir\incident_reporter.log" -Value $LogMessage -ErrorAction Stop
+        $Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+        $LogMessage = "[$Timestamp] $Message"
+        Write-Host $LogMessage -ForegroundColor $Color
+
+        # Ensure directory exists
+        if (!(Test-Path $LogDir)) {
+            New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
+        }
+
+        # Write to log file with error handling
+        try {
+            Add-Content -Path (Join-Path -Path $LogDir -ChildPath "incident_reporter.log") -Value $LogMessage -ErrorAction Stop
+        } catch {
+            # If log write fails, continue silently
+        }
     } catch {
-        # If log write fails, continue silently
+        Log-Error ("Error writing to log: " + $_.Exception.Message)
+        throw
     }
 }
 
 # Error handling
 function Write-ErrorExit {
+    [CmdletBinding()]
     param([string]$Message)
-    Write-Log "ERROR: $Message" -Color Red
-    exit 1
+
+    try {
+        Write-Log "ERROR: $Message" -Color Red
+        exit 1
+    } catch {
+        Log-Error ("Error in Write-ErrorExit: " + $_.Exception.Message)
+        throw
+    }
 }
 
 # Create necessary directories with auto-creation and permissions
 function Initialize-Directories {
-    Write-Log "Setting up directories automatically..." -Color Blue
-    @($LogDir, $ReportDir, $EvidenceDir, $TempDir) | ForEach-Object {
-        if (!(Test-Path $_)) {
-            New-Item -ItemType Directory -Path $_ -Force | Out-Null
-            Write-Log "Created directory: $_" -Color Green
-        }
-    }
-    
-    # Set permissions (restrict to administrators) with error handling
+    [CmdletBinding()]
+    param()
+
     try {
-        $acl = Get-Acl $LogDir
-        $acl.SetAccessRuleProtection($true, $false)
-        $adminRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Administrators", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
-        $acl.SetAccessRule($adminRule)
-        Set-Acl -Path $LogDir -AclObject $acl
-        Write-Log "Security permissions applied" -Color Green
+        Write-Log "Setting up directories automatically..." -Color Blue
+        @($LogDir, $ReportDir, $EvidenceDir, $TempDir) | ForEach-Object {
+            if (!(Test-Path $_)) {
+                New-Item -ItemType Directory -Path $_ -Force | Out-Null
+                Write-Log "Created directory: $_" -Color Green
+            }
+        }
+
+        # Set permissions (restrict to administrators) with error handling
+        try {
+            $acl = Get-Acl $LogDir
+            $acl.SetAccessRuleProtection($true, $false)
+            $adminRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Administrators", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
+            $acl.SetAccessRule($adminRule)
+            Set-Acl -Path $LogDir -AclObject $acl
+            Write-Log "Security permissions applied" -Color Green
+        } catch {
+            Write-Log "Warning: Could not set security permissions" -Color Yellow
+        }
+
+        Write-Log "All directories initialized successfully" -Color Green
     } catch {
-        Write-Log "Warning: Could not set security permissions" -Color Yellow
+        Log-Error ("Error initializing directories: " + $_.Exception.Message)
+        throw
     }
-    
-    Write-Log "All directories initialized successfully" -Color Green
 }
 
 # Authority contact information
@@ -177,86 +217,122 @@ $IncidentTypes = @{
 
 # Create configuration file
 function New-Configuration {
-    Write-Log "Creating configuration file..." -Color Blue
-    $Config = @{
-        OrganizationInfo = @{
-            Name = "Your Organization"
-            Contact = "security@yourorg.com"
-            Phone = "+1-555-0123"
-            Address = "123 Security St, Cyber City, CC 12345"
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Log "Creating configuration file..." -Color Blue
+        $Config = @{
+            OrganizationInfo = @{
+                Name = "Your Organization"
+                Contact = "security@yourorg.com"
+                Phone = "+1-555-0123"
+                Address = "123 Security St, Cyber City, CC 12345"
+            }
+            TechnicalContact = @{
+                Email = "admin@yourorg.com"
+                Phone = "+1-555-0124"
+            }
+            ReportingThresholds = @{
+                MinSeverity = 3
+                AutoReportSeverity = 7
+                BatchReportInterval = 3600
+            }
+            NotificationSettings = @{
+                EmailEnabled = $true
+                SMSEnabled = $false
+                WebhookEnabled = $true
+            }
+            EvidenceCollection = @{
+                CollectEventLogs = $true
+                CollectNetworkLogs = $true
+                CollectMemoryDump = $false
+                EvidenceRetentionDays = 90
+            }
+            EncryptionSettings = @{
+                EncryptReports = $true
+                SecureDelete = $true
+                CertificateThumbprint = ""
+            }
         }
-        TechnicalContact = @{
-            Email = "admin@yourorg.com"
-            Phone = "+1-555-0124"
-        }
-        ReportingThresholds = @{
-            MinSeverity = 3
-            AutoReportSeverity = 7
-            BatchReportInterval = 3600
-        }
-        NotificationSettings = @{
-            EmailEnabled = $true
-            SMSEnabled = $false
-            WebhookEnabled = $true
-        }
-        EvidenceCollection = @{
-            CollectEventLogs = $true
-            CollectNetworkLogs = $true
-            CollectMemoryDump = $false
-            EvidenceRetentionDays = 90
-        }
-        EncryptionSettings = @{
-            EncryptReports = $true
-            SecureDelete = $true
-            CertificateThumbprint = ""
-        }
+
+        $Config | ConvertTo-Json -Depth 10 -Compress | Set-Content -Path $ConfigFile -ErrorAction Stop
+    } catch {
+        Log-Error ("Error creating configuration: " + $_.Exception.Message)
+        throw
     }
-    
-    $Config | ConvertTo-Json -Depth 10 -Compress | Set-Content -Path $ConfigFile
 }
 
 # Load configuration
 function Get-Configuration {
-    if (Test-Path $ConfigFile) {
-        return Get-Content -Path $ConfigFile | ConvertFrom-Json
-    } else {
-        New-Configuration
-        return Get-Content -Path $ConfigFile | ConvertFrom-Json
+    [CmdletBinding()]
+    param()
+
+    try {
+        if (Test-Path $ConfigFile) {
+            return Get-Content -Path $ConfigFile | ConvertFrom-Json
+        } else {
+            New-Configuration
+            return Get-Content -Path $ConfigFile | ConvertFrom-Json
+        }
+    } catch {
+        Log-Error ("Error loading configuration: " + $_.Exception.Message)
+        throw
     }
 }
 
 # Generate incident ID
 function New-IncidentID {
-    $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
-    $random = -join ((1..4) | ForEach-Object { '{0:X}' -f (Get-Random -Maximum 16) })
-    return "INC-$timestamp-$random"
+    [CmdletBinding()]
+    param()
+
+    try {
+        $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+        $random = -join ((1..4) | ForEach-Object { '{0:X}' -f (Get-Random -Maximum 16) })
+        return "INC-$timestamp-$random"
+    } catch {
+        Log-Error ("Error generating incident ID: " + $_.Exception.Message)
+        throw
+    }
 }
 
 # Collect system information
 function Get-SystemInfo {
-    $systemInfo = @"
+    [CmdletBinding()]
+    param()
+
+    try {
+        $systemInfo = @"
 
 === SYSTEM INFORMATION ===
 Computer Name: $env:COMPUTERNAME
-Operating System: $(Get-WmiObject -Class Win32_OperatingSystem | Select-Object -ExpandProperty Caption)
-OS Version: $(Get-WmiObject -Class Win32_OperatingSystem | Select-Object -ExpandProperty Version)
-Architecture: $(Get-WmiObject -Class Win32_OperatingSystem | Select-Object -ExpandProperty OSArchitecture)
-Last Boot Time: $(Get-WmiObject -Class Win32_OperatingSystem | Select-Object -ExpandProperty LastBootUpTime)
+Operating System: $(Get-CimInstance -ClassName Win32_OperatingSystem | Select-Object -ExpandProperty Caption)
+OS Version: $(Get-CimInstance -ClassName Win32_OperatingSystem | Select-Object -ExpandProperty Version)
+Architecture: $(Get-CimInstance -ClassName Win32_OperatingSystem | Select-Object -ExpandProperty OSArchitecture)
+Last Boot Time: $(Get-CimInstance -ClassName Win32_OperatingSystem | Select-Object -ExpandProperty LastBootUpTime)
 Current Time: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss UTC")
 Time Zone: $((Get-TimeZone).DisplayName)
 System Uptime: $((Get-Date) - (Get-CimInstance -ClassName Win32_OperatingSystem).LastBootUpTime)
-Total RAM: $([math]::Round((Get-WmiObject -Class Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 2)) GB
-Available RAM: $([math]::Round((Get-WmiObject -Class Win32_OperatingSystem).FreePhysicalMemory / 1MB, 2)) MB
-CPU Usage: $(Get-WmiObject -Class Win32_Processor | Measure-Object -Property LoadPercentage -Average | Select-Object -ExpandProperty Average)%
+Total RAM: $([math]::Round((Get-CimInstance -ClassName Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 2)) GB
+Available RAM: $([math]::Round((Get-CimInstance -ClassName Win32_OperatingSystem).FreePhysicalMemory / 1MB, 2)) MB
+CPU Usage: $(Get-CimInstance -ClassName Win32_Processor | Measure-Object -Property LoadPercentage -Average | Select-Object -ExpandProperty Average)%
 Network Adapters: $(Get-NetAdapter | Where-Object {$_.Status -eq "Up"} | Select-Object -ExpandProperty Name)
 
 "@
-    return $systemInfo
+        return $systemInfo
+    } catch {
+        Log-Error ("Error collecting system info: " + $_.Exception.Message)
+        throw
+    }
 }
 
 # Collect network information
 function Get-NetworkInfo {
-    $networkInfo = @"
+    [CmdletBinding()]
+    param()
+
+    try {
+        $networkInfo = @"
 
 === NETWORK INFORMATION ===
 Active TCP Connections:
@@ -272,16 +348,22 @@ Recent Network Events:
 $(Get-WinEvent -LogName "Microsoft-Windows-Security-Auditing" -MaxEvents 10 | Where-Object {$_.Id -in @(4624,4625,4648)} | Select-Object TimeCreated, Id, LevelDisplayName, Message | Format-Table -Wrap | Out-String)
 
 "@
-    return $networkInfo
+        return $networkInfo
+    } catch {
+        Log-Error ("Error collecting network info: " + $_.Exception.Message)
+        throw
+    }
 }
 
 # Collect security logs
 function Get-SecurityLogs {
+    [CmdletBinding()]
     param([int]$Hours = 24)
-    
-    $startTime = (Get-Date).AddHours(-$Hours)
-    
-    $securityLogs = @"
+
+    try {
+        $startTime = (Get-Date).AddHours(-$Hours)
+
+        $securityLogs = @"
 
 === SECURITY LOGS (Last $Hours hours) ===
 
@@ -298,44 +380,50 @@ Failed Logon Attempts:
 $(Get-WinEvent -LogName "Security" -StartTime $startTime | Where-Object {$_.Id -eq 4625} | Select-Object TimeCreated, Message | Format-Table -Wrap | Out-String)
 
 "@
-    return $securityLogs
+        return $securityLogs
+    } catch {
+        Log-Error ("Error collecting security logs: " + $_.Exception.Message)
+        throw
+    }
 }
 
 # Collect evidence files
 function Collect-Evidence {
+    [CmdletBinding()]
     param([string]$IncidentID)
-    
-    $evidencePath = Join-Path $EvidenceDir $IncidentID
-    New-Item -ItemType Directory -Path $evidencePath -Force | Out-Null
-    
-    $config = Get-Configuration
-    
-    # Collect event logs if enabled
-    if ($config.EvidenceCollection.CollectEventLogs) {
-        Write-Log "Collecting event log evidence..." -Color Blue
-        $logs = @("Security", "System", "Application")
-        foreach ($log in $logs) {
-            $logPath = Join-Path $evidencePath "$log.evtx"
-            wevtutil epl $log $logPath
+
+    try {
+        $evidencePath = Join-Path -Path $EvidenceDir -ChildPath $IncidentID
+        New-Item -ItemType Directory -Path $evidencePath -Force | Out-Null
+
+        $config = Get-Configuration
+
+        # Collect event logs if enabled
+        if ($config.EvidenceCollection.CollectEventLogs) {
+            Write-Log "Collecting event log evidence..." -Color Blue
+            $logs = @("Security", "System", "Application")
+            foreach ($log in $logs) {
+                $logPath = Join-Path -Path $evidencePath -ChildPath "$log.evtx"
+                wevtutil epl $log $logPath
+            }
         }
-    }
-    
-    # Collect network information
-    if ($config.EvidenceCollection.CollectNetworkLogs) {
-        Write-Log "Collecting network evidence..." -Color Blue
-        Get-NetTCPConnection | Export-Csv -Path (Join-Path $evidencePath "network_connections.csv") -NoTypeInformation
-        Get-NetRoute | Export-Csv -Path (Join-Path $evidencePath "routing_table.csv") -NoTypeInformation
-        Get-DnsClientCache | Export-Csv -Path (Join-Path $evidencePath "dns_cache.csv") -NoTypeInformation
-    }
-    
-    # Collect process information
-    Get-Process | Select-Object Name, Id, CPU, WorkingSet, StartTime, Path | Export-Csv -Path (Join-Path $evidencePath "processes.csv") -NoTypeInformation
-    
-    # Collect services information
-    Get-Service | Export-Csv -Path (Join-Path $evidencePath "services.csv") -NoTypeInformation
-    
-    # Create evidence manifest
-    $manifest = @"
+
+        # Collect network information
+        if ($config.EvidenceCollection.CollectNetworkLogs) {
+            Write-Log "Collecting network evidence..." -Color Blue
+            Get-NetTCPConnection | Export-Csv -Path (Join-Path -Path $evidencePath -ChildPath "network_connections.csv") -NoTypeInformation
+            Get-NetRoute | Export-Csv -Path (Join-Path -Path $evidencePath -ChildPath "routing_table.csv") -NoTypeInformation
+            Get-DnsClientCache | Export-Csv -Path (Join-Path -Path $evidencePath -ChildPath "dns_cache.csv") -NoTypeInformation
+        }
+
+        # Collect process information
+        Get-Process | Select-Object Name, Id, CPU, WorkingSet, StartTime, Path | Export-Csv -Path (Join-Path -Path $evidencePath -ChildPath "processes.csv") -NoTypeInformation
+
+        # Collect services information
+        Get-Service | Export-Csv -Path (Join-Path -Path $evidencePath -ChildPath "services.csv") -NoTypeInformation
+
+        # Create evidence manifest
+        $manifest = @"
 Evidence Collection Manifest
 Incident ID: $IncidentID
 Collection Time: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss UTC")
@@ -347,47 +435,58 @@ $(Get-ChildItem $evidencePath | Format-Table -AutoSize | Out-String)
 File Hashes:
 $(Get-ChildItem $evidencePath -File | ForEach-Object { "$($_.Name): $(Get-FileHash $_.FullName -Algorithm SHA256 | Select-Object -ExpandProperty Hash)" })
 "@
-    
-    Set-Content -Path (Join-Path $evidencePath "manifest.txt") -Value $manifest
-    
-    # Compress evidence
-    $zipPath = "$evidencePath.zip"
-    Compress-Archive -Path "$evidencePath\*" -DestinationPath $zipPath
-    Remove-Item -Path $evidencePath -Recurse -Force
-    
-    return $zipPath
+
+        Set-Content -Path (Join-Path -Path $evidencePath -ChildPath "manifest.txt") -Value $manifest
+
+        # Compress evidence
+        $zipPath = "$evidencePath.zip"
+        Compress-Archive -Path "$evidencePath\*" -DestinationPath $zipPath
+        Remove-Item -Path $evidencePath -Recurse -Force
+
+        return $zipPath
+    } catch {
+        Log-Error ("Error collecting evidence: " + $_.Exception.Message)
+        throw
+    }
 }
 
 # Encrypt sensitive data
 function Protect-File {
+    [CmdletBinding()]
     param([string]$FilePath)
-    
-    $config = Get-Configuration
-    
-    if ($config.EncryptionSettings.EncryptReports -and $config.EncryptionSettings.CertificateThumbprint) {
-        Write-Log "Encrypting report..." -Color Blue
-        
-        $cert = Get-ChildItem -Path Cert:\LocalMachine\My | Where-Object { $_.Thumbprint -eq $config.EncryptionSettings.CertificateThumbprint }
-        
-        if ($cert) {
-            $encryptedPath = "$FilePath.encrypted"
-            $content = Get-Content -Path $FilePath -Raw
-            $encryptedBytes = $cert.PublicKey.Key.Encrypt([System.Text.Encoding]::UTF8.GetBytes($content), $true)
-            [System.IO.File]::WriteAllBytes($encryptedPath, $encryptedBytes)
-            
-            if ($config.EncryptionSettings.SecureDelete) {
-                sdelete -p 3 -s -z $FilePath 2>$null
+
+    try {
+        $config = Get-Configuration
+
+        if ($config.EncryptionSettings.EncryptReports -and $config.EncryptionSettings.CertificateThumbprint) {
+            Write-Log "Encrypting report..." -Color Blue
+
+            $cert = Get-ChildItem -Path Cert:\LocalMachine\My | Where-Object { $_.Thumbprint -eq $config.EncryptionSettings.CertificateThumbprint }
+
+            if ($cert) {
+                $encryptedPath = "$FilePath.encrypted"
+                $content = Get-Content -Path $FilePath -Raw
+                $encryptedBytes = $cert.PublicKey.Key.Encrypt([System.Text.Encoding]::UTF8.GetBytes($content), $true)
+                [System.IO.File]::WriteAllBytes($encryptedPath, $encryptedBytes)
+
+                if ($config.EncryptionSettings.SecureDelete) {
+                    sdelete -p 3 -s -z $FilePath 2>$null
+                }
+
+                return $encryptedPath
             }
-            
-            return $encryptedPath
         }
+
+        return $FilePath
+    } catch {
+        Log-Error ("Error protecting file: " + $_.Exception.Message)
+        throw
     }
-    
-    return $FilePath
 }
 
 # Generate incident report
 function New-IncidentReport {
+    [CmdletBinding()]
     param(
         [string]$IncidentType,
         [int]$Severity,
@@ -395,19 +494,20 @@ function New-IncidentReport {
         [string]$SourceIP = "unknown",
         [string]$TargetIP = "auto"
     )
-    
-    $config = Get-Configuration
-    $incidentID = New-IncidentID
-    $reportFile = Join-Path $ReportDir "$incidentID.txt"
-    
-    if ($TargetIP -eq "auto") {
-        $TargetIP = (Get-NetIPConfiguration | Where-Object { $_.NetAdapter.Status -eq "Up" } | Select-Object -First 1).IPv4Address.IPAddress
-    }
-    
-    Write-Log "Generating incident report: $incidentID" -Color Yellow
-    
-    # Create main report
-    $report = @"
+
+    try {
+        $config = Get-Configuration
+        $incidentID = New-IncidentID
+        $reportFile = Join-Path -Path $ReportDir -ChildPath "$incidentID.txt"
+
+        if ($TargetIP -eq "auto") {
+            $TargetIP = (Get-NetIPConfiguration | Where-Object { $_.NetAdapter.Status -eq "Up" } | Select-Object -First 1).IPv4Address.IPAddress
+        }
+
+        Write-Log "Generating incident report: $incidentID" -Color Yellow
+
+        # Create main report
+        $report = @"
 =================================================================
 SECURITY INCIDENT REPORT
 =================================================================
@@ -467,52 +567,64 @@ Evidence retention: $($config.EvidenceCollection.EvidenceRetentionDays) days
 Chain of custody maintained.
 
 "@
-    
-    Set-Content -Path $reportFile -Value $report
-    
-    # Collect evidence
-    $evidenceFile = Collect-Evidence $incidentID
-    Add-Content -Path $reportFile -Value "Evidence Package: $evidenceFile"
-    
-    # Encrypt if configured
-    $finalReport = Protect-File $reportFile
-    
-    return @{
-        IncidentID = $incidentID
-        ReportFile = $finalReport
-        EvidenceFile = $evidenceFile
+
+        Set-Content -Path $reportFile -Value $report -ErrorAction Stop
+
+        # Collect evidence
+        $evidenceFile = Collect-Evidence $incidentID
+        Add-Content -Path $reportFile -Value "Evidence Package: $evidenceFile" -ErrorAction Stop
+
+        # Encrypt if configured
+        $finalReport = Protect-File $reportFile
+
+        return @{
+            IncidentID = $incidentID
+            ReportFile = $finalReport
+            EvidenceFile = $evidenceFile
+        }
+    } catch {
+        Log-Error ("Error generating incident report: " + $_.Exception.Message)
+        throw
     }
 }
 
 # Send email report
 function Send-EmailReport {
+    [CmdletBinding()]
     param(
         [string]$Recipient,
         [string]$Subject,
         [string]$ReportFile,
         [string]$EvidenceFile
     )
-    
-    $config = Get-Configuration
-    
-    if ($config.NotificationSettings.EmailEnabled) {
-        Write-Log "Preparing email report to $Recipient..." -Color Blue
-        
-        # Note: This requires SMTP configuration
-        # In a production environment, configure Send-MailMessage with proper SMTP settings
-        Write-Log "Email functionality requires SMTP configuration" -Color Yellow
-        Write-Log "Report file: $ReportFile" -Color Green
-        Write-Log "Evidence file: $EvidenceFile" -Color Green
+
+    try {
+        $config = Get-Configuration
+
+        if ($config.NotificationSettings.EmailEnabled) {
+            Write-Log "Preparing email report to $Recipient..." -Color Blue
+
+            # Note: This requires SMTP configuration
+            # In a production environment, configure Send-MailMessage with proper SMTP settings
+            Write-Log "Email functionality requires SMTP configuration" -Color Yellow
+            Write-Log "Report file: $ReportFile" -Color Green
+            Write-Log "Evidence file: $EvidenceFile" -Color Green
+        }
+    } catch {
+        Log-Error ("Error sending email report: " + $_.Exception.Message)
+        throw
     }
 }
 
 # Submit to FBI IC3
 function Submit-ToIC3 {
+    [CmdletBinding()]
     param([string]$IncidentID, [string]$ReportFile)
-    
-    Write-Log "Preparing submission to FBI IC3..." -Color Blue
-    
-    $ic3Report = @"
+
+    try {
+        Write-Log "Preparing submission to FBI IC3..." -Color Blue
+
+        $ic3Report = @"
 FBI Internet Crime Complaint Center (IC3) Report
 
 Incident ID: $IncidentID
@@ -528,22 +640,28 @@ $(Get-Content $ReportFile | Select-Object -First 50)
 
 Full report and evidence available upon request.
 "@
-    
-    $ic3ReportPath = Join-Path $TempDir "ic3_report.txt"
-    Set-Content -Path $ic3ReportPath -Value $ic3Report
-    
-    Write-Log "IC3 report prepared: $ic3ReportPath" -Color Green
-    Write-Log "Manual submission required at: https://www.ic3.gov/Home/FileComplaint" -Color Yellow
+
+        $ic3ReportPath = Join-Path -Path $TempDir -ChildPath "ic3_report.txt"
+        Set-Content -Path $ic3ReportPath -Value $ic3Report -ErrorAction Stop
+
+        Write-Log "IC3 report prepared: $ic3ReportPath" -Color Green
+        Write-Log "Manual submission required at: https://www.ic3.gov/Home/FileComplaint" -Color Yellow
+    } catch {
+        Log-Error ("Error submitting to IC3: " + $_.Exception.Message)
+        throw
+    }
 }
 
 # Submit to CISA
 function Submit-ToCISA {
+    [CmdletBinding()]
     param([string]$IncidentID, [string]$ReportFile)
-    
-    Write-Log "Preparing submission to CISA..." -Color Blue
-    
-    $config = Get-Configuration
-    $cisaReport = @"
+
+    try {
+        Write-Log "Preparing submission to CISA..." -Color Blue
+
+        $config = Get-Configuration
+        $cisaReport = @"
 CISA Cybersecurity Incident Report
 
 Incident ID: $IncidentID
@@ -560,20 +678,25 @@ $(Get-Content $ReportFile | Select-Object -First 30)
 
 Full technical details and evidence package available.
 "@
-    
-    $cisaReportPath = Join-Path $TempDir "cisa_report.txt"
-    Set-Content -Path $cisaReportPath -Value $cisaReport
-    
-    # Send email if configured
-    if ($config.NotificationSettings.EmailEnabled) {
-        Send-EmailReport "us-cert@cisa.dhs.gov" "Cybersecurity Incident Report - $IncidentID" $cisaReportPath ""
+
+        $cisaReportPath = Join-Path -Path $TempDir -ChildPath "cisa_report.txt"
+        Set-Content -Path $cisaReportPath -Value $cisaReport -ErrorAction Stop
+
+        # Send email if configured
+        if ($config.NotificationSettings.EmailEnabled) {
+            Send-EmailReport "us-cert@cisa.dhs.gov" "Cybersecurity Incident Report - $IncidentID" $cisaReportPath ""
+        }
+
+        Write-Log "CISA report prepared and submitted" -Color Green
+    } catch {
+        Log-Error ("Error submitting to CISA: " + $_.Exception.Message)
+        throw
     }
-    
-    Write-Log "CISA report prepared and submitted" -Color Green
 }
 
 # Main incident reporting function
 function Submit-IncidentReport {
+    [CmdletBinding()]
     param(
         [string]$IncidentType,
         [int]$Severity,
@@ -581,125 +704,158 @@ function Submit-IncidentReport {
         [string]$SourceIP = "unknown",
         [string]$TargetIP = "auto"
     )
-    
-    # Validate input
-    if (-not $IncidentTypes.ContainsKey($IncidentType)) {
-        Write-ErrorExit "Invalid incident type: $IncidentType"
-    }
-    
-    if ($Severity -lt 1 -or $Severity -gt 10) {
-        Write-ErrorExit "Severity must be between 1-10"
-    }
-    
-    $config = Get-Configuration
-    
-    # Check reporting threshold
-    if ($Severity -lt $config.ReportingThresholds.MinSeverity) {
-        Write-Log "Incident severity ($Severity) below reporting threshold ($($config.ReportingThresholds.MinSeverity))" -Color Yellow
-        return
-    }
-    
-    Write-Log "SECURITY INCIDENT DETECTED" -Color Red
-    Write-Log "Type: $($IncidentTypes[$IncidentType])" -Color Yellow
-    Write-Log "Severity: $Severity/10" -Color Yellow
-    
-    # Generate comprehensive report
-    $result = New-IncidentReport $IncidentType $Severity $Description $SourceIP $TargetIP
-    
-    Write-Log "Report generated: $($result.IncidentID)" -Color Green
-    
-    # Determine which authorities to notify based on incident type and severity
-    switch ($IncidentType) {
-        { $_ -in @("CHILD_EXPLOITATION", "TERRORISM") } {
-            Submit-ToIC3 $result.IncidentID $result.ReportFile
-            Submit-ToCISA $result.IncidentID $result.ReportFile
-            Write-Log "HIGH PRIORITY: Manual law enforcement notification required" -Color Red
+
+    try {
+        # Validate input
+        if (-not $IncidentTypes.ContainsKey($IncidentType)) {
+            Write-ErrorExit "Invalid incident type: $IncidentType"
         }
-        { $_ -in @("RANSOMWARE", "APT", "DATA_BREACH") } {
-            if ($Severity -ge 7) {
+
+        if ($Severity -lt 1 -or $Severity -gt 10) {
+            Write-ErrorExit "Severity must be between 1-10"
+        }
+
+        $config = Get-Configuration
+
+        # Check reporting threshold
+        if ($Severity -lt $config.ReportingThresholds.MinSeverity) {
+            Write-Log "Incident severity ($Severity) below reporting threshold ($($config.ReportingThresholds.MinSeverity))" -Color Yellow
+            return
+        }
+
+        Write-Log "SECURITY INCIDENT DETECTED" -Color Red
+        Write-Log "Type: $($IncidentTypes[$IncidentType])" -Color Yellow
+        Write-Log "Severity: $Severity/10" -Color Yellow
+
+        # Generate comprehensive report
+        $result = New-IncidentReport $IncidentType $Severity $Description $SourceIP $TargetIP
+
+        Write-Log "Report generated: $($result.IncidentID)" -Color Green
+
+        # Determine which authorities to notify based on incident type and severity
+        switch ($IncidentType) {
+            { $_ -in @("CHILD_EXPLOITATION", "TERRORISM") } {
                 Submit-ToIC3 $result.IncidentID $result.ReportFile
                 Submit-ToCISA $result.IncidentID $result.ReportFile
+                Write-Log "HIGH PRIORITY: Manual law enforcement notification required" -Color Red
+            }
+            { $_ -in @("RANSOMWARE", "APT", "DATA_BREACH") } {
+                if ($Severity -ge 7) {
+                    Submit-ToIC3 $result.IncidentID $result.ReportFile
+                    Submit-ToCISA $result.IncidentID $result.ReportFile
+                }
+            }
+            { $_ -in @("FRAUD", "PHISHING") } {
+                if ($Severity -ge 6) {
+                    Submit-ToIC3 $result.IncidentID $result.ReportFile
+                }
+            }
+            default {
+                if ($Severity -ge $config.ReportingThresholds.AutoReportSeverity) {
+                    Submit-ToCISA $result.IncidentID $result.ReportFile
+                }
             }
         }
-        { $_ -in @("FRAUD", "PHISHING") } {
-            if ($Severity -ge 6) {
-                Submit-ToIC3 $result.IncidentID $result.ReportFile
-            }
+
+        # Local notifications
+        if ($config.NotificationSettings.EmailEnabled) {
+            Send-EmailReport $config.OrganizationInfo.Contact "Security Incident Alert - $($result.IncidentID)" $result.ReportFile $result.EvidenceFile
         }
-        default {
-            if ($Severity -ge $config.ReportingThresholds.AutoReportSeverity) {
-                Submit-ToCISA $result.IncidentID $result.ReportFile
-            }
-        }
+
+        Write-Log "Incident reporting completed: $($result.IncidentID)" -Color Green
+        return $result.IncidentID
+    } catch {
+        Log-Error ("Error submitting incident report: " + $_.Exception.Message)
+        throw
     }
-    
-    # Local notifications
-    if ($config.NotificationSettings.EmailEnabled) {
-        Send-EmailReport $config.OrganizationInfo.Contact "Security Incident Alert - $($result.IncidentID)" $result.ReportFile $result.EvidenceFile
-    }
-    
-    Write-Log "Incident reporting completed: $($result.IncidentID)" -Color Green
-    return $result.IncidentID
 }
 
 # Batch processing function
 function Start-BatchProcessing {
-    Write-Log "Starting batch incident processing..." -Color Blue
-    
-    $config = Get-Configuration
-    $checkTime = (Get-Date).AddSeconds(-$config.ReportingThresholds.BatchReportInterval)
-    
-    # Check for failed login attempts
-    $failedLogins = @(Get-WinEvent -LogName "Security" -StartTime $checkTime | Where-Object { $_.Id -eq 4625 }).Count
-    if ($failedLogins -gt 10) {
-        Submit-IncidentReport "INTRUSION" 5 "Multiple failed login attempts detected: $failedLogins attempts"
-    }
-    
-    # Check for suspicious network activity
-    $networkEvents = @(Get-WinEvent -LogName "Security" -StartTime $checkTime | Where-Object { $_.Id -in @(5156, 5157) }).Count
-    if ($networkEvents -gt 100) {
-        Submit-IncidentReport "INTRUSION" 6 "High network activity detected: $networkEvents events"
-    }
-    
-    # Check for malware-related events
-    $malwareEvents = @(Get-WinEvent -LogName "System" -StartTime $checkTime | Where-Object { $_.Id -in @(7034, 7035, 7036) -and $_.LevelDisplayName -eq "Error" }).Count
-    if ($malwareEvents -gt 5) {
-        Submit-IncidentReport "MALWARE" 7 "Potential malware activity detected: $malwareEvents service failures"
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Log "Starting batch incident processing..." -Color Blue
+
+        $config = Get-Configuration
+        $checkTime = (Get-Date).AddSeconds(-$config.ReportingThresholds.BatchReportInterval)
+
+        # Check for failed login attempts
+        $failedLogins = @(Get-WinEvent -LogName "Security" -StartTime $checkTime | Where-Object { $_.Id -eq 4625 }).Count
+        if ($failedLogins -gt 10) {
+            Submit-IncidentReport "INTRUSION" 5 "Multiple failed login attempts detected: $failedLogins attempts"
+        }
+
+        # Check for suspicious network activity
+        $networkEvents = @(Get-WinEvent -LogName "Security" -StartTime $checkTime | Where-Object { $_.Id -in @(5156, 5157) }).Count
+        if ($networkEvents -gt 100) {
+            Submit-IncidentReport "INTRUSION" 6 "High network activity detected: $networkEvents events"
+        }
+
+        # Check for malware-related events
+        $malwareEvents = @(Get-WinEvent -LogName "System" -StartTime $checkTime | Where-Object { $_.Id -in @(7034, 7035, 7036) -and $_.LevelDisplayName -eq "Error" }).Count
+        if ($malwareEvents -gt 5) {
+            Submit-IncidentReport "MALWARE" 7 "Potential malware activity detected: $malwareEvents service failures"
+        }
+    } catch {
+        Log-Error ("Error in batch processing: " + $_.Exception.Message)
+        throw
     }
 }
 
 # Setup monitoring service
 function Install-MonitoringService {
-    Write-Log "Setting up incident monitoring service..." -Color Blue
-    
-    # Create scheduled task for monitoring
-    $action = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "-ExecutionPolicy Bypass -File `"$PSCommandPath`" -Action batch"
-    $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 5) -RepetitionDuration (New-TimeSpan -Days 365)
-    $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
-    $principal = New-ScheduledTaskPrincipal -UserID "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
-    
-    Register-ScheduledTask -TaskName "XXMXLI-IncidentReporter" -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force
-    
-    Write-Log "Monitoring service configured" -Color Green
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Log "Setting up incident monitoring service..." -Color Blue
+
+        # Create scheduled task for monitoring
+        $action = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "-ExecutionPolicy Bypass -File `"$PSCommandPath`" -Action batch"
+        $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 5) -RepetitionDuration (New-TimeSpan -Days 365)
+        $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
+        $principal = New-ScheduledTaskPrincipal -UserID "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+
+        Register-ScheduledTask -TaskName "XXMXLI-IncidentReporter" -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force
+
+        Write-Log "Monitoring service configured" -Color Green
+    } catch {
+        Log-Error ("Error installing monitoring service: " + $_.Exception.Message)
+        throw
+    }
 }
 
 # Test the system
 function Test-ReportingSystem {
-    Write-Log "Testing incident reporting system..." -Color Blue
-    
-    $testID = Submit-IncidentReport "INTRUSION" 4 "Test incident - system validation" "127.0.0.1" "127.0.0.1"
-    
-    if ($testID) {
-        Write-Log "Test completed successfully. Incident ID: $testID" -Color Green
-        Write-Log "Note: This was a test incident and may not be reported to authorities" -Color Yellow
-    } else {
-        Write-ErrorExit "Test failed"
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Log "Testing incident reporting system..." -Color Blue
+
+        $testID = Submit-IncidentReport "INTRUSION" 4 "Test incident - system validation" "127.0.0.1" "127.0.0.1"
+
+        if ($testID) {
+            Write-Log "Test completed successfully. Incident ID: $testID" -Color Green
+            Write-Log "Note: This was a test incident and may not be reported to authorities" -Color Yellow
+        } else {
+            Write-ErrorExit "Test failed"
+        }
+    } catch {
+        Log-Error ("Error testing reporting system: " + $_.Exception.Message)
+        throw
     }
 }
 
 # Display usage information
 function Show-Usage {
-    Write-Host @"
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Host @"
 XXMXLI Automated Incident Reporter (Windows PowerShell Edition)
 
 Usage: .\automated_incident_reporter.ps1 -Action <action> [parameters]
@@ -738,10 +894,18 @@ EXAMPLES:
 
 For support: security@yourorg.com
 "@ -ForegroundColor Cyan
+    } catch {
+        Log-Error ("Error showing usage: " + $_.Exception.Message)
+        throw
+    }
 }
 
 # Main execution with auto-setup
 function Main {
+    [CmdletBinding()]
+    param()
+
+    try {
     Write-Host @"
  ██╗  ██╗██╗  ██╗███╗   ███╗██╗  ██╗██╗     ██╗
  ╚██╗██╔╝╚██╗██╔╝████╗ ████║╚██╗██╔╝██║     ██║
@@ -847,27 +1011,42 @@ Secure reporting to authorities - One-Click Setup
             Show-Usage
         }
     }
+    } catch {
+        Log-Error ("Error in Main function: " + $_.Exception.Message)
+        throw
+    }
 }
 
 # Interactive Menu Functions for Easy Use
 
 function Show-Banner {
-    Clear-Host
-    Write-Host "================================================================" -ForegroundColor Cyan
-    Write-Host "    ██╗  ██╗██╗  ██╗███╗   ███╗██╗  ██╗██╗     ██╗" -ForegroundColor White
-    Write-Host "    ╚██╗██╔╝╚██╗██╔╝████╗ ████║╚██╗██╔╝██║     ██║" -ForegroundColor White
-    Write-Host "     ╚███╔╝  ╚███╔╝ ██╔████╔██║ ╚███╔╝ ██║     ██║" -ForegroundColor White
-    Write-Host "     ██╔██╗  ██╔██╗ ██║╚██╔╝██║ ██╔██╗ ██║     ██║" -ForegroundColor White
-    Write-Host "    ██╔╝ ██╗██╔╝ ██╗██║ ╚═╝ ██║██╔╝ ██╗███████╗██║" -ForegroundColor White
-    Write-Host "    ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝" -ForegroundColor White
-    Write-Host "================================================================" -ForegroundColor Cyan
-    Write-Host "           AUTOMATED INCIDENT REPORTER SYSTEM" -ForegroundColor White
-    Write-Host "              Professional Security Solution" -ForegroundColor Yellow
-    Write-Host "================================================================" -ForegroundColor Cyan
-    Write-Host ""
+    [CmdletBinding()]
+    param()
+
+    try {
+        Clear-Host
+        Write-Host "================================================================" -ForegroundColor Cyan
+        Write-Host "    ██╗  ██╗██╗  ██╗███╗   ███╗██╗  ██╗██╗     ██╗" -ForegroundColor White
+        Write-Host "    ╚██╗██╔╝╚██╗██╔╝████╗ ████║╚██╗██╔╝██║     ██║" -ForegroundColor White
+        Write-Host "     ╚███╔╝  ╚███╔╝ ██╔████╔██║ ╚███╔╝ ██║     ██║" -ForegroundColor White
+        Write-Host "     ██╔██╗  ██╔██╗ ██║╚██╔╝██║ ██╔██╗ ██║     ██║" -ForegroundColor White
+        Write-Host "    ██╔╝ ██╗██╔╝ ██╗██║ ╚═╝ ██║██╔╝ ██╗███████╗██║" -ForegroundColor White
+        Write-Host "    ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝" -ForegroundColor White
+        Write-Host "================================================================" -ForegroundColor Cyan
+        Write-Host "           AUTOMATED INCIDENT REPORTER SYSTEM" -ForegroundColor White
+        Write-Host "              Professional Security Solution" -ForegroundColor Yellow
+        Write-Host "================================================================" -ForegroundColor Cyan
+        Write-Host ""
+    } catch {
+        Log-Error ("Error showing banner: " + $_.Exception.Message)
+        throw
+    }
 }
 
 function Show-InteractiveMenu {
+    [CmdletBinding()]
+    param()
+
     while ($true) {
         Show-Banner
         Write-Host "What would you like to do?" -ForegroundColor White
@@ -893,71 +1072,180 @@ function Show-InteractiveMenu {
         Write-Host "Exit" -ForegroundColor White
         Write-Host ""
         Write-Host "================================================================" -ForegroundColor Cyan
-        
-        $choice = Read-Host "Choose an option [1-9]"
-        
-        switch ($choice) {
-            "1" { Invoke-QuickScan }
-            "2" { Invoke-SpecificIncidentReport }
-            "3" { Invoke-SystemTest }
-            "4" { Show-RecentReports }
-            "5" { Show-ConfigSettings }
-            "6" { Start-BackgroundMonitoring }
-            "7" { Stop-BackgroundMonitoring }
-            "8" { Show-SystemStatus }
-            "9" { Exit-Program }
-            default { 
-                Write-Host "Invalid option. Please choose 1-9." -ForegroundColor Red
-                Start-Sleep -Seconds 2
+
+        try {
+            $choice = Read-Host "Choose an option [1-9]"
+
+            switch ($choice) {
+                "1" { Invoke-QuickScan }
+                "2" { Invoke-SpecificIncidentReport }
+                "3" { Invoke-SystemTest }
+                "4" { Show-RecentReports }
+                "5" { Show-ConfigSettings }
+                "6" { Start-BackgroundMonitoring }
+                "7" { Stop-BackgroundMonitoring }
+                "8" { Show-SystemStatus }
+                "9" { Exit-Program }
+                default {
+                    Write-Host "Invalid option. Please choose 1-9." -ForegroundColor Red
+                    Start-Sleep -Seconds 2
+                }
             }
+        } catch {
+            Log-Error ("Error in interactive menu: " + $_.Exception.Message)
+            Write-Host "Press Enter to continue..." -ForegroundColor Yellow
+            Read-Host | Out-Null
         }
     }
 }
 
 function Invoke-QuickScan {
-    Clear-Host
-    Write-Host "================================================================" -ForegroundColor Cyan
-    Write-Host "           QUICK SECURITY SCAN & REPORT" -ForegroundColor White
-    Write-Host "================================================================" -ForegroundColor Cyan
-    Write-Host ""
-    Write-Host "Performing comprehensive security scan..." -ForegroundColor Yellow
-    Write-Host ""
-    
-    Write-Host "[1/5] Checking for suspicious processes..." -ForegroundColor Blue
-    Start-Sleep -Seconds 1
-    Write-Host "[2/5] Analyzing network connections..." -ForegroundColor Blue
-    Start-Sleep -Seconds 1
-    Write-Host "[3/5] Scanning system logs..." -ForegroundColor Blue
-    Start-Sleep -Seconds 1
-    Write-Host "[4/5] Collecting evidence..." -ForegroundColor Blue
-    $evidencePath = Collect-Evidence "SCAN_$(Get-Date -Format 'yyyyMMdd_HHmmss')" "security_scan"
-    Write-Host "[5/5] Generating report..." -ForegroundColor Blue
-    
-    # Submit automatic report
-    Submit-IncidentReport "AUTOMATED_SCAN" "medium" "Routine security scan detected potential issues" "127.0.0.1" "auto"
-    
-    Write-Host ""
-    Write-Host "✓ Scan complete! Report submitted to authorities." -ForegroundColor Green
-    Write-Host "Authorities notified: FBI IC3, CISA, Europol EC3" -ForegroundColor White
-    Write-Host ""
-    Read-Host "Press Enter to continue"
+    [CmdletBinding()]
+    param()
+
+    try {
+        Clear-Host
+        Write-Host "================================================================" -ForegroundColor Cyan
+        Write-Host "           QUICK SECURITY SCAN & REPORT" -ForegroundColor White
+        Write-Host "================================================================" -ForegroundColor Cyan
+        Write-Host ""
+        Write-Host "Performing comprehensive security scan..." -ForegroundColor Yellow
+        Write-Host ""
+
+        Write-Host "[1/5] Checking for suspicious processes..." -ForegroundColor Blue
+        Start-Sleep -Seconds 1
+        Write-Host "[2/5] Analyzing network connections..." -ForegroundColor Blue
+        Start-Sleep -Seconds 1
+        Write-Host "[3/5] Scanning system logs..." -ForegroundColor Blue
+        Start-Sleep -Seconds 1
+        Write-Host "[4/5] Collecting evidence..." -ForegroundColor Blue
+        $evidencePath = Collect-Evidence "SCAN_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
+        Write-Host "[5/5] Generating report..." -ForegroundColor Blue
+
+        # Submit automatic report
+        Submit-IncidentReport "AUTOMATED_SCAN" 5 "Routine security scan detected potential issues" "127.0.0.1" "auto"
+
+        Write-Host ""
+        Write-Host "✓ Scan complete! Report submitted to authorities." -ForegroundColor Green
+        Write-Host "Authorities notified: FBI IC3, CISA, Europol EC3" -ForegroundColor White
+        Write-Host ""
+        Read-Host "Press Enter to continue"
+    } catch {
+        Log-Error ("Error in quick scan: " + $_.Exception.Message)
+        throw
+    }
 }
 
-function Exit-Program {
-    Clear-Host
-    Write-Host "================================================================" -ForegroundColor Cyan
-    Write-Host "           THANK YOU FOR USING XXMXLI" -ForegroundColor White
-    Write-Host "================================================================" -ForegroundColor Cyan
-    Write-Host ""
-    Write-Host "Your system is now protected!" -ForegroundColor Green
-    Write-Host "The incident reporter will continue monitoring in the background." -ForegroundColor White
-    Write-Host ""
-    Write-Host "Remember: Any security incidents will be automatically reported" -ForegroundColor Yellow
-    Write-Host "to the appropriate authorities (FBI IC3, CISA, Europol EC3)." -ForegroundColor Yellow
-    Write-Host ""
-    Write-Host "Stay safe! - XXMXLI Security Team" -ForegroundColor Cyan
-    Write-Host ""
-    exit 0
+function Invoke-SpecificIncidentReport {
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Host "Report a specific incident:" -ForegroundColor Yellow
+        $incidentType = Read-Host "Incident type (malware/intrusion/ddos/phishing/other)"
+        $severity = Read-Host "Severity level (1-5, where 5 is critical)"
+        $description = Read-Host "Description of what happened"
+        Submit-IncidentReport $incidentType ([int]$severity) $description "manual" "auto"
+    } catch {
+        Log-Error ("Error reporting specific incident: " + $_.Exception.Message)
+        throw
+    }
+}
+
+function Invoke-SystemTest {
+    [CmdletBinding()]
+    param()
+
+    try {
+        Test-ReportingSystem
+    } catch {
+        Log-Error ("Error in system test: " + $_.Exception.Message)
+        throw
+    }
+}
+
+function Show-RecentReports {
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Host "Recent reports:" -ForegroundColor Cyan
+        if (Test-Path $ReportDir) {
+            Get-ChildItem $ReportDir -Filter "*.txt" | Sort-Object LastWriteTime -Descending | Select-Object -First 5 | ForEach-Object {
+                Write-Host "  $($_.Name) - $($_.LastWriteTime)" -ForegroundColor White
+            }
+        } else {
+            Write-Host "No reports found" -ForegroundColor Yellow
+        }
+        Read-Host "Press Enter to continue"
+    } catch {
+        Log-Error ("Error showing recent reports: " + $_.Exception.Message)
+        throw
+    }
+}
+
+function Show-ConfigSettings {
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Host "Configuration settings:" -ForegroundColor Cyan
+        $config = Get-Configuration
+        $config | ConvertTo-Json -Depth 3 | Write-Host
+        Read-Host "Press Enter to continue"
+    } catch {
+        Log-Error ("Error showing config settings: " + $_.Exception.Message)
+        throw
+    }
+}
+
+function Start-BackgroundMonitoring {
+    [CmdletBinding()]
+    param()
+
+    try {
+        Install-MonitoringService
+        Write-Host "Background monitoring started" -ForegroundColor Green
+        Read-Host "Press Enter to continue"
+    } catch {
+        Log-Error ("Error starting background monitoring: " + $_.Exception.Message)
+        throw
+    }
+}
+
+function Stop-BackgroundMonitoring {
+    [CmdletBinding()]
+    param()
+
+    try {
+        Unregister-ScheduledTask -TaskName "XXMXLI-IncidentReporter" -Confirm:$false -ErrorAction SilentlyContinue
+        Write-Host "Background monitoring stopped" -ForegroundColor Yellow
+        Read-Host "Press Enter to continue"
+    } catch {
+        Log-Error ("Error stopping background monitoring: " + $_.Exception.Message)
+        throw
+    }
+}
+
+function Show-SystemStatus {
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Host "System status:" -ForegroundColor Cyan
+        $task = Get-ScheduledTask -TaskName "XXMXLI-IncidentReporter" -ErrorAction SilentlyContinue
+        if ($task) {
+            Write-Host "Monitoring service: Running" -ForegroundColor Green
+        } else {
+            Write-Host "Monitoring service: Not running" -ForegroundColor Yellow
+        }
+        Write-Host "Reports directory: $ReportDir" -ForegroundColor White
+        Write-Host "Evidence directory: $EvidenceDir" -ForegroundColor White
+        Read-Host "Press Enter to continue"
+    } catch {
+        Log-Error ("Error showing system status: " + $_.Exception.Message)
+        throw
+    }
 }
 
 # Execute main function or interactive menu

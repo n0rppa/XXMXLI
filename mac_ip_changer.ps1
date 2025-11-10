@@ -1,9 +1,82 @@
-# XXMXLI MAC and IP Address Changer - PowerShell
+﻿# XXMXLI MAC and IP Address Changer - PowerShell
 # This script provides advanced MAC address and IP configuration options
 
-# Ensure we're running from the script directory
+#Requires -Version 5.1
+
+param(
+    [switch]$Help,
+    [switch]$Status,
+    [ValidateSet("1", "2", "3", "4", "5", "6", "7")]
+    [string]$Action
+)
+
+# Configuration
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$LogFile = Join-Path $ScriptDir "network_changes.log"
+
+# Ensure we're running from the script directory
 Set-Location $ScriptDir
+
+# Help function
+function Show-Help {
+    [CmdletBinding()]
+    param()
+    
+    Write-Host @"
+XXMXLI MAC and IP Address Changer - PowerShell
+
+SYNOPSIS
+    Advanced MAC address and IP configuration tool
+
+DESCRIPTION
+    This script provides comprehensive network adapter configuration options
+    including MAC address changes, IP configuration, and network management.
+
+PARAMETERS
+    -Help       Show this help message
+    -Status     Show current network configuration
+    -Action     Perform specific action (1-7):
+                1 = View current network configuration
+                2 = Show network adapters
+                3 = Generate and apply random MAC address
+                4 = Configure static IP address
+                5 = Reset to DHCP
+                6 = Enable/Disable network adapter
+                7 = Clear DNS cache
+
+EXAMPLES
+    .\mac_ip_changer.ps1
+    .\mac_ip_changer.ps1 -Status
+    .\mac_ip_changer.ps1 -Action 3
+
+REQUIREMENTS
+    - Windows 10/11
+    - Administrator privileges
+    - PowerShell 5.0 or later
+
+WARNING
+    Changing MAC addresses may violate network policies
+    Use only on networks you own or have permission to modify
+
+"@
+}
+
+# Check if running as administrator
+function Test-Administrator {
+    [CmdletBinding()]
+    param()
+    
+    try {
+        $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
+        $principal = New-Object Security.Principal.WindowsPrincipal($currentUser)
+        return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    }
+    catch {
+        Write-Host "Failed to check administrator privileges: $($_.Exception.Message)" -ForegroundColor Red
+        return $false
+    }
+}
+}
 
 Write-Host "================================================================" -ForegroundColor Blue
 Write-Host "XXMXLI MAC and IP Address Changer - PowerShell" -ForegroundColor Blue
@@ -30,6 +103,9 @@ Write-Host "✓ Running with administrator privileges" -ForegroundColor Green
 Write-Host ""
 
 function Show-Menu {
+    [CmdletBinding()]
+    param()
+    
     Write-Host "MAC/IP Configuration Options:" -ForegroundColor Cyan
     Write-Host "  1. View current network configuration"
     Write-Host "  2. Show network adapters"
@@ -43,51 +119,92 @@ function Show-Menu {
 }
 
 function Get-NetworkConfiguration {
-    Write-Host "Current Network Configuration:" -ForegroundColor Cyan
-    Write-Host "==============================" -ForegroundColor Cyan
-    Get-NetIPConfiguration | Format-Table -AutoSize
-    Write-Host ""
-    Get-NetAdapter | Select-Object Name, InterfaceDescription, LinkSpeed, Status | Format-Table -AutoSize
+    [CmdletBinding()]
+    param()
+    
+    try {
+        Write-Host "Current Network Configuration:" -ForegroundColor Cyan
+        Write-Host "==============================" -ForegroundColor Cyan
+        Get-NetIPConfiguration | Format-Table -AutoSize
+        Write-Host ""
+        Get-NetAdapter | Select-Object Name, InterfaceDescription, LinkSpeed, Status | Format-Table -AutoSize
+    }
+    catch {
+        Write-Host "Failed to get network configuration: $($_.Exception.Message)" -ForegroundColor Red
+    }
 }
 
 function Show-NetworkAdapters {
-    Write-Host "Network Adapters:" -ForegroundColor Cyan
-    Write-Host "=================" -ForegroundColor Cyan
-    $adapters = Get-NetAdapter | Select-Object Name, InterfaceIndex, MacAddress, Status, LinkSpeed
-    $adapters | Format-Table -AutoSize
-    return $adapters
+    [CmdletBinding()]
+    param()
+    
+    try {
+        Write-Host "Network Adapters:" -ForegroundColor Cyan
+        Write-Host "=================" -ForegroundColor Cyan
+        $adapters = Get-NetAdapter | Select-Object Name, InterfaceIndex, MacAddress, Status, LinkSpeed
+        $adapters | Format-Table -AutoSize
+        return $adapters
+    }
+    catch {
+        Write-Host "Failed to show network adapters: $($_.Exception.Message)" -ForegroundColor Red
+        return $null
+    }
 }
 
 function Generate-RandomMAC {
-    # Generate a random MAC address with valid first octet
-    $mac = "02-{0:X2}-{1:X2}-{2:X2}-{3:X2}-{4:X2}" -f (Get-Random -Maximum 256), (Get-Random -Maximum 256), (Get-Random -Maximum 256), (Get-Random -Maximum 256), (Get-Random -Maximum 256)
-    return $mac
+    [CmdletBinding()]
+    param()
+    
+    try {
+        # Generate a random MAC address with valid first octet
+        $mac = "02-{0:X2}-{1:X2}-{2:X2}-{3:X2}-{4:X2}" -f (Get-Random -Maximum 256), (Get-Random -Maximum 256), (Get-Random -Maximum 256), (Get-Random -Maximum 256), (Get-Random -Maximum 256)
+        return $mac
+    }
+    catch {
+        Write-Host "Failed to generate random MAC: $($_.Exception.Message)" -ForegroundColor Red
+        return $null
+    }
 }
 
 function Set-RandomMAC {
-    $adapters = Show-NetworkAdapters
-    $adapterName = Read-Host "Enter adapter name"
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [string]$AdapterName
+    )
     
-    if (-not $adapterName) {
-        Write-Host "Operation cancelled" -ForegroundColor Yellow
-        return
-    }
-    
-    $adapter = $adapters | Where-Object { $_.Name -eq $adapterName }
-    if (-not $adapter) {
-        Write-Host "Adapter not found" -ForegroundColor Red
-        return
-    }
-    
-    $newMAC = Generate-RandomMAC
-    Write-Host "Generated MAC: $newMAC" -ForegroundColor Green
-    
-    $confirm = Read-Host "Apply this MAC address? (y/N)"
-    if ($confirm -eq 'y' -or $confirm -eq 'Y') {
-        try {
+    try {
+        $adapters = Show-NetworkAdapters
+        
+        if (-not $AdapterName) {
+            $AdapterName = Read-Host "Enter adapter name"
+        }
+        
+        if (-not $AdapterName) {
+            Write-Host "Operation cancelled" -ForegroundColor Yellow
+            return
+        }
+        
+        $adapter = $adapters | Where-Object { $_.Name -eq $AdapterName }
+        if (-not $adapter) {
+            Write-Host "Adapter not found" -ForegroundColor Red
+            return
+        }
+        
+        $newMAC = Generate-RandomMAC
+        if (-not $newMAC) {
+            Write-Host "Failed to generate MAC address" -ForegroundColor Red
+            return
+        }
+        
+        Write-Host "Generated MAC: $newMAC" -ForegroundColor Green
+        
+        $confirm = Read-Host "Apply this MAC address? (y/N)"
+        if ($confirm -eq 'y' -or $confirm -eq 'Y') {
             # Disable adapter
             Write-Host "Disabling adapter..." -ForegroundColor Yellow
-            Disable-NetAdapter -Name $adapterName -Confirm:$false
+            Disable-NetAdapter -Name $AdapterName -Confirm:$false
             
             # Change MAC address in registry
             $macClean = $newMAC -replace '-', ''
@@ -105,14 +222,14 @@ function Set-RandomMAC {
             
             # Re-enable adapter
             Write-Host "Re-enabling adapter..." -ForegroundColor Yellow
-            Enable-NetAdapter -Name $adapterName
+            Enable-NetAdapter -Name $AdapterName
             
             Write-Host "✓ MAC address changed successfully" -ForegroundColor Green
             Write-Host "New MAC: $newMAC" -ForegroundColor Cyan
-            
-        } catch {
-            Write-Host "✗ Error changing MAC address: $($_.Exception.Message)" -ForegroundColor Red
         }
+    }
+    catch {
+        Write-Host "✗ Error changing MAC address: $($_.Exception.Message)" -ForegroundColor Red
     }
 }
 
@@ -191,12 +308,77 @@ function Toggle-NetworkAdapter {
 }
 
 function Clear-DNSCache {
-    Write-Host "Clearing DNS cache..." -ForegroundColor Yellow
-    Clear-DnsClientCache
-    Write-Host "✓ DNS cache cleared" -ForegroundColor Green
+    [CmdletBinding()]
+    param()
+    
+    try {
+        Write-Host "Clearing DNS cache..." -ForegroundColor Yellow
+        Clear-DnsClientCache
+        Write-Host "✓ DNS cache cleared" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "Failed to clear DNS cache: $($_.Exception.Message)" -ForegroundColor Red
+    }
 }
 
-# Main loop
+# Main execution
+if ($Help) {
+    Show-Help
+    exit 0
+}
+
+Write-Host "================================================================" -ForegroundColor Blue
+Write-Host "XXMXLI MAC and IP Address Changer - PowerShell" -ForegroundColor Blue
+Write-Host "================================================================" -ForegroundColor Blue
+Write-Host ""
+Write-Host "Working directory: $ScriptDir" -ForegroundColor Yellow
+Write-Host ""
+
+if (-not (Test-Administrator)) {
+    Write-Host "ERROR: This script requires administrator privileges" -ForegroundColor Red
+    Write-Host "Please run PowerShell as Administrator and try again" -ForegroundColor Yellow
+    Read-Host "Press Enter to exit"
+    exit 1
+}
+
+Write-Host "✓ Running with administrator privileges" -ForegroundColor Green
+Write-Host ""
+
+if ($Status) {
+    Get-NetworkConfiguration
+    exit 0
+}
+
+if ($Action) {
+    try {
+        switch ($Action) {
+            "1" { Get-NetworkConfiguration }
+            "2" { Show-NetworkAdapters }
+            "3" { Set-RandomMAC }
+            "4" { Set-StaticIP }
+            "5" { Reset-ToDHCP }
+            "6" { Toggle-NetworkAdapter }
+            "7" { Clear-DNSCache }
+        }
+    }
+    catch {
+        Write-Host "Error executing action: $($_.Exception.Message)" -ForegroundColor Red
+        exit 1
+    }
+    
+    # Log the action
+    $LogEntry = @{
+        Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+        Action = "Automated Action $Action"
+        User = $env:USERNAME
+        Computer = $env:COMPUTERNAME
+    }
+    
+    $LogEntry | ConvertTo-Json -Compress | Add-Content $LogFile -Encoding UTF8
+    exit 0
+}
+
+# Interactive mode
 do {
     Show-Menu
     $choice = Read-Host "Select option (1-8)"
@@ -234,5 +416,4 @@ $LogEntry = @{
     Computer = $env:COMPUTERNAME
 }
 
-$LogFile = Join-Path $ScriptDir "network_changes.log"
-$LogEntry | ConvertTo-Json -Compress | Add-Content $LogFile
+$LogEntry | ConvertTo-Json -Compress | Add-Content $LogFile -Encoding UTF8

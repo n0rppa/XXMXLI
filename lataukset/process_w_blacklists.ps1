@@ -1,4 +1,4 @@
-# XXMXLI IP Blacklist Processor for Windows PowerShell
+﻿# XXMXLI IP Blacklist Processor for Windows PowerShell
 # Processes IP blacklist files and generates Windows-compatible blocking rules
 # 
 # SECURITY WARNING: This system is actively monitored and protected.

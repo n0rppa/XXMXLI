@@ -1,4 +1,4 @@
-# Secure Tunnel - Windows PowerShell Version
+﻿# Secure Tunnel - Windows PowerShell Version
 # SSH Tunneling and Secure Connection Tools
 # Author: XXMXLI Security Tools
 # WARNING: Use only for legitimate purposes and with proper authorization

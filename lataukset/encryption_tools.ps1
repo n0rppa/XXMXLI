@@ -1,4 +1,4 @@
-# Encryption Tools - Windows PowerShell Version
+﻿# Encryption Tools - Windows PowerShell Version
 # File/Folder Encryption and Security Tools
 # Author: XXMXLI Security Tools
 # WARNING: Use only for legitimate purposes and with proper authorization

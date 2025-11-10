@@ -1,4 +1,4 @@
-# MAC & IP Address Changer for Windows
+﻿# MAC & IP Address Changer for Windows
 # PowerShell Script for Network Identity Management
 # Author: XXMXLI Security Tools
 # WARNING: Use only for legitimate purposes and with proper authorization

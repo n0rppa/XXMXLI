@@ -1,4 +1,4 @@
-# XXMXLI IP Blacklist Processor for Windows PowerShell
+﻿# XXMXLI IP Blacklist Processor for Windows PowerShell
 # Processes IP blacklist files and generates Windows-compatible blocking rules
 # 
 # SECURITY WARNING: This system is actively monitored and protected.
@@ -10,9 +10,17 @@
 # national and international law. Violators may be subject to civil and/or criminal 
 # penalties. Your access is being monitored.
 
+#Requires -Version 5.1
+
 param(
+    [Parameter(Mandatory = $false)]
+    [ValidateNotNullOrEmpty()]
     [string]$SourceDir = "w",
-    [string]$OutputDir = "assets\security",
+    
+    [Parameter(Mandatory = $false)]
+    [ValidateNotNullOrEmpty()]
+    [string]$OutputDir = (Join-Path "assets" "security"),
+    
     [switch]$GenerateFirewallRules,
     [switch]$GenerateHostsFile,
     [switch]$Verbose
@@ -22,9 +30,60 @@ Write-Host "=== XXMXLI IP Blacklist Processor (Windows) ===" -ForegroundColor Gr
 Write-Host "Processing blacklists from: $SourceDir" -ForegroundColor Yellow
 
 # Create output directory if it doesn't exist
-if (!(Test-Path $OutputDir)) {
-    New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
-    Write-Host "Created output directory: $OutputDir" -ForegroundColor Green
+try {
+    if (!(Test-Path $OutputDir)) {
+        New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+        Write-Host "Created output directory: $OutputDir" -ForegroundColor Green
+    }
+}
+catch {
+    Write-Host "Failed to create output directory: $_" -ForegroundColor Red
+    exit 1
+}
+
+# Initialize variables
+$AllIPs = @()
+$Statistics = @{
+    "processed_files" = 0
+    "total_ips" = 0
+    "unique_ips" = 0
+    "sources" = @{}
+    "timestamp" = (Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+    "platform" = "Windows PowerShell"
+}
+
+try {
+    # Process all blacklist files
+    if (Test-Path $SourceDir) {
+        $BlacklistFiles = Get-ChildItem -Path $SourceDir -Recurse -File | Where-Object {
+            $_.Extension -in @('.txt', '.list', '.ipset', '.csv', '.dat', '.conf') -or $_.Extension -eq ''
+        }
+        
+        foreach ($File in $BlacklistFiles) {
+            $FileIPs = Process-BlacklistFile $File.FullName
+            $AllIPs += $FileIPs
+            $Statistics.processed_files++
+        }
+    }
+    else {
+        Write-Host "❌ Source directory '$SourceDir' not found!" -ForegroundColor Red
+        exit 1
+    }
+
+    # Remove duplicates and process results
+    $UniqueIPs = $AllIPs | Sort-Object | Get-Unique
+    $Statistics.total_ips = $AllIPs.Count
+    $Statistics.unique_ips = $UniqueIPs.Count
+
+    Write-Host ""
+    Write-Host "=== Processing Results ===" -ForegroundColor Green
+    Write-Host "Files processed: $($Statistics.processed_files)" -ForegroundColor Yellow
+    Write-Host "Total IPs found: $($Statistics.total_ips)" -ForegroundColor Yellow
+    Write-Host "Unique IPs: $($Statistics.unique_ips)" -ForegroundColor Yellow
+}
+catch {
+    Write-Host "Error during blacklist processing: $_" -ForegroundColor Red
+    exit 1
 }
 
 # Initialize variables
@@ -40,19 +99,31 @@ $Statistics = @{
 
 # Function to validate IP address
 function Test-IPAddress {
-    param([string]$IP)
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$IP
+    )
+    
     try {
         [System.Net.IPAddress]::Parse($IP) | Out-Null
         return $true
     }
     catch {
+        Write-Host "Invalid IP address format: $IP" -ForegroundColor Red
         return $false
     }
 }
 
 # Function to process individual blacklist file
 function Process-BlacklistFile {
-    param([string]$FilePath)
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$FilePath
+    )
     
     $FileIPs = @()
     $FileName = Split-Path $FilePath -Leaf
@@ -130,7 +201,8 @@ Write-Host "Total IPs found: $($Statistics.total_ips)" -ForegroundColor Yellow
 Write-Host "Unique IPs: $($Statistics.unique_ips)" -ForegroundColor Yellow
 
 # Generate JavaScript file for web protection
-$JSContent = @"
+try {
+    $JSContent = @"
 // XXMXLI Blocked IPs - Generated $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
 // Platform: Windows PowerShell
 // Total blocked IPs: $($Statistics.unique_ips)
@@ -155,30 +227,45 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 "@
 
-$JSOutput = Join-Path $OutputDir "blocked_ips.js"
-$JSContent | Out-File -FilePath $JSOutput -Encoding UTF8
-Write-Host "✅ JavaScript file created: $JSOutput" -ForegroundColor Green
+    $JSOutput = Join-Path $OutputDir "blocked_ips.js"
+    $JSContent | Out-File -FilePath $JSOutput -Encoding UTF8
+    Write-Host "✅ JavaScript file created: $JSOutput" -ForegroundColor Green
+}
+catch {
+    Write-Host "Failed to create JavaScript file: $_" -ForegroundColor Red
+}
 
 # Generate JSON file
-$JSONOutput = Join-Path $OutputDir "blocked_ips.json"
-@{
-    "blocked_ips" = $UniqueIPs
-    "statistics" = $Statistics
-} | ConvertTo-Json -Depth 10 -Compress | Out-File -FilePath $JSONOutput -Encoding UTF8
-Write-Host "✅ JSON file created: $JSONOutput" -ForegroundColor Green
+try {
+    $JSONOutput = Join-Path $OutputDir "blocked_ips.json"
+    @{
+        "blocked_ips" = $UniqueIPs
+        "statistics" = $Statistics
+    } | ConvertTo-Json -Depth 10 -Compress | Out-File -FilePath $JSONOutput -Encoding UTF8
+    Write-Host "✅ JSON file created: $JSONOutput" -ForegroundColor Green
+}
+catch {
+    Write-Host "Failed to create JSON file: $_" -ForegroundColor Red
+}
 
 # Generate statistics file
-$StatsOutput = Join-Path $OutputDir "blacklist_stats.json"
-$Statistics | ConvertTo-Json -Depth 10 -Compress | Out-File -FilePath $StatsOutput -Encoding UTF8
-Write-Host "✅ Statistics file created: $StatsOutput" -ForegroundColor Green
+try {
+    $StatsOutput = Join-Path $OutputDir "blacklist_stats.json"
+    $Statistics | ConvertTo-Json -Depth 10 -Compress | Out-File -FilePath $StatsOutput -Encoding UTF8
+    Write-Host "✅ Statistics file created: $StatsOutput" -ForegroundColor Green
+}
+catch {
+    Write-Host "Failed to create statistics file: $_" -ForegroundColor Red
+}
 
 # Generate Windows Firewall rules if requested
 if ($GenerateFirewallRules) {
     Write-Host ""
     Write-Host "=== Generating Windows Firewall Rules ===" -ForegroundColor Green
     
-    $FirewallScript = Join-Path $OutputDir "apply_firewall_rules.ps1"
-    $FirewallContent = @"
+    try {
+        $FirewallScript = Join-Path $OutputDir "apply_firewall_rules.ps1"
+        $FirewallContent = @"
 # XXMXLI IP Blacklist - Windows Firewall Rules
 # Generated: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
 # Run as Administrator
@@ -210,10 +297,14 @@ for (`$i = 0; `$i -lt `$BlockedIPs.Count; `$i += `$BatchSize) {
 Write-Host "✅ Firewall rules applied successfully!" -ForegroundColor Green
 Write-Host "Total rules created: `$(`$BatchCount * 2)" -ForegroundColor Yellow
 "@
-    
-    $FirewallContent | Out-File -FilePath $FirewallScript -Encoding UTF8
-    Write-Host "✅ Firewall rules script created: $FirewallScript" -ForegroundColor Green
-    Write-Host "   Run as Administrator to apply firewall rules" -ForegroundColor Yellow
+        
+        $FirewallContent | Out-File -FilePath $FirewallScript -Encoding UTF8
+        Write-Host "✅ Firewall rules script created: $FirewallScript" -ForegroundColor Green
+        Write-Host "   Run as Administrator to apply firewall rules" -ForegroundColor Yellow
+    }
+    catch {
+        Write-Host "Failed to generate firewall rules: $_" -ForegroundColor Red
+    }
 }
 
 # Generate hosts file entries if requested
@@ -221,8 +312,9 @@ if ($GenerateHostsFile) {
     Write-Host ""
     Write-Host "=== Generating Hosts File Entries ===" -ForegroundColor Green
     
-    $HostsOutput = Join-Path $OutputDir "hosts_blacklist.txt"
-    $HostsContent = @"
+    try {
+        $HostsOutput = Join-Path $OutputDir "hosts_blacklist.txt"
+        $HostsContent = @"
 # XXMXLI IP Blacklist for Windows Hosts File
 # Generated: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
 # Total blocked IPs: $($Statistics.unique_ips)
@@ -234,18 +326,23 @@ if ($GenerateHostsFile) {
 # 4. Save the file
 
 "@
-    
-    foreach ($IP in $UniqueIPs) {
-        $HostsContent += "`n127.0.0.1 $IP"
+        
+        foreach ($IP in $UniqueIPs) {
+            $HostsContent += "`n127.0.0.1 $IP"
+        }
+        
+        $HostsContent | Out-File -FilePath $HostsOutput -Encoding UTF8
+        Write-Host "✅ Hosts file entries created: $HostsOutput" -ForegroundColor Green
     }
-    
-    $HostsContent | Out-File -FilePath $HostsOutput -Encoding UTF8
-    Write-Host "✅ Hosts file entries created: $HostsOutput" -ForegroundColor Green
+    catch {
+        Write-Host "Failed to generate hosts file entries: $_" -ForegroundColor Red
+    }
 }
 
 # Generate batch file wrapper
-$BatchOutput = Join-Path $OutputDir "run_blacklist_processor.bat"
-$BatchContent = @"
+try {
+    $BatchOutput = Join-Path $OutputDir "run_blacklist_processor.bat"
+    $BatchContent = @"
 @echo off
 REM XXMXLI IP Blacklist Processor - Windows Batch Wrapper
 REM Run this file to process blacklists with default settings
@@ -269,8 +366,12 @@ echo Processing complete! Check the assets/security folder for generated files.
 pause
 "@
 
-$BatchContent | Out-File -FilePath $BatchOutput -Encoding ASCII
-Write-Host "✅ Batch wrapper created: $BatchOutput" -ForegroundColor Green
+    $BatchContent | Out-File -FilePath $BatchOutput -Encoding UTF8
+    Write-Host "✅ Batch wrapper created: $BatchOutput" -ForegroundColor Green
+}
+catch {
+    Write-Host "Failed to create batch wrapper: $_" -ForegroundColor Red
+}
 
 Write-Host ""
 Write-Host "=== All Files Generated Successfully! ===" -ForegroundColor Green

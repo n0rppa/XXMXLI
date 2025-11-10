@@ -1,4 +1,4 @@
-# Registry Security Configuration
+﻿# Registry Security Configuration
 # XXMXLI Advanced Registry Security Hardening
 
 # Ensure we're running from the script directory

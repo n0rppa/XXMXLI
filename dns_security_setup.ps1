@@ -1,4 +1,4 @@
-# DNS Security Setup Tool - Windows PowerShell Version
+﻿# DNS Security Setup Tool - Windows PowerShell Version
 # Windows DNS Security and Privacy Configuration
 # Author: XXMXLI Security Tools
 # WARNING: Use only for legitimate purposes and with proper authorization
@@ -12,61 +12,15 @@
 # national and international law. Violators may be subject to civil and/or criminal 
 # penalties. Your access is being monitored.
 
-param(
-    [switch]$Help,
-    [switch]$Status,
-    [string]$Provider
-)
-
-# Configuration
-$ConfigDir = "$env:USERPROFILE\.dns_security"
-$BackupDir = "$ConfigDir\backups"
-$LogFile = "$ConfigDir\dns_security.log"
-
-# Create directories
-if (!(Test-Path $ConfigDir)) { New-Item -ItemType Directory -Path $ConfigDir -Force | Out-Null }
-if (!(Test-Path $BackupDir)) { New-Item -ItemType Directory -Path $BackupDir -Force | Out-Null }
-
-# Logging function
-function Write-Log {
-    param($Message, $Color = "White")
-    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    $logEntry = "$timestamp - $Message"
-    Write-Host $Message -ForegroundColor $Color
-    Add-Content -Path $LogFile -Value $logEntry
-}
-
-# Banner
-function Show-Banner {
-    Write-Host ""
-    Write-Host " ██████╗ ███╗   ██╗███████╗    ███████╗███████╗ ██████╗" -ForegroundColor Cyan
-    Write-Host " ██╔══██╗████╗  ██║██╔════╝    ██╔════╝██╔════╝██╔════╝" -ForegroundColor Cyan
-    Write-Host " ██║  ██║██╔██╗ ██║███████╗    ███████╗█████╗  ██║     " -ForegroundColor Cyan
-    Write-Host " ██║  ██║██║╚██╗██║╚════██║    ╚════██║██╔══╝  ██║     " -ForegroundColor Cyan
-    Write-Host " ██████╔╝██║ ╚████║███████║    ███████║███████╗╚██████╗" -ForegroundColor Cyan
-    Write-Host " ╚═════╝ ╚═╝  ╚═══╝╚══════╝    ╚══════╝╚══════╝ ╚═════╝" -ForegroundColor Cyan
-    Write-Host ""
-    Write-Host " ██╗  ██╗██╗  ██╗███╗   ███╗██╗  ██╗██╗     ██╗" -ForegroundColor Cyan
-    Write-Host " ╚██╗██╔╝╚██╗██╔╝████╗ ████║╚██╗██╔╝██║     ██║" -ForegroundColor Cyan
-    Write-Host "  ╚███╔╝  ╚███╔╝ ██╔████╔██║ ╚███╔╝ ██║     ██║" -ForegroundColor Cyan
-    Write-Host "  ██╔██╗  ██╔██╗ ██║╚██╔╝██║ ██╔██╗ ██║     ██║" -ForegroundColor Cyan
-    Write-Host " ██╔╝ ██╗██╔╝ ██╗██║ ╚═╝ ██║██╔╝ ██╗███████╗██║" -ForegroundColor Cyan
-    Write-Host " ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝" -ForegroundColor Cyan
-    Write-Host ""
-    Write-Host "    DNS Security Setup - Windows PowerShell" -ForegroundColor Green
-    Write-Host "    DNS-over-HTTPS/TLS Configuration Tool" -ForegroundColor Green
-    Write-Host "    Educational and Authorized Use Only" -ForegroundColor Yellow
-    Write-Host ""
-}on
-# Comprehensive DNS Security and Privacy Configuration
-# Author: XXMXLI Security Tools
-# WARNING: Use only for legitimate purposes and with proper authorization
+#Requires -Version 5.1
 
 param(
     [switch]$Help,
     [switch]$Status,
     [switch]$Backup,
-    [switch]$Restore
+    [switch]$Restore,
+    [ValidateSet("1", "2", "3", "4", "5", "6")]
+    [string]$Provider
 )
 
 # Check if running as Administrator
@@ -77,9 +31,9 @@ if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 }
 
 # Configuration
-$ConfigDir = "$env:USERPROFILE\.dns_security"
-$BackupDir = "$ConfigDir\backups"
-$LogFile = "$ConfigDir\dns_security.log"
+$ConfigDir = Join-Path $env:USERPROFILE ".dns_security"
+$BackupDir = Join-Path $ConfigDir "backups"
+$LogFile = Join-Path $ConfigDir "dns_security.log"
 
 # Create directories
 if (!(Test-Path $ConfigDir)) { New-Item -ItemType Directory -Path $ConfigDir -Force | Out-Null }
@@ -87,27 +41,50 @@ if (!(Test-Path $BackupDir)) { New-Item -ItemType Directory -Path $BackupDir -Fo
 
 # Logging function
 function Write-Log {
-    param($Message, $Color = "White")
-    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    $logEntry = "$timestamp - $Message"
-    Write-Host $Message -ForegroundColor $Color
-    Add-Content -Path $LogFile -Value $logEntry
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Message,
+        [ValidateSet("White", "Red", "Green", "Yellow", "Cyan", "Magenta", "Blue")]
+        [string]$Color = "White"
+    )
+
+    try {
+        $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+        $logEntry = "$timestamp - $Message"
+        Write-Host $Message -ForegroundColor $Color
+        Add-Content -Path $LogFile -Value $logEntry
+    }
+    catch {
+        Write-Host "Failed to write log: $($_.Exception.Message)" -ForegroundColor Red
+        throw
+    }
 }
 
 # Banner
 function Show-Banner {
-    Write-Host ""
-    Write-Host " ██████╗ ███╗   ██╗███████╗    ███████╗███████╗ ██████╗" -ForegroundColor Cyan
-    Write-Host " ██╔══██╗████╗  ██║██╔════╝    ██╔════╝██╔════╝██╔════╝" -ForegroundColor Cyan
-    Write-Host " ██║  ██║██╔██╗ ██║███████╗    ███████╗█████╗  ██║     " -ForegroundColor Cyan
-    Write-Host " ██║  ██║██║╚██╗██║╚════██║    ╚════██║██╔══╝  ██║     " -ForegroundColor Cyan
-    Write-Host " ██████╔╝██║ ╚████║███████║    ███████║███████╗╚██████╗" -ForegroundColor Cyan
-    Write-Host " ╚═════╝ ╚═╝  ╚═══╝╚══════╝    ╚══════╝╚══════╝ ╚═════╝" -ForegroundColor Cyan
-    Write-Host ""
-    Write-Host "    DNS Security Setup Tool - Windows PowerShell" -ForegroundColor Green
-    Write-Host "    Comprehensive DNS Security and Privacy Configuration" -ForegroundColor Green
-    Write-Host "    Educational and Authorized Use Only" -ForegroundColor Yellow
-    Write-Host ""
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Host ""
+        Write-Host " ██████╗ ███╗   ██╗███████╗    ███████╗███████╗ ██████╗" -ForegroundColor Cyan
+        Write-Host " ██╔══██╗████╗  ██║██╔════╝    ██╔════╝██╔════╝██╔════╝" -ForegroundColor Cyan
+        Write-Host " ██║  ██║██╔██╗ ██║███████╗    ███████╗█████╗  ██║     " -ForegroundColor Cyan
+        Write-Host " ██║  ██║██║╚██╗██║╚════██║    ╚════██║██╔══╝  ██║     " -ForegroundColor Cyan
+        Write-Host " ██████╔╝██║ ╚████║███████║    ███████║███████╗╚██████╗" -ForegroundColor Cyan
+        Write-Host " ╚═════╝ ╚═╝  ╚═══╝╚══════╝    ╚══════╝╚══════╝ ╚═════╝" -ForegroundColor Cyan
+        Write-Host ""
+        Write-Host "    DNS Security Setup Tool - Windows PowerShell" -ForegroundColor Green
+        Write-Host "    Comprehensive DNS Security and Privacy Configuration" -ForegroundColor Green
+        Write-Host "    Educational and Authorized Use Only" -ForegroundColor Yellow
+        Write-Host ""
+    }
+    catch {
+        Write-Log "Failed to show banner: $($_.Exception.Message)" "Red"
+        throw
+    }
 }
 
 # DNS Provider configurations
@@ -164,17 +141,20 @@ $DNSProviders = @{
 
 # Create backup
 function New-DNSBackup {
-    Write-Log "Creating DNS configuration backup..." "Yellow"
-    
-    $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-    $backupPath = "$BackupDir\dns_backup_$timestamp"
-    New-Item -ItemType Directory -Path $backupPath -Force | Out-Null
-    
-    # Backup current DNS settings
+    [CmdletBinding()]
+    param()
+
     try {
+        Write-Log "Creating DNS configuration backup..." "Yellow"
+
+        $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+        $backupPath = Join-Path $BackupDir "dns_backup_$timestamp"
+        New-Item -ItemType Directory -Path $backupPath -Force | Out-Null
+
+        # Backup current DNS settings
         $adapters = Get-NetAdapter | Where-Object { $_.Status -eq "Up" }
         $dnsSettings = @()
-        
+
         foreach ($adapter in $adapters) {
             $dns = Get-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex
             $dnsSettings += @{
@@ -184,47 +164,51 @@ function New-DNSBackup {
                 IPv6DNS = $dns | Where-Object { $_.AddressFamily -eq 23 } | Select-Object -ExpandProperty ServerAddresses
             }
         }
-        
-    $dnsSettings | ConvertTo-Json -Depth 3 -Compress | Out-File "$backupPath\dns_settings.json"
-        
+
+        $dnsSettings | ConvertTo-Json -Depth 3 -Compress | Out-File (Join-Path $backupPath "dns_settings.json")
+
         # Backup hosts file
-        if (Test-Path "$env:SystemRoot\System32\drivers\etc\hosts") {
-            Copy-Item "$env:SystemRoot\System32\drivers\etc\hosts" "$backupPath\hosts.backup"
+        $hostsPath = Join-Path $env:SystemRoot "System32\drivers\etc\hosts"
+        if (Test-Path $hostsPath) {
+            Copy-Item $hostsPath (Join-Path $backupPath "hosts.backup")
         }
-        
+
         Write-Log "Backup created: $backupPath" "Green"
         return $backupPath
     }
     catch {
         Write-Log "Failed to create backup: $($_.Exception.Message)" "Red"
-        return $null
+        throw
     }
 }
 
 # Restore backup
 function Restore-DNSBackup {
-    $backups = Get-ChildItem -Path $BackupDir -Directory | Sort-Object CreationTime -Descending
-    
-    if ($backups.Count -eq 0) {
-        Write-Log "No backups found" "Yellow"
-        return
-    }
-    
-    Write-Host "Available backups:" -ForegroundColor Cyan
-    for ($i = 0; $i -lt $backups.Count; $i++) {
-        Write-Host "[$($i+1)] $($backups[$i].Name)" -ForegroundColor White
-    }
-    
-    $choice = Read-Host "Select backup to restore (1-$($backups.Count))"
-    
-    if ($choice -match '^\d+$' -and [int]$choice -ge 1 -and [int]$choice -le $backups.Count) {
-        $selectedBackup = $backups[[int]$choice - 1]
-        $backupFile = "$($selectedBackup.FullName)\dns_settings.json"
-        
-        if (Test-Path $backupFile) {
-            try {
+    [CmdletBinding()]
+    param()
+
+    try {
+        $backups = Get-ChildItem -Path $BackupDir -Directory | Sort-Object CreationTime -Descending
+
+        if ($backups.Count -eq 0) {
+            Write-Log "No backups found" "Yellow"
+            return
+        }
+
+        Write-Host "Available backups:" -ForegroundColor Cyan
+        for ($i = 0; $i -lt $backups.Count; $i++) {
+            Write-Host "[$($i+1)] $($backups[$i].Name)" -ForegroundColor White
+        }
+
+        $choice = Read-Host "Select backup to restore (1-$($backups.Count))"
+
+        if ($choice -match '^\d+$' -and [int]$choice -ge 1 -and [int]$choice -le $backups.Count) {
+            $selectedBackup = $backups[[int]$choice - 1]
+            $backupFile = Join-Path $selectedBackup.FullName "dns_settings.json"
+
+            if (Test-Path $backupFile) {
                 $dnsSettings = Get-Content $backupFile | ConvertFrom-Json
-                
+
                 foreach ($setting in $dnsSettings) {
                     if ($setting.IPv4DNS) {
                         Set-DnsClientServerAddress -InterfaceIndex $setting.InterfaceIndex -ServerAddresses $setting.IPv4DNS
@@ -233,62 +217,68 @@ function Restore-DNSBackup {
                         Set-DnsClientServerAddress -InterfaceIndex $setting.InterfaceIndex -ServerAddresses $setting.IPv6DNS -AddressFamily IPv6
                     }
                 }
-                
+
                 Write-Log "DNS settings restored from backup: $($selectedBackup.Name)" "Green"
                 Clear-DnsClientCache
                 Write-Log "DNS cache cleared" "Green"
             }
-            catch {
-                Write-Log "Failed to restore backup: $($_.Exception.Message)" "Red"
-            }
         }
+    }
+    catch {
+        Write-Log "Failed to restore backup: $($_.Exception.Message)" "Red"
+        throw
     }
 }
 
 # Configure DNS servers
 function Set-DNSProvider {
-    param($ProviderId)
-    
-    $provider = $DNSProviders[$ProviderId]
-    if (-not $provider) {
-        Write-Log "Invalid provider ID" "Red"
-        return
-    }
-    
-    Write-Log "Configuring DNS provider: $($provider.Name)" "Yellow"
-    
-    # Create backup first
-    $backupPath = New-DNSBackup
-    if (-not $backupPath) {
-        Write-Log "Failed to create backup. Aborting." "Red"
-        return
-    }
-    
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("1", "2", "3", "4", "5", "6")]
+        [string]$ProviderId
+    )
+
     try {
+        $provider = $DNSProviders[$ProviderId]
+        if (-not $provider) {
+            Write-Log "Invalid provider ID" "Red"
+            return
+        }
+
+        Write-Log "Configuring DNS provider: $($provider.Name)" "Yellow"
+
+        # Create backup first
+        $backupPath = New-DNSBackup
+        if (-not $backupPath) {
+            Write-Log "Failed to create backup. Aborting." "Red"
+            return
+        }
+
         # Get active network adapters
         $adapters = Get-NetAdapter | Where-Object { $_.Status -eq "Up" }
-        
+
         foreach ($adapter in $adapters) {
             Write-Log "Configuring adapter: $($adapter.Name)" "Cyan"
-            
+
             # Set IPv4 DNS
             Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses @($provider.Primary, $provider.Secondary)
-            
+
             # Set IPv6 DNS if available
             if ($provider.IPv6Primary) {
                 Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses @($provider.IPv6Primary, $provider.IPv6Secondary) -AddressFamily IPv6
             }
         }
-        
+
         # Clear DNS cache
         Clear-DnsClientCache
         Write-Log "DNS cache cleared" "Green"
-        
+
         # Test DNS resolution
         Write-Log "Testing DNS resolution..." "Yellow"
         $testResults = @()
         $testDomains = @("google.com", "cloudflare.com", "github.com")
-        
+
         foreach ($domain in $testDomains) {
             try {
                 $result = Resolve-DnsName -Name $domain -Type A -ErrorAction Stop
@@ -298,163 +288,214 @@ function Set-DNSProvider {
                 $testResults += "✗ $domain failed to resolve"
             }
         }
-        
+
         Write-Log "DNS Test Results:" "Cyan"
         foreach ($result in $testResults) {
             Write-Log "  $result" "White"
         }
-        
+
         Write-Log "DNS provider configured successfully: $($provider.Name)" "Green"
     }
     catch {
         Write-Log "Failed to configure DNS: $($_.Exception.Message)" "Red"
         Write-Log "Attempting to restore from backup..." "Yellow"
         Restore-DNSBackup
+        throw
     }
 }
 
 # Configure DNS over HTTPS (requires Windows 10 version 2004+)
 function Enable-DoH {
-    param($DoHURL)
-    
-    Write-Log "Configuring DNS over HTTPS..." "Yellow"
-    
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$DoHURL
+    )
+
     try {
+        Write-Log "Configuring DNS over HTTPS..." "Yellow"
+
         # Check Windows version
         $version = [System.Environment]::OSVersion.Version
         if ($version.Build -lt 19041) {
             Write-Log "DNS over HTTPS requires Windows 10 version 2004 or later" "Red"
             return
         }
-        
+
         # Enable DoH
         Set-DnsClientDohServerAddress -ServerAddress $DoHURL -DohTemplate $DoHURL -AllowFallbackToUdp $true
         Write-Log "DNS over HTTPS configured: $DoHURL" "Green"
     }
     catch {
         Write-Log "Failed to configure DNS over HTTPS: $($_.Exception.Message)" "Red"
+        throw
     }
 }
 
 # Show current DNS status
 function Show-DNSStatus {
-    Write-Host "Current DNS Configuration:" -ForegroundColor Cyan
-    Write-Host "=========================" -ForegroundColor Cyan
-    
-    $adapters = Get-NetAdapter | Where-Object { $_.Status -eq "Up" }
-    
-    foreach ($adapter in $adapters) {
-        Write-Host "`nAdapter: $($adapter.Name)" -ForegroundColor Yellow
-        
-        $dns = Get-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex
-        
-        $ipv4DNS = $dns | Where-Object { $_.AddressFamily -eq 2 } | Select-Object -ExpandProperty ServerAddresses
-        $ipv6DNS = $dns | Where-Object { $_.AddressFamily -eq 23 } | Select-Object -ExpandProperty ServerAddresses
-        
-        if ($ipv4DNS) {
-            Write-Host "  IPv4 DNS: $($ipv4DNS -join ', ')" -ForegroundColor White
-        }
-        if ($ipv6DNS) {
-            Write-Host "  IPv6 DNS: $($ipv6DNS -join ', ')" -ForegroundColor White
-        }
-    }
-    
-    # Show DoH status
+    [CmdletBinding()]
+    param()
+
     try {
-        $dohSettings = Get-DnsClientDohServerAddress
-        if ($dohSettings) {
-            Write-Host "`nDNS over HTTPS:" -ForegroundColor Yellow
-            foreach ($setting in $dohSettings) {
-                Write-Host "  Server: $($setting.ServerAddress)" -ForegroundColor White
-                Write-Host "  Template: $($setting.DohTemplate)" -ForegroundColor White
+        Write-Host "Current DNS Configuration:" -ForegroundColor Cyan
+        Write-Host "=========================" -ForegroundColor Cyan
+
+        $adapters = Get-NetAdapter | Where-Object { $_.Status -eq "Up" }
+
+        foreach ($adapter in $adapters) {
+            Write-Host "`nAdapter: $($adapter.Name)" -ForegroundColor Yellow
+
+            $dns = Get-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex
+
+            $ipv4DNS = $dns | Where-Object { $_.AddressFamily -eq 2 } | Select-Object -ExpandProperty ServerAddresses
+            $ipv6DNS = $dns | Where-Object { $_.AddressFamily -eq 23 } | Select-Object -ExpandProperty ServerAddresses
+
+            if ($ipv4DNS) {
+                Write-Host "  IPv4 DNS: $($ipv4DNS -join ', ')" -ForegroundColor White
             }
+            if ($ipv6DNS) {
+                Write-Host "  IPv6 DNS: $($ipv6DNS -join ', ')" -ForegroundColor White
+            }
+        }
+
+        # Show DoH status
+        try {
+            $dohSettings = Get-DnsClientDohServerAddress
+            if ($dohSettings) {
+                Write-Host "`nDNS over HTTPS:" -ForegroundColor Yellow
+                foreach ($setting in $dohSettings) {
+                    Write-Host "  Server: $($setting.ServerAddress)" -ForegroundColor White
+                    Write-Host "  Template: $($setting.DohTemplate)" -ForegroundColor White
+                }
+            }
+        }
+        catch {
+            Write-Host "`nDNS over HTTPS: Not configured" -ForegroundColor Gray
         }
     }
     catch {
-        Write-Host "`nDNS over HTTPS: Not configured" -ForegroundColor Gray
+        Write-Log "Failed to show DNS status: $($_.Exception.Message)" "Red"
+        throw
     }
 }
 
 # Flush DNS and test
 function Test-DNSConfiguration {
-    Write-Log "Flushing DNS cache and testing configuration..." "Yellow"
-    
-    # Flush DNS cache
-    Clear-DnsClientCache
-    ipconfig /flushdns | Out-Null
-    
-    # Test DNS resolution speed
-    $testDomains = @("google.com", "cloudflare.com", "github.com", "microsoft.com")
-    
-    Write-Host "`nDNS Resolution Test:" -ForegroundColor Cyan
-    Write-Host "===================" -ForegroundColor Cyan
-    
-    foreach ($domain in $testDomains) {
-        $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-        try {
-            $result = Resolve-DnsName -Name $domain -Type A -ErrorAction Stop
-            $stopwatch.Stop()
-            $ip = $result[0].IPAddress
-            $time = $stopwatch.ElapsedMilliseconds
-            Write-Host "✓ $domain -> $ip ($time ms)" -ForegroundColor Green
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Log "Flushing DNS cache and testing configuration..." "Yellow"
+
+        # Flush DNS cache
+        Clear-DnsClientCache
+        ipconfig /flushdns | Out-Null
+
+        # Test DNS resolution speed
+        $testDomains = @("google.com", "cloudflare.com", "github.com", "microsoft.com")
+
+        Write-Host "`nDNS Resolution Test:" -ForegroundColor Cyan
+        Write-Host "===================" -ForegroundColor Cyan
+
+        foreach ($domain in $testDomains) {
+            $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+            try {
+                $result = Resolve-DnsName -Name $domain -Type A -ErrorAction Stop
+                $stopwatch.Stop()
+                $ip = $result[0].IPAddress
+                $time = $stopwatch.ElapsedMilliseconds
+                Write-Host "✓ $domain -> $ip ($time ms)" -ForegroundColor Green
+            }
+            catch {
+                $stopwatch.Stop()
+                Write-Host "✗ $domain -> Failed" -ForegroundColor Red
+            }
         }
-        catch {
-            $stopwatch.Stop()
-            Write-Host "✗ $domain -> Failed" -ForegroundColor Red
-        }
+    }
+    catch {
+        Write-Log "Failed to test DNS configuration: $($_.Exception.Message)" "Red"
+        throw
     }
 }
 
 # Main menu
 function Show-Menu {
-    Write-Host "`nDNS Security Menu:" -ForegroundColor Green
-    Write-Host "==================" -ForegroundColor Green
-    Write-Host "[1] Show current DNS status" -ForegroundColor White
-    Write-Host "[2] Configure DNS provider" -ForegroundColor White
-    Write-Host "[3] Enable DNS over HTTPS" -ForegroundColor White
-    Write-Host "[4] Test DNS configuration" -ForegroundColor White
-    Write-Host "[5] Create backup" -ForegroundColor White
-    Write-Host "[6] Restore from backup" -ForegroundColor White
-    Write-Host "[7] Reset to automatic DNS" -ForegroundColor White
-    Write-Host "[0] Exit" -ForegroundColor White
-    Write-Host ""
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Host "`nDNS Security Menu:" -ForegroundColor Green
+        Write-Host "==================" -ForegroundColor Green
+        Write-Host "[1] Show current DNS status" -ForegroundColor White
+        Write-Host "[2] Configure DNS provider" -ForegroundColor White
+        Write-Host "[3] Enable DNS over HTTPS" -ForegroundColor White
+        Write-Host "[4] Test DNS configuration" -ForegroundColor White
+        Write-Host "[5] Create backup" -ForegroundColor White
+        Write-Host "[6] Restore from backup" -ForegroundColor White
+        Write-Host "[7] Reset to automatic DNS" -ForegroundColor White
+        Write-Host "[0] Exit" -ForegroundColor White
+        Write-Host ""
+    }
+    catch {
+        Write-Log "Failed to show menu: $($_.Exception.Message)" "Red"
+        throw
+    }
 }
 
 # Show provider menu
 function Show-ProviderMenu {
-    Write-Host "`nAvailable DNS Providers:" -ForegroundColor Cyan
-    Write-Host "========================" -ForegroundColor Cyan
-    
-    foreach ($key in $DNSProviders.Keys | Sort-Object) {
-        $provider = $DNSProviders[$key]
-        Write-Host "[$key] $($provider.Name)" -ForegroundColor White
-        Write-Host "    Primary: $($provider.Primary), Secondary: $($provider.Secondary)" -ForegroundColor Gray
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Host "`nAvailable DNS Providers:" -ForegroundColor Cyan
+        Write-Host "========================" -ForegroundColor Cyan
+
+        foreach ($key in $DNSProviders.Keys | Sort-Object) {
+            $provider = $DNSProviders[$key]
+            Write-Host "[$key] $($provider.Name)" -ForegroundColor White
+            Write-Host "    Primary: $($provider.Primary), Secondary: $($provider.Secondary)" -ForegroundColor Gray
+        }
+        Write-Host ""
     }
-    Write-Host ""
+    catch {
+        Write-Log "Failed to show provider menu: $($_.Exception.Message)" "Red"
+        throw
+    }
 }
 
 # Reset DNS to automatic
 function Reset-DNSToAutomatic {
-    Write-Log "Resetting DNS to automatic (DHCP)..." "Yellow"
-    
+    [CmdletBinding()]
+    param()
+
     try {
+        Write-Log "Resetting DNS to automatic (DHCP)..." "Yellow"
+
         $adapters = Get-NetAdapter | Where-Object { $_.Status -eq "Up" }
-        
+
         foreach ($adapter in $adapters) {
             Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ResetServerAddresses
         }
-        
+
         Clear-DnsClientCache
         Write-Log "DNS reset to automatic configuration" "Green"
     }
     catch {
         Write-Log "Failed to reset DNS: $($_.Exception.Message)" "Red"
+        throw
     }
 }
 
 # Help function
 function Show-Help {
-    Write-Host @"
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Host @"
 DNS Security Setup Tool - Windows PowerShell
 
 SYNOPSIS
@@ -498,6 +539,11 @@ NOTES
     - Use only for legitimate purposes
 
 "@
+    }
+    catch {
+        Write-Log "Failed to show help: $($_.Exception.Message)" "Red"
+        throw
+    }
 }
 
 # Main execution
@@ -520,6 +566,11 @@ if ($Backup) {
 
 if ($Restore) {
     Restore-DNSBackup
+    exit 0
+}
+
+if ($Provider) {
+    Set-DNSProvider -ProviderId $Provider
     exit 0
 }
 

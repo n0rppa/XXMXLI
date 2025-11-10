@@ -1,4 +1,4 @@
-# Windows Defender Configuration Script
+﻿# Windows Defender Configuration Script
 # XXMXLI Windows Defender Advanced Configuration
 
 # Ensure we're running from the script directory

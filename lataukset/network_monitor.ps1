@@ -1,4 +1,4 @@
-# Network Monitor - Windows PowerShell Version
+﻿# Network Monitor - Windows PowerShell Version
 # Network Traffic Analysis and Monitoring Tool
 # Author: XXMXLI Security Tools
 # WARNING: Use only for legitimate purposes and with proper authorization
