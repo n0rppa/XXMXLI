@@ -315,11 +315,16 @@ function Block-SuspiciousPorts {
             @{Port=23; Protocol="TCP"; Desc="Telnet"},
             @{Port=69; Protocol="UDP"; Desc="TFTP"},
             @{Port=135; Protocol="TCP"; Desc="RPC"},
-            @{Port=139; Protocol="TCP"; Desc="NetBIOS"},
+            @{Port=137; Protocol="UDP"; Desc="NetBIOS Name Service"},
+            @{Port=138; Protocol="UDP"; Desc="NetBIOS Datagram"},
+            @{Port=139; Protocol="TCP"; Desc="NetBIOS Session"},
             @{Port=445; Protocol="TCP"; Desc="SMB"},
+            @{Port=593; Protocol="TCP"; Desc="RPC over HTTP"},
             @{Port=1433; Protocol="TCP"; Desc="SQL Server"},
             @{Port=1434; Protocol="UDP"; Desc="SQL Browser"},
+            @{Port=2049; Protocol="TCP"; Desc="NFS"},
             @{Port=3389; Protocol="TCP"; Desc="RDP (external)"},
+            @{Port=5060; Protocol="UDP"; Desc="SIP"},
             @{Port=5985; Protocol="TCP"; Desc="WinRM HTTP"},
             @{Port=5986; Protocol="TCP"; Desc="WinRM HTTPS"}
         )
@@ -331,7 +336,26 @@ function Block-SuspiciousPorts {
                 Log-Success "Blocked $($portInfo.Desc) $($portInfo.Port)/$($portInfo.Protocol)"
             }
         }
-        Log-Success "Suspicious ports blocked"
+        
+        # Block common malicious protocols and ports
+        $maliciousPorts = @(
+            @{Port=6667; Protocol="TCP"; Desc="IRC"},
+            @{Port=1337; Protocol="TCP"; Desc="LEET backdoor"},
+            @{Port=12345; Protocol="TCP"; Desc="NetBus backdoor"},
+            @{Port=31337; Protocol="TCP"; Desc="BackOrifice backdoor"},
+            @{Port=54321; Protocol="TCP"; Desc="Backdoor port"}
+        )
+        
+        foreach ($portInfo in $maliciousPorts) {
+            $name = "XXMXLI_Block_Malicious_$($portInfo.Port)"
+            if (-not (Get-NetFirewallRule -DisplayName $name -ErrorAction SilentlyContinue)) {
+                New-NetFirewallRule -DisplayName $name -Direction Inbound -Protocol $portInfo.Protocol -LocalPort $portInfo.Port -Action Block -ErrorAction Stop | Out-Null
+                New-NetFirewallRule -DisplayName "${name}_Out" -Direction Outbound -Protocol $portInfo.Protocol -LocalPort $portInfo.Port -Action Block -ErrorAction Stop | Out-Null
+                Log-Success "Blocked malicious $($portInfo.Desc) $($portInfo.Port)/$($portInfo.Protocol) (bidirectional)"
+            }
+        }
+        
+        Log-Success "Enhanced suspicious and malicious ports blocked"
     } catch {
         Log-Error ("Error blocking ports: " + $_.Exception.Message)
         throw
@@ -544,20 +568,74 @@ function Harden-SecurityPolicies {
             "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters",
             "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa",
             "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System",
-            "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters"
+            "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters",
+            "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters",
+            "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient",
+            "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols"
         )
         $Global:StateManager.SaveRegistryState($securityPaths)
 
+        # Enhanced Protocol Security Settings
         Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" "DisableAntiSpyware" 0 -Type "DWORD" -Description "Enable Defender Anti-Spyware"
         Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" "DisableRealtimeMonitoring" 0 -Type "DWORD" -Description "Enable Real-Time Protection"
+        
+        # Enhanced SMB Security
         Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" "RequireSecuritySignature" 1 -Type "DWORD" -Description "Require SMB server signing"
         Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters" "RequireSecuritySignature" 1 -Type "DWORD" -Description "Require SMB client signing"
-        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "LmCompatibilityLevel" 5 -Type "DWORD" -Description "NTLMv2 only"
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" "EnableSecuritySignature" 1 -Type "DWORD" -Description "Enable SMB server signing"
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters" "EnableSecuritySignature" 1 -Type "DWORD" -Description "Enable SMB client signing"
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" "SMB1" 0 -Type "DWORD" -Description "Disable SMB1 protocol"
+        
+        # Enhanced Authentication & Authorization
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "LmCompatibilityLevel" 5 -Type "DWORD" -Description "NTLMv2 only - strongest authentication"
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "NtlmMinClientSec" 537395200 -Type "DWORD" -Description "Enhanced NTLM client security"
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "NtlmMinServerSec" 537395200 -Type "DWORD" -Description "Enhanced NTLM server security"
         Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "EnableLUA" 1 -Type "DWORD" -Description "Enable UAC"
         Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" "ConsentPromptBehaviorAdmin" 2 -Type "DWORD" -Description "UAC prompt for consent"
-        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "RestrictAnonymous" 1 -Type "DWORD" -Description "Restrict anonymous"
-        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "RestrictAnonymousSAM" 1 -Type "DWORD" -Description "Restrict anonymous SAM"
+        
+        # Network Protocol Security
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "SynAttackProtect" 1 -Type "DWORD" -Description "Enable SYN attack protection"
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "TcpMaxConnectRetransmissions" 2 -Type "DWORD" -Description "Limit TCP retransmissions"
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "EnableICMPRedirect" 0 -Type "DWORD" -Description "Disable ICMP redirects"
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "DisableIPSourceRouting" 2 -Type "DWORD" -Description "Disable IP source routing"
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "KeepAliveTime" 300000 -Type "DWORD" -Description "Reduce TCP keep-alive time"
+        
+        # DNS Security Enhancements
+        Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" "EnableMulticast" 0 -Type "DWORD" -Description "Disable LLMNR multicast"
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\Dnscache\Parameters" "EnableNetbios" 0 -Type "DWORD" -Description "Disable NetBIOS over TCP/IP"
+        
+        # TLS/SSL Protocol Security - Disable weak protocols
+        $weakProtocols = @("SSL 2.0", "SSL 3.0", "TLS 1.0", "TLS 1.1")
+        foreach ($protocol in $weakProtocols) {
+            $protocolPath = "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$protocol"
+            Set-RegistryValue "$protocolPath\Server" "Enabled" 0 -Type "DWORD" -Description "Disable $protocol server"
+            Set-RegistryValue "$protocolPath\Server" "DisabledByDefault" 1 -Type "DWORD" -Description "Disable $protocol server by default"
+            Set-RegistryValue "$protocolPath\Client" "Enabled" 0 -Type "DWORD" -Description "Disable $protocol client"
+            Set-RegistryValue "$protocolPath\Client" "DisabledByDefault" 1 -Type "DWORD" -Description "Disable $protocol client by default"
+        }
+        
+        # Enable strong TLS protocols
+        $strongProtocols = @("TLS 1.2", "TLS 1.3")
+        foreach ($protocol in $strongProtocols) {
+            $protocolPath = "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$protocol"
+            Set-RegistryValue "$protocolPath\Server" "Enabled" 1 -Type "DWORD" -Description "Enable $protocol server"
+            Set-RegistryValue "$protocolPath\Server" "DisabledByDefault" 0 -Type "DWORD" -Description "Enable $protocol server by default"
+            Set-RegistryValue "$protocolPath\Client" "Enabled" 1 -Type "DWORD" -Description "Enable $protocol client"
+            Set-RegistryValue "$protocolPath\Client" "DisabledByDefault" 0 -Type "DWORD" -Description "Enable $protocol client by default"
+        }
+        
+        # Anonymous Access Restrictions
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "RestrictAnonymous" 1 -Type "DWORD" -Description "Restrict anonymous access"
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "RestrictAnonymousSAM" 1 -Type "DWORD" -Description "Restrict anonymous SAM access"
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "EveryoneIncludesAnonymous" 0 -Type "DWORD" -Description "Exclude anonymous from Everyone group"
+        
+        # Enhanced Password & Account Policies
         Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" "MaximumPasswordAge" 42 -Type "DWORD" -Description "Max password age 42 days"
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" "RequireSignOrSeal" 1 -Type "DWORD" -Description "Require secure channel signing/sealing"
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" "SealSecureChannel" 1 -Type "DWORD" -Description "Seal secure channel"
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" "SignSecureChannel" 1 -Type "DWORD" -Description "Sign secure channel"
+        
+        Log-Success "Enhanced protocol security policies configured"
     } catch {
         Log-Error ("Error hardening security policies: " + $_.Exception.Message)
         throw
@@ -585,6 +663,111 @@ function Disable-UnnecessaryServices {
         Log-Warn "Note: Service changes take effect after reboot"
     } catch {
         Log-Error ("Error disabling services: " + $_.Exception.Message)
+        throw
+    }
+}
+
+function Configure-AdvancedProtocolSecurity {
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Section "Advanced Protocol Security Configuration" "Cyan"
+        
+        # WinHTTP Security
+        Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings\WinHttp" "DefaultSecureProtocols" 2048 -Type "DWORD" -Description "WinHTTP TLS 1.2 only"
+        
+        # Internet Explorer/Edge Security
+        Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings" "SecureProtocols" 2048 -Type "DWORD" -Description "IE/Edge TLS 1.2 only"
+        
+        # .NET Framework Security
+        Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319" "SchUseStrongCrypto" 1 -Type "DWORD" -Description ".NET Framework strong crypto"
+        Set-RegistryValue "HKLM:\SOFTWARE\Wow6432Node\Microsoft\.NETFramework\v4.0.30319" "SchUseStrongCrypto" 1 -Type "DWORD" -Description ".NET Framework strong crypto (32-bit)"
+        
+        # PowerShell Security
+        Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds\Microsoft.PowerShell" "ExecutionPolicy" "RemoteSigned" -Type "String" -Description "PowerShell execution policy"
+        Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\PowerShell\1" "EnableScripts" 1 -Type "DWORD" -Description "Enable PowerShell scripts with policy"
+        
+        # Windows Remote Management (WinRM) Security
+        Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WinRM\Service" "AllowUnencryptedTraffic" 0 -Type "DWORD" -Description "Disable WinRM unencrypted traffic"
+        Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WinRM\Service" "AllowBasic" 0 -Type "DWORD" -Description "Disable WinRM basic authentication"
+        Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WinRM\Service" "AllowDigest" 0 -Type "DWORD" -Description "Disable WinRM digest authentication"
+        
+        # RDP Security Enhancements
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" "MinEncryptionLevel" 3 -Type "DWORD" -Description "RDP high encryption level"
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" "SecurityLayer" 2 -Type "DWORD" -Description "RDP SSL/TLS security layer"
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" "UserAuthentication" 1 -Type "DWORD" -Description "RDP network level authentication"
+        
+        # LDAP Security
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\NTDS\Parameters" "LDAPServerIntegrity" 2 -Type "DWORD" -Description "LDAP server signing required"
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\LDAP" "LDAPClientIntegrity" 2 -Type "DWORD" -Description "LDAP client signing required"
+        
+        # Kerberos Security
+        Set-RegistryValue "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters" "SupportedEncryptionTypes" 24 -Type "DWORD" -Description "Kerberos AES encryption only"
+        
+        # IPSec Policy
+        Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\PolicyAgent" "AssumeUDPEncapsulationContextOnSendRule" 2 -Type "DWORD" -Description "IPSec UDP encapsulation"
+        
+        # Windows Update Security
+        Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" "DoNotConnectToWindowsUpdateInternetLocations" 0 -Type "DWORD" -Description "Allow secure Windows Update connections"
+        Set-RegistryValue "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" "UseWUServer" 0 -Type "DWORD" -Description "Use Microsoft Update servers"
+        
+        Log-Success "Advanced protocol security configuration completed"
+        Log-Warn "System restart recommended for all changes to take effect"
+    } catch {
+        Log-Error ("Error configuring advanced protocol security: " + $_.Exception.Message)
+        throw
+    }
+}
+
+function Show-ProtocolSecurityStatus {
+    [CmdletBinding()]
+    param()
+
+    try {
+        Write-Section "Protocol Security Status" "Green"
+        
+        $protocolChecks = @(
+            @{Path="HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Server"; Name="Enabled"; Expected=1; Desc="TLS 1.2 Server Enabled"},
+            @{Path="HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\SSL 3.0\Server"; Name="Enabled"; Expected=0; Desc="SSL 3.0 Server Disabled"},
+            @{Path="HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters"; Name="RequireSecuritySignature"; Expected=1; Desc="SMB Signing Required"},
+            @{Path="HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"; Name="LmCompatibilityLevel"; Expected=5; Desc="NTLMv2 Authentication"},
+            @{Path="HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters"; Name="SynAttackProtect"; Expected=1; Desc="SYN Attack Protection"},
+            @{Path="HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient"; Name="EnableMulticast"; Expected=0; Desc="LLMNR Disabled"},
+            @{Path="HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319"; Name="SchUseStrongCrypto"; Expected=1; Desc=".NET Strong Cryptography"}
+        )
+
+        foreach ($check in $protocolChecks) {
+            try {
+                $value = Get-ItemProperty -Path $check.Path -Name $check.Name -ErrorAction SilentlyContinue
+                if ($value -and $value.($check.Name) -eq $check.Expected) {
+                    Log-Success "✓ $($check.Desc)"
+                } else {
+                    Log-Error "✗ $($check.Desc)"
+                }
+            } catch {
+                Log-Warn "? $($check.Desc) - Unable to verify"
+            }
+        }
+        
+        # Check enabled TLS protocols
+        Write-Host "`nEnabled TLS Protocols:" -ForegroundColor Cyan
+        $tlsVersions = @("TLS 1.0", "TLS 1.1", "TLS 1.2", "TLS 1.3")
+        foreach ($version in $tlsVersions) {
+            try {
+                $serverPath = "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$version\Server"
+                $enabled = Get-ItemProperty -Path $serverPath -Name "Enabled" -ErrorAction SilentlyContinue
+                $color = if ($enabled -and $enabled.Enabled -eq 1) { 
+                    if ($version -in @("TLS 1.2", "TLS 1.3")) { "Green" } else { "Yellow" }
+                } else { "Red" }
+                $status = if ($enabled -and $enabled.Enabled -eq 1) { "Enabled" } else { "Disabled" }
+                Write-Host "  $version`: $status" -ForegroundColor $color
+            } catch {
+                Write-Host "  $version`: Unknown" -ForegroundColor Gray
+            }
+        }
+    } catch {
+        Log-Error ("Error checking protocol security status: " + $_.Exception.Message)
         throw
     }
 }
@@ -662,9 +845,11 @@ function Module-Registry {
         Write-Host "1) Create registry backup"
         Write-Host "2) Disable dangerous features"
         Write-Host "3) Harden security policies"
-        Write-Host "4) Disable unnecessary services (registry)"
-        Write-Host "5) Configure privacy settings"
-        Write-Host "6) Show current security status"
+        Write-Host "4) Configure advanced protocol security"
+        Write-Host "5) Disable unnecessary services (registry)"
+        Write-Host "6) Configure privacy settings"
+        Write-Host "7) Show current security status"
+        Write-Host "8) Show protocol security status"
         Write-Host "0) Back"
 
         try {
@@ -673,9 +858,11 @@ function Module-Registry {
                 '1' { Create-RegistryBackup | Out-Null; Pause-Clear }
                 '2' { Disable-DangerousFeatures; Pause-Clear }
                 '3' { Harden-SecurityPolicies; Pause-Clear }
-                '4' { Disable-UnnecessaryServices; Pause-Clear }
-                '5' { Configure-PrivacySettings; Pause-Clear }
-                '6' { Show-SecurityStatus-Registry; Pause-Clear }
+                '4' { Configure-AdvancedProtocolSecurity; Pause-Clear }
+                '5' { Disable-UnnecessaryServices; Pause-Clear }
+                '6' { Configure-PrivacySettings; Pause-Clear }
+                '7' { Show-SecurityStatus-Registry; Pause-Clear }
+                '8' { Show-ProtocolSecurityStatus; Pause-Clear }
                 '0' { break }
                 default { Log-Warn "Invalid choice in Registry module" }
             }
