@@ -1,0 +1,32 @@
+Käyttö
+Järjestä päätteen mukaan
+Powershell
+Kopioi koodi
+.\organizer.ps1 -Source "C:\Downloads" -Mode extension
+Järjestä tiedostotyypin mukaan
+Powershell
+Kopioi koodi
+.\organizer.ps1 -Source "C:\Downloads" -Mode type
+Järjestä kuukausittain
+Powershell
+Kopioi koodi
+.\organizer.ps1 -Mode date
+Testaa ilman siirtoa
+Powershell
+Kopioi koodi
+.\organizer.ps1 -DryRun
+✅ Skripti tekee automaattisesti kansioita kuten:
+Kopioi koodi
+
+Images
+Video
+Audio
+Documents
+Archives
+Other
+💡 Voin myös tehdä vielä tehokkaamman v17 “pro” version, joka:
+lajittelee AI-tyyppisesti sisällön mukaan
+tunnistaa duplikaatit SHA256 hashilla
+järjestää 10–50× nopeammin monisäikeisesti
+toimii myös Linux (Kodachi) jos ajat PowerShell Coren
+Jos haluat, voin tehdä siitä todella tehokkaan ~300 rivin version (paras mitä tiedän).
